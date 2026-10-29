@@ -285,11 +285,65 @@ function Credentials({
   }, "SURVEYSCAN_SECRET_KEY"), " и в базе не лежит — дамп БД сам по себе секреты не раскроет. Задайте эту переменную в своём окружении (иначе ключ генерируется в томе данных и теряется вместе с ним)."));
 }
 
+/* ----------------------------------------------------------------- Diff между прогонами */
+function DiffBanner({
+  diff
+}) {
+  if (!diff) return null;
+  const nNew = (diff.new_hosts || []).length,
+    nGone = (diff.gone_hosts || []).length,
+    nChg = (diff.changed || []).length;
+  if (!nNew && !nGone && !nChg) return /*#__PURE__*/React.createElement("div", {
+    className: "diffbar"
+  }, "Без изменений с прошлого прогона по этой цели.");
+  return /*#__PURE__*/React.createElement("div", {
+    className: "diffbar"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("b", null, "Изменения с прошлого прогона:"), " ", nNew ? /*#__PURE__*/React.createElement("span", {
+    className: "chip c-low",
+    style: {
+      marginRight: 6
+    }
+  }, "+", nNew, " новых") : null, nGone ? /*#__PURE__*/React.createElement("span", {
+    className: "chip c-critical",
+    style: {
+      marginRight: 6
+    }
+  }, "−", nGone, " исчезло") : null, nChg ? /*#__PURE__*/React.createElement("span", {
+    className: "chip c-medium"
+  }, nChg, " изменили сервисы") : null), /*#__PURE__*/React.createElement("details", {
+    style: {
+      marginTop: 6
+    }
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "sub2",
+    style: {
+      cursor: "pointer"
+    }
+  }, "Подробнее"), nNew ? /*#__PURE__*/React.createElement("div", {
+    className: "sub2",
+    style: {
+      marginTop: 4
+    }
+  }, "Новые: ", diff.new_hosts.join(", ")) : null, nGone ? /*#__PURE__*/React.createElement("div", {
+    className: "sub2",
+    style: {
+      marginTop: 4
+    }
+  }, "Исчезли: ", diff.gone_hosts.join(", ")) : null, diff.changed.map(c => /*#__PURE__*/React.createElement("div", {
+    key: c.name,
+    className: "sub2",
+    style: {
+      marginTop: 4
+    }
+  }, /*#__PURE__*/React.createElement("b", null, c.name), ": ", c.added_services.length ? "+ " + c.added_services.join("; ") : "", c.added_services.length && c.removed_services.length ? " · " : "", c.removed_services.length ? "− " + c.removed_services.join("; ") : ""))));
+}
+
 /* ----------------------------------------------------------------- Дашборд */
 function Dash({
   D,
   tasks,
-  go
+  go,
+  diff
 }) {
   if (!D) return /*#__PURE__*/React.createElement("div", {
     className: "empty"
@@ -310,7 +364,9 @@ function Dash({
     className: "h1"
   }, D.survey && D.survey.name || "Обследование"), /*#__PURE__*/React.createElement("p", {
     className: "sub"
-  }, "Инвентаризация сети · ", D.generated), /*#__PURE__*/React.createElement("div", {
+  }, "Инвентаризация сети · ", D.generated), /*#__PURE__*/React.createElement(DiffBanner, {
+    diff: diff
+  }), /*#__PURE__*/React.createElement("div", {
     className: "kpis"
   }, kpi(D.totals ? D.totals.assets : assets.length, "Активов"), kpi(ts.hosts != null ? ts.hosts : "—", "Хостов"), kpi(ts.devices != null ? ts.devices : "—", "Сетевых устройств"), kpi(ts.subnets != null ? ts.subnets : "—", "Подсетей"), kpi(ts.services != null ? ts.services : "—", "Открытых сервисов")), /*#__PURE__*/React.createElement("div", {
     className: "cols dash"
@@ -414,6 +470,51 @@ function Dash({
   }, "Пока нет сканирований.")))));
 }
 
+/* ----------------------------------------------------------------- Роль актива (ИТ/сетевое/АСУ ТП/СЗИ) */
+const ROLE_LABELS = {
+  "": "— не задано —",
+  it: "ИТ-хост",
+  netdev: "Сетевое устройство",
+  ics: "АСУ ТП (ПЛК/SCADA)",
+  security: "СЗИ"
+};
+const ROLE_CHIP = {
+  it: "tag-ro",
+  netdev: "tagline",
+  ics: "c-ics",
+  security: "c-security"
+};
+function RoleBadge({
+  role
+}) {
+  const r = role || "";
+  const cls = ROLE_CHIP[r] || "tag-ro";
+  return /*#__PURE__*/React.createElement("span", {
+    className: cls === "tag-ro" || cls === "tagline" ? "tagline " + cls : "chip " + cls
+  }, ROLE_LABELS[r] || r);
+}
+function RoleSelect({
+  value,
+  onChange
+}) {
+  return /*#__PURE__*/React.createElement("select", {
+    value: value || "",
+    onChange: e => onChange(e.target.value),
+    style: {
+      fontSize: 12.5,
+      padding: "4px 8px"
+    }
+  }, Object.entries(ROLE_LABELS).map(([k, l]) => /*#__PURE__*/React.createElement("option", {
+    key: k,
+    value: k
+  }, l)));
+}
+function assetIcon(a) {
+  if (a.role === "ics") return "🏭";
+  if (a.role === "security") return "🛡";
+  return (a.kind || "").toLowerCase().includes("сетев") ? "🖧" : "🖥";
+}
+
 /* ----------------------------------------------------------------- Активы */
 function Assets({
   D,
@@ -431,7 +532,7 @@ function Assets({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Актив"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "ОС / платформа"), /*#__PURE__*/React.createElement("th", null, "Тип"), /*#__PURE__*/React.createElement("th", {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Актив"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "ОС / платформа"), /*#__PURE__*/React.createElement("th", null, "Тип"), /*#__PURE__*/React.createElement("th", null, "Роль"), /*#__PURE__*/React.createElement("th", {
     className: "num"
   }, "ПО"), /*#__PURE__*/React.createElement("th", {
     className: "num"
@@ -451,12 +552,14 @@ function Assets({
     className: "mono"
   }, a.ips || "—"), /*#__PURE__*/React.createElement("td", null, a.os || "—", a.build ? /*#__PURE__*/React.createElement("div", {
     className: "sub2 mono"
-  }, a.build) : null), /*#__PURE__*/React.createElement("td", null, a.kind), /*#__PURE__*/React.createElement("td", {
+  }, a.build) : null), /*#__PURE__*/React.createElement("td", null, a.kind), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement(RoleBadge, {
+    role: a.role
+  })), /*#__PURE__*/React.createElement("td", {
     className: "num"
   }, a.software || 0), /*#__PURE__*/React.createElement("td", {
     className: "num"
   }, (a.services || []).length))), assets.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    colSpan: "6",
+    colSpan: "7",
     className: "sub2"
   }, "Активы не найдены.")))))));
 }
@@ -495,19 +598,44 @@ function SimpleTable({
 function AssetDetail({
   D,
   name,
-  go
+  go,
+  taskId,
+  onRoleChange
 }) {
   const a = (D.assets || []).find(x => x.name === name);
   const [tab, setTab] = useState("overview");
   const [swFilter, setSwFilter] = useState("");
+  const [svcFilter, setSvcFilter] = useState("");
+  const [roleErr, setRoleErr] = useState("");
   if (!a) return /*#__PURE__*/React.createElement("div", {
     className: "empty"
   }, "Актив не найден.");
+  const saveRole = async role => {
+    setRoleErr("");
+    try {
+      await api("/tasks/" + taskId + "/assets/" + a.id + "/role", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          role
+        })
+      });
+      onRoleChange && onRoleChange();
+    } catch (e) {
+      setRoleErr(e && e.detail ? e.detail : "не удалось сохранить роль");
+    }
+  };
   const inv = a.inventory || {};
   const fam = a.os_family || "";
   const software = inv.software || [];
   const swShown = swFilter ? software.filter(s => (s.name || "").toLowerCase().includes(swFilter.toLowerCase())) : software;
   const listening = inv.listening || [];
+  const connections = inv.connections || [];
+  const winServices = inv.services || [];
+  const svcShown = svcFilter ? winServices.filter(s => ((s.display || "") + " " + (s.name || "")).toLowerCase().includes(svcFilter.toLowerCase())) : winServices;
+  const hasDevices = (inv.disks || []).length || (inv.shares || []).length || (inv.usb_devices || []).length;
   const tabs = [{
     id: "overview",
     label: "Обзор"
@@ -534,6 +662,10 @@ function AssetDetail({
     id: "security",
     label: "Защита"
   });
+  if (fam === "windows" && hasDevices) tabs.push({
+    id: "devices",
+    label: "Диски и устройства"
+  });
   if (inv.config) tabs.push({
     id: "config",
     label: "Конфигурация"
@@ -554,7 +686,7 @@ function AssetDetail({
     className: "pagehead"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ic"
-  }, (a.kind || "").toLowerCase().includes("сетев") ? "🖧" : "🖥"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+  }, assetIcon(a)), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "h1",
     style: {
       margin: 0
@@ -585,7 +717,22 @@ function AssetDetail({
   }, /*#__PURE__*/React.createElement(KV, {
     k: "Тип",
     v: a.kind
-  }), /*#__PURE__*/React.createElement(KV, {
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "kv"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "k"
+  }, "Роль"), /*#__PURE__*/React.createElement("span", {
+    className: "v"
+  }, /*#__PURE__*/React.createElement(RoleSelect, {
+    value: a.role,
+    onChange: saveRole
+  }))), roleErr ? /*#__PURE__*/React.createElement("div", {
+    className: "sub2",
+    style: {
+      color: "var(--crit,#b4232a)",
+      margin: "2px 0 6px"
+    }
+  }, roleErr) : null, /*#__PURE__*/React.createElement(KV, {
     k: "IP",
     v: a.ips
   }), /*#__PURE__*/React.createElement(KV, {
@@ -739,7 +886,7 @@ function AssetDetail({
     rows: (inv.login_users || []).map(n => ({
       name: n
     }))
-  }))), /*#__PURE__*/React.createElement("div", null, fam === "windows" ? /*#__PURE__*/React.createElement("div", {
+  }))), /*#__PURE__*/React.createElement("div", null, fam === "windows" ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
@@ -754,7 +901,34 @@ function AssetDetail({
     }
   }, n)) : /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Группа «Администраторы» пуста или не собрана."))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, "Группа «Администраторы» пуста или не собрана."))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginTop: 16
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ch"
+  }, /*#__PURE__*/React.createElement("h3", null, "Локальные группы")), /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, /*#__PURE__*/React.createElement(SimpleTable, {
+    empty: "Группы не собраны.",
+    cols: [{
+      key: "name",
+      label: "Наименование"
+    }, {
+      key: "sid",
+      label: "SID",
+      mono: true
+    }, {
+      key: "description",
+      label: "Описание"
+    }, {
+      key: "members",
+      label: "Члены группы",
+      render: r => (r.members || []).join(", ") || "—"
+    }],
+    rows: inv.groups
+  })))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
@@ -771,7 +945,95 @@ function AssetDetail({
     v: inv.empty_password_users === null ? "нет доступа к данным" : (inv.empty_password_users || []).join(", ") || "нет"
   })))))), tab === "network" && /*#__PURE__*/React.createElement("div", {
     className: "detail"
+  }, (fam === "windows" || fam === "linux") && (inv.nics || []).length ? /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      gridColumn: "1 / -1"
+    }
   }, /*#__PURE__*/React.createElement("div", {
+    className: "ch"
+  }, /*#__PURE__*/React.createElement("h3", null, "Сетевые интерфейсы")), /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, fam === "windows" ? /*#__PURE__*/React.createElement(SimpleTable, {
+    empty: "Не собрано.",
+    cols: [{
+      key: "name",
+      label: "Наименование"
+    }, {
+      key: "mac",
+      label: "MAC адрес",
+      mono: true
+    }, {
+      key: "status",
+      label: "Статус"
+    }, {
+      key: "ip",
+      label: "IP адрес",
+      mono: true,
+      render: r => (r.ip || []).join(", ") || "—"
+    }, {
+      key: "mask",
+      label: "Маска подсети",
+      mono: true,
+      render: r => (r.mask || []).join(", ") || "—"
+    }, {
+      key: "gateway",
+      label: "Основной шлюз",
+      mono: true,
+      render: r => (r.gateway || []).join(", ") || "—"
+    }, {
+      key: "dns",
+      label: "DNS сервер",
+      mono: true,
+      render: r => (r.dns || []).join(", ") || "—"
+    }, {
+      key: "dhcp_server",
+      label: "DHCP сервер",
+      mono: true,
+      render: r => r.dhcp_enabled ? r.dhcp_server || "да" : "отключён"
+    }],
+    rows: inv.nics
+  }) : /*#__PURE__*/React.createElement(SimpleTable, {
+    empty: "Не собрано.",
+    cols: [{
+      key: "name",
+      label: "Наименование"
+    }, {
+      key: "mac",
+      label: "MAC адрес",
+      mono: true
+    }, {
+      key: "addresses",
+      label: "IP адрес / маска",
+      mono: true,
+      render: r => (r.addresses || []).map(x => x.ip + "/" + x.prefix).join(", ") || "—"
+    }],
+    rows: inv.nics
+  }))) : null, (fam === "windows" || fam === "linux") && (inv.routes || []).length ? /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      gridColumn: "1 / -1"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ch"
+  }, /*#__PURE__*/React.createElement("h3", null, "Таблица маршрутизации")), /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, /*#__PURE__*/React.createElement(SimpleTable, {
+    empty: "Не собрано.",
+    cols: [{
+      key: "destination",
+      label: "Сеть",
+      mono: true
+    }, {
+      key: "gateway",
+      label: "Шлюз",
+      mono: true
+    }, {
+      key: "interface",
+      label: "Интерфейс"
+    }],
+    rows: inv.routes
+  }))) : null, /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
@@ -810,33 +1072,154 @@ function AssetDetail({
       label: "Процесс"
     }],
     rows: listening
-  }))), fam === "windows" && (inv.services || []).length ? /*#__PURE__*/React.createElement("div", {
+  }))), connections.length ? /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       gridColumn: "1 / -1"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Службы Windows")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "Используемые сетевые соединения")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, /*#__PURE__*/React.createElement(SimpleTable, {
     empty: "Не собрано.",
     cols: [{
+      key: "local_address",
+      label: "Локальный адрес",
+      mono: true
+    }, {
+      key: "local_port",
+      label: "Локальный порт",
+      num: true
+    }, {
+      key: "remote_address",
+      label: "Удалённый адрес",
+      mono: true
+    }, {
+      key: "remote_port",
+      label: "Удалённый порт",
+      num: true
+    }, {
+      key: "process",
+      label: "Процесс"
+    }],
+    rows: connections
+  }))) : null, fam === "windows" && winServices.length ? /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      gridColumn: "1 / -1"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ch"
+  }, /*#__PURE__*/React.createElement("h3", null, "Службы Windows"), /*#__PURE__*/React.createElement("span", {
+    className: "sub2"
+  }, winServices.length), /*#__PURE__*/React.createElement("input", {
+    value: svcFilter,
+    onChange: e => setSvcFilter(e.target.value),
+    placeholder: "Фильтр по имени…",
+    style: {
+      marginLeft: "auto",
+      fontSize: 12.5,
+      padding: "4px 8px"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, /*#__PURE__*/React.createElement(SimpleTable, {
+    empty: "Не найдено.",
+    cols: [{
       key: "display",
-      label: "Название"
+      label: "Полное имя"
+    }, {
+      key: "name",
+      label: "Имя службы",
+      mono: true
     }, {
       key: "state",
-      label: "Состояние"
+      label: "Статус"
     }, {
       key: "start_mode",
-      label: "Запуск"
+      label: "Тип запуска"
     }, {
       key: "account",
-      label: "Учётка",
+      label: "Учётная запись",
+      mono: true
+    }, {
+      key: "path",
+      label: "Путь до файла",
       mono: true
     }],
-    rows: inv.services
-  }))) : null), tab === "security" && /*#__PURE__*/React.createElement("div", {
+    rows: svcShown
+  }))) : null), tab === "devices" && /*#__PURE__*/React.createElement("div", {
+    className: "detail"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ch"
+  }, /*#__PURE__*/React.createElement("h3", null, "Жёсткие диски")), /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, /*#__PURE__*/React.createElement(SimpleTable, {
+    empty: "Не собрано.",
+    cols: [{
+      key: "id",
+      label: "ID диска",
+      mono: true
+    }, {
+      key: "name",
+      label: "Наименование"
+    }, {
+      key: "size_gb",
+      label: "Объём, ГБ",
+      num: true
+    }, {
+      key: "free_gb",
+      label: "Свободно, ГБ",
+      num: true
+    }],
+    rows: inv.disks
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ch"
+  }, /*#__PURE__*/React.createElement("h3", null, "Общие папки")), /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, /*#__PURE__*/React.createElement(SimpleTable, {
+    empty: "Не собрано.",
+    cols: [{
+      key: "name",
+      label: "Наименование"
+    }, {
+      key: "path",
+      label: "Путь",
+      mono: true
+    }, {
+      key: "description",
+      label: "Описание"
+    }],
+    rows: inv.shares
+  }))), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      gridColumn: "1 / -1"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ch"
+  }, /*#__PURE__*/React.createElement("h3", null, "Подключённые USB-устройства")), /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, /*#__PURE__*/React.createElement(SimpleTable, {
+    empty: "Не собрано.",
+    cols: [{
+      key: "name",
+      label: "Наименование"
+    }, {
+      key: "device_id",
+      label: "ID устройства",
+      mono: true
+    }, {
+      key: "description",
+      label: "Описание"
+    }],
+    rows: inv.usb_devices
+  })))), tab === "security" && /*#__PURE__*/React.createElement("div", {
     className: "detail"
   }, fam === "windows" ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "card"
@@ -965,6 +1348,20 @@ const CY_STYLE = [{
     "border-color": "#C4CAD4",
     "border-width": 1
   }
+},
+// роль (см. roleguess.py) переопределяет цвет независимо от type — чтобы АСУ ТП/СЗИ были заметны сразу
+{
+  selector: 'node[role="ics"]',
+  style: {
+    "background-color": "#8A4B16",
+    "color": "#fff"
+  }
+}, {
+  selector: 'node[role="security"]',
+  style: {
+    "background-color": "#1B6B4A",
+    "color": "#fff"
+  }
 }, {
   selector: "edge",
   style: {
@@ -987,7 +1384,8 @@ const CY_STYLE = [{
 }];
 function NetMap({
   taskId,
-  go
+  go,
+  diff
 }) {
   const box = useRef(null);
   const cyRef = useRef(null);
@@ -1081,7 +1479,9 @@ function NetMap({
     style: {
       textDecoration: "none"
     }
-  }, "Экспорт SVG")), /*#__PURE__*/React.createElement("div", {
+  }, "Экспорт SVG")), /*#__PURE__*/React.createElement(DiffBanner, {
+    diff: diff
+  }), /*#__PURE__*/React.createElement("div", {
     id: "cy",
     ref: box
   }), /*#__PURE__*/React.createElement("div", {
@@ -1104,7 +1504,15 @@ function NetMap({
       background: "#fff",
       border: "1px solid #C4CAD4"
     }
-  }), "Хост"), /*#__PURE__*/React.createElement("span", {
+  }), "Хост"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+    style: {
+      background: "#8A4B16"
+    }
+  }), "АСУ ТП"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+    style: {
+      background: "#1B6B4A"
+    }
+  }), "СЗИ"), /*#__PURE__*/React.createElement("span", {
     style: {
       marginLeft: "auto"
     }
@@ -1228,7 +1636,9 @@ function TaskDetail({
     className: "sub"
   }, "Цели: ", /*#__PURE__*/React.createElement("span", {
     className: "mono"
-  }, p.targets || (r.targets || []).join(", ") || "—"), running ? " · обновляется каждые 2 c" : ""), /*#__PURE__*/React.createElement("div", {
+  }, p.targets || (r.targets || []).join(", ") || "—"), running ? " · обновляется каждые 2 c" : ""), /*#__PURE__*/React.createElement(DiffBanner, {
+    diff: t.diff
+  }), /*#__PURE__*/React.createElement("div", {
     className: "cols dash",
     style: {
       marginTop: 4
@@ -1447,6 +1857,225 @@ function Connectors() {
   }, "Коннекторы не зарегистрированы.")))))));
 }
 
+/* ----------------------------------------------------------------- Расписания */
+const SCHED_KINDS = {
+  demo: "Демо",
+  inventory: "Инвентаризация",
+  vuln: "Уязвимости",
+  config: "Конфигурации"
+};
+function Schedules({
+  savedCreds
+}) {
+  const [list, setList] = useState([]);
+  const [f, setF] = useState({
+    name: "",
+    kind: "inventory",
+    targets: "",
+    interval_minutes: 60,
+    cred_ids: []
+  });
+  const [err, setErr] = useState("");
+  const refresh = () => api("/schedules").then(setList).catch(() => {});
+  useEffect(() => {
+    refresh();
+    const h = setInterval(refresh, 5000);
+    return () => clearInterval(h);
+  }, []);
+  const setFF = (k, v) => setF(p => ({
+    ...p,
+    [k]: v
+  }));
+  const toggleCred = id => setFF("cred_ids", f.cred_ids.includes(id) ? f.cred_ids.filter(x => x !== id) : [...f.cred_ids, id]);
+  const add = async () => {
+    setErr("");
+    try {
+      await api("/schedules", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          name: f.name || null,
+          kind: f.kind,
+          targets: f.targets || null,
+          interval_minutes: parseInt(f.interval_minutes, 10) || 60,
+          cred_ids: f.cred_ids
+        })
+      });
+      setF({
+        name: "",
+        kind: "inventory",
+        targets: "",
+        interval_minutes: 60,
+        cred_ids: []
+      });
+      refresh();
+    } catch (e) {
+      setErr(e && e.detail ? e.detail : "не удалось сохранить");
+    }
+  };
+  const del = async id => {
+    await fetch("/schedules/" + id, {
+      method: "DELETE"
+    });
+    refresh();
+  };
+  const toggleEnabled = async s => {
+    await api("/schedules/" + s.id, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        enabled: !s.enabled
+      })
+    });
+    refresh();
+  };
+  const runNow = async id => {
+    await api("/schedules/" + id + "/run", {
+      method: "POST"
+    });
+    refresh();
+  };
+  const fmt = s => s ? s.replace("T", " ").slice(0, 16) : "—";
+  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
+    className: "h1"
+  }, "Расписания"), /*#__PURE__*/React.createElement("p", {
+    className: "sub"
+  }, "Периодический пересбор по заданным целям — без ручного запуска. При срабатывании ставится обычная задача сканирования; изменения с прошлого прогона видны в карточке задачи и на дашборде."), /*#__PURE__*/React.createElement("div", {
+    className: "card",
+    style: {
+      marginBottom: 16,
+      maxWidth: 820
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Название"), /*#__PURE__*/React.createElement("input", {
+    value: f.name,
+    onChange: e => setFF("name", e.target.value),
+    placeholder: "Периметр — ежечасно"
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 10
+    }
+  }, /*#__PURE__*/React.createElement("label", null, "Цели: подсети / хосты ", f.kind === "demo" ? /*#__PURE__*/React.createElement("span", {
+    className: "sub2",
+    style: {
+      fontWeight: 400
+    }
+  }, "(не нужны для демо)") : null), /*#__PURE__*/React.createElement("textarea", {
+    rows: "2",
+    value: f.targets,
+    onChange: e => setFF("targets", e.target.value),
+    placeholder: "10.0.0.0/24, srv01.corp"
+  })), /*#__PURE__*/React.createElement("div", {
+    style: {
+      display: "flex",
+      gap: 10,
+      marginTop: 10,
+      flexWrap: "wrap"
+    }
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Вид"), /*#__PURE__*/React.createElement("select", {
+    value: f.kind,
+    onChange: e => setFF("kind", e.target.value)
+  }, Object.entries(SCHED_KINDS).map(([k, l]) => /*#__PURE__*/React.createElement("option", {
+    key: k,
+    value: k
+  }, l)))), /*#__PURE__*/React.createElement("div", {
+    className: "field"
+  }, /*#__PURE__*/React.createElement("label", null, "Интервал, мин"), /*#__PURE__*/React.createElement("input", {
+    type: "number",
+    min: "1",
+    style: {
+      width: 100
+    },
+    value: f.interval_minutes,
+    onChange: e => setFF("interval_minutes", e.target.value)
+  }))), savedCreds && savedCreds.length ? /*#__PURE__*/React.createElement("div", {
+    className: "field",
+    style: {
+      marginTop: 10
+    }
+  }, /*#__PURE__*/React.createElement("label", null, "Учётные записи для сбора ", /*#__PURE__*/React.createElement("span", {
+    className: "sub2",
+    style: {
+      fontWeight: 400
+    }
+  }, "(опционально)")), /*#__PURE__*/React.createElement("div", {
+    className: "credpick"
+  }, savedCreds.map(c => /*#__PURE__*/React.createElement("label", {
+    className: "credopt" + (f.cred_ids.includes(c.id) ? " on" : ""),
+    key: c.id
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: f.cred_ids.includes(c.id),
+    onChange: () => toggleCred(c.id)
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "cn"
+  }, c.name), /*#__PURE__*/React.createElement("span", {
+    className: "ct"
+  }, CRED_KIND[c.type] || c.type))))) : null, /*#__PURE__*/React.createElement("button", {
+    className: "btn",
+    style: {
+      marginTop: 14
+    },
+    onClick: add
+  }, "Создать расписание"), err ? /*#__PURE__*/React.createElement("div", {
+    className: "sub2",
+    style: {
+      color: "var(--crit,#b4232a)",
+      marginTop: 8
+    }
+  }, err) : null)), /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Название"), /*#__PURE__*/React.createElement("th", null, "Цели"), /*#__PURE__*/React.createElement("th", null, "Интервал"), /*#__PURE__*/React.createElement("th", null, "Включено"), /*#__PURE__*/React.createElement("th", null, "Последний запуск"), /*#__PURE__*/React.createElement("th", null, "Следующий"), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, list.map(s => /*#__PURE__*/React.createElement("tr", {
+    key: s.id
+  }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, s.name || "Расписание #" + s.id), /*#__PURE__*/React.createElement("div", {
+    className: "sub2"
+  }, SCHED_KINDS[s.kind] || s.kind)), /*#__PURE__*/React.createElement("td", {
+    className: "sub2 mono"
+  }, s.targets || "демо"), /*#__PURE__*/React.createElement("td", null, s.interval_minutes, " мин"), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("label", {
+    style: {
+      display: "inline-flex",
+      alignItems: "center",
+      gap: 6,
+      cursor: "pointer"
+    }
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: s.enabled,
+    onChange: () => toggleEnabled(s)
+  }), s.enabled ? "да" : "нет")), /*#__PURE__*/React.createElement("td", {
+    className: "sub2"
+  }, fmt(s.last_run_at)), /*#__PURE__*/React.createElement("td", {
+    className: "sub2"
+  }, fmt(s.next_run_at)), /*#__PURE__*/React.createElement("td", {
+    style: {
+      textAlign: "right",
+      whiteSpace: "nowrap"
+    }
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "btn sm ghost",
+    onClick: () => runNow(s.id)
+  }, "Запустить сейчас"), " ", /*#__PURE__*/React.createElement("button", {
+    className: "xbtn",
+    title: "Удалить",
+    onClick: () => del(s.id)
+  }, "✕")))), list.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+    colSpan: "7",
+    className: "sub2"
+  }, "Расписаний нет. Создайте первое выше — пересбор будет запускаться автоматически.")))))));
+}
+
 /* ----------------------------------------------------------------- приложение */
 const NAV = [{
   sec: "Обзор",
@@ -1474,6 +2103,10 @@ const NAV = [{
 }, {
   sec: "Система",
   items: [{
+    id: "schedules",
+    ic: "⏱",
+    l: "Расписания"
+  }, {
     id: "creds",
     ic: "🔑",
     l: "Учётные записи"
@@ -1491,13 +2124,72 @@ const TITLES = {
   asset: "Актив",
   netmap: "Схема сети",
   newscan: "Новое сканирование",
+  schedules: "Расписания",
   creds: "Учётные записи",
   connectors: "Коннекторы"
 };
+
+/* ----------------------------------------------------------------- поиск по активам */
+function SearchBox({
+  taskId,
+  go
+}) {
+  const [q, setQ] = useState("");
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    if (!taskId || !q.trim()) {
+      setResults([]);
+      return;
+    }
+    const h = setTimeout(() => {
+      api("/tasks/" + taskId + "/assets/search?q=" + encodeURIComponent(q)).then(r => {
+        setResults(r);
+        setOpen(true);
+      }).catch(() => setResults([]));
+    }, 250);
+    return () => clearTimeout(h);
+  }, [q, taskId]);
+  const pick = name => {
+    setOpen(false);
+    setQ("");
+    go({
+      view: "asset",
+      assetName: name
+    });
+  };
+  return /*#__PURE__*/React.createElement("div", {
+    className: "search"
+  }, /*#__PURE__*/React.createElement("span", null, "⌕"), /*#__PURE__*/React.createElement("input", {
+    value: q,
+    placeholder: "Поиск по активам, IP…",
+    disabled: !taskId,
+    onChange: e => setQ(e.target.value),
+    onFocus: () => q.trim() && setOpen(true),
+    onBlur: () => setTimeout(() => setOpen(false), 150),
+    onKeyDown: e => {
+      if (e.key === "Escape") {
+        setQ("");
+        setOpen(false);
+      }
+    }
+  }), open && q.trim() && /*#__PURE__*/React.createElement("div", {
+    className: "searchDrop"
+  }, results.length === 0 ? /*#__PURE__*/React.createElement("div", {
+    className: "searchItem sub2"
+  }, "Ничего не найдено") : results.map(r => /*#__PURE__*/React.createElement("div", {
+    className: "searchItem",
+    key: r.name,
+    onMouseDown: () => pick(r.name)
+  }, /*#__PURE__*/React.createElement("b", null, r.name), /*#__PURE__*/React.createElement("div", {
+    className: "sub2"
+  }, [r.ips, r.os, r.role].filter(Boolean).join(" · "))))));
+}
 function App() {
   const [tasks, setTasks] = useState([]);
   const [activeId, setActiveId] = useState(null);
   const [D, setD] = useState(null);
+  const [diff, setDiff] = useState(null);
   const [nav, setNav] = useState({
     view: "dash"
   });
@@ -1519,9 +2211,16 @@ function App() {
   useEffect(() => {
     if (!activeId) {
       setD(null);
+      setDiff(null);
       return;
     }
-    api("/tasks/" + activeId).then(t => setD(t.dashboard || null)).catch(() => setD(null));
+    api("/tasks/" + activeId).then(t => {
+      setD(t.dashboard || null);
+      setDiff(t.diff || null);
+    }).catch(() => {
+      setD(null);
+      setDiff(null);
+    });
   }, [activeId, activeStatus]);
   useEffect(() => {
     if (!tasks.some(t => t.status === "running" || t.status === "queued")) return;
@@ -1579,7 +2278,8 @@ function App() {
   if (nav.view === "dash") screen = /*#__PURE__*/React.createElement(Dash, {
     D: D,
     tasks: tasks,
-    go: go
+    go: go,
+    diff: diff
   });else if (nav.view === "surveys") screen = /*#__PURE__*/React.createElement(Surveys, {
     tasks: tasks,
     go: go,
@@ -1604,16 +2304,22 @@ function App() {
   });else if (nav.view === "asset") screen = /*#__PURE__*/React.createElement(AssetDetail, {
     D: D,
     name: nav.assetName,
-    go: go
+    go: go,
+    taskId: activeId,
+    onRoleChange: () => api("/tasks/" + activeId).then(t => setD(t.dashboard || null)).catch(() => {})
   });else if (nav.view === "netmap") screen = /*#__PURE__*/React.createElement(NetMap, {
     taskId: activeId,
-    go: go
+    go: go,
+    diff: diff
+  });else if (nav.view === "schedules") screen = /*#__PURE__*/React.createElement(Schedules, {
+    savedCreds: savedCreds
   });else if (nav.view === "creds") screen = /*#__PURE__*/React.createElement(Credentials, {
     onChange: loadCreds
   });else if (nav.view === "connectors") screen = /*#__PURE__*/React.createElement(Connectors, null);else screen = /*#__PURE__*/React.createElement(Dash, {
     D: D,
     tasks: tasks,
-    go: go
+    go: go,
+    diff: diff
   });
   const crumb = nav.view === "asset" ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     className: "link",
@@ -1657,9 +2363,10 @@ function App() {
     className: "top"
   }, /*#__PURE__*/React.createElement("div", {
     className: "crumb"
-  }, crumb), /*#__PURE__*/React.createElement("div", {
-    className: "search"
-  }, "⌕ Поиск по активам, IP…"), /*#__PURE__*/React.createElement("div", {
+  }, crumb), /*#__PURE__*/React.createElement(SearchBox, {
+    taskId: activeId,
+    go: go
+  }), /*#__PURE__*/React.createElement("div", {
     className: "right"
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn",

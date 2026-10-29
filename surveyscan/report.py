@@ -50,11 +50,18 @@ def _build_inventory(a, facts: dict, software: list[dict], hotfixes: list[str]) 
             "is_admin": facts.get("is_admin"),
             "users": facts.get("users") or [],
             "admins": facts.get("admins") or [],
+            "groups": facts.get("groups") or [],
             "services": facts.get("services") or [],
             "firewall": facts.get("firewall") or {},
             "antivirus": facts.get("antivirus") or [],
             "defender": facts.get("defender"),
             "listening": facts.get("listening") or [],
+            "connections": facts.get("connections") or [],
+            "nics": facts.get("nics") or [],
+            "routes": facts.get("routes") or [],
+            "disks": facts.get("disks") or [],
+            "shares": facts.get("shares") or [],
+            "usb_devices": facts.get("usb_devices") or [],
         })
     elif fam == "linux":
         inv.update({
@@ -65,6 +72,10 @@ def _build_inventory(a, facts: dict, software: list[dict], hotfixes: list[str]) 
             "sshd": facts.get("sshd"),
             "mounts": facts.get("mounts") or {},
             "listening": facts.get("listening") or [],
+            "connections": facts.get("connections") or [],
+            "nics": facts.get("nics") or [],
+            "routes": facts.get("routes") or [],
+            "dns": facts.get("dns") or [],
             "services_active": facts.get("services_active") or {},
             "services_enabled": facts.get("services_enabled") or [],
             "audit_rules": len(facts.get("audit_rules") or []),
@@ -72,6 +83,8 @@ def _build_inventory(a, facts: dict, software: list[dict], hotfixes: list[str]) 
         })
     elif fam == "netdev" or a["kind"] == "netdev":
         inv["config"] = mask_secrets(facts.get("config") or "")
+        inv["interfaces"] = facts.get("interfaces") or []
+        inv["neighbors"] = facts.get("neighbors") or []
     return inv
 
 
@@ -127,6 +140,9 @@ def collect(con: sqlite3.Connection, catalog_dir: Path, tpl: dict) -> dict:
         elif a["os_family"] == "linux":
             act = facts.get("services_active") or {}
             sec_tools = [n for n, v in act.items() if v == "active" and n in ("kesl", "klnagent", "drweb-configd")]
+        netdev_ifaces = facts.get("interfaces") or []
+        netdev_vlans = sorted({v for i in netdev_ifaces
+                               for v in ([i["vlan"]] if i.get("vlan") else []) + (i.get("allowed_vlans") or [])})
         row = {
             "id": a["id"], "name": label[a["id"]], "kind": KIND_RU.get(a["kind"], a["kind"]),
             "os_family": a["os_family"] or "", "ips": ", ".join(json.loads(a["ips"] or "[]")),
@@ -136,6 +152,9 @@ def collect(con: sqlite3.Connection, catalog_dir: Path, tpl: dict) -> dict:
             "role": a["role"] or "", "collected_at": a["collected_at"] or "",
             "partial": a["os_family"] == "linux" and not facts.get("is_root", True),
             "inventory": _build_inventory(a, facts, sw_list.get(a["id"], []), hotfix_list.get(a["id"], [])),
+            # для построения схемы сети из конфигов (surveyscan.topology): VLAN/interfaces на
+            # узле устройства + потенциальные L2-соседи из description интерфейсов.
+            "interfaces": netdev_ifaces, "vlans": netdev_vlans, "neighbors": facts.get("neighbors") or [],
         }
         asset_rows.append(row)
         asset_by_name[row["name"]] = row

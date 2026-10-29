@@ -25,6 +25,15 @@ run hostname -f
 sec ip_addr
 if have ip; then run ip -o addr show; else run ifconfig -a; fi
 
+sec ip_link
+if have ip; then run ip -o link show; fi
+
+sec ip_route
+if have ip; then run ip -o route show; elif have route; then run route -n; fi
+
+sec resolv_conf
+run cat /etc/resolv.conf
+
 sec os_release
 run cat /etc/os-release
 
@@ -93,6 +102,9 @@ done
 
 sec listening
 if have ss; then run ss -H -tulpn; elif have netstat; then run netstat -tulpn; fi
+
+sec connections
+if have ss; then run ss -H -tnp state established; elif have netstat; then run netstat -tnp 2>/dev/null | grep ESTABLISHED; fi
 
 sec services_enabled
 if have systemctl; then run systemctl list-unit-files --type=service --state=enabled --no-legend --no-pager; fi

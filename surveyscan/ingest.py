@@ -17,8 +17,19 @@ from pathlib import Path
 
 from lxml import etree
 
-from .db import find_or_create_asset
+from .db import apply_role_guess, find_or_create_asset
 from .versions import upstream_of
+
+
+def _strip_nul(obj):
+    """PostgreSQL text-поля не допускают NUL (0x00) — встречается в повреждённых записях реестра."""
+    if isinstance(obj, str):
+        return obj.replace("\x00", "") if "\x00" in obj else obj
+    if isinstance(obj, list):
+        return [_strip_nul(x) for x in obj]
+    if isinstance(obj, dict):
+        return {k: _strip_nul(v) for k, v in obj.items()}
+    return obj
 
 
 def _sha256(path: Path) -> str:
@@ -158,6 +169,11 @@ def linux_facts(sec: dict[str, str]) -> dict:
             modes[p[0]] = {"mode": p[1], "owner": p[2], "group": p[3]}
     facts["file_modes"] = modes
     facts["listening"] = _parse_ss(sec.get("listening", ""))
+    facts["connections"] = _parse_ss_conn(sec.get("connections", ""))
+    facts["nics"] = _parse_linux_interfaces(sec.get("ip_link", ""), sec.get("ip_addr", ""))
+    facts["routes"] = _parse_linux_routes(sec.get("ip_route", ""))
+    facts["dns"] = [l.split()[1] for l in (sec.get("resolv_conf") or "").splitlines()
+                    if l.startswith("nameserver") and len(l.split()) > 1]
     facts["services_enabled"] = [l.split()[0] for l in (sec.get("services_enabled") or "").splitlines() if l.strip()]
     facts["services_active"] = _kv(sec.get("services_active"))
     facts["audit_rules"] = [l for l in (sec.get("audit_rules") or "").splitlines() if l and l != "No rules"]
@@ -187,6 +203,59 @@ def _parse_ss(text: str) -> list[dict]:
         proc = re.search(r'users:\(\("([^"]+)"', line)
         out.append({"proto": p[0].rstrip("6"), "address": addr.strip("[]"), "port": int(port) if port.isdigit() else port,
                     "process": proc.group(1) if proc else None})
+    return out
+
+
+def _parse_ss_conn(text: str) -> list[dict]:
+    """Установленные соединения из `ss -tnp state established` (локальный+удалённый адрес:порт)."""
+    out = []
+    for line in text.splitlines():
+        p = line.split()
+        if len(p) < 6 or p[0] not in ("tcp", "udp", "tcp6", "udp6"):
+            continue
+        laddr, _, lport = p[4].rpartition(":")
+        raddr, _, rport = p[5].rpartition(":")
+        proc = re.search(r'users:\(\("([^"]+)"', line)
+        out.append({"local_address": laddr.strip("[]"), "local_port": int(lport) if lport.isdigit() else lport,
+                    "remote_address": raddr.strip("[]"), "remote_port": int(rport) if rport.isdigit() else rport,
+                    "process": proc.group(1) if proc else None})
+    return out
+
+
+def _parse_linux_links(text: str) -> dict[str, str]:
+    """ifname -> MAC из `ip -o link show`."""
+    macs = {}
+    for line in text.splitlines():
+        m = re.match(r"^\d+:\s+(\S+?)(@\S+)?:\s+<", line)
+        mac = re.search(r"link/\S+\s+([0-9a-fA-F:]{17})", line)
+        if m and mac:
+            macs[m.group(1)] = mac.group(1)
+    return macs
+
+
+def _parse_linux_interfaces(link_text: str, addr_text: str) -> list[dict]:
+    """Сетевые интерфейсы из `ip -o link show` + `ip -o addr show`."""
+    macs = _parse_linux_links(link_text)
+    addrs: dict[str, list[dict]] = {}
+    for line in addr_text.splitlines():
+        m = re.match(r"^\d+:\s+(\S+?)(@\S+)?\s+inet6?\s+(\S+)/(\d+)", line)
+        if m:
+            name, _, ip, prefix = m.groups()
+            addrs.setdefault(name, []).append({"ip": ip, "prefix": int(prefix)})
+    names = sorted(set(macs) | set(addrs))
+    return [{"name": n, "mac": macs.get(n), "addresses": addrs.get(n, [])} for n in names]
+
+
+def _parse_linux_routes(text: str) -> list[dict]:
+    """Таблица маршрутизации из `ip -o route show`."""
+    out = []
+    for line in text.splitlines():
+        p = line.split()
+        if not p:
+            continue
+        gw = p[p.index("via") + 1] if "via" in p else None
+        dev = p[p.index("dev") + 1] if "dev" in p else None
+        out.append({"destination": p[0], "gateway": gw, "interface": dev})
     return out
 
 
@@ -224,13 +293,14 @@ def ingest_linux(con, path: Path) -> int:
     if kernel:
         rows.append((asset_id, "linux-kernel", kernel, upstream_of(kernel, "kernel"), "kernel", None, None))
     con.executemany("INSERT INTO software(asset_id,name,version,upstream,ecosystem,vendor,arch) VALUES (?,?,?,?,?,?,?)", rows)
+    apply_role_guess(con, asset_id)
     _artifact(con, asset_id, "linux_collect", path)
     return asset_id
 
 
 # ============================================================================ Windows
 def ingest_windows(con, path: Path) -> int:
-    data = json.loads(path.read_text(encoding="utf-8-sig"))
+    data = _strip_nul(json.loads(path.read_text(encoding="utf-8-sig")))
     host, os_ = data.get("host", {}), data.get("os", {})
     ips = host.get("ips") or []
     if isinstance(ips, str):
@@ -252,6 +322,7 @@ def ingest_windows(con, path: Path) -> int:
                       s.get("vendor"), None) for s in data.get("software") or []])
     con.executemany("INSERT INTO hotfix VALUES (?,?)",
                     [(asset_id, (h.get("id") or "").upper().replace("KB", "")) for h in data.get("hotfixes") or []])
+    apply_role_guess(con, asset_id)
     _artifact(con, asset_id, "windows_collect", path)
     return asset_id
 
@@ -283,6 +354,7 @@ def ingest_nmap(con, path: Path) -> None:
                          s.get("version") if s is not None else None,
                          s.get("extrainfo") if s is not None else None,
                          cpe.text if cpe is not None else None))
+        apply_role_guess(con, asset_id)        # роль-подсказка по открытым портам/баннерам
         _artifact(con, asset_id, "nmap", path)
 
 
@@ -313,6 +385,7 @@ def ingest_openvas(con, path: Path) -> None:
                      json.dumps(cves), r.findtext("threat"), float(sev) if sev else None,
                      json.dumps({"oid": nvt.get("oid") if nvt is not None else None}, ensure_ascii=False)))
     for a in seen_assets:
+        apply_role_guess(con, a)               # роль-подсказка по заголовкам находок сканера
         _artifact(con, a, "openvas", path)
 
 
@@ -329,11 +402,122 @@ def ingest_trivy(con, path: Path) -> int:
                         (asset_id, res.get("Target"), f"{v.get('PkgName')} {v.get('InstalledVersion')}: {v.get('Title') or ''}",
                          json.dumps([v.get("VulnerabilityID")]), v.get("Severity"),
                          json.dumps({"fixed": v.get("FixedVersion")}, ensure_ascii=False)))
+    apply_role_guess(con, asset_id)
     _artifact(con, asset_id, "trivy", path)
     return asset_id
 
 
 # ============================================================================ Сетевое оборудование
+
+_NEIGHBOR_DESC_RE = re.compile(r"\bto\s+([\w.\-/]+)\s*$", re.I)
+
+
+def _neighbor_from_description(desc: str | None) -> str | None:
+    """Эвристика: сосед по L2 из текста description интерфейса (напр. 'Uplink to SW2')."""
+    if not desc:
+        return None
+    m = _NEIGHBOR_DESC_RE.search(desc.strip())
+    return m.group(1) if m else None
+
+
+def _expand_vlans_cisco(s: str) -> list[int]:
+    """'10,20,30-40' -> [10,20,30,...,40] (Cisco switchport trunk allowed vlan)."""
+    out: list[int] = []
+    for tok in s.split(","):
+        tok = tok.strip()
+        if not tok:
+            continue
+        if "-" in tok:
+            a, b = tok.split("-", 1)
+            if a.strip().isdigit() and b.strip().isdigit():
+                out.extend(range(int(a), int(b) + 1))
+        elif tok.isdigit():
+            out.append(int(tok))
+    return out
+
+
+def _expand_vlans_vrp(s: str) -> list[int]:
+    """'10 20 to 30' -> [10,20,...,30] (Huawei port trunk allow-pass vlan)."""
+    toks = s.split()
+    out: list[int] = []
+    i = 0
+    while i < len(toks):
+        if toks[i].lower() == "to" and out and i + 1 < len(toks) and toks[i + 1].isdigit():
+            out.extend(range(out[-1] + 1, int(toks[i + 1]) + 1))
+            i += 2
+            continue
+        if toks[i].isdigit():
+            out.append(int(toks[i]))
+        i += 1
+    return out
+
+
+def _parse_netdev_interfaces(text: str, platform: str) -> tuple[list[dict], list[dict]]:
+    """Разобрать конфиг на interfaces (имя/IP/VLAN access-trunk) и L2-соседей из description.
+
+    Возвращает (interfaces, neighbors); neighbors — потенциальные L2-связи вида
+    {"local_if": ..., "remote": ..., "source": "description"}, без опроса устройства.
+    """
+    vrp = platform == "huawei_vrp"
+    end_markers = ("#",) if vrp else ("!", "end")
+    interfaces: list[dict] = []
+    cur: dict | None = None
+
+    def close():
+        if cur is not None:
+            interfaces.append(cur)
+
+    for raw in text.splitlines():
+        if raw.startswith("interface "):
+            close()
+            cur = {"name": raw.split(None, 1)[1].strip(), "ip": None, "mask": None, "mode": None,
+                   "vlan": None, "allowed_vlans": [], "description": None}
+            continue
+        if cur is None:
+            continue
+        ls = raw.strip()
+        if ls in end_markers:
+            close()
+            cur = None
+            continue
+        m = re.match(r"^description (.+)$", ls)
+        if m:
+            cur["description"] = m.group(1).strip()
+            continue
+        m = re.match(r"^ip address (\d+\.\d+\.\d+\.\d+) (\d+\.\d+\.\d+\.\d+)", ls)
+        if m:
+            cur["ip"], cur["mask"] = m.group(1), m.group(2)
+            continue
+        if vrp:
+            if re.match(r"^port link-type trunk", ls):
+                cur["mode"] = "trunk"
+            elif re.match(r"^port link-type access", ls):
+                cur["mode"] = "access"
+            elif (m := re.match(r"^port default vlan (\d+)", ls)):
+                cur["vlan"] = int(m.group(1))
+            elif (m := re.match(r"^port trunk allow-pass vlan (.+)$", ls)):
+                cur["allowed_vlans"] = _expand_vlans_vrp(m.group(1))
+        else:
+            if re.match(r"^switchport mode trunk", ls):
+                cur["mode"] = "trunk"
+            elif re.match(r"^switchport mode access", ls):
+                cur["mode"] = "access"
+            elif (m := re.match(r"^switchport access vlan (\d+)", ls)):
+                cur["vlan"] = int(m.group(1))
+            elif (m := re.match(r"^switchport trunk allowed vlan add (\S+)", ls)):
+                cur["allowed_vlans"] += _expand_vlans_cisco(m.group(1))
+            elif (m := re.match(r"^switchport trunk allowed vlan (\S+)", ls)):
+                cur["allowed_vlans"] = _expand_vlans_cisco(m.group(1))
+    close()
+
+    neighbors = []
+    for iface in interfaces:
+        remote = _neighbor_from_description(iface.get("description"))
+        if remote:
+            neighbors.append({"local_if": iface["name"], "remote": remote, "source": "description"})
+    return interfaces, neighbors
+
+
 def ingest_netdev(con, path: Path) -> int:
     text = path.read_text(encoding="utf-8", errors="replace")
     if re.search(r"^sysname ", text, re.M) or "Software Version V" in text:
@@ -347,13 +531,17 @@ def ingest_netdev(con, path: Path) -> int:
         ver = re.search(r"^version (\S+)", text, re.M)
         pkg = "cisco-ios"
     ips = re.findall(r"^\s*ip address (\d+\.\d+\.\d+\.\d+) ", text, re.M)
+    interfaces, neighbors = _parse_netdev_interfaces(text, platform)
     hostname = name.group(1) if name else path.stem
     asset_id = find_or_create_asset(con, hostname=hostname, ips=ips, kind="netdev", platform=platform,
                                     os_family="netdev", os_id=platform, os_version=ver.group(1) if ver else None,
-                                    source=path.name, facts=json.dumps({"config": text}, ensure_ascii=False))
+                                    source=path.name,
+                                    facts=json.dumps({"config": text, "interfaces": interfaces,
+                                                      "neighbors": neighbors}, ensure_ascii=False))
     con.execute("DELETE FROM software WHERE asset_id=?", (asset_id,))
     if ver:
         con.execute("INSERT INTO software(asset_id,name,version,upstream,ecosystem) VALUES (?,?,?,?, 'firmware')",
                     (asset_id, pkg, ver.group(1), ver.group(1)))
+    apply_role_guess(con, asset_id)            # kind=netdev -> роль "netdev"
     _artifact(con, asset_id, "netdev_config", path)
     return asset_id

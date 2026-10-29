@@ -34,8 +34,43 @@ $osInfo = [ordered]@{
 }
 
 # --- Сеть
-$ips = @(Get-CimInstance Win32_NetworkAdapterConfiguration -Filter "IPEnabled=True" |
-        ForEach-Object { $_.IPAddress } | Where-Object { $_ })
+$netCfgs = @(Get-CimInstance Win32_NetworkAdapterConfiguration -Filter "IPEnabled=True")
+$ips = @($netCfgs | ForEach-Object { $_.IPAddress } | Where-Object { $_ })
+
+# --- Сетевые интерфейсы (MAC, IP, маска, шлюз, DNS, DHCP)
+$interfacesNet = @()
+try {
+    $adaptersByIdx = @{}
+    Get-CimInstance Win32_NetworkAdapter -ErrorAction Stop | ForEach-Object { $adaptersByIdx[$_.InterfaceIndex] = $_ }
+    $interfacesNet = @($netCfgs | ForEach-Object {
+        $ad = $adaptersByIdx[$_.InterfaceIndex]
+        [ordered]@{
+            name = if ($ad) { $ad.NetConnectionID } else { $_.Description }
+            mac = $_.MACAddress
+            status = if ($ad) { switch ($ad.NetConnectionStatus) { 2 { "Connected" } 7 { "Disconnected" } default { [string]$ad.NetConnectionStatus } } } else { $null }
+            ip = @($_.IPAddress)
+            mask = @($_.IPSubnet | Where-Object { $_ -notmatch ":" })
+            gateway = @($_.DefaultIPGateway)
+            dns = @($_.DNSServerSearchOrder)
+            dhcp_enabled = [bool]$_.DHCPEnabled
+            dhcp_server = $_.DHCPServer
+        }
+    })
+} catch {}
+
+# --- Таблица маршрутизации
+$routes = @()
+try {
+    $routes = @(Get-NetRoute -AddressFamily IPv4 -ErrorAction Stop | Where-Object { $_.NextHop -ne "0.0.0.0" -or $_.DestinationPrefix -ne "0.0.0.0/0" } | ForEach-Object {
+        [ordered]@{ destination = $_.DestinationPrefix; gateway = $_.NextHop; interface = $_.InterfaceAlias; metric = $_.RouteMetric }
+    })
+} catch {
+    try {
+        $routes = @(Get-CimInstance Win32_IP4RouteTable -ErrorAction Stop | ForEach-Object {
+            [ordered]@{ destination = "$($_.Destination)/$($_.Mask)"; gateway = $_.NextHop; interface = [string]$_.InterfaceIndex; metric = $_.Metric1 }
+        })
+    } catch {}
+}
 
 # --- Обновления (KB)
 $hotfixes = @(Get-HotFix | ForEach-Object {
@@ -55,7 +90,8 @@ $software = @(Get-ItemProperty $uninstallPaths | Where-Object { $_.DisplayName -
 
 # --- Службы
 $services = @(Get-CimInstance Win32_Service | ForEach-Object {
-    [ordered]@{ name = $_.Name; display = $_.DisplayName; start_mode = $_.StartMode; state = $_.State; account = $_.StartName }
+    [ordered]@{ name = $_.Name; display = $_.DisplayName; start_mode = $_.StartMode; state = $_.State;
+                account = $_.StartName; path = $_.PathName; description = $_.Description }
 })
 
 # --- Локальные учётные записи и администраторы
@@ -69,6 +105,42 @@ try {
 } catch {
     $admins = @((net localgroup Administrators 2>$null) | Select-Object -Skip 6 | Where-Object { $_ -and $_ -notmatch "^The command|^Команда" })
 }
+
+# --- Локальные группы безопасности и их состав
+$groups = @()
+try {
+    $wmiGroups = @(Get-CimInstance Win32_Group -Filter "LocalAccount=True" -ErrorAction Stop)
+    $wmiAssoc = @(Get-CimInstance Win32_GroupUser -ErrorAction Stop)
+    $groups = @($wmiGroups | ForEach-Object {
+        $g = $_
+        $gnamePattern = 'Name\s*=\s*"' + [regex]::Escape($g.Name) + '"'
+        $members = @($wmiAssoc | Where-Object { $_.GroupComponent.ToString() -match $gnamePattern } |
+            ForEach-Object { if ($_.PartComponent.ToString() -match 'Name\s*=\s*"([^"]+)"') { $Matches[1] } })
+        [ordered]@{ name = $g.Name; sid = $g.SID; description = $g.Description; members = $members }
+    })
+} catch {}
+
+# --- Диски, общие папки, USB-устройства
+$disks = @()
+try {
+    $disks = @(Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -ErrorAction Stop | ForEach-Object {
+        [ordered]@{ id = $_.DeviceID; name = $_.VolumeName; size_gb = if ($_.Size) { [math]::Round($_.Size / 1GB, 1) } else { $null };
+                    free_gb = if ($null -ne $_.FreeSpace) { [math]::Round($_.FreeSpace / 1GB, 1) } else { $null } }
+    })
+} catch {}
+$shares = @()
+try {
+    $shares = @(Get-CimInstance Win32_Share -Filter "Type=0" -ErrorAction Stop | ForEach-Object {
+        [ordered]@{ name = $_.Name; path = $_.Path; description = $_.Description }
+    })
+} catch {}
+$usbDevices = @()
+try {
+    $usbDevices = @(Get-CimInstance Win32_PnPEntity -Filter "PNPDeviceID LIKE 'USB%'" -ErrorAction Stop |
+        Where-Object { $_.Name } | ForEach-Object {
+            [ordered]@{ name = $_.Name; device_id = $_.PNPDeviceID; description = $_.Description }
+        })
+} catch {}
 
 # --- Локальная политика безопасности (secedit)
 $secedit = [ordered]@{}
@@ -129,8 +201,9 @@ try { $smb1Feature = (Get-SmbServerConfiguration -ErrorAction Stop).EnableSMB1Pr
 $firewall = [ordered]@{}
 try { Get-NetFirewallProfile -ErrorAction Stop | ForEach-Object { $firewall[[string]$_.Name] = [bool]$_.Enabled } } catch {}
 
-# --- Слушающие порты
+# --- Слушающие порты и установленные соединения
 $listening = @()
+$connections = @()
 try {
     $procs = @{}; Get-Process | ForEach-Object { $procs[$_.Id] = $_.ProcessName }
     $listening = @(Get-NetTCPConnection -State Listen -ErrorAction Stop | ForEach-Object {
@@ -138,6 +211,11 @@ try {
     })
     $listening += @(Get-NetUDPEndpoint -ErrorAction Stop | ForEach-Object {
         [ordered]@{ proto = "udp"; address = $_.LocalAddress; port = $_.LocalPort; process = $procs[[int]$_.OwningProcess] }
+    })
+    $connections = @(Get-NetTCPConnection -State Established -ErrorAction Stop | ForEach-Object {
+        [ordered]@{ local_address = $_.LocalAddress; local_port = $_.LocalPort;
+                    remote_address = $_.RemoteAddress; remote_port = $_.RemotePort;
+                    process = $procs[[int]$_.OwningProcess] }
     })
 } catch {}
 
@@ -167,8 +245,10 @@ $result = [ordered]@{
     hotfixes = $hotfixes
     software = $software
     facts    = [ordered]@{
-        services = $services; users = $users; admins = $admins; secedit = $secedit; auditpol = $auditpol;
+        services = $services; users = $users; admins = $admins; groups = $groups; secedit = $secedit; auditpol = $auditpol;
         registry = $registry; smb1_enabled = $smb1Feature; firewall = $firewall; listening = $listening;
+        connections = $connections; nics = $interfacesNet; routes = $routes;
+        disks = $disks; shares = $shares; usb_devices = $usbDevices;
         antivirus = $av; defender = $defender
     }
 }
