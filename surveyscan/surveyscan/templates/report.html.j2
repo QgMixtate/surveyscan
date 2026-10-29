@@ -1,0 +1,400 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ tpl.title }} — {{ survey.name }}</title>
+<style>
+  :root {
+    --ink: #11141b; --body: #273043; --muted: #6b7486; --line: #e4e7ee; --bg: #ffffff; --panel: #f7f8fa;
+    --accent: #3d4ea6; --accent-soft: #eef0f8;
+    --crit: #8e1b1b; --crit-bg: #fbe9e9; --high: #b4441c; --high-bg: #fdeee6;
+    --med: #8a6100; --med-bg: #fdf4dc; --low: #2e6b3f; --low-bg: #e8f4ec; --unk: #5b6676; --unk-bg: #eef0f3;
+    --ok: #2e6b3f;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #eef0f3; color: var(--body);
+         font: 14px/1.55 Inter, "Segoe UI", Roboto, Arial, sans-serif; -webkit-font-smoothing: antialiased; }
+  main { max-width: 1180px; margin: 0 auto; background: var(--bg); }
+  .pad { padding: 0 32px; }
+  h1 { font-size: 24px; margin: 0; letter-spacing: -.01em; }
+  h2 { font-size: 18px; margin: 36px 0 14px; color: var(--ink); letter-spacing: -.01em; }
+  h2 .hint { font-weight: 400; font-size: 13px; color: var(--muted); }
+  h3 { font-size: 14px; margin: 22px 0 8px; color: var(--ink); }
+  .sub { color: var(--muted); font-size: 13px; margin: 6px 0 0; }
+  /* header */
+  header { background: var(--ink); color: #fff; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  .brand { display: flex; align-items: center; gap: 12px; font-size: 20px; font-weight: 700; letter-spacing: -.02em; }
+  .brand .dot { width: 12px; height: 12px; border-radius: 3px; background: var(--accent); display: inline-block; }
+  header .kind { font-size: 12px; text-transform: uppercase; letter-spacing: .14em; color: #aab2c6; }
+  /* meta grid */
+  .metagrid { display: grid; grid-template-columns: max-content 1fr; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; margin-top: 18px; }
+  .metagrid > div { background: var(--bg); padding: 8px 12px; }
+  .metagrid .k { background: var(--panel); color: var(--muted); font-size: 13px; white-space: nowrap; }
+  .metagrid .v { font-weight: 500; color: var(--ink); }
+  /* tiles */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 4px 0 8px; }
+  .tile { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+  .tile .n { font-size: 27px; font-weight: 700; line-height: 1.05; color: var(--ink); }
+  .tile .l { color: var(--muted); font-size: 12.5px; margin-top: 2px; }
+  .dashrow { display: grid; grid-template-columns: 220px 1fr; gap: 24px; align-items: center; margin: 8px 0; }
+  @media (max-width: 720px) { .dashrow { grid-template-columns: 1fr; } }
+  .donut-wrap { display: flex; align-items: center; gap: 16px; }
+  .legend { font-size: 13px; }
+  .legend div { display: flex; align-items: center; gap: 8px; margin: 3px 0; }
+  .legend .sw { width: 11px; height: 11px; border-radius: 3px; flex: none; }
+  .legend .c { color: var(--muted); margin-left: auto; padding-left: 14px; font-variant-numeric: tabular-nums; }
+  /* tables */
+  table { width: 100%; border-collapse: collapse; margin: 8px 0 14px; font-size: 13px; }
+  th, td { text-align: left; vertical-align: top; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+  th { background: var(--panel); font-weight: 600; color: var(--ink); }
+  td.num, th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  tr.tot td { font-weight: 700; background: var(--panel); }
+  .mono { font-family: "JetBrains Mono", "PT Mono", Consolas, monospace; font-size: 12px; }
+  .sev { display: inline-block; padding: 1px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .sev-critical { color: var(--crit); background: var(--crit-bg); }
+  .sev-high { color: var(--high); background: var(--high-bg); }
+  .sev-medium { color: var(--med); background: var(--med-bg); }
+  .sev-low { color: var(--low); background: var(--low-bg); }
+  .sev-unknown { color: var(--unk); background: var(--unk-bg); }
+  td.c0 { color: var(--muted); } /* нулевая ячейка матрицы */
+  .mx td.v, .mx th.v { text-align: center; }
+  .muted { color: var(--muted); }
+  .small { font-size: 12px; }
+  .tag { display: inline-block; border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; font-size: 11px; color: var(--muted); margin: 1px 2px 1px 0; }
+  .tag.feed { border-color: #bcd9c6; color: var(--ok); background: #f0f8f2; }
+  .warn { background: var(--med-bg); border-left: 3px solid var(--med); padding: 10px 14px; border-radius: 4px; margin: 14px 0; }
+  .bar { height: 7px; background: var(--crit-bg); border-radius: 4px; overflow: hidden; min-width: 90px; display: inline-block; vertical-align: middle; }
+  .bar > span { display: block; height: 100%; background: var(--low); }
+  details { margin: 4px 0; }
+  summary { cursor: pointer; color: var(--accent); }
+  a { color: var(--accent); }
+  ul.compact { margin: 0; padding-left: 16px; }
+  .scroll { overflow-x: auto; }
+  /* vuln card */
+  .vcard { border: 1px solid var(--line); border-radius: 8px; margin: 12px 0; overflow: hidden; }
+  .vcard > .hd { display: flex; align-items: baseline; gap: 10px; padding: 11px 16px; background: var(--panel); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+  .vcard .hd .id { font-weight: 700; color: var(--ink); }
+  .vcard .hd .ti { color: var(--body); }
+  .vcard .bd { padding: 6px 16px 14px; }
+  .vcard .seg { margin-top: 12px; }
+  .vcard .seg > .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 3px; }
+  .cvss { font-weight: 700; }
+  .kv { display: inline-block; margin-right: 16px; }
+  .kv b { color: var(--ink); }
+  @media print {
+    body { background: #fff; } main { max-width: none; }
+    h2 { break-before: page; } header { break-before: avoid; }
+    details > summary { display: none; } details > * { display: block !important; }
+    .vcard { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+{% macro donut(d, size=120) %}
+  {% if d %}
+  <svg width="{{ size }}" height="{{ size }}" viewBox="0 0 140 140" role="img">
+    <circle cx="70" cy="70" r="{{ d.r }}" fill="none" stroke="var(--line)" stroke-width="18"/>
+    {% for s in d.segments %}
+    <circle cx="70" cy="70" r="{{ d.r }}" fill="none" stroke="{{ s.color }}" stroke-width="18"
+            stroke-dasharray="{{ s.dash }} {{ s.gap }}" stroke-dashoffset="{{ s.offset }}"
+            transform="rotate(-90 70 70)"/>
+    {% endfor %}
+    <text x="70" y="66" text-anchor="middle" font-size="26" font-weight="700" fill="var(--ink)">{{ d.total }}</text>
+    <text x="70" y="86" text-anchor="middle" font-size="11" fill="var(--muted)">всего</text>
+  </svg>
+  {% endif %}
+{% endmacro %}
+{% macro sevmatrix(rows, keyname, keytitle) %}
+<div class="scroll"><table class="mx">
+  <tr><th>{{ keytitle }}</th>
+    {% for s in SEV_SEQ %}<th class="v"><span class="sev sev-{{ s }}">{{ SEV_RU[s] }}</span></th>{% endfor %}
+    <th class="num">Всего</th></tr>
+  {% for r in rows %}
+  <tr><td>{{ r[keyname] }}</td>
+    {% for s in SEV_SEQ %}<td class="v{% if not r[s] %} c0{% endif %}">{{ r[s] or '·' }}</td>{% endfor %}
+    <td class="num">{{ r.total }}</td></tr>
+  {% endfor %}
+  <tr class="tot"><td>Всего</td>
+    {% for s in SEV_SEQ %}<td class="v">{{ rows|sum(attribute=s) }}</td>{% endfor %}
+    <td class="num">{{ rows|sum(attribute='total') }}</td></tr>
+</table></div>
+{% endmacro %}
+<main>
+<header>
+  <div class="brand"><span class="dot"></span>{{ tpl.brand.logo_text or tpl.brand.product }}</div>
+  <div class="kind">{{ tpl.title }}</div>
+</header>
+
+<div class="pad">
+<div class="metagrid">
+  <div class="k">Обследование</div><div class="v">{{ survey.name or '—' }}</div>
+  {% if survey.customer %}<div class="k">Заказчик</div><div class="v">{{ survey.customer }}</div>{% endif %}
+  <div class="k">Шаблон отчёта</div><div class="v">{{ tpl.title }} <span class="muted small">({{ tpl.id }})</span></div>
+  <div class="k">Сформирован</div><div class="v">{{ generated }}</div>
+  <div class="k">База БДУ ФСТЭК</div><div class="v">{{ bdu_label }}</div>
+  <div class="k">Активов в отчёте</div><div class="v">{{ assets|length }}{% for k, n in asset_kinds.items() %}{% if loop.first %} ({% endif %}{{ k|lower }} — {{ n }}{% if not loop.last %}, {% else %}){% endif %}{% endfor %}</div>
+  {% if tpl.filters.min_severity %}<div class="k">Фильтр опасности</div><div class="v">не ниже «{{ SEV_RU[tpl.filters.min_severity] }}»</div>{% endif %}
+  {% if tpl.filters.hosts %}<div class="k">Фильтр хостов</div><div class="v">{{ tpl.filters.hosts|join(', ') }}</div>{% endif %}
+</div>
+
+{% if tpl.disclaimer %}
+<div class="warn small">
+  Результаты получены инструментом обследования, собранным из свободно распространяемых компонентов, и не являются
+  результатами испытаний сертифицированным средством анализа защищённости. Находки с достоверностью
+  «вероятно» и «требует проверки» подлежат подтверждению: в дистрибутивах ОС исправления часто переносятся
+  в старые версии пакетов (бэкпорт) без смены upstream-версии.
+</div>
+{% endif %}
+
+{# ============================================================ СВОДКА #}
+{% if tpl.has.summary %}
+<h2>Сводка</h2>
+<div class="tiles">
+  <div class="tile"><div class="n">{{ assets|length }}</div><div class="l">активов обследовано</div></div>
+  <div class="tile"><div class="n">{{ vulns|length }}</div><div class="l">уязвимостей (уникальных по ПО)</div></div>
+  <div class="tile"><div class="n" style="color:var(--crit)">{{ (sev_counts.get('critical',0) + sev_counts.get('high',0)) }}</div>
+    <div class="l">критических и высоких · на {{ hosts_with_crit }} активах</div></div>
+  {% if cfg_compliance is not none %}<div class="tile"><div class="n">{{ cfg_compliance }}%</div><div class="l">соответствие конфигураций</div></div>{% endif %}
+  {% if manual_total %}<div class="tile"><div class="n">{{ manual_total }}</div><div class="l">записей БДУ на ручную проверку</div></div>{% endif %}
+</div>
+<div class="dashrow">
+  <div class="donut-wrap">
+    {{ donut(vuln_donut, 140) }}
+    {% if vuln_donut %}<div class="legend">
+      {% for s in vuln_donut.segments %}<div><span class="sw" style="background:{{ s.color }}"></span>{{ s.label }}<span class="c">{{ s.count }} · {{ s.pct }}%</span></div>{% endfor %}
+    </div>{% endif %}
+  </div>
+  <div>
+    {% if vulns %}
+    <table style="max-width:420px">
+      <tr><th>Уровень опасности (БДУ)</th><th class="num">Уязвимостей</th><th class="num">Доля</th></tr>
+      {% for s in SEV_SEQ %}{% if sev_counts.get(s) %}
+      <tr><td><span class="sev sev-{{ s }}">{{ SEV_RU[s] }}</span></td><td class="num">{{ sev_counts[s] }}</td>
+        <td class="num">{{ (100 * sev_counts[s] / vulns|length)|round(1) }}%</td></tr>
+      {% endif %}{% endfor %}
+      <tr class="tot"><td>Всего</td><td class="num">{{ vulns|length }}</td><td class="num">100%</td></tr>
+    </table>
+    {% else %}<p class="muted">Уязвимостей, попадающих под условия отчёта, не выявлено.</p>{% endif %}
+  </div>
+</div>
+{% endif %}
+
+{# ============================================================ ПЛАН УСТРАНЕНИЯ #}
+{% if tpl.has.remediation and remediation %}
+<h2>План устранения <span class="hint">— приоритизация по опасности и охвату активов</span></h2>
+<div class="scroll"><table>
+  <tr><th class="num">#</th><th>Приоритет</th><th>Действие</th><th class="num">Активов</th><th class="num">Уязв.</th><th>Идентификаторы</th></tr>
+  {% for a in remediation %}
+  <tr>
+    <td class="num">{{ loop.index }}</td>
+    <td><span class="sev sev-{{ a.severity }}">{{ SEV_RU[a.severity] }}</span>{% if a.feed %}<br><span class="tag feed">фид вендора</span>{% endif %}</td>
+    <td>{{ a.action }}
+      {% if a.bulletin %}<br><a class="small" href="{{ a.bulletin }}">бюллетень вендора</a>{% endif %}</td>
+    <td class="num">{{ a.n_hosts }}</td>
+    <td class="num">{{ a.n_vulns }}</td>
+    <td class="mono small">{{ a.bdu|join(', ') }}{% if a.bdu|length == 6 %} …{% endif %}</td>
+  </tr>
+  {% endfor %}
+</table></div>
+<p class="sub">Хосты под каждым действием — в детальных карточках и в выгрузке CSV.</p>
+{% endif %}
+
+{# ============================================================ МАТРИЦА ПО ХОСТАМ #}
+{% if tpl.has.by_host_matrix and vulns %}
+<h2>Распределение уязвимостей по хостам</h2>
+{{ sevmatrix(by_host, 'name', 'Хост') }}
+{% endif %}
+
+{# ============================================================ МАТРИЦА ПО ПРОДУКТАМ #}
+{% if tpl.has.by_product_matrix and by_product %}
+<h2>Распределение уязвимостей по продуктам</h2>
+{{ sevmatrix(by_product, 'product', 'Продукт') }}
+{% endif %}
+
+{# ============================================================ ИНВЕНТАРИЗАЦИЯ #}
+{% if tpl.has.inventory %}
+<h2>Инвентаризация</h2>
+<div class="scroll"><table>
+  <tr><th>Актив</th><th>Тип</th><th>Адреса</th><th>ОС / платформа</th><th class="num">ПО</th><th>Сетевые сервисы</th><th>Источник</th></tr>
+  {% for a in assets %}
+  <tr>
+    <td><b>{{ a.name }}</b>{% if a.partial %}<br><span class="tag">сбор без root — данные неполные</span>{% endif %}
+      {% if a.sec_tools %}<br><span class="small muted">СЗИ: {{ a.sec_tools|join(', ') }}</span>{% endif %}</td>
+    <td>{{ a.kind }}</td>
+    <td class="mono">{{ a.ips or '—' }}</td>
+    <td>{{ a.os }}{% if a.build %}<br><span class="mono muted">{{ a.build }}</span>{% endif %}</td>
+    <td class="num">{{ a.software or '—' }}</td>
+    <td class="small">{% if a.services %}{% for s in a.services[:6] %}{{ s }}<br>{% endfor %}{% if a.services|length > 6 %}<span class="muted">и ещё {{ a.services|length - 6 }}</span>{% endif %}{% else %}—{% endif %}</td>
+    <td class="small muted">{{ a.source }}</td>
+  </tr>
+  {% endfor %}
+</table></div>
+{% endif %}
+
+{# ============================================================ ТАБЛИЦА УЯЗВИМОСТЕЙ #}
+{% if tpl.has.vuln_table %}
+<h2>Уязвимости <span class="hint">— сгруппированы по ПО; одно обновление обычно закрывает строку</span></h2>
+{% if not vulns %}<p class="muted">Уязвимостей не выявлено.</p>{% else %}
+<div class="scroll"><table>
+  <tr><th>Опасность</th><th>Идентификаторы</th><th>Уязвимость</th><th>ПО и версия</th><th>Активы</th><th>Достоверность</th></tr>
+  {% for v in vulns %}
+  <tr>
+    <td><span class="sev sev-{{ v.severity }}">{{ SEV_RU[v.severity] }}</span>{% if v.cvss_score %}<br><span class="small muted">CVSS {{ v.cvss_score }}</span>{% endif %}</td>
+    <td class="mono small">
+      {% if v.bdu_id %}<a href="{% if tpl.has.vuln_details %}#{{ v.anchor }}{% else %}https://bdu.fstec.ru/vul/{{ v.bdu_id|replace('BDU:', '') }}{% endif %}">{{ v.bdu_id }}</a><br>{% else %}<span class="tag">нет в БДУ</span><br>{% endif %}
+      {% for c in v.cve[:3] %}{{ c }}<br>{% endfor %}{% if v.cve|length > 3 %}<span class="muted">+{{ v.cve|length - 3 }} CVE</span>{% endif %}
+    </td>
+    <td>{{ v.title or '—' }}
+      {% if v.vendor_fix %}<br><span class="small" style="color:var(--ok)">Обновить до <span class="mono">{{ v.vendor_fix }}</span></span>{% endif %}
+      {% if v.note %}<br><span class="small muted">{{ v.note }}</span>{% endif %}
+    </td>
+    <td class="small">{{ v.product or '—' }}{% if v.versions %}<br><span class="mono">{{ v.versions|join(', ') }}</span>{% endif %}
+      {% if v.range %}<br><span class="muted">в БДУ: {{ v.range }}</span>{% endif %}</td>
+    <td class="small">{{ v.assets|join(', ') }}</td>
+    <td class="small">{{ v.confidence }}<br><span class="muted">{{ v.sources|join(', ') }}</span></td>
+  </tr>
+  {% endfor %}
+</table></div>
+{% endif %}
+{% endif %}
+
+{# ============================================================ ДЕТАЛЬНЫЕ КАРТОЧКИ #}
+{% if tpl.has.vuln_details and vuln_cards %}
+<h2>Детализация уязвимостей</h2>
+{% for v in vuln_cards %}
+<div class="vcard" id="{{ v.anchor }}">
+  <div class="hd">
+    <span class="sev sev-{{ v.severity }}">{{ SEV_RU[v.severity] }}</span>
+    <span class="id">{{ v.bdu_id or (v.cve[0] if v.cve else '—') }}</span>
+    <span class="ti">{{ v.title or '' }}</span>
+  </div>
+  <div class="bd">
+    <div class="small" style="margin-top:8px">
+      {% if v.cvss_score %}<span class="kv">CVSS: <b class="cvss">{{ v.cvss_score }}</b></span>{% endif %}
+      {% if v.cvss_vector %}<span class="kv mono">{{ v.cvss_vector }}</span>{% endif %}
+      {% if v.exploit_status %}<span class="kv">Эксплойт: <b>{{ v.exploit_status }}</b></span>{% endif %}
+      {% if v.fix_status %}<span class="kv">Статус устранения: <b>{{ v.fix_status }}</b></span>{% endif %}
+    </div>
+    <div class="small" style="margin-top:4px">
+      <span class="kv">ПО: <b>{{ v.product }}</b>{% if v.versions %} <span class="mono">{{ v.versions|join(', ') }}</span>{% endif %}</span>
+      <span class="kv">Активы: {{ v.assets|join(', ') }}</span>
+      <span class="kv">Достоверность: {{ v.confidence }}</span>
+    </div>
+    {% if v.description %}<div class="seg"><div class="lbl">Описание</div>{{ v.description }}</div>{% endif %}
+    <div class="seg"><div class="lbl">Исправление</div>
+      {% if v.vendor_fix %}Обновить пакет <b>{{ v.product }}</b> до версии <b class="mono">{{ v.vendor_fix }}</b> (по фиду вендора ОС){% if v.bulletin %} — <a href="{{ v.bulletin }}">бюллетень</a>{% endif %}.
+      {% elif v.solution %}{{ v.solution }}
+      {% else %}<span class="muted">Обновить {{ v.product }} до версии без уязвимости согласно рекомендациям вендора.</span>{% endif %}
+    </div>
+    {% if v.solution and v.vendor_fix %}<div class="seg"><div class="lbl">Рекомендация БДУ</div>{{ v.solution }}</div>{% endif %}
+    {% if v.range %}<div class="seg small muted"><div class="lbl">Диапазон уязвимых версий (БДУ)</div>{{ v.range }}</div>{% endif %}
+    {% if v.refs_list %}<div class="seg"><div class="lbl">Ссылки</div>
+      {% for name, txt, url in v.refs_list %}<div class="small"><span class="muted">{{ name }}:</span> <a href="{{ url }}">{{ txt }}</a></div>{% endfor %}
+    </div>{% endif %}
+  </div>
+</div>
+{% endfor %}
+{% endif %}
+
+{# ============================================================ РАЗБИВКА ПО ХОСТАМ #}
+{% if tpl.has.by_host and host_sections %}
+<h2>Разбивка по хостам</h2>
+{% for h in host_sections %}
+<h3>{{ h.asset.name }} <span class="muted small">— {{ h.asset.os }}{% if h.asset.ips %}, {{ h.asset.ips }}{% endif %}</span></h3>
+<div class="small" style="margin-bottom:6px">
+  {% for s in SEV_SEQ %}{% if h.sev[s] %}<span class="sev sev-{{ s }}">{{ SEV_RU[s] }}: {{ h.sev[s] }}</span> {% endif %}{% endfor %}
+  {% if not h.n_vulns %}<span class="muted">уязвимостей нет</span>{% endif %}
+  {% for c in h.config %}<span class="tag">{{ c.profile }}: {{ c.pct if c.pct is not none else '—' }}%{% if c.fail %}, несоотв. {{ c.fail }}{% endif %}</span>{% endfor %}
+</div>
+{% if h.vulns %}
+<div class="scroll"><table>
+  <tr><th>Опасность</th><th>Идентификатор</th><th>Уязвимость</th><th>ПО</th><th>Достоверность</th></tr>
+  {% for v in h.vulns %}
+  <tr><td><span class="sev sev-{{ v.severity }}">{{ SEV_RU[v.severity] }}</span></td>
+    <td class="mono small">{% if tpl.has.vuln_details and v.bdu_id %}<a href="#{{ v.anchor }}">{{ v.bdu_id }}</a>{% else %}{{ v.bdu_id or (v.cve[0] if v.cve else '—') }}{% endif %}</td>
+    <td class="small">{{ v.title or '—' }}</td>
+    <td class="small">{{ v.product }}{% if v.versions %} <span class="mono">{{ v.versions|join(', ') }}</span>{% endif %}</td>
+    <td class="small">{{ v.confidence }}</td></tr>
+  {% endfor %}
+</table></div>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+{# ============================================================ КОНФИГУРАЦИИ #}
+{% if tpl.has.config %}
+<h2>Соответствие конфигураций</h2>
+{% if not profiles %}<p class="muted">Проверка конфигураций не выполнялась.</p>{% endif %}
+{% for p in profiles %}
+<h3>Профиль «{{ p.id }}»: проверок {{ p.checks }}, с несоответствиями {{ p.failed|length }}</h3>
+<div class="dashrow">
+  <div class="donut-wrap">
+    {{ donut(p.donut, 110) }}
+    {% if p.donut %}<div class="legend">
+      {% for s in p.donut.segments %}<div><span class="sw" style="background:{{ s.color }}"></span>{{ s.label }}<span class="c">{{ s.count }} · {{ s.pct }}%</span></div>{% endfor %}
+    </div>{% endif %}
+  </div>
+  <div class="scroll"><table style="max-width:640px">
+    <tr><th>Актив</th><th class="num">Соотв.</th><th class="num">Нет</th><th class="num">Н/д</th><th>Доля соответствия</th></tr>
+    {% for a in p.assets %}
+    <tr><td>{{ a.name }}</td><td class="num">{{ a.pass }}</td><td class="num">{{ a.fail }}</td><td class="num">{{ a.na }}</td>
+      <td>{% if a.pct is not none %}<span class="bar"><span style="width: {{ a.pct }}%"></span></span> <span class="small">{{ a.pct }}%</span>{% else %}—{% endif %}</td></tr>
+    {% endfor %}
+  </table></div>
+</div>
+
+{% if p.failed %}
+<div class="scroll"><table>
+  <tr><th>Проверка</th><th>Важность</th><th>Несоответствия (актив: фактическое значение)</th><th>Ожидается</th>
+    {% for d in p.docs %}<th class="ref" title="{{ d.title }}">{{ d.short }}</th>{% endfor %}</tr>
+  {% for c in p.failed %}
+  <tr>
+    <td><span class="mono muted">{{ c.id }}</span><br>{{ c.title }}
+      {% if c.remediation %}<details><summary class="small">Как устранить</summary><div class="small">{{ c.remediation }}</div></details>{% endif %}</td>
+    <td><span class="sev sev-{{ c.severity }}">{{ SEV_RU.get(c.severity, c.severity) }}</span></td>
+    <td class="small"><ul class="compact">{% for f in c.fails[:8] %}<li><b>{{ f.asset }}</b>: <span class="mono">{{ f.actual }}</span>{% if f.error %} <span class="tag">ошибка проверки</span>{% endif %}</li>{% endfor %}</ul>
+      {% if c.fails|length > 8 %}<span class="muted">и ещё {{ c.fails|length - 8 }}</span>{% endif %}</td>
+    <td class="small">{{ c.expected }}</td>
+    {% for d in p.docs %}<td class="ref small">{{ c.refs.get(d.key, [])|join(', ') or '—' }}</td>{% endfor %}
+  </tr>
+  {% endfor %}
+</table></div>
+<p class="small muted">
+  {% for d in p.docs %}<b>{{ d.short }}</b> — {{ d.title }}{% if d.status %} ({{ d.status }}){% endif %}{% if not loop.last %}; {% endif %}{% endfor %}.
+  Привязка проверок к пунктам документов — черновик каталога требований, согласуется с консалтингом.
+</p>
+{% endif %}
+{% if p.passed_checks %}<details><summary class="small">Проверки без несоответствий ({{ p.passed_checks|length }})</summary>
+  <p class="mono small">{{ p.passed_checks|join(', ') }}</p></details>{% endif %}
+{% endfor %}
+{% endif %}
+
+{# ============================================================ ПРИЛОЖЕНИЯ #}
+{% if tpl.has.manual %}
+<h2>Приложение А. Требуют ручной проверки</h2>
+<p class="small muted">ПО найдено в БДУ по названию, но диапазон версий в записи БДУ не удалось разобрать автоматически. Нужно сверить версию вручную.</p>
+{% if manual %}
+<div class="scroll"><table>
+  <tr><th>ПО</th><th class="num">Записей БДУ</th><th class="num">Активов</th><th>Примеры записи версий в БДУ</th></tr>
+  {% for m in manual %}<tr><td>{{ m.product }}</td><td class="num">{{ m.n }}</td><td class="num">{{ m.hosts }}</td><td class="small mono">{{ m.samples }}</td></tr>{% endfor %}
+</table></div>
+{% else %}<p class="muted">Нет.</p>{% endif %}
+{% endif %}
+
+{% if tpl.has.sources %}
+<h2>Приложение Б. Исходные данные</h2>
+<div class="scroll"><table>
+  <tr><th>Актив</th><th>Тип данных</th><th>Файл</th><th>SHA-256 (начало)</th><th>Загружен</th></tr>
+  {% for r in artifacts %}<tr><td>{{ r.asset }}</td><td>{{ r.kind }}</td><td class="mono small">{{ r.file }}</td><td class="mono small">{{ r.sha256 }}</td><td class="small">{{ r.loaded }}</td></tr>{% endfor %}
+</table></div>
+{% endif %}
+
+<p class="sub" style="margin:36px 0 40px; border-top:1px solid var(--line); padding-top:14px">
+  {{ tpl.brand.product }} · отчёт сформирован {{ generated }} · шаблон «{{ tpl.id }}».
+  Инструмент обследования, не сертифицированное СЗИ.
+</p>
+</div>
+</main>
+</body>
+</html>

@@ -1,0 +1,7 @@
+**/__pycache__/
+**/*.pyc
+demo-output/
+work/
+connector/surveyscan-connector
+.venv/
+.git/

@@ -1,0 +1,91 @@
+# Массовый безагентный сбор: Linux по SSH, Windows по WinRM.
+# Коллекторы только читают данные; результаты складываются в ./raw/ на машине инженера.
+#
+#   ansible-playbook -i inventory.ini ansible/collect.yml --ask-vault-pass
+#   python -m surveyscan ingest raw/*
+#
+# Пример inventory.ini:
+#   [linux]
+#   10.10.1.11
+#   10.10.1.12
+#   [linux:vars]
+#   ansible_user=audit
+#   ansible_become=true
+#
+#   [windows]
+#   10.10.1.21
+#   [windows:vars]
+#   ansible_user=CORP\audit
+#   ansible_connection=winrm
+#   ansible_winrm_transport=kerberos      # или ntlm / credssp; basic — только поверх HTTPS
+#   ansible_port=5986
+#
+# Учётные данные — только в ansible-vault (group_vars/*/vault.yml), не в inventory.
+
+- name: Сбор с Linux
+  hosts: linux
+  gather_facts: false
+  become: true
+  vars:
+    out_dir: "{{ playbook_dir }}/../raw"
+  tasks:
+    - name: Создать папку для результатов
+      delegate_to: localhost
+      become: false
+      run_once: true
+      ansible.builtin.file:
+        path: "{{ out_dir }}"
+        state: directory
+        mode: "0700"
+
+    - name: Выполнить коллектор (скрипт передаётся по SSH, на хосте не остаётся)
+      ansible.builtin.script: "{{ playbook_dir }}/../collectors/linux_collect.sh"
+      register: collected
+      changed_when: false
+
+    - name: Проверить, что сбор завершён
+      ansible.builtin.assert:
+        that: "'@@@SURVEY:end@@@' in collected.stdout"
+        fail_msg: "Сбор не завершён: {{ collected.stderr | default('') | truncate(300) }}"
+
+    - name: Сохранить результат
+      delegate_to: localhost
+      become: false
+      ansible.builtin.copy:
+        content: "{{ collected.stdout }}"
+        dest: "{{ out_dir }}/{{ inventory_hostname }}.surv"
+        mode: "0600"
+
+- name: Сбор с Windows
+  hosts: windows
+  gather_facts: false
+  vars:
+    out_dir: "{{ playbook_dir }}/../raw"
+    remote_tmp_json: 'C:\Windows\Temp\surveyscan_{{ inventory_hostname }}.json'
+  tasks:
+    - name: Создать папку для результатов
+      delegate_to: localhost
+      become: false
+      run_once: true
+      ansible.builtin.file:
+        path: "{{ out_dir }}"
+        state: directory
+        mode: "0700"
+
+    - name: Выполнить коллектор
+      ansible.windows.win_powershell:
+        script: "{{ lookup('ansible.builtin.file', playbook_dir + '/../collectors/windows_collect.ps1') }}"
+        parameters:
+          Out: "{{ remote_tmp_json }}"
+      changed_when: false
+
+    - name: Забрать результат
+      ansible.builtin.fetch:
+        src: "{{ remote_tmp_json }}"
+        dest: "{{ out_dir }}/{{ inventory_hostname }}.json"
+        flat: true
+
+    - name: Удалить временный файл на хосте
+      ansible.windows.win_file:
+        path: "{{ remote_tmp_json }}"
+        state: absent

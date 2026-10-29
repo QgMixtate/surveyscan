@@ -1,0 +1,11 @@
+# Для руководства: сводка, план устранения, срез по хостам и комплаенс. Без детальных карточек.
+id: executive
+title: "Отчёт для руководства"
+brand: { product: surveyscan, logo_text: surveyscan }
+sections: [summary, remediation, by_host_matrix, config]
+disclaimer: true
+filters:
+  min_severity: high       # только критические и высокие — не захламлять сводку
+  confidence: null
+  hosts: null
+  profiles: null

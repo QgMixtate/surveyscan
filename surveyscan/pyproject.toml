@@ -1,0 +1,22 @@
+[project]
+name = "surveyscan"
+version = "0.1.0"
+description = "Сканер обследования: инвентаризация, уязвимости с привязкой к БДУ ФСТЭК, проверка конфигураций"
+requires-python = ">=3.10"
+dependencies = ["lxml>=4.9", "PyYAML>=6.0", "Jinja2>=3.1"]
+
+[project.optional-dependencies]
+ssh = ["paramiko>=3.0"]
+test = ["pytest>=7"]
+
+[project.scripts]
+surveyscan = "surveyscan.cli:main"
+
+[tool.setuptools]
+packages = ["surveyscan"]
+
+[tool.setuptools.package-data]
+surveyscan = ["templates/*.j2"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

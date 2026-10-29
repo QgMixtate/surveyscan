@@ -1,0 +1,322 @@
+# Проверки конфигурации Linux. Поля:
+#   fact     — путь к факту, собранному коллектором (см. surveyscan/ingest.py: linux_facts)
+#   op/value — оператор и ожидаемое значение (операторы: surveyscan/configcheck.py: evaluate)
+#   default  — значение, если раздел есть, а параметр не задан (берётся штатное значение ПО)
+#   missing  — результат, если данных нет совсем: na (по умолчанию) | fail | pass
+#   expected_text — как ожидаемое значение показать в отчёте (вместо регулярного выражения)
+#   requires — проверки-условия: если условие не выполнено, эта проверка тоже не пройдена
+#              (например, длина пароля бессмысленна без подключённого модуля сложности)
+# Привязка к пунктам документов — в catalog/, пороги под заказчика — в profiles/.
+
+checks:
+  # ---------------------------------------------------------------- SSH
+  - id: LNX-SSH-01
+    title: "SSH: запрещён вход под root"
+    platform: linux
+    fact: [sshd, permitrootlogin]
+    op: eq
+    value: "no"
+    default: "prohibit-password"
+    severity: high
+    remediation: "В /etc/ssh/sshd_config: PermitRootLogin no; перезапустить sshd."
+  - id: LNX-SSH-02
+    title: "SSH: запрещён вход с пустым паролем"
+    platform: linux
+    fact: [sshd, permitemptypasswords]
+    op: eq
+    value: "no"
+    default: "no"
+    severity: high
+    remediation: "PermitEmptyPasswords no"
+  - id: LNX-SSH-03
+    title: "SSH: попыток аутентификации за сеанс не больше {value}"
+    platform: linux
+    fact: [sshd, maxauthtries]
+    op: le
+    value: 4
+    default: 6
+    severity: medium
+    remediation: "MaxAuthTries 4"
+  - id: LNX-SSH-04
+    title: "SSH: отключено перенаправление X11"
+    platform: linux
+    fact: [sshd, x11forwarding]
+    op: eq
+    value: "no"
+    default: "no"
+    severity: low
+    remediation: "X11Forwarding no"
+  - id: LNX-SSH-05
+    title: "SSH: завершение неактивных сеансов (ClientAliveInterval 1–900 с)"
+    platform: linux
+    fact: [sshd, clientaliveinterval]
+    op: range
+    value: [1, 900]
+    default: 0
+    severity: medium
+    remediation: "ClientAliveInterval 300 и ClientAliveCountMax 0–3"
+  - id: LNX-SSH-06
+    title: "SSH: не используются слабые шифры (CBC, arcfour, 3DES)"
+    platform: linux
+    fact: [sshd, ciphers]
+    op: not_regex
+    value: "cbc|arcfour|3des"
+    expected_text: "нет CBC, arcfour, 3DES"
+    severity: medium
+    remediation: "Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr"
+
+  # ---------------------------------------------------------------- пароли и блокировка
+  - id: LNX-PWD-01
+    title: "Политика сложности паролей подключена в PAM (pwquality / cracklib / passwdqc)"
+    platform: linux
+    fact: [pam]
+    op: regex
+    value: "pam_(pwquality|cracklib|passwdqc)\\.so"
+    expected_text: "модуль подключён"
+    missing: fail
+    severity: high
+    remediation: "Подключить pam_pwquality в common-password (Debian/Astra) или system-auth (РЕД ОС/Альт)."
+  - id: LNX-PWD-02
+    title: "Минимальная длина пароля не меньше {value} символов"
+    platform: linux
+    requires: [LNX-PWD-01]
+    fact: [pwquality, minlen]
+    op: ge
+    value: 8
+    default: 8
+    severity: high
+    remediation: "minlen = 8 (или больше по профилю) в /etc/security/pwquality.conf"
+  - id: LNX-PWD-03
+    title: "Срок действия пароля {value} дней"
+    platform: linux
+    fact: [login_defs, PASS_MAX_DAYS]
+    op: range
+    value: [1, 90]
+    default: 99999
+    severity: medium
+    remediation: "PASS_MAX_DAYS 90 в /etc/login.defs; для существующих учёток — chage -M 90 <user>"
+  - id: LNX-PWD-04
+    title: "Блокировка после неуспешных попыток входа подключена в PAM (faillock / tally2)"
+    platform: linux
+    fact: [pam]
+    op: regex
+    value: "pam_(faillock|tally2?)\\.so"
+    expected_text: "модуль подключён"
+    missing: fail
+    severity: high
+    remediation: "Подключить pam_faillock (preauth/authfail/authsucc) в common-auth или system-auth."
+  - id: LNX-PWD-05
+    title: "Блокировка после {value} неуспешных попыток"
+    platform: linux
+    requires: [LNX-PWD-04]
+    fact: [faillock, deny]
+    op: range
+    value: [1, 10]
+    default: 3
+    severity: medium
+    remediation: "deny = 5 (по профилю) в /etc/security/faillock.conf"
+  - id: LNX-PWD-06
+    title: "Нет учётных записей с пустым паролем"
+    platform: linux
+    fact: [empty_password_users]
+    op: empty
+    severity: critical
+    remediation: "Задать пароль или заблокировать: passwd -l <user>"
+
+  # ---------------------------------------------------------------- учётные записи и привилегии
+  - id: LNX-ACC-01
+    title: "UID 0 только у root"
+    platform: linux
+    fact: [uid0_users]
+    op: subset_of
+    value: [root]
+    severity: critical
+    remediation: "Сменить UID или удалить лишние учётные записи с UID 0."
+  - id: LNX-ACC-02
+    title: "В sudoers нет правил NOPASSWD"
+    platform: linux
+    fact: [sudo_nopasswd]
+    op: empty
+    severity: medium
+    remediation: "Убрать NOPASSWD из /etc/sudoers и /etc/sudoers.d/* (кроме обоснованных сервисных правил)."
+  - id: LNX-ACC-03
+    title: "Использование su ограничено группой (pam_wheel)"
+    platform: linux
+    fact: [su_wheel]
+    op: eq
+    value: true
+    severity: medium
+    remediation: "В /etc/pam.d/su: auth required pam_wheel.so use_uid"
+
+  # ---------------------------------------------------------------- права на файлы
+  - id: LNX-FILE-01
+    title: "Права на /etc/shadow не шире 640"
+    platform: linux
+    fact: [file_modes, /etc/shadow, mode]
+    op: mode_le
+    value: "640"
+    severity: high
+    remediation: "chmod 640 /etc/shadow; chown root:shadow /etc/shadow"
+  - id: LNX-FILE-02
+    title: "Права на /etc/passwd не шире 644"
+    platform: linux
+    fact: [file_modes, /etc/passwd, mode]
+    op: mode_le
+    value: "644"
+    severity: medium
+    remediation: "chmod 644 /etc/passwd"
+  - id: LNX-FILE-03
+    title: "Права на /etc/gshadow не шире 640"
+    platform: linux
+    fact: [file_modes, /etc/gshadow, mode]
+    op: mode_le
+    value: "640"
+    severity: medium
+    remediation: "chmod 640 /etc/gshadow"
+  - id: LNX-FILE-04
+    title: "Права на /etc/crontab не шире 600"
+    platform: linux
+    fact: [file_modes, /etc/crontab, mode]
+    op: mode_le
+    value: "600"
+    severity: low
+    remediation: "chmod 600 /etc/crontab"
+  - id: LNX-FILE-05
+    title: "Права на /etc/sudoers не шире 440"
+    platform: linux
+    fact: [file_modes, /etc/sudoers, mode]
+    op: mode_le
+    value: "440"
+    severity: medium
+    remediation: "chmod 440 /etc/sudoers"
+  - id: LNX-FILE-06
+    title: "Права на конфигурацию загрузчика GRUB не шире 600"
+    platform: linux
+    fact: [file_modes, /boot/grub/grub.cfg, mode]
+    op: mode_le
+    value: "600"
+    severity: low
+    remediation: "chmod 600 /boot/grub/grub.cfg"
+  - id: LNX-FS-01
+    title: "/tmp смонтирован отдельно с noexec"
+    platform: linux
+    fact: [mounts, /tmp, options]
+    op: contains
+    value: noexec
+    missing: fail
+    severity: low
+    remediation: "Вынести /tmp в отдельный раздел или tmpfs с опциями nodev,nosuid,noexec."
+
+  # ---------------------------------------------------------------- параметры ядра (sysctl)
+  - {id: LNX-KRN-01, title: "kernel.dmesg_restrict = 1", platform: linux, fact: [sysctl, kernel.dmesg_restrict], op: eq, value: 1, severity: medium, remediation: "sysctl -w kernel.dmesg_restrict=1 и запись в /etc/sysctl.d/"}
+  - {id: LNX-KRN-02, title: "kernel.kptr_restrict = 2", platform: linux, fact: [sysctl, kernel.kptr_restrict], op: eq, value: 2, severity: medium, remediation: "kernel.kptr_restrict = 2"}
+  - {id: LNX-KRN-03, title: "net.core.bpf_jit_harden = 2", platform: linux, fact: [sysctl, net.core.bpf_jit_harden], op: eq, value: 2, severity: medium, remediation: "net.core.bpf_jit_harden = 2"}
+  - {id: LNX-KRN-04, title: "kernel.perf_event_paranoid ≥ 3", platform: linux, fact: [sysctl, kernel.perf_event_paranoid], op: ge, value: 3, severity: low, remediation: "kernel.perf_event_paranoid = 3"}
+  - {id: LNX-KRN-05, title: "kernel.kexec_load_disabled = 1", platform: linux, fact: [sysctl, kernel.kexec_load_disabled], op: eq, value: 1, severity: medium, remediation: "kernel.kexec_load_disabled = 1"}
+  - {id: LNX-KRN-06, title: "user.max_user_namespaces = 0", platform: linux, fact: [sysctl, user.max_user_namespaces], op: eq, value: 0, severity: medium, remediation: "user.max_user_namespaces = 0 (если не нужны контейнеры без root)"}
+  - {id: LNX-KRN-07, title: "kernel.unprivileged_bpf_disabled = 1", platform: linux, fact: [sysctl, kernel.unprivileged_bpf_disabled], op: ge, value: 1, severity: medium, remediation: "kernel.unprivileged_bpf_disabled = 1"}
+  - {id: LNX-KRN-08, title: "vm.unprivileged_userfaultfd = 0", platform: linux, fact: [sysctl, vm.unprivileged_userfaultfd], op: eq, value: 0, severity: low, remediation: "vm.unprivileged_userfaultfd = 0"}
+  - {id: LNX-KRN-09, title: "dev.tty.ldisc_autoload = 0", platform: linux, fact: [sysctl, dev.tty.ldisc_autoload], op: eq, value: 0, severity: low, remediation: "dev.tty.ldisc_autoload = 0"}
+  - {id: LNX-KRN-10, title: "vm.mmap_min_addr ≥ 4096", platform: linux, fact: [sysctl, vm.mmap_min_addr], op: ge, value: 4096, severity: low, remediation: "vm.mmap_min_addr = 4096"}
+  - {id: LNX-KRN-11, title: "kernel.randomize_va_space = 2", platform: linux, fact: [sysctl, kernel.randomize_va_space], op: eq, value: 2, severity: high, remediation: "kernel.randomize_va_space = 2"}
+  - {id: LNX-KRN-12, title: "kernel.yama.ptrace_scope = 3", platform: linux, fact: [sysctl, kernel.yama.ptrace_scope], op: eq, value: 3, severity: medium, remediation: "kernel.yama.ptrace_scope = 3"}
+  - {id: LNX-KRN-13, title: "fs.protected_symlinks = 1", platform: linux, fact: [sysctl, fs.protected_symlinks], op: eq, value: 1, severity: medium, remediation: "fs.protected_symlinks = 1"}
+  - {id: LNX-KRN-14, title: "fs.protected_hardlinks = 1", platform: linux, fact: [sysctl, fs.protected_hardlinks], op: eq, value: 1, severity: medium, remediation: "fs.protected_hardlinks = 1"}
+  - {id: LNX-KRN-15, title: "fs.protected_fifos = 2", platform: linux, fact: [sysctl, fs.protected_fifos], op: eq, value: 2, severity: low, remediation: "fs.protected_fifos = 2"}
+  - {id: LNX-KRN-16, title: "fs.protected_regular = 2", platform: linux, fact: [sysctl, fs.protected_regular], op: eq, value: 2, severity: low, remediation: "fs.protected_regular = 2"}
+  - {id: LNX-KRN-17, title: "fs.suid_dumpable = 0", platform: linux, fact: [sysctl, fs.suid_dumpable], op: eq, value: 0, severity: medium, remediation: "fs.suid_dumpable = 0"}
+
+  # ---------------------------------------------------------------- параметры загрузки ядра
+  - {id: LNX-BOOT-01, title: "Параметр загрузки init_on_alloc=1", platform: linux, fact: [cmdline_params, init_on_alloc], op: eq, value: 1, default: "", severity: low, remediation: "Добавить init_on_alloc=1 в GRUB_CMDLINE_LINUX и update-grub"}
+  - {id: LNX-BOOT-02, title: "Параметр загрузки slab_nomerge", platform: linux, fact: [cmdline_params, slab_nomerge], op: eq, value: 1, default: "", severity: low, remediation: "Добавить slab_nomerge в GRUB_CMDLINE_LINUX"}
+  - {id: LNX-BOOT-03, title: "Параметр загрузки vsyscall=none", platform: linux, fact: [cmdline_params, vsyscall], op: eq, value: none, default: "", severity: low, remediation: "Добавить vsyscall=none в GRUB_CMDLINE_LINUX"}
+  - {id: LNX-BOOT-04, title: "Параметр загрузки randomize_kstack_offset=1", platform: linux, fact: [cmdline_params, randomize_kstack_offset], op: eq, value: 1, default: "", severity: low, remediation: "Добавить randomize_kstack_offset=1 в GRUB_CMDLINE_LINUX"}
+  - {id: LNX-BOOT-05, title: "Параметр загрузки debugfs=off", platform: linux, fact: [cmdline_params, debugfs], op: eq, value: "off", default: "", severity: low, remediation: "Добавить debugfs=off в GRUB_CMDLINE_LINUX"}
+
+  # ---------------------------------------------------------------- службы и сеть
+  - id: LNX-NET-01
+    title: "Не слушаются небезопасные службы (FTP, Telnet, TFTP, rsh/rlogin)"
+    platform: linux
+    fact: [listening_ports]
+    op: not_contains
+    value: [21, 23, 69, 512, 513, 514]
+    severity: high
+    remediation: "Отключить и удалить соответствующие службы."
+  - id: LNX-SVC-01
+    title: "Служба аудита auditd запущена"
+    platform: linux
+    fact: [services_active, auditd]
+    op: eq
+    value: active
+    missing: fail
+    severity: high
+    remediation: "Установить auditd, systemctl enable --now auditd"
+  - id: LNX-SVC-02
+    title: "Правила аудита заданы"
+    platform: linux
+    fact: [audit_rules]
+    op: not_empty
+    severity: medium
+    remediation: "Задать правила в /etc/audit/rules.d/ (входы, изменения учётных записей, sudo, модули ядра)."
+  - id: LNX-SVC-03
+    title: "Синхронизация времени работает"
+    platform: linux
+    fact: [time_sync_active]
+    op: eq
+    value: true
+    severity: medium
+    remediation: "Настроить chrony или systemd-timesyncd на доверенный сервер времени."
+  - id: LNX-SVC-04
+    title: "Межсетевой экран хоста активен"
+    platform: linux
+    fact: [firewall_active]
+    op: eq
+    value: true
+    severity: medium
+    remediation: "Включить firewalld / ufw / nftables с политикой «запрещено всё, что не разрешено»."
+
+  # ---------------------------------------------------------------- Astra Linux SE
+  - id: AST-01
+    title: "Astra: мандатный контроль целостности (МКЦ) включён"
+    platform: linux
+    applies_if: {os_id: [astra]}
+    fact: [astra, mic]
+    op: regex
+    value: "^(enabled|включен|1|on)"
+    expected_text: "включено"
+    missing: fail
+    severity: high
+    remediation: "astra-mic-control enable (режим «Воронеж» и выше), перезагрузка."
+  - id: AST-02
+    title: "Astra: замкнутая программная среда (ЗПС) включена"
+    platform: linux
+    applies_if: {os_id: [astra]}
+    fact: [astra, digsig]
+    op: regex
+    value: "^(enabled|включен|1|on)"
+    expected_text: "включено"
+    missing: fail
+    severity: high
+    remediation: "astra-digsig-control enable, перезагрузка; заранее подписать стороннее ПО."
+  - id: AST-03
+    title: "Astra: блокировка трассировки ptrace включена"
+    platform: linux
+    applies_if: {os_id: [astra]}
+    fact: [astra, ptrace_lock]
+    op: regex
+    value: "^(enabled|включен|1|on)"
+    expected_text: "включено"
+    missing: fail
+    severity: medium
+    remediation: "astra-ptrace-lock enable"
+  - id: AST-04
+    title: "Astra: блокировка интерпретаторов включена"
+    platform: linux
+    applies_if: {os_id: [astra]}
+    fact: [astra, interpreters_lock]
+    op: regex
+    value: "^(enabled|включен|1|on)"
+    expected_text: "включено"
+    missing: fail
+    severity: low
+    remediation: "astra-interpreters-lock enable (проверить, что прикладному ПО не нужны интерпретаторы)."

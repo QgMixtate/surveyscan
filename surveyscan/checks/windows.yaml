@@ -1,0 +1,113 @@
+# Проверки конфигурации Windows. Факты — из collectors/windows_collect.ps1:
+#   secedit[раздел][параметр], auditpol[GUID подкатегории].value (0 нет, 1 успех, 2 отказ, 3 оба),
+#   registry['HKLM\...\Имя'], firewall, listening, users, antivirus, defender.
+
+checks:
+  # ---------------------------------------------------------------- пароли и блокировка
+  - {id: WIN-PWD-01, title: "Минимальная длина пароля не меньше {value} символов", platform: windows,
+     fact: [secedit, System Access, MinimumPasswordLength], op: ge, value: 8, severity: high,
+     remediation: "GPO: Конфигурация компьютера → Параметры безопасности → Политика паролей → Минимальная длина пароля"}
+  - {id: WIN-PWD-02, title: "Требование сложности пароля включено", platform: windows,
+     fact: [secedit, System Access, PasswordComplexity], op: eq, value: 1, severity: high,
+     remediation: "Политика паролей → Пароль должен отвечать требованиям сложности: Включён"}
+  - {id: WIN-PWD-03, title: "Срок действия пароля {value} дней", platform: windows,
+     fact: [secedit, System Access, MaximumPasswordAge], op: range, value: [1, 90], severity: medium,
+     remediation: "Политика паролей → Максимальный срок действия пароля: 90"}
+  - {id: WIN-PWD-04, title: "Не хранить пароли с обратимым шифрованием", platform: windows,
+     fact: [secedit, System Access, ClearTextPassword], op: eq, value: 0, default: 0, severity: high,
+     remediation: "Политика паролей → Хранить пароли, используя обратимое шифрование: Отключён"}
+  - {id: WIN-PWD-05, title: "История паролей не меньше 4", platform: windows,
+     fact: [secedit, System Access, PasswordHistorySize], op: ge, value: 4, default: 0, severity: low,
+     remediation: "Политика паролей → Вести журнал паролей: 4 и более"}
+  - {id: WIN-LCK-01, title: "Блокировка после {value} неуспешных попыток входа", platform: windows,
+     fact: [secedit, System Access, LockoutBadCount], op: range, value: [1, 10], default: 0, severity: high,
+     remediation: "Политика блокировки учётной записи → Пороговое значение блокировки: 5"}
+  - {id: WIN-LCK-02, title: "Продолжительность блокировки не меньше 15 минут", platform: windows,
+     fact: [secedit, System Access, LockoutDuration], op: ge, value: 15, severity: medium,
+     remediation: "Политика блокировки учётной записи → Продолжительность блокировки: 15+"}
+
+  # ---------------------------------------------------------------- учётные записи
+  - {id: WIN-ACC-01, title: "Учётная запись «Гость» отключена", platform: windows,
+     fact: [secedit, System Access, EnableGuestAccount], op: eq, value: 0, default: 0, severity: high,
+     remediation: "Параметры безопасности → Учётные записи: состояние учётной записи «Гость»: Отключён"}
+  - {id: WIN-ACC-02, title: "Нет включённых локальных учётных записей без обязательного пароля", platform: windows,
+     fact: [users_no_password_required], op: empty, severity: high,
+     remediation: "net user <имя> /passwordreq:yes или отключить учётную запись"}
+
+  # ---------------------------------------------------------------- аудит (auditpol)
+  - {id: WIN-AUD-01, title: "Аудит: вход в систему (успех и отказ)", platform: windows,
+     fact: [auditpol, 0CCE9215-69AE-11D9-BED3-505054503030, value], op: eq, value: 3, missing: fail, severity: high,
+     remediation: "auditpol /set /subcategory:{0CCE9215-69AE-11D9-BED3-505054503030} /success:enable /failure:enable"}
+  - {id: WIN-AUD-02, title: "Аудит: проверка учётных данных (успех и отказ)", platform: windows,
+     fact: [auditpol, 0CCE923F-69AE-11D9-BED3-505054503030, value], op: eq, value: 3, missing: fail, severity: high,
+     remediation: "auditpol /set /subcategory:{0CCE923F-69AE-11D9-BED3-505054503030} /success:enable /failure:enable"}
+  - {id: WIN-AUD-03, title: "Аудит: блокировка учётных записей (отказ)", platform: windows,
+     fact: [auditpol, 0CCE9217-69AE-11D9-BED3-505054503030, value], op: in, value: [2, 3], missing: fail, severity: medium,
+     remediation: "auditpol /set /subcategory:{0CCE9217-69AE-11D9-BED3-505054503030} /failure:enable"}
+  - {id: WIN-AUD-04, title: "Аудит: управление учётными записями пользователей (успех и отказ)", platform: windows,
+     fact: [auditpol, 0CCE9235-69AE-11D9-BED3-505054503030, value], op: eq, value: 3, missing: fail, severity: medium,
+     remediation: "auditpol /set /subcategory:{0CCE9235-69AE-11D9-BED3-505054503030} /success:enable /failure:enable"}
+  - {id: WIN-AUD-05, title: "Аудит: управление группами безопасности (успех)", platform: windows,
+     fact: [auditpol, 0CCE9237-69AE-11D9-BED3-505054503030, value], op: in, value: [1, 3], missing: fail, severity: medium,
+     remediation: "auditpol /set /subcategory:{0CCE9237-69AE-11D9-BED3-505054503030} /success:enable"}
+  - {id: WIN-AUD-06, title: "Аудит: изменение политики аудита (успех)", platform: windows,
+     fact: [auditpol, 0CCE922F-69AE-11D9-BED3-505054503030, value], op: in, value: [1, 3], missing: fail, severity: medium,
+     remediation: "auditpol /set /subcategory:{0CCE922F-69AE-11D9-BED3-505054503030} /success:enable"}
+  - {id: WIN-AUD-07, title: "Аудит: создание процессов (успех)", platform: windows,
+     fact: [auditpol, 0CCE922B-69AE-11D9-BED3-505054503030, value], op: in, value: [1, 3], missing: fail, severity: low,
+     remediation: "auditpol /set /subcategory:{0CCE922B-69AE-11D9-BED3-505054503030} /success:enable"}
+  - {id: WIN-AUD-08, title: "Аудит: специальный вход (успех)", platform: windows,
+     fact: [auditpol, 0CCE921B-69AE-11D9-BED3-505054503030, value], op: in, value: [1, 3], missing: fail, severity: low,
+     remediation: "auditpol /set /subcategory:{0CCE921B-69AE-11D9-BED3-505054503030} /success:enable"}
+
+  # ---------------------------------------------------------------- сеть и протоколы
+  - {id: WIN-NET-01, title: "SMBv1 отключён", platform: windows,
+     fact: [smb1_enabled], op: eq, value: false, severity: high,
+     remediation: "Set-SmbServerConfiguration -EnableSMB1Protocol $false; удалить компонент SMB 1.0/CIFS"}
+  - {id: WIN-NET-02, title: "Обязательная подпись SMB на сервере", platform: windows,
+     fact: [registry, 'HKLM\SYSTEM\CurrentControlSet\Services\LanmanServer\Parameters\RequireSecuritySignature'],
+     op: eq, value: 1, default: 0, severity: medium,
+     remediation: "Microsoft network server: Digitally sign communications (always): Enabled"}
+  - {id: WIN-NET-03, title: "Только NTLMv2, LM и NTLMv1 запрещены (LmCompatibilityLevel = 5)", platform: windows,
+     fact: [registry, 'HKLM\SYSTEM\CurrentControlSet\Control\Lsa\LmCompatibilityLevel'],
+     op: ge, value: 5, default: 3, severity: high,
+     remediation: "Сетевая безопасность: уровень проверки подлинности LAN Manager → Отправлять только NTLMv2-ответ. Отказывать LM и NTLM"}
+  - {id: WIN-NET-04, title: "RDP: проверка подлинности на уровне сети (NLA)", platform: windows,
+     fact: [registry, 'HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp\UserAuthentication'],
+     op: eq, value: 1, severity: high,
+     remediation: "Требовать проверку подлинности пользователя на уровне сети для удалённых подключений"}
+  - {id: WIN-NET-05, title: "Не слушаются FTP и Telnet", platform: windows,
+     fact: [listening_ports], op: not_contains, value: [21, 23], severity: high,
+     remediation: "Отключить службы FTP/Telnet"}
+  - {id: WIN-FW-01, title: "Брандмауэр Windows включён во всех профилях", platform: windows,
+     fact: [firewall_all_enabled], op: eq, value: true, severity: medium,
+     remediation: "Set-NetFirewallProfile -All -Enabled True (или GPO)"}
+
+  # ---------------------------------------------------------------- система
+  - {id: WIN-SYS-01, title: "WDigest не хранит пароли в памяти", platform: windows,
+     fact: [registry, 'HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders\WDigest\UseLogonCredential'],
+     op: eq, value: 0, default: 0, severity: high,
+     remediation: "UseLogonCredential = 0"}
+  - {id: WIN-SYS-02, title: "LSA работает как защищённый процесс (RunAsPPL)", platform: windows,
+     fact: [registry, 'HKLM\SYSTEM\CurrentControlSet\Control\Lsa\RunAsPPL'],
+     op: in, value: [1, 2], default: 0, severity: medium,
+     remediation: "RunAsPPL = 1 (проверить совместимость сторонних модулей LSA)"}
+  - {id: WIN-SYS-03, title: "Контроль учётных записей (UAC) включён", platform: windows,
+     fact: [registry, 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\EnableLUA'],
+     op: eq, value: 1, default: 1, severity: high,
+     remediation: "EnableLUA = 1"}
+  - {id: WIN-SYS-04, title: "Автозапуск отключён для всех типов носителей", platform: windows,
+     fact: [registry, 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\Explorer\NoDriveTypeAutoRun'],
+     op: eq, value: 255, default: 145, severity: medium,
+     remediation: "GPO: Отключить автозапуск → Все дисководы"}
+  - {id: WIN-SYS-05, title: "Блокировка сеанса при бездействии (1–900 с)", platform: windows,
+     fact: [registry, 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\InactivityTimeoutSecs'],
+     op: range, value: [1, 900], default: 0, severity: medium,
+     remediation: "Интерактивный вход в систему: предел простоя компьютера — 900 секунд"}
+  - {id: WIN-SYS-06, title: "Журналирование блоков сценариев PowerShell", platform: windows,
+     fact: [registry, 'HKLM\SOFTWARE\Policies\Microsoft\Windows\PowerShell\ScriptBlockLogging\EnableScriptBlockLogging'],
+     op: eq, value: 1, default: 0, severity: low,
+     remediation: "GPO: Windows PowerShell → Включить ведение журнала блоков сценариев"}
+  - {id: WIN-AV-01, title: "Антивирусная защита работает", platform: windows,
+     fact: [antivirus_present], op: eq, value: true, severity: high,
+     remediation: "Установить сертифицированное средство антивирусной защиты (для ГИС/ИСПДн/ЗОКИИ)."}

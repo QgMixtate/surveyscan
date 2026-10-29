@@ -1,0 +1,35 @@
+{
+  "_comment": "СИНТЕТИЧЕСКИЙ документ в формате MSRC CVRF v3 (сокращён). CVE-2099-* не существуют.",
+  "DocumentTitle": {"Value": "2099-Jan Security Updates"},
+  "DocumentTracking": {"Identification": {"ID": {"Value": "2099-Jan"}}},
+  "ProductTree": {
+    "Branch": [{"Items": [{"Items": [
+      {"ProductID": "11929", "Value": "Windows 10 Version 22H2 for x64-based Systems"},
+      {"ProductID": "11930", "Value": "Windows 10 Version 22H2 for 32-bit Systems"},
+      {"ProductID": "12085", "Value": "Windows Server 2022"}
+    ]}]}],
+    "FullProductName": [
+      {"ProductID": "11929", "Value": "Windows 10 Version 22H2 for x64-based Systems"},
+      {"ProductID": "11930", "Value": "Windows 10 Version 22H2 for 32-bit Systems"},
+      {"ProductID": "12085", "Value": "Windows Server 2022"}
+    ]
+  },
+  "Vulnerability": [
+    {"CVE": "CVE-2099-1001", "Title": {"Value": "Windows Kerberos Elevation of Privilege Vulnerability"},
+     "Threats": [{"Type": 3, "Description": {"Value": "Important"}, "ProductID": ["11929", "11930"]}],
+     "Remediations": [{"Type": 2, "SubType": "Security Update", "Description": {"Value": "5099001"},
+                       "FixedBuild": "10.0.19045.5011", "ProductID": ["11929", "11930"]}]},
+    {"CVE": "CVE-2099-1002", "Title": {"Value": "Windows SMB Client Remote Code Execution Vulnerability"},
+     "Threats": [{"Type": 3, "Description": {"Value": "Critical"}, "ProductID": ["11929"]}],
+     "Remediations": [{"Type": 2, "SubType": "Security Update", "Description": {"Value": "5099001"},
+                       "FixedBuild": "10.0.19045.5011", "ProductID": ["11929"]}]},
+    {"CVE": "CVE-2099-1003", "Title": {"Value": "Windows Print Spooler Elevation of Privilege Vulnerability"},
+     "Threats": [{"Type": 3, "Description": {"Value": "Important"}, "ProductID": ["11929"]}],
+     "Remediations": [{"Type": 2, "SubType": "Security Update", "Description": {"Value": "5035845"},
+                       "FixedBuild": "10.0.19045.4170", "ProductID": ["11929"]}]},
+    {"CVE": "CVE-2099-1004", "Title": {"Value": "Windows Server DNS Remote Code Execution Vulnerability"},
+     "Threats": [{"Type": 3, "Description": {"Value": "Critical"}, "ProductID": ["12085"]}],
+     "Remediations": [{"Type": 2, "SubType": "Security Update", "Description": {"Value": "5099002"},
+                       "FixedBuild": "10.0.20348.3000", "ProductID": ["12085"]}]}
+  ]
+}

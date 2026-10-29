@@ -1,0 +1,7 @@
+/* Локальные шрифты (для совпадения с макетом и работы в закрытом контуре). */
+@font-face{font-family:'Inter';font-style:normal;font-weight:400;font-display:swap;src:url('/static/vendor/fonts/inter-cyrillic-400-normal.woff2') format('woff2'),url('/static/vendor/fonts/inter-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:500;font-display:swap;src:url('/static/vendor/fonts/inter-cyrillic-500-normal.woff2') format('woff2'),url('/static/vendor/fonts/inter-latin-500-normal.woff2') format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:600;font-display:swap;src:url('/static/vendor/fonts/inter-cyrillic-600-normal.woff2') format('woff2'),url('/static/vendor/fonts/inter-latin-600-normal.woff2') format('woff2');}
+@font-face{font-family:'Inter';font-style:normal;font-weight:700;font-display:swap;src:url('/static/vendor/fonts/inter-cyrillic-700-normal.woff2') format('woff2'),url('/static/vendor/fonts/inter-latin-700-normal.woff2') format('woff2');}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:400;font-display:swap;src:url('/static/vendor/fonts/jetbrains-mono-cyrillic-400-normal.woff2') format('woff2'),url('/static/vendor/fonts/jetbrains-mono-latin-400-normal.woff2') format('woff2');}
+@font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:500;font-display:swap;src:url('/static/vendor/fonts/jetbrains-mono-cyrillic-500-normal.woff2') format('woff2'),url('/static/vendor/fonts/jetbrains-mono-latin-500-normal.woff2') format('woff2');}

@@ -1,0 +1,7 @@
+# Отчёт по соответствию конфигураций — только комплаенс по профилям.
+id: config
+title: "Отчёт по соответствию конфигураций"
+brand: { product: surveyscan, logo_text: surveyscan }
+sections: [summary, config]
+disclaimer: true
+filters: { min_severity: null, confidence: null, hosts: null, profiles: null }

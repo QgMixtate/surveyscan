@@ -1,0 +1,359 @@
+"""Загрузка результатов коллекторов и сканеров в базу обследования.
+
+Поддерживаемые входы (тип определяется по содержимому):
+  *.surv        — вывод collectors/linux_collect.sh
+  *.json        — вывод collectors/windows_collect.ps1 или отчёт Trivy (JSON)
+  *.xml         — отчёт Nmap (-oX) или отчёт Greenbone/OpenVAS (XML)
+  *.cfg / *.txt — конфигурация сетевого устройства (Cisco IOS, Huawei VRP)
+"""
+from __future__ import annotations
+
+import datetime as dt
+import hashlib
+import json
+import re
+import sqlite3
+from pathlib import Path
+
+from lxml import etree
+
+from .db import find_or_create_asset
+from .versions import upstream_of
+
+
+def _sha256(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def _artifact(con, asset_id, kind, path: Path):
+    con.execute("INSERT INTO raw_artifact(asset_id, kind, path, sha256, loaded_at) VALUES (?,?,?,?,?)",
+                (asset_id, kind, str(path.resolve()), _sha256(path), dt.datetime.now().isoformat(timespec="seconds")))
+
+
+def detect(path: Path) -> str:
+    head = path.read_bytes()[:4096].decode("utf-8", "replace").lstrip("﻿")
+    if "@@@SURVEY:" in head:
+        return "linux"
+    if head.lstrip().startswith("{"):
+        data = json.loads(path.read_text(encoding="utf-8-sig"))
+        if data.get("meta", {}).get("collector", "").startswith("windows_collect"):
+            return "windows"
+        if "Results" in data and "ArtifactName" in data:
+            return "trivy"
+        raise ValueError(f"{path}: неизвестный JSON")
+    if "<nmaprun" in head:
+        return "nmap"
+    if "<report" in head or "<get_reports_response" in head:
+        return "openvas"
+    if re.search(r"^(hostname|sysname) ", head, re.M) or "Software Version" in head or re.search(r"^version \d", head, re.M):
+        return "netdev"
+    raise ValueError(f"{path}: не удалось определить тип файла")
+
+
+def ingest_file(con: sqlite3.Connection, path: Path) -> tuple[str, int | None]:
+    kind = detect(path)
+    asset_id = {"linux": ingest_linux, "windows": ingest_windows, "nmap": ingest_nmap,
+                "openvas": ingest_openvas, "trivy": ingest_trivy, "netdev": ingest_netdev}[kind](con, path)
+    con.commit()
+    return kind, asset_id
+
+
+# ============================================================================ Linux
+def parse_sections(text: str) -> dict[str, str]:
+    sections, name, buf = {}, None, []
+    for line in text.splitlines():
+        m = re.match(r"^@@@SURVEY:([a-z0-9_]+)@@@$", line)
+        if m:
+            if name:
+                sections[name] = "\n".join(buf).strip("\n")
+            name, buf = m.group(1), []
+        elif name:
+            buf.append(line)
+    if name:
+        sections[name] = "\n".join(buf).strip("\n")
+    return sections
+
+
+def _kv(text: str, sep: str = "=", lower_keys=False) -> dict:
+    out = {}
+    for line in (text or "").splitlines():
+        if sep in line:
+            k, v = line.split(sep, 1)
+            k = k.strip()
+            out[k.lower() if lower_keys else k] = v.strip().strip('"')
+    return out
+
+
+def _ws_kv(text: str, lower=True) -> dict:
+    out = {}
+    for line in (text or "").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(None, 1)
+        k = parts[0].lower() if lower else parts[0]
+        if k not in out:              # sshd: действует первое вхождение
+            out[k] = parts[1].strip() if len(parts) > 1 else ""
+    return out
+
+
+def _pam_args(pam_text: str, module: str) -> dict:
+    args = {}
+    for line in (pam_text or "").splitlines():
+        if module in line:
+            for tok in line.split():
+                if "=" in tok:
+                    k, v = tok.split("=", 1)
+                    args[k] = v
+                elif tok in ("enforce_for_root", "even_deny_root", "use_authtok"):
+                    args[tok] = "1"
+    return args
+
+
+def linux_facts(sec: dict[str, str]) -> dict:
+    facts: dict = {}
+    meta = _kv(sec.get("meta"))
+    facts["is_root"] = meta.get("uid") == "0"
+    facts["os_release"] = _kv(sec.get("os_release"))
+    facts["sysctl"] = _kv(sec.get("sysctl"), " = ") or _kv(sec.get("sysctl"))
+    cmdline = (sec.get("cmdline") or "").strip()
+    facts["cmdline"] = cmdline
+    facts["cmdline_params"] = {t.split("=", 1)[0]: (t.split("=", 1)[1] if "=" in t else "1") for t in cmdline.split()}
+    sshd_eff = _ws_kv(sec.get("sshd_effective"))
+    facts["sshd_source"] = "sshd -T" if sshd_eff else "sshd_config"
+    sshd = sshd_eff or _ws_kv(sec.get("sshd_config"))
+    # файл прочитан, но директив нет -> действуют умолчания OpenSSH ({}); файла нет -> нет данных (None)
+    sshd_present = bool(sshd_eff) or bool((sec.get("sshd_config") or "").strip())
+    facts["sshd"] = {k: v.lower() for k, v in sshd.items()} if sshd_present else None
+    facts["login_defs"] = _ws_kv(sec.get("login_defs"), lower=False)
+    pam = sec.get("pam", "")
+    facts["pam"] = pam
+    pwq = _kv(sec.get("pwquality"))
+    pwq.update(_pam_args(pam, "pam_pwquality") or _pam_args(pam, "pam_cracklib"))
+    facts["pwquality"] = pwq
+    fl = _kv(sec.get("faillock"))
+    fl.update(_pam_args(pam, "pam_faillock") or _pam_args(pam, "pam_tally"))
+    facts["faillock"] = fl
+    facts["su_wheel"] = bool(re.search(r"^auth\s+required\s+pam_wheel\.so", _pam_section(pam, "/etc/pam.d/su"), re.M))
+    users = []
+    for line in (sec.get("passwd") or "").splitlines():
+        p = line.split(":")
+        if len(p) >= 3 and p[1].isdigit():
+            users.append({"name": p[0], "uid": int(p[1]), "shell": p[2]})
+    facts["uid0_users"] = [u["name"] for u in users if u["uid"] == 0]
+    facts["login_users"] = [u["name"] for u in users
+                            if not re.search(r"(nologin|false|sync|shutdown|halt)$", u["shell"] or "")]
+    se = sec.get("shadow_empty", "")
+    facts["empty_password_users"] = None if "#noaccess" in se else [x for x in se.split() if x]
+    sn = sec.get("sudoers_nopasswd", "")
+    facts["sudo_nopasswd"] = None if "#noaccess" in sn else [x for x in sn.splitlines() if x.strip()]
+    modes = {}
+    for line in (sec.get("file_modes") or "").splitlines():
+        p = line.split("|")
+        if len(p) == 4:
+            modes[p[0]] = {"mode": p[1], "owner": p[2], "group": p[3]}
+    facts["file_modes"] = modes
+    facts["listening"] = _parse_ss(sec.get("listening", ""))
+    facts["services_enabled"] = [l.split()[0] for l in (sec.get("services_enabled") or "").splitlines() if l.strip()]
+    facts["services_active"] = _kv(sec.get("services_active"))
+    facts["audit_rules"] = [l for l in (sec.get("audit_rules") or "").splitlines() if l and l != "No rules"]
+    facts["astra"] = _kv(sec.get("astra_security"))
+    mounts = {}
+    for line in (sec.get("mounts") or "").splitlines():
+        p = line.split()
+        if len(p) >= 4:
+            mounts[p[1]] = {"fs": p[2], "options": p[3].split(",")}
+    facts["mounts"] = mounts
+    return facts
+
+
+def _pam_section(pam: str, fname: str) -> str:
+    m = re.search(rf"^### {re.escape(fname)}\n(.*?)(?=^### |\Z)", pam or "", re.M | re.S)
+    return m.group(1) if m else ""
+
+
+def _parse_ss(text: str) -> list[dict]:
+    out = []
+    for line in text.splitlines():
+        p = line.split()
+        if len(p) < 5 or p[0] not in ("tcp", "udp", "tcp6", "udp6"):
+            continue
+        local = p[4]
+        addr, _, port = local.rpartition(":")
+        proc = re.search(r'users:\(\("([^"]+)"', line)
+        out.append({"proto": p[0].rstrip("6"), "address": addr.strip("[]"), "port": int(port) if port.isdigit() else port,
+                    "process": proc.group(1) if proc else None})
+    return out
+
+
+def ingest_linux(con, path: Path) -> int:
+    sec = parse_sections(path.read_text(encoding="utf-8", errors="replace"))
+    facts = linux_facts(sec)
+    osr = facts["os_release"]
+    names = [l.strip() for l in (sec.get("hostname") or "").splitlines() if l.strip()]
+    ips = re.findall(r"inet6? ([0-9a-f.:]+)/", sec.get("ip_addr", ""))
+    uname = (sec.get("uname") or "").split()
+    kernel = uname[1] if len(uname) > 1 else None
+    os_id = osr.get("ID", "linux")
+    os_version = osr.get("VERSION_ID")
+    astra_ver = (sec.get("astra_version") or "").splitlines()
+    if os_id.startswith("astra") and astra_ver:
+        os_version = astra_ver[0].strip()
+    meta = _kv(sec.get("meta"))
+    asset_id = find_or_create_asset(
+        con, hostname=names[0] if names else None, ips=ips, kind="host",
+        fqdn=names[1] if len(names) > 1 else None, os_family="linux", os_id=os_id, os_version=os_version,
+        os_pretty=osr.get("PRETTY_NAME"), kernel=kernel, platform="linux",
+        source="linux_collect.sh", collected_at=meta.get("collected_at"),
+        facts=json.dumps(facts, ensure_ascii=False))
+    con.execute("DELETE FROM software WHERE asset_id=?", (asset_id,))
+    rows = []
+    for line in (sec.get("packages_dpkg") or "").splitlines():
+        p = line.split("\t")
+        if len(p) >= 4 and p[3].startswith("ii"):
+            rows.append((asset_id, p[0], p[1], upstream_of(p[1], "deb"), "deb", None, p[2]))
+    for line in (sec.get("packages_rpm") or "").splitlines():
+        p = line.split("\t")
+        if len(p) >= 3:
+            ver = p[1].replace("(none):", "")
+            rows.append((asset_id, p[0], ver, upstream_of(ver, "rpm"), "rpm", p[3] if len(p) > 3 else None, p[2]))
+    if kernel:
+        rows.append((asset_id, "linux-kernel", kernel, upstream_of(kernel, "kernel"), "kernel", None, None))
+    con.executemany("INSERT INTO software(asset_id,name,version,upstream,ecosystem,vendor,arch) VALUES (?,?,?,?,?,?,?)", rows)
+    _artifact(con, asset_id, "linux_collect", path)
+    return asset_id
+
+
+# ============================================================================ Windows
+def ingest_windows(con, path: Path) -> int:
+    data = json.loads(path.read_text(encoding="utf-8-sig"))
+    host, os_ = data.get("host", {}), data.get("os", {})
+    ips = host.get("ips") or []
+    if isinstance(ips, str):
+        ips = [ips]
+    facts = dict(data.get("facts", {}))
+    facts["os"] = os_
+    facts["is_admin"] = data.get("meta", {}).get("is_admin")
+    build = f"{os_.get('version', '')}.{os_.get('ubr') or 0}"
+    asset_id = find_or_create_asset(
+        con, hostname=host.get("hostname"), ips=ips, kind="host", fqdn=host.get("fqdn"),
+        os_family="windows", os_id="windows", os_version=os_.get("display_version"),
+        os_pretty=os_.get("caption"), os_build=build, platform="windows",
+        source="windows_collect.ps1", collected_at=data.get("meta", {}).get("collected_at"),
+        facts=json.dumps(facts, ensure_ascii=False))
+    con.execute("DELETE FROM software WHERE asset_id=?", (asset_id,))
+    con.execute("DELETE FROM hotfix WHERE asset_id=?", (asset_id,))
+    con.executemany("INSERT INTO software(asset_id,name,version,upstream,ecosystem,vendor,arch) VALUES (?,?,?,?,?,?,?)",
+                    [(asset_id, s["name"], s.get("version") or "", upstream_of(s.get("version") or "", "win"), "win",
+                      s.get("vendor"), None) for s in data.get("software") or []])
+    con.executemany("INSERT INTO hotfix VALUES (?,?)",
+                    [(asset_id, (h.get("id") or "").upper().replace("KB", "")) for h in data.get("hotfixes") or []])
+    _artifact(con, asset_id, "windows_collect", path)
+    return asset_id
+
+
+# ============================================================================ Nmap
+def ingest_nmap(con, path: Path) -> None:
+    root = etree.parse(str(path)).getroot()
+    for h in root.iterfind("host"):
+        st = h.find("status")
+        if st is not None and st.get("state") != "up":
+            continue
+        ips = [a.get("addr") for a in h.iterfind("address") if a.get("addrtype") in ("ipv4", "ipv6")]
+        hn = h.find("hostnames/hostname")
+        osm = h.find("os/osmatch")
+        asset_id = find_or_create_asset(con, hostname=hn.get("name") if hn is not None else None, ips=ips,
+                                        kind="host", os_pretty=osm.get("name") if osm is not None else None)
+        con.execute("DELETE FROM service WHERE asset_id=? AND source='nmap'", (asset_id,))
+        for p in h.iterfind("ports/port"):
+            state = p.find("state")
+            if state is None or state.get("state") != "open":
+                continue
+            s = p.find("service")
+            cpe = s.find("cpe") if s is not None else None
+            con.execute("INSERT INTO service(asset_id,proto,port,name,product,version,extrainfo,cpe,source) "
+                        "VALUES (?,?,?,?,?,?,?,?, 'nmap')",
+                        (asset_id, p.get("protocol"), int(p.get("portid")),
+                         s.get("name") if s is not None else None,
+                         s.get("product") if s is not None else None,
+                         s.get("version") if s is not None else None,
+                         s.get("extrainfo") if s is not None else None,
+                         cpe.text if cpe is not None else None))
+        _artifact(con, asset_id, "nmap", path)
+
+
+# ============================================================================ OpenVAS / Greenbone
+def ingest_openvas(con, path: Path) -> None:
+    root = etree.parse(str(path)).getroot()
+    seen_assets = set()
+    for r in root.iter("result"):
+        host_el = r.find("host")
+        if host_el is None:
+            continue
+        ip = (host_el.text or "").strip()
+        hn = host_el.findtext("hostname")
+        asset_id = find_or_create_asset(con, hostname=hn or None, ips=[ip], kind="host")
+        if asset_id not in seen_assets:
+            con.execute("DELETE FROM scanner_finding WHERE asset_id=? AND source='openvas'", (asset_id,))
+            seen_assets.add(asset_id)
+        nvt = r.find("nvt")
+        cves = []
+        if nvt is not None:
+            cves = [ref.get("id") for ref in nvt.iterfind("refs/ref") if (ref.get("type") or "").lower() == "cve"]
+            if not cves and nvt.findtext("cve"):        # старый формат GMP
+                cves = [c.strip() for c in nvt.findtext("cve").split(",") if c.strip().startswith("CVE")]
+        sev = r.findtext("severity")
+        con.execute("INSERT INTO scanner_finding(asset_id,source,port,title,cves,severity,score,details) "
+                    "VALUES (?, 'openvas', ?, ?, ?, ?, ?, ?)",
+                    (asset_id, r.findtext("port"), (nvt.findtext("name") if nvt is not None else r.findtext("name")),
+                     json.dumps(cves), r.findtext("threat"), float(sev) if sev else None,
+                     json.dumps({"oid": nvt.get("oid") if nvt is not None else None}, ensure_ascii=False)))
+    for a in seen_assets:
+        _artifact(con, a, "openvas", path)
+
+
+# ============================================================================ Trivy
+def ingest_trivy(con, path: Path) -> int:
+    data = json.loads(path.read_text(encoding="utf-8"))
+    asset_id = find_or_create_asset(con, hostname=data.get("ArtifactName"), kind="image", platform="container",
+                                    source="trivy")
+    con.execute("DELETE FROM scanner_finding WHERE asset_id=? AND source='trivy'", (asset_id,))
+    for res in data.get("Results") or []:
+        for v in res.get("Vulnerabilities") or []:
+            con.execute("INSERT INTO scanner_finding(asset_id,source,port,title,cves,severity,score,details) "
+                        "VALUES (?, 'trivy', ?, ?, ?, ?, NULL, ?)",
+                        (asset_id, res.get("Target"), f"{v.get('PkgName')} {v.get('InstalledVersion')}: {v.get('Title') or ''}",
+                         json.dumps([v.get("VulnerabilityID")]), v.get("Severity"),
+                         json.dumps({"fixed": v.get("FixedVersion")}, ensure_ascii=False)))
+    _artifact(con, asset_id, "trivy", path)
+    return asset_id
+
+
+# ============================================================================ Сетевое оборудование
+def ingest_netdev(con, path: Path) -> int:
+    text = path.read_text(encoding="utf-8", errors="replace")
+    if re.search(r"^sysname ", text, re.M) or "Software Version V" in text:
+        platform = "huawei_vrp"
+        name = re.search(r"^sysname (\S+)", text, re.M)
+        ver = re.search(r"Software Version (V\d+R\d+C\d+\S*)", text)
+        pkg = "huawei-vrp"
+    else:
+        platform = "cisco_ios"
+        name = re.search(r"^hostname (\S+)", text, re.M)
+        ver = re.search(r"^version (\S+)", text, re.M)
+        pkg = "cisco-ios"
+    ips = re.findall(r"^\s*ip address (\d+\.\d+\.\d+\.\d+) ", text, re.M)
+    hostname = name.group(1) if name else path.stem
+    asset_id = find_or_create_asset(con, hostname=hostname, ips=ips, kind="netdev", platform=platform,
+                                    os_family="netdev", os_id=platform, os_version=ver.group(1) if ver else None,
+                                    source=path.name, facts=json.dumps({"config": text}, ensure_ascii=False))
+    con.execute("DELETE FROM software WHERE asset_id=?", (asset_id,))
+    if ver:
+        con.execute("INSERT INTO software(asset_id,name,version,upstream,ecosystem) VALUES (?,?,?,?, 'firmware')",
+                    (asset_id, pkg, ver.group(1), ver.group(1)))
+    _artifact(con, asset_id, "netdev_config", path)
+    return asset_id

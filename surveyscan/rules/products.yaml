@@ -1,0 +1,119 @@
+# Словарь синонимов: как ПО называется в БДУ ФСТЭК и как оно выглядит на хостах.
+#   bdu:      названия в поле <name> записей БДУ (регистр и знаки не важны)
+#   packages: регулярные выражения имён пакетов deb/rpm (целиком)
+#   windows:  регулярные выражения по DisplayName из реестра Windows (поиск подстроки)
+#   services: регулярные выражения по product из Nmap/OpenVAS
+# Пополняется по итогам обследований. Без записи здесь работает запасное правило:
+# имя пакета == название в БДУ.
+
+products:
+  openssh:
+    bdu: [OpenSSH]
+    packages: [openssh-server, openssh-client, openssh, openssh-clients, openssh-common, openssh-sftp-server]
+    services: [openssh]
+  openssl:
+    bdu: [OpenSSL]
+    packages: [openssl, "libssl[0-9.]*", openssl-libs, "libcrypto[0-9.]*"]
+    windows: ["^OpenSSL"]
+  sudo:
+    bdu: [Sudo]
+    packages: [sudo]
+  glibc:
+    bdu: [glibc, GNU C Library]
+    packages: [libc6, libc-bin, glibc, glibc-common, glibc-core]
+  linux-kernel:
+    bdu: [Linux, Linux kernel, Ядро Linux]
+    packages: [linux-kernel]     # псевдопакет, формируется из uname -r
+  bash:
+    bdu: [Bash, GNU Bash]
+    packages: [bash]
+  curl:
+    bdu: [cURL, libcurl, curl]
+    packages: [curl, "libcurl[0-9]*(-gnutls|-openssl)?", libcurl]
+    windows: ["^curl"]
+  systemd:
+    bdu: [systemd]
+    packages: [systemd, libsystemd0, systemd-libs]
+  polkit:
+    bdu: [polkit, PolicyKit]
+    packages: [policykit-1, polkit, "libpolkit-.*", polkitd]
+  postgresql:
+    bdu: [PostgreSQL]
+    packages: ["postgresql(-[0-9]+)?", "postgresql[0-9]*-server", "postgresql-[0-9]+-.*"]
+    windows: ["^PostgreSQL"]
+    services: [postgresql]
+  postgrespro:
+    bdu: [Postgres Pro, Postgres Pro Standard, Postgres Pro Enterprise, Postgres Pro Certified]
+    packages: ["postgrespro-(std|ent|cert)-[0-9]+(-server)?"]
+  mysql:
+    bdu: [MySQL, MySQL Server]
+    packages: ["mysql-server(-[0-9.]+)?", mysql-community-server]
+    windows: ["^MySQL Server"]
+    services: ["^mysql$"]
+  mariadb:
+    bdu: [MariaDB]
+    packages: ["mariadb-server(-[0-9.]+)?"]
+    services: [mariadb]
+  nginx:
+    bdu: [nginx]
+    packages: [nginx, nginx-core, nginx-full]
+    services: [nginx]
+  apache:
+    bdu: [Apache HTTP Server, HTTP Server]
+    packages: [apache2, apache2-bin, httpd]
+    services: [apache httpd]
+  bind:
+    bdu: [BIND, BIND 9]
+    packages: [bind9, bind, bind-utils]
+    services: ["isc bind"]
+  samba:
+    bdu: [Samba]
+    packages: [samba, samba-common, samba-libs]
+    services: [samba]
+  python:
+    bdu: [Python]
+    packages: ["python3\\.[0-9]+", "python3[0-9]*-minimal", python3]
+    windows: ["^Python 3"]
+  vim:
+    bdu: [Vim]
+    packages: [vim, vim-tiny, vim-common, vim-minimal, vim-enhanced]
+  firefox:
+    bdu: [Firefox, Mozilla Firefox]
+    packages: [firefox, firefox-esr]
+    windows: ["^Mozilla Firefox"]
+  chromium:
+    bdu: [Chrome, Google Chrome, Chromium]
+    packages: [chromium, chromium-browser]
+    windows: ["^Google Chrome$", "^Chromium"]
+  7zip:
+    bdu: [7-Zip]
+    packages: [p7zip, p7zip-full, 7zip]
+    windows: ["^7-Zip"]
+  winrar:
+    bdu: [WinRAR]
+    windows: ["^WinRAR"]
+  notepadpp:
+    bdu: [Notepad++]
+    windows: ["^Notepad\\+\\+"]
+  libreoffice:
+    bdu: [LibreOffice]
+    packages: ["libreoffice(-core)?"]
+    windows: ["^LibreOffice"]
+  java:
+    bdu: [Java SE, Java Runtime Environment, OpenJDK, JDK]
+    packages: ["openjdk-[0-9]+-jre(-headless)?", "java-[0-9.]+-openjdk(-headless)?"]
+    windows: ["^Java [0-9]+ Update", "^Java\\(TM\\)", "OpenJDK"]
+  cisco-ios:
+    bdu: [IOS, Cisco IOS, IOS XE]
+    packages: [cisco-ios]        # формируется из конфигурации устройства
+  huawei-vrp:
+    bdu: [VRP, Huawei VRP]
+    packages: [huawei-vrp]
+
+# Пакеты, которые никогда не сопоставляем по запасному правилу (шум)
+ignore_packages:
+  - ".*-doc"
+  - ".*-dev"
+  - "fonts-.*"
+  - "language-pack-.*"
+  - "base-files"

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Синтетический отчёт Greenbone (формат GMP get_reports, сокращён) -->
+<report id="00000000-0000-0000-0000-000000000001">
+  <report>
+    <results>
+      <result id="r1">
+        <name>Apache Tomcat Security Bypass Vulnerability</name>
+        <host>10.10.1.21<hostname>ws-buh-07.corp.example</hostname></host>
+        <port>8080/tcp</port>
+        <nvt oid="1.3.6.1.4.1.25623.1.0.999001"><type>nvt</type><name>Apache Tomcat Security Bypass Vulnerability</name>
+          <refs><ref type="cve" id="CVE-2099-2001"/><ref type="url" id="https://example.invalid/tomcat"/></refs></nvt>
+        <threat>High</threat><severity>7.5</severity>
+      </result>
+      <result id="r2">
+        <name>Telnet Unencrypted Cleartext Login</name>
+        <host>10.10.1.30</host>
+        <port>23/tcp</port>
+        <nvt oid="1.3.6.1.4.1.25623.1.0.108522"><type>nvt</type><name>Telnet Unencrypted Cleartext Login</name><refs/></nvt>
+        <threat>Medium</threat><severity>4.8</severity>
+      </result>
+      <result id="r3">
+        <name>Weak Encryption Algorithm(s) Supported (SSH)</name>
+        <host>10.10.1.11<hostname>astra-app01.corp.example</hostname></host>
+        <port>22/tcp</port>
+        <nvt oid="1.3.6.1.4.1.25623.1.0.105611"><type>nvt</type><name>Weak Encryption Algorithm(s) Supported (SSH)</name><refs/></nvt>
+        <threat>Medium</threat><severity>4.3</severity>
+      </result>
+      <result id="r4">
+        <name>Example Unknown Vendor Vulnerability</name>
+        <host>10.10.1.21</host>
+        <port>445/tcp</port>
+        <nvt oid="1.3.6.1.4.1.25623.1.0.999002"><type>nvt</type><name>Example Unknown Vendor Vulnerability</name>
+          <refs><ref type="cve" id="CVE-2099-3001"/></refs></nvt>
+        <threat>Medium</threat><severity>5.0</severity>
+      </result>
+    </results>
+  </report>
+</report>

@@ -1,0 +1,7 @@
+# Отчёт по уязвимостям (как профиль «Уязвимости» в RedCheck) — без конфигураций.
+id: vuln
+title: "Отчёт по уязвимостям"
+brand: { product: surveyscan, logo_text: surveyscan }
+sections: [summary, by_host_matrix, by_product_matrix, vuln_table, vuln_details]
+disclaimer: true
+filters: { min_severity: null, confidence: null, hosts: null, profiles: null }

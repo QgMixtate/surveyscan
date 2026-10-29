@@ -1,0 +1,7 @@
+# Отчёт инвентаризации — активы, ПО, сервисы, СЗИ. Без уязвимостей и конфигураций.
+id: inventory
+title: "Отчёт инвентаризации"
+brand: { product: surveyscan, logo_text: surveyscan }
+sections: [summary, inventory, sources]
+disclaimer: true
+filters: { min_severity: null, confidence: null, hosts: null, profiles: null }

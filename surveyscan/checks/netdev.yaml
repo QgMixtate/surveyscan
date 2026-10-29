@@ -1,0 +1,62 @@
+# Проверки конфигураций сетевого оборудования по тексту конфигурации (факт [config]).
+# Регулярные выражения применяются построчно (^ и $ — начало и конец строки), регистр не важен.
+# Для Cisco/Juniper/Arista в целевой системе часть проверок переносится в Batfish.
+
+checks:
+  # ---------------------------------------------------------------- Cisco IOS / IOS XE
+  - {id: IOS-01, title: "Отключён HTTP-сервер управления", platform: cisco_ios, expected_text: "нет «ip http server»",
+     fact: [config], op: not_regex, value: '^ip http server', severity: high,
+     remediation: "no ip http server (при необходимости — только ip http secure-server с ACL)"}
+  - {id: IOS-02, title: "Пароли в конфигурации шифруются", platform: cisco_ios, expected_text: "есть «service password-encryption»",
+     fact: [config], op: regex, value: '^service password-encryption', severity: medium,
+     remediation: "service password-encryption"}
+  - {id: IOS-03, title: "Нет enable password (только enable secret)", platform: cisco_ios, expected_text: "нет «enable password»",
+     fact: [config], op: not_regex, value: '^enable password', severity: high,
+     remediation: "no enable password; enable algorithm-type scrypt secret <...>"}
+  - {id: IOS-04, title: "SSH только версии 2", platform: cisco_ios, expected_text: "есть «ip ssh version 2»",
+     fact: [config], op: regex, value: '^ip ssh version 2', severity: high,
+     remediation: "ip ssh version 2"}
+  - {id: IOS-05, title: "На линиях VTY не разрешён Telnet", platform: cisco_ios, expected_text: "нет telnet в «transport input»",
+     fact: [config], op: not_regex, value: '^\s*transport input (all|.*telnet)', severity: high,
+     remediation: "line vty 0 15 → transport input ssh"}
+  - {id: IOS-06, title: "Нет SNMP-сообществ public/private", platform: cisco_ios, expected_text: "нет сообществ public/private",
+     fact: [config], op: not_regex, value: '^snmp-server community (public|private)\b', severity: high,
+     remediation: "Удалить сообщества по умолчанию; перейти на SNMPv3 (authPriv)."}
+  - {id: IOS-07, title: "Нет SNMP-сообществ с правом записи (RW)", platform: cisco_ios, expected_text: "нет сообществ RW",
+     fact: [config], op: not_regex, value: '^snmp-server community \S+ RW', severity: high,
+     remediation: "Удалить RW-сообщества; управление — через SSH/NETCONF."}
+  - {id: IOS-08, title: "Журналы отправляются на внешний сервер", platform: cisco_ios, expected_text: "есть «logging host <IP>»",
+     fact: [config], op: regex, value: '^logging (host )?\d+\.\d+\.\d+\.\d+', severity: medium,
+     remediation: "logging host <IP SIEM/syslog>"}
+  - {id: IOS-09, title: "Включена модель AAA", platform: cisco_ios, expected_text: "есть «aaa new-model»",
+     fact: [config], op: regex, value: '^aaa new-model', severity: medium,
+     remediation: "aaa new-model + аутентификация через TACACS+/RADIUS с локальным резервом"}
+  - {id: IOS-10, title: "Нет бесконечных сеансов (exec-timeout 0 0)", platform: cisco_ios, expected_text: "нет «exec-timeout 0 0»",
+     fact: [config], op: not_regex, value: '^\s*exec-timeout 0( 0)?\s*$', severity: medium,
+     remediation: "exec-timeout 10 0 на console и vty"}
+  - {id: IOS-11, title: "Временные метки в журналах", platform: cisco_ios, expected_text: "есть «service timestamps log datetime»",
+     fact: [config], op: regex, value: '^service timestamps log datetime', severity: low,
+     remediation: "service timestamps log datetime msec localtime show-timezone"}
+  - {id: IOS-12, title: "Настроена синхронизация времени (NTP)", platform: cisco_ios, expected_text: "есть «ntp server»",
+     fact: [config], op: regex, value: '^ntp server', severity: medium,
+     remediation: "ntp server <IP>"}
+
+  # ---------------------------------------------------------------- Huawei VRP
+  - {id: VRP-01, title: "Telnet-сервер отключён", platform: huawei_vrp, expected_text: "нет «telnet server enable»",
+     fact: [config], op: not_regex, value: '^\s*telnet (ipv6 )?server enable', severity: high,
+     remediation: "undo telnet server enable"}
+  - {id: VRP-02, title: "Управление по SSH (STelnet) включено", platform: huawei_vrp, expected_text: "есть «stelnet server enable»",
+     fact: [config], op: regex, value: '^\s*stelnet server enable', severity: medium,
+     remediation: "stelnet server enable; на user-interface vty — protocol inbound ssh"}
+  - {id: VRP-03, title: "SNMP только v3", platform: huawei_vrp, expected_text: "только SNMPv3",
+     fact: [config], op: not_regex, value: '^\s*snmp-agent sys-info version (all|.*v1|.*v2c)', severity: high,
+     remediation: "snmp-agent sys-info version v3"}
+  - {id: VRP-04, title: "Журналы отправляются на внешний сервер", platform: huawei_vrp, expected_text: "есть «info-center loghost»",
+     fact: [config], op: regex, value: '^\s*info-center loghost', severity: medium,
+     remediation: "info-center loghost <IP>"}
+  - {id: VRP-05, title: "Нет бесконечных сеансов (idle-timeout 0 0)", platform: huawei_vrp, expected_text: "нет «idle-timeout 0 0»",
+     fact: [config], op: not_regex, value: '^\s*idle-timeout 0 0', severity: medium,
+     remediation: "idle-timeout 10 0 на user-interface"}
+  - {id: VRP-06, title: "Настроена синхронизация времени (NTP)", platform: huawei_vrp, expected_text: "есть «ntp-service unicast-server»",
+     fact: [config], op: regex, value: '^\s*ntp-service unicast-server', severity: medium,
+     remediation: "ntp-service unicast-server <IP>"}
