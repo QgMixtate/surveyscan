@@ -6,3 +6,4 @@ demo-output/
 secret.key
 node_modules/
 .env
+.venv/

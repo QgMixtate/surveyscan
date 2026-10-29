@@ -37,8 +37,12 @@
 ## Команды
 - Тесты: `python -m pytest -q` (ожидается 111 passed). Нужен поднятый PostgreSQL.
 - Запуск: `python -m uvicorn surveyscan.api.app:app --host 127.0.0.1 --port 8099` или `docker compose up --build`.
-- Сборка SPA после правки `api/static/app.jsx`:
-  `cd surveyscan/api/static && /tmp/spabuild/node_modules/.bin/babel app.jsx --presets /tmp/spabuild/node_modules/@babel/preset-react -o app.js`
+- Сборка SPA после правки `api/static/app.jsx` (путь к babel — своей песочницы/машины; ВАЖНО:
+  нужен `runtime: classic` в пресете, иначе новые версии `@babel/preset-react` эмитят
+  `import {jsxDEV} from "react/jsx-dev-runtime"`, а проект без бандлера — упадёт
+  `SyntaxError: Cannot use import statement outside a module`):
+  1) `babel.config.json` рядом (один раз): `{"presets": [["@babel/preset-react", {"runtime": "classic"}]]}`
+  2) `cd surveyscan/api/static && <path>/node_modules/.bin/babel app.jsx --config-file <path-to-babel.config.json> -o app.js`
 - Скриншоты UI: Playwright+Chromium уже в контейнере (require('playwright'), chromium.launch()).
 
 ## Готчи (на них уже наступали)
