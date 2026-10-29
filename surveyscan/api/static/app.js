@@ -1,3 +1,4 @@
+import { jsxDEV as _jsxDEV, Fragment as _Fragment } from "react/jsx-dev-runtime";
 const {
   useState,
   useEffect,
@@ -23,108 +24,135 @@ function NewScan({
   const [targets, setTargets] = useState(initTargets || "");
   const [sel, setSel] = useState(initCreds || []);
   const toggle = id => setSel(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
-    className: "h1"
-  }, "\u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435"), /*#__PURE__*/React.createElement("p", {
-    className: "sub"
-  }, "\u0423\u043A\u0430\u0436\u0438\u0442\u0435 \u043F\u043E\u0434\u0441\u0435\u0442\u0438 \u0438 \u0445\u043E\u0441\u0442\u044B. \u0421\u0431\u043E\u0440 \u2014 \u0441\u0435\u0442\u0435\u0432\u043E\u0439 (nmap): \u0436\u0438\u0432\u044B\u0435 \u0445\u043E\u0441\u0442\u044B, \u043F\u043E\u0440\u0442\u044B, \u0432\u0435\u0440\u0441\u0438\u0438 \u0441\u0435\u0440\u0432\u0438\u0441\u043E\u0432, \u041E\u0421 \u2192 \u0441\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438. \u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0443\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438 \u2014 \u0441\u043A\u0430\u043D\u0435\u0440 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0441\u044F \u043A \u0430\u043A\u0442\u0438\u0432\u0430\u043C (SSH/WinRM/SNMP) \u0438 \u0441\u043E\u0431\u0435\u0440\u0451\u0442 \u043F\u043E\u043B\u043D\u044B\u0439 \u0438\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u044C; \u043A \u043A\u0430\u0436\u0434\u043E\u043C\u0443 \u0430\u043A\u0442\u0438\u0432\u0443 \u0423\u0417 \u043F\u043E\u0434\u0431\u0438\u0440\u0430\u0435\u0442\u0441\u044F \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438."), /*#__PURE__*/React.createElement("div", {
-    className: "card",
-    style: {
-      maxWidth: 820
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "field"
-  }, /*#__PURE__*/React.createElement("label", null, "\u0426\u0435\u043B\u0438: \u043F\u043E\u0434\u0441\u0435\u0442\u0438 / \u0445\u043E\u0441\u0442\u044B"), /*#__PURE__*/React.createElement("textarea", {
-    rows: "4",
-    value: targets,
-    onChange: e => setTargets(e.target.value),
-    placeholder: "10.0.0.0/24, 10.0.1.5\nsrv01.corp",
-    style: {
-      fontFamily: "JetBrains Mono, monospace",
-      fontSize: 13
-    }
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "sub2"
-  }, "\u0427\u0435\u0440\u0435\u0437 \u0437\u0430\u043F\u044F\u0442\u0443\u044E, \u043F\u0440\u043E\u0431\u0435\u043B \u0438\u043B\u0438 \u0441 \u043D\u043E\u0432\u043E\u0439 \u0441\u0442\u0440\u043E\u043A\u0438. \u041F\u0440\u0438\u043C\u0435\u0440\u044B: ", /*#__PURE__*/React.createElement("span", {
-    className: "mono"
-  }, "192.168.1.0/24"), ", ", /*#__PURE__*/React.createElement("span", {
-    className: "mono"
-  }, "10.0.0.5"))), /*#__PURE__*/React.createElement("div", {
-    className: "field",
-    style: {
-      marginTop: 18
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center"
-    }
-  }, /*#__PURE__*/React.createElement("label", {
-    style: {
-      margin: 0
-    }
-  }, "\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438 \u0434\u043B\u044F \u0441\u0431\u043E\u0440\u0430 ", /*#__PURE__*/React.createElement("span", {
-    className: "sub2",
-    style: {
-      fontWeight: 400
-    }
-  }, "(\u043E\u043F\u0446\u0438\u043E\u043D\u0430\u043B\u044C\u043D\u043E \u2014 \u0431\u0435\u0437 \u043D\u0438\u0445 \u0442\u043E\u043B\u044C\u043A\u043E \u0441\u0435\u0442\u0435\u0432\u043E\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435)")), /*#__PURE__*/React.createElement("span", {
-    className: "more",
-    style: {
-      marginLeft: "auto"
-    },
-    onClick: () => go({
-      view: "creds"
-    })
-  }, "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0423\u0417 \u2192")), !savedCreds || savedCreds.length === 0 ? /*#__PURE__*/React.createElement("div", {
-    className: "sub2",
-    style: {
-      margin: "8px 0"
-    }
-  }, "\u0421\u043E\u0445\u0440\u0430\u043D\u0451\u043D\u043D\u044B\u0445 \u0423\u0417 \u043D\u0435\u0442. ", /*#__PURE__*/React.createElement("span", {
-    className: "link",
-    onClick: () => go({
-      view: "creds"
-    })
-  }, "\u0414\u043E\u0431\u0430\u0432\u044C\u0442\u0435 \u0443\u0447\u0451\u0442\u043D\u0443\u044E \u0437\u0430\u043F\u0438\u0441\u044C"), " \u0432\u043E \u0432\u043A\u043B\u0430\u0434\u043A\u0435 \xAB\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438\xBB \u2014 \u0437\u0430\u0442\u0435\u043C \u0432\u044B\u0431\u0438\u0440\u0430\u0439\u0442\u0435 \u0435\u0451 \u0437\u0434\u0435\u0441\u044C.") : /*#__PURE__*/React.createElement("div", {
-    className: "credpick"
-  }, savedCreds.map(c => /*#__PURE__*/React.createElement("label", {
-    className: "credopt" + (sel.includes(c.id) ? " on" : ""),
-    key: c.id
-  }, /*#__PURE__*/React.createElement("input", {
-    type: "checkbox",
-    checked: sel.includes(c.id),
-    onChange: () => toggle(c.id)
-  }), /*#__PURE__*/React.createElement("span", {
-    className: "cn"
-  }, c.name), /*#__PURE__*/React.createElement("span", {
-    className: "ct"
-  }, CRED_KIND[c.type] || c.type), /*#__PURE__*/React.createElement("span", {
-    className: "cu mono"
-  }, c.type === "snmp" ? "community" : c.username || "—", c.port ? ":" + c.port : ""))))), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      gap: 10,
-      marginTop: 18
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "btn",
-    disabled: busy || !targets.trim(),
-    onClick: () => onRun(targets, sel)
-  }, busy ? "Запуск…" : "Запустить скан"), /*#__PURE__*/React.createElement("button", {
-    className: "btn ghost",
-    onClick: () => go({
-      view: "dash"
-    })
-  }, "\u041E\u0442\u043C\u0435\u043D\u0430")))), /*#__PURE__*/React.createElement("div", {
-    className: "warn",
-    style: {
-      maxWidth: 820,
-      marginTop: 14
-    }
-  }, "\u0421\u0435\u043A\u0440\u0435\u0442\u044B \u0445\u0440\u0430\u043D\u044F\u0442\u0441\u044F \u0432 \u0431\u0430\u0437\u0435 \u0432 \u0437\u0430\u0448\u0438\u0444\u0440\u043E\u0432\u0430\u043D\u043D\u043E\u043C \u0432\u0438\u0434\u0435 (\u043A\u043B\u044E\u0447 \u2014 \u0432 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u043E\u0439 \u043E\u043A\u0440\u0443\u0436\u0435\u043D\u0438\u044F, \u043D\u0435 \u0432 \u0411\u0414) \u0438 \u0440\u0430\u0441\u0448\u0438\u0444\u0440\u043E\u0432\u044B\u0432\u0430\u044E\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043D\u0430 \u0432\u0440\u0435\u043C\u044F \u0437\u0430\u0434\u0430\u0447\u0438. \u041A \u043A\u0430\u0436\u0434\u043E\u043C\u0443 \u0430\u043A\u0442\u0438\u0432\u0443 \u043F\u0440\u0438\u043C\u0435\u043D\u044F\u0435\u0442\u0441\u044F \u043F\u043E\u0434\u0445\u043E\u0434\u044F\u0449\u0430\u044F \u043F\u043E \u0442\u0438\u043F\u0443 \u0423\u0417 (\u043F\u0435\u0440\u0435\u0431\u043E\u0440 \u0434\u043E \u043F\u0435\u0440\u0432\u043E\u0439 \u0443\u0441\u043F\u0435\u0448\u043D\u043E\u0439); \u0432 \u0441\u0432\u043E\u0434\u043A\u0435 \u0444\u0438\u043A\u0441\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043B\u043E\u0433\u0438\u043D."));
+  return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("h1", {
+      className: "h1",
+      children: "Новое сканирование"
+    }, void 0, false), /*#__PURE__*/_jsxDEV("p", {
+      className: "sub",
+      children: "Укажите подсети и хосты. Сбор — сетевой (nmap): живые хосты, порты, версии сервисов, ОС → схема сети. Выберите учётные записи — сканер подключится к активам (SSH/WinRM/SNMP) и соберёт полный инвентарь; к каждому активу УЗ подбирается автоматически."
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      style: {
+        maxWidth: 820
+      },
+      children: /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "field",
+          children: [/*#__PURE__*/_jsxDEV("label", {
+            children: "Цели: подсети / хосты"
+          }, void 0, false), /*#__PURE__*/_jsxDEV("textarea", {
+            rows: "4",
+            value: targets,
+            onChange: e => setTargets(e.target.value),
+            placeholder: "10.0.0.0/24, 10.0.1.5\nsrv01.corp",
+            style: {
+              fontFamily: "JetBrains Mono, monospace",
+              fontSize: 13
+            }
+          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+            className: "sub2",
+            children: ["Через запятую, пробел или с новой строки. Примеры: ", /*#__PURE__*/_jsxDEV("span", {
+              className: "mono",
+              children: "192.168.1.0/24"
+            }, void 0, false), ", ", /*#__PURE__*/_jsxDEV("span", {
+              className: "mono",
+              children: "10.0.0.5"
+            }, void 0, false)]
+          }, void 0, true)]
+        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+          className: "field",
+          style: {
+            marginTop: 18
+          },
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            style: {
+              display: "flex",
+              alignItems: "center"
+            },
+            children: [/*#__PURE__*/_jsxDEV("label", {
+              style: {
+                margin: 0
+              },
+              children: ["Учётные записи для сбора ", /*#__PURE__*/_jsxDEV("span", {
+                className: "sub2",
+                style: {
+                  fontWeight: 400
+                },
+                children: "(опционально — без них только сетевое обнаружение)"
+              }, void 0, false)]
+            }, void 0, true), /*#__PURE__*/_jsxDEV("span", {
+              className: "more",
+              style: {
+                marginLeft: "auto"
+              },
+              onClick: () => go({
+                view: "creds"
+              }),
+              children: "Управление УЗ →"
+            }, void 0, false)]
+          }, void 0, true), !savedCreds || savedCreds.length === 0 ? /*#__PURE__*/_jsxDEV("div", {
+            className: "sub2",
+            style: {
+              margin: "8px 0"
+            },
+            children: ["Сохранённых УЗ нет. ", /*#__PURE__*/_jsxDEV("span", {
+              className: "link",
+              onClick: () => go({
+                view: "creds"
+              }),
+              children: "Добавьте учётную запись"
+            }, void 0, false), " во вкладке «Учётные записи» — затем выбирайте её здесь."]
+          }, void 0, true) : /*#__PURE__*/_jsxDEV("div", {
+            className: "credpick",
+            children: savedCreds.map(c => /*#__PURE__*/_jsxDEV("label", {
+              className: "credopt" + (sel.includes(c.id) ? " on" : ""),
+              children: [/*#__PURE__*/_jsxDEV("input", {
+                type: "checkbox",
+                checked: sel.includes(c.id),
+                onChange: () => toggle(c.id)
+              }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+                className: "cn",
+                children: c.name
+              }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+                className: "ct",
+                children: CRED_KIND[c.type] || c.type
+              }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+                className: "cu mono",
+                children: [c.type === "snmp" ? "community" : c.username || "—", c.port ? ":" + c.port : ""]
+              }, void 0, true)]
+            }, c.id, true))
+          }, void 0, false)]
+        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+          style: {
+            display: "flex",
+            gap: 10,
+            marginTop: 18
+          },
+          children: [/*#__PURE__*/_jsxDEV("button", {
+            className: "btn",
+            disabled: busy || !targets.trim(),
+            onClick: () => onRun(targets, sel),
+            children: busy ? "Запуск…" : "Запустить скан"
+          }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
+            className: "btn ghost",
+            onClick: () => go({
+              view: "dash"
+            }),
+            children: "Отмена"
+          }, void 0, false)]
+        }, void 0, true)]
+      }, void 0, true)
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "warn",
+      style: {
+        maxWidth: 820,
+        marginTop: 14
+      },
+      children: "Секреты хранятся в базе в зашифрованном виде (ключ — в переменной окружения, не в БД) и расшифровываются только на время задачи. К каждому активу применяется подходящая по типу УЗ (перебор до первой успешной); в сводке фиксируется только логин."
+    }, void 0, false)]
+  }, void 0, true);
 }
 function Credentials({
   onChange
@@ -186,103 +214,149 @@ function Credentials({
     refresh();
     onChange && onChange();
   };
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
-    className: "h1"
-  }, "\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438"), /*#__PURE__*/React.createElement("p", {
-    className: "sub"
-  }, "\u0425\u0440\u0430\u043D\u0438\u043B\u0438\u0449\u0435 \u0423\u0417 \u0434\u043B\u044F \u0430\u0443\u0442\u0435\u043D\u0442\u0438\u0444\u0438\u0446\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u043E\u0433\u043E \u0441\u0431\u043E\u0440\u0430. \u0417\u0430\u0432\u043E\u0434\u044F\u0442\u0441\u044F \u043E\u0434\u0438\u043D \u0440\u0430\u0437 \u2014 \u0437\u0430\u0442\u0435\u043C \u0432\u044B\u0431\u0438\u0440\u0430\u044E\u0442\u0441\u044F \u0432 \u0444\u043E\u0440\u043C\u0435 \u0441\u043A\u0430\u043D\u0430. \u0421\u0435\u043A\u0440\u0435\u0442\u044B \u0448\u0438\u0444\u0440\u0443\u044E\u0442\u0441\u044F \u0432 \u0411\u0414 (\u043A\u043B\u044E\u0447 \u0432 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u043E\u0439 \u043E\u043A\u0440\u0443\u0436\u0435\u043D\u0438\u044F, \u043D\u0435 \u0432 \u0431\u0430\u0437\u0435)."), /*#__PURE__*/React.createElement("div", {
-    className: "card",
-    style: {
-      marginBottom: 16,
-      maxWidth: 820
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "credrow"
-  }, /*#__PURE__*/React.createElement("input", {
-    placeholder: "\u0418\u043C\u044F: Linux-\u0430\u0443\u0434\u0438\u0442",
-    value: f.name,
-    style: {
-      flex: 1.4
-    },
-    onChange: e => setFF("name", e.target.value)
-  }), /*#__PURE__*/React.createElement("select", {
-    value: f.type,
-    onChange: e => setFF("type", e.target.value)
-  }, /*#__PURE__*/React.createElement("option", {
-    value: "ssh"
-  }, "SSH \xB7 Linux"), /*#__PURE__*/React.createElement("option", {
-    value: "winrm"
-  }, "WinRM \xB7 Windows"), /*#__PURE__*/React.createElement("option", {
-    value: "snmp"
-  }, "SNMP \xB7 \u043E\u0431\u043E\u0440\u0443\u0434.")), /*#__PURE__*/React.createElement("input", {
-    placeholder: f.type === "snmp" ? "— (не нужно)" : "логин",
-    value: f.username,
-    disabled: f.type === "snmp",
-    onChange: e => setFF("username", e.target.value)
-  }), /*#__PURE__*/React.createElement("input", {
-    type: "password",
-    placeholder: f.type === "snmp" ? "community" : "пароль / ключ",
-    value: f.secret,
-    autoComplete: "new-password",
-    onChange: e => setFF("secret", e.target.value)
-  }), f.type === "winrm" ? /*#__PURE__*/React.createElement("input", {
-    placeholder: "\u0434\u043E\u043C\u0435\u043D",
-    value: f.domain,
-    style: {
-      width: 90
-    },
-    onChange: e => setFF("domain", e.target.value)
-  }) : null, /*#__PURE__*/React.createElement("input", {
-    placeholder: "\u043F\u043E\u0440\u0442",
-    value: f.port,
-    style: {
-      width: 64
-    },
-    onChange: e => setFF("port", e.target.value)
-  }), /*#__PURE__*/React.createElement("button", {
-    className: "btn sm",
-    onClick: add
-  }, "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C")), err ? /*#__PURE__*/React.createElement("div", {
-    className: "sub2",
-    style: {
-      color: "var(--crit,#b4232a)",
-      marginTop: 8
-    }
-  }, err) : null)), /*#__PURE__*/React.createElement("div", {
-    className: "card",
-    style: {
-      maxWidth: 820
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u0418\u043C\u044F"), /*#__PURE__*/React.createElement("th", null, "\u0422\u0438\u043F"), /*#__PURE__*/React.createElement("th", null, "\u041B\u043E\u0433\u0438\u043D / \u043F\u043E\u0440\u0442"), /*#__PURE__*/React.createElement("th", null, "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0430"), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, list.map(c => /*#__PURE__*/React.createElement("tr", {
-    key: c.id
-  }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, c.name)), /*#__PURE__*/React.createElement("td", null, CRED_KIND[c.type] || c.type), /*#__PURE__*/React.createElement("td", {
-    className: "mono sub2"
-  }, c.type === "snmp" ? "community" : c.username || "—", c.port ? ":" + c.port : "", c.domain ? " · " + c.domain : ""), /*#__PURE__*/React.createElement("td", {
-    className: "sub2"
-  }, c.created_at ? c.created_at.replace("T", " ").slice(0, 16) : ""), /*#__PURE__*/React.createElement("td", {
-    style: {
-      textAlign: "right"
-    }
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "xbtn",
-    title: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C",
-    onClick: () => del(c.id)
-  }, "\u2715")))), list.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    colSpan: "5",
-    className: "sub2"
-  }, "\u0423\u0417 \u043D\u0435 \u0437\u0430\u0432\u0435\u0434\u0435\u043D\u044B. \u0414\u043E\u0431\u0430\u0432\u044C\u0442\u0435 \u043F\u0435\u0440\u0432\u0443\u044E \u0432\u044B\u0448\u0435.")))))), /*#__PURE__*/React.createElement("div", {
-    className: "warn",
-    style: {
-      maxWidth: 820,
-      marginTop: 14
-    }
-  }, "\u041F\u0430\u0440\u043E\u043B\u0438, \u043A\u043B\u044E\u0447\u0438 \u0438 community \u0445\u0440\u0430\u043D\u044F\u0442\u0441\u044F \u0437\u0430\u0448\u0438\u0444\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u043C\u0438 (Fernet). \u041C\u0430\u0441\u0442\u0435\u0440-\u043A\u043B\u044E\u0447 \u0431\u0435\u0440\u0451\u0442\u0441\u044F \u0438\u0437 ", /*#__PURE__*/React.createElement("span", {
-    className: "mono"
-  }, "SURVEYSCAN_SECRET_KEY"), " \u0438 \u0432 \u0431\u0430\u0437\u0435 \u043D\u0435 \u043B\u0435\u0436\u0438\u0442 \u2014 \u0434\u0430\u043C\u043F \u0411\u0414 \u0441\u0430\u043C \u043F\u043E \u0441\u0435\u0431\u0435 \u0441\u0435\u043A\u0440\u0435\u0442\u044B \u043D\u0435 \u0440\u0430\u0441\u043A\u0440\u043E\u0435\u0442. \u0417\u0430\u0434\u0430\u0439\u0442\u0435 \u044D\u0442\u0443 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u0443\u044E \u0432 \u0441\u0432\u043E\u0451\u043C \u043E\u043A\u0440\u0443\u0436\u0435\u043D\u0438\u0438 (\u0438\u043D\u0430\u0447\u0435 \u043A\u043B\u044E\u0447 \u0433\u0435\u043D\u0435\u0440\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u0432 \u0442\u043E\u043C\u0435 \u0434\u0430\u043D\u043D\u044B\u0445 \u0438 \u0442\u0435\u0440\u044F\u0435\u0442\u0441\u044F \u0432\u043C\u0435\u0441\u0442\u0435 \u0441 \u043D\u0438\u043C)."));
+  return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("h1", {
+      className: "h1",
+      children: "Учётные записи"
+    }, void 0, false), /*#__PURE__*/_jsxDEV("p", {
+      className: "sub",
+      children: "Хранилище УЗ для аутентифицированного сбора. Заводятся один раз — затем выбираются в форме скана. Секреты шифруются в БД (ключ в переменной окружения, не в базе)."
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      style: {
+        marginBottom: 16,
+        maxWidth: 820
+      },
+      children: /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "credrow",
+          children: [/*#__PURE__*/_jsxDEV("input", {
+            placeholder: "Имя: Linux-аудит",
+            value: f.name,
+            style: {
+              flex: 1.4
+            },
+            onChange: e => setFF("name", e.target.value)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("select", {
+            value: f.type,
+            onChange: e => setFF("type", e.target.value),
+            children: [/*#__PURE__*/_jsxDEV("option", {
+              value: "ssh",
+              children: "SSH · Linux"
+            }, void 0, false), /*#__PURE__*/_jsxDEV("option", {
+              value: "winrm",
+              children: "WinRM · Windows"
+            }, void 0, false), /*#__PURE__*/_jsxDEV("option", {
+              value: "snmp",
+              children: "SNMP · оборуд."
+            }, void 0, false)]
+          }, void 0, true), /*#__PURE__*/_jsxDEV("input", {
+            placeholder: f.type === "snmp" ? "— (не нужно)" : "логин",
+            value: f.username,
+            disabled: f.type === "snmp",
+            onChange: e => setFF("username", e.target.value)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
+            type: "password",
+            placeholder: f.type === "snmp" ? "community" : "пароль / ключ",
+            value: f.secret,
+            autoComplete: "new-password",
+            onChange: e => setFF("secret", e.target.value)
+          }, void 0, false), f.type === "winrm" ? /*#__PURE__*/_jsxDEV("input", {
+            placeholder: "домен",
+            value: f.domain,
+            style: {
+              width: 90
+            },
+            onChange: e => setFF("domain", e.target.value)
+          }, void 0, false) : null, /*#__PURE__*/_jsxDEV("input", {
+            placeholder: "порт",
+            value: f.port,
+            style: {
+              width: 64
+            },
+            onChange: e => setFF("port", e.target.value)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
+            className: "btn sm",
+            onClick: add,
+            children: "Сохранить"
+          }, void 0, false)]
+        }, void 0, true), err ? /*#__PURE__*/_jsxDEV("div", {
+          className: "sub2",
+          style: {
+            color: "var(--crit,#b4232a)",
+            marginTop: 8
+          },
+          children: err
+        }, void 0, false) : null]
+      }, void 0, true)
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      style: {
+        maxWidth: 820
+      },
+      children: /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: /*#__PURE__*/_jsxDEV("table", {
+          children: [/*#__PURE__*/_jsxDEV("thead", {
+            children: /*#__PURE__*/_jsxDEV("tr", {
+              children: [/*#__PURE__*/_jsxDEV("th", {
+                children: "Имя"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Тип"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Логин / порт"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Добавлена"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {}, void 0, false)]
+            }, void 0, true)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
+            children: [list.map(c => /*#__PURE__*/_jsxDEV("tr", {
+              children: [/*#__PURE__*/_jsxDEV("td", {
+                children: /*#__PURE__*/_jsxDEV("b", {
+                  children: c.name
+                }, void 0, false)
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                children: CRED_KIND[c.type] || c.type
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                className: "mono sub2",
+                children: [c.type === "snmp" ? "community" : c.username || "—", c.port ? ":" + c.port : "", c.domain ? " · " + c.domain : ""]
+              }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
+                className: "sub2",
+                children: c.created_at ? c.created_at.replace("T", " ").slice(0, 16) : ""
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                style: {
+                  textAlign: "right"
+                },
+                children: /*#__PURE__*/_jsxDEV("button", {
+                  className: "xbtn",
+                  title: "Удалить",
+                  onClick: () => del(c.id),
+                  children: "✕"
+                }, void 0, false)
+              }, void 0, false)]
+            }, c.id, true)), list.length === 0 && /*#__PURE__*/_jsxDEV("tr", {
+              children: /*#__PURE__*/_jsxDEV("td", {
+                colSpan: "5",
+                className: "sub2",
+                children: "УЗ не заведены. Добавьте первую выше."
+              }, void 0, false)
+            }, void 0, false)]
+          }, void 0, true)]
+        }, void 0, true)
+      }, void 0, false)
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "warn",
+      style: {
+        maxWidth: 820,
+        marginTop: 14
+      },
+      children: ["Пароли, ключи и community хранятся зашифрованными (Fernet). Мастер-ключ берётся из ", /*#__PURE__*/_jsxDEV("span", {
+        className: "mono",
+        children: "SURVEYSCAN_SECRET_KEY"
+      }, void 0, false), " и в базе не лежит — дамп БД сам по себе секреты не раскроет. Задайте эту переменную в своём окружении (иначе ключ генерируется в томе данных и теряется вместе с ним)."]
+    }, void 0, true)]
+  }, void 0, true);
 }
 
 /* ----------------------------------------------------------------- Дашборд */
@@ -291,127 +365,193 @@ function Dash({
   tasks,
   go
 }) {
-  if (!D) return /*#__PURE__*/React.createElement("div", {
-    className: "empty"
-  }, "\u041D\u0435\u0442 \u0434\u0430\u043D\u043D\u044B\u0445. \u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435: \xAB+ \u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435\xBB.");
+  if (!D) return /*#__PURE__*/_jsxDEV("div", {
+    className: "empty",
+    children: "Нет данных. Запустите сканирование: «+ Новое сканирование»."
+  }, void 0, false);
   const ts = D.topology && D.topology.stats || {};
   const assets = D.assets || [];
-  const kpi = (n, l, c) => /*#__PURE__*/React.createElement("div", {
-    className: "kpi"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "l"
-  }, l), /*#__PURE__*/React.createElement("div", {
-    className: "n",
-    style: c ? {
-      color: c
-    } : null
-  }, n));
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
-    className: "h1"
-  }, D.survey && D.survey.name || "Обследование"), /*#__PURE__*/React.createElement("p", {
-    className: "sub"
-  }, "\u0418\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u0438\u0437\u0430\u0446\u0438\u044F \u0441\u0435\u0442\u0438 \xB7 ", D.generated), /*#__PURE__*/React.createElement("div", {
-    className: "kpis"
-  }, kpi(D.totals ? D.totals.assets : assets.length, "Активов"), kpi(ts.hosts != null ? ts.hosts : "—", "Хостов"), kpi(ts.devices != null ? ts.devices : "—", "Сетевых устройств"), kpi(ts.subnets != null ? ts.subnets : "—", "Подсетей"), kpi(ts.services != null ? ts.services : "—", "Открытых сервисов")), /*#__PURE__*/React.createElement("div", {
-    className: "cols dash"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "\u0410\u043A\u0442\u0438\u0432\u044B"), /*#__PURE__*/React.createElement("span", {
-    className: "more",
-    onClick: () => go({
-      view: "assets"
-    })
-  }, "\u0412\u0441\u0435 \u0430\u043A\u0442\u0438\u0432\u044B \u2192")), /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u0410\u043A\u0442\u0438\u0432"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "\u041E\u0421 / \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430"), /*#__PURE__*/React.createElement("th", null, "\u0421\u0435\u0440\u0432\u0438\u0441\u044B"))), /*#__PURE__*/React.createElement("tbody", null, assets.slice(0, 6).map(a => /*#__PURE__*/React.createElement("tr", {
-    key: a.name,
-    className: "click",
-    onClick: () => go({
-      view: "asset",
-      assetName: a.name
-    })
-  }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, a.name)), /*#__PURE__*/React.createElement("td", {
-    className: "mono"
-  }, a.ips), /*#__PURE__*/React.createElement("td", null, a.os || "—"), /*#__PURE__*/React.createElement("td", {
-    className: "num"
-  }, (a.services || []).length))), assets.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    colSpan: "4",
-    className: "sub2"
-  }, "\u0410\u043A\u0442\u0438\u0432\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B.")))))), /*#__PURE__*/React.createElement("div", {
-    className: "card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438"), /*#__PURE__*/React.createElement("span", {
-    className: "more",
-    onClick: () => go({
-      view: "netmap"
-    })
-  }, "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u2192")), /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("div", {
-    style: {
-      fontSize: 13,
-      color: "var(--muted)",
-      lineHeight: 1.7
-    }
-  }, "\u0423\u0437\u043B\u043E\u0432: ", /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: "var(--ink)"
-    }
-  }, ts.nodes || 0), /*#__PURE__*/React.createElement("br", null), "\u041F\u043E\u0434\u0441\u0435\u0442\u0435\u0439: ", /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: "var(--ink)"
-    }
-  }, ts.subnets || 0), /*#__PURE__*/React.createElement("br", null), "\u0421\u0435\u0442\u0435\u0432\u044B\u0445 \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432: ", /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: "var(--ink)"
-    }
-  }, ts.devices || 0), /*#__PURE__*/React.createElement("br", null), "\u0421\u0432\u044F\u0437\u0435\u0439: ", /*#__PURE__*/React.createElement("b", {
-    style: {
-      color: "var(--ink)"
-    }
-  }, ts.edges || 0)), /*#__PURE__*/React.createElement("button", {
-    className: "btn",
-    style: {
-      marginTop: 12
-    },
-    onClick: () => go({
-      view: "netmap"
-    })
-  }, "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0441\u0445\u0435\u043C\u0443 \u0441\u0435\u0442\u0438"))), /*#__PURE__*/React.createElement("div", {
-    className: "card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"), /*#__PURE__*/React.createElement("span", {
-    className: "more",
-    onClick: () => go({
-      view: "surveys"
-    })
-  }, "\u0412\u0441\u0435 \u2192")), /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, tasks.slice(0, 6).map(tk => {
-    const cls = tk.status === "done" ? "d-ok" : tk.status === "running" ? "d-run" : tk.status === "error" ? "d-err" : "d-wait";
-    const st = {
-      done: "готово",
-      running: "идёт",
-      queued: "в очереди",
-      error: "ошибка"
-    }[tk.status];
-    return /*#__PURE__*/React.createElement("div", {
-      className: "scan",
-      key: tk.id
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "dotc " + cls
-    }), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-      className: "nm"
-    }, tk.name || "Скан #" + tk.id)), /*#__PURE__*/React.createElement("span", {
-      className: "pct"
-    }, st));
-  }), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
-    className: "sub2"
-  }, "\u041F\u043E\u043A\u0430 \u043D\u0435\u0442 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0439.")))));
+  const kpi = (n, l, c) => /*#__PURE__*/_jsxDEV("div", {
+    className: "kpi",
+    children: [/*#__PURE__*/_jsxDEV("div", {
+      className: "l",
+      children: l
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "n",
+      style: c ? {
+        color: c
+      } : null,
+      children: n
+    }, void 0, false)]
+  }, void 0, true);
+  return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("h1", {
+      className: "h1",
+      children: D.survey && D.survey.name || "Обследование"
+    }, void 0, false), /*#__PURE__*/_jsxDEV("p", {
+      className: "sub",
+      children: ["Инвентаризация сети · ", D.generated]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+      className: "kpis",
+      children: [kpi(D.totals ? D.totals.assets : assets.length, "Активов"), kpi(ts.hosts != null ? ts.hosts : "—", "Хостов"), kpi(ts.devices != null ? ts.devices : "—", "Сетевых устройств"), kpi(ts.subnets != null ? ts.subnets : "—", "Подсетей"), kpi(ts.services != null ? ts.services : "—", "Открытых сервисов")]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+      className: "cols dash",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: [/*#__PURE__*/_jsxDEV("h3", {
+            children: "Активы"
+          }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+            className: "more",
+            onClick: () => go({
+              view: "assets"
+            }),
+            children: "Все активы →"
+          }, void 0, false)]
+        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: /*#__PURE__*/_jsxDEV("table", {
+            children: [/*#__PURE__*/_jsxDEV("thead", {
+              children: /*#__PURE__*/_jsxDEV("tr", {
+                children: [/*#__PURE__*/_jsxDEV("th", {
+                  children: "Актив"
+                }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                  children: "IP"
+                }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                  children: "ОС / платформа"
+                }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                  children: "Сервисы"
+                }, void 0, false)]
+              }, void 0, true)
+            }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
+              children: [assets.slice(0, 6).map(a => /*#__PURE__*/_jsxDEV("tr", {
+                className: "click",
+                onClick: () => go({
+                  view: "asset",
+                  assetName: a.name
+                }),
+                children: [/*#__PURE__*/_jsxDEV("td", {
+                  children: /*#__PURE__*/_jsxDEV("b", {
+                    children: a.name
+                  }, void 0, false)
+                }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                  className: "mono",
+                  children: a.ips
+                }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                  children: a.os || "—"
+                }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                  className: "num",
+                  children: (a.services || []).length
+                }, void 0, false)]
+              }, a.name, true)), assets.length === 0 && /*#__PURE__*/_jsxDEV("tr", {
+                children: /*#__PURE__*/_jsxDEV("td", {
+                  colSpan: "4",
+                  className: "sub2",
+                  children: "Активы не найдены."
+                }, void 0, false)
+              }, void 0, false)]
+            }, void 0, true)]
+          }, void 0, true)
+        }, void 0, false)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: [/*#__PURE__*/_jsxDEV("h3", {
+            children: "Схема сети"
+          }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+            className: "more",
+            onClick: () => go({
+              view: "netmap"
+            }),
+            children: "Открыть →"
+          }, void 0, false)]
+        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            style: {
+              fontSize: 13,
+              color: "var(--muted)",
+              lineHeight: 1.7
+            },
+            children: ["Узлов: ", /*#__PURE__*/_jsxDEV("b", {
+              style: {
+                color: "var(--ink)"
+              },
+              children: ts.nodes || 0
+            }, void 0, false), /*#__PURE__*/_jsxDEV("br", {}, void 0, false), "Подсетей: ", /*#__PURE__*/_jsxDEV("b", {
+              style: {
+                color: "var(--ink)"
+              },
+              children: ts.subnets || 0
+            }, void 0, false), /*#__PURE__*/_jsxDEV("br", {}, void 0, false), "Сетевых устройств: ", /*#__PURE__*/_jsxDEV("b", {
+              style: {
+                color: "var(--ink)"
+              },
+              children: ts.devices || 0
+            }, void 0, false), /*#__PURE__*/_jsxDEV("br", {}, void 0, false), "Связей: ", /*#__PURE__*/_jsxDEV("b", {
+              style: {
+                color: "var(--ink)"
+              },
+              children: ts.edges || 0
+            }, void 0, false)]
+          }, void 0, true), /*#__PURE__*/_jsxDEV("button", {
+            className: "btn",
+            style: {
+              marginTop: 12
+            },
+            onClick: () => go({
+              view: "netmap"
+            }),
+            children: "Открыть схему сети"
+          }, void 0, false)]
+        }, void 0, true)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: [/*#__PURE__*/_jsxDEV("h3", {
+            children: "Сканирования"
+          }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+            className: "more",
+            onClick: () => go({
+              view: "surveys"
+            }),
+            children: "Все →"
+          }, void 0, false)]
+        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: [tasks.slice(0, 6).map(tk => {
+            const cls = tk.status === "done" ? "d-ok" : tk.status === "running" ? "d-run" : tk.status === "error" ? "d-err" : "d-wait";
+            const st = {
+              done: "готово",
+              running: "идёт",
+              queued: "в очереди",
+              error: "ошибка"
+            }[tk.status];
+            return /*#__PURE__*/_jsxDEV("div", {
+              className: "scan",
+              children: [/*#__PURE__*/_jsxDEV("span", {
+                className: "dotc " + cls
+              }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+                children: /*#__PURE__*/_jsxDEV("div", {
+                  className: "nm",
+                  children: tk.name || "Скан #" + tk.id
+                }, void 0, false)
+              }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+                className: "pct",
+                children: st
+              }, void 0, false)]
+            }, tk.id, true);
+          }), tasks.length === 0 && /*#__PURE__*/_jsxDEV("div", {
+            className: "sub2",
+            children: "Пока нет сканирований."
+          }, void 0, false)]
+        }, void 0, true)]
+      }, void 0, true)]
+    }, void 0, true)]
+  }, void 0, true);
 }
 
 /* ----------------------------------------------------------------- Активы */
@@ -419,37 +559,131 @@ function Assets({
   D,
   go
 }) {
-  if (!D) return /*#__PURE__*/React.createElement("div", {
-    className: "empty"
-  }, "\u041D\u0435\u0442 \u0434\u0430\u043D\u043D\u044B\u0445. \u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435.");
+  if (!D) return /*#__PURE__*/_jsxDEV("div", {
+    className: "empty",
+    children: "Нет данных. Запустите сканирование."
+  }, void 0, false);
   const assets = D.assets || [];
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
-    className: "h1"
-  }, "\u0410\u043A\u0442\u0438\u0432\u044B"), /*#__PURE__*/React.createElement("p", {
-    className: "sub"
-  }, "\u0418\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u0438\u0437\u0430\u0446\u0438\u044F \u0430\u043A\u0442\u0438\u0432\u043E\u0432 \u043E\u0431\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u044F \xAB", D.survey && D.survey.name, "\xBB."), /*#__PURE__*/React.createElement("div", {
-    className: "card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u0410\u043A\u0442\u0438\u0432"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "\u041E\u0421 / \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430"), /*#__PURE__*/React.createElement("th", null, "\u0422\u0438\u043F"), /*#__PURE__*/React.createElement("th", {
-    className: "num"
-  }, "\u0421\u0435\u0440\u0432\u0438\u0441\u043E\u0432"))), /*#__PURE__*/React.createElement("tbody", null, assets.map(a => /*#__PURE__*/React.createElement("tr", {
-    key: a.name,
-    className: "click",
-    onClick: () => go({
-      view: "asset",
-      assetName: a.name
-    })
-  }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, a.name)), /*#__PURE__*/React.createElement("td", {
-    className: "mono"
-  }, a.ips || "—"), /*#__PURE__*/React.createElement("td", null, a.os || "—", a.build ? /*#__PURE__*/React.createElement("div", {
-    className: "sub2 mono"
-  }, a.build) : null), /*#__PURE__*/React.createElement("td", null, a.kind), /*#__PURE__*/React.createElement("td", {
-    className: "num"
-  }, (a.services || []).length))), assets.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    colSpan: "5",
-    className: "sub2"
-  }, "\u0410\u043A\u0442\u0438\u0432\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B.")))))));
+  return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("h1", {
+      className: "h1",
+      children: "Активы"
+    }, void 0, false), /*#__PURE__*/_jsxDEV("p", {
+      className: "sub",
+      children: ["Инвентаризация активов обследования «", D.survey && D.survey.name, "»."]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      children: /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: /*#__PURE__*/_jsxDEV("table", {
+          children: [/*#__PURE__*/_jsxDEV("thead", {
+            children: /*#__PURE__*/_jsxDEV("tr", {
+              children: [/*#__PURE__*/_jsxDEV("th", {
+                children: "Актив"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "IP"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "ОС / платформа"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Тип"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                className: "num",
+                children: "ПО"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                className: "num",
+                children: "Сервисов"
+              }, void 0, false)]
+            }, void 0, true)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
+            children: [assets.map(a => /*#__PURE__*/_jsxDEV("tr", {
+              className: "click",
+              onClick: () => go({
+                view: "asset",
+                assetName: a.name
+              }),
+              children: [/*#__PURE__*/_jsxDEV("td", {
+                children: [/*#__PURE__*/_jsxDEV("b", {
+                  children: a.name
+                }, void 0, false), a.partial ? /*#__PURE__*/_jsxDEV("span", {
+                  className: "chip c-medium",
+                  style: {
+                    marginLeft: 8
+                  },
+                  children: "сбор без root"
+                }, void 0, false) : null]
+              }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
+                className: "mono",
+                children: a.ips || "—"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                children: [a.os || "—", a.build ? /*#__PURE__*/_jsxDEV("div", {
+                  className: "sub2 mono",
+                  children: a.build
+                }, void 0, false) : null]
+              }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
+                children: a.kind
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                className: "num",
+                children: a.software || 0
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                className: "num",
+                children: (a.services || []).length
+              }, void 0, false)]
+            }, a.name, true)), assets.length === 0 && /*#__PURE__*/_jsxDEV("tr", {
+              children: /*#__PURE__*/_jsxDEV("td", {
+                colSpan: "6",
+                className: "sub2",
+                children: "Активы не найдены."
+              }, void 0, false)
+            }, void 0, false)]
+          }, void 0, true)]
+        }, void 0, true)
+      }, void 0, false)
+    }, void 0, false)]
+  }, void 0, true);
+}
+
+/* --- вспомогательные блоки карточки актива --- */
+function KV({
+  k,
+  v
+}) {
+  return /*#__PURE__*/_jsxDEV("div", {
+    className: "kv",
+    children: [/*#__PURE__*/_jsxDEV("span", {
+      className: "k",
+      children: k
+    }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+      className: "v",
+      children: v === null || v === undefined || v === "" ? "—" : String(v)
+    }, void 0, false)]
+  }, void 0, true);
+}
+function SimpleTable({
+  cols,
+  rows,
+  empty
+}) {
+  if (!rows || rows.length === 0) return /*#__PURE__*/_jsxDEV("div", {
+    className: "sub2",
+    children: empty
+  }, void 0, false);
+  return /*#__PURE__*/_jsxDEV("table", {
+    children: [/*#__PURE__*/_jsxDEV("thead", {
+      children: /*#__PURE__*/_jsxDEV("tr", {
+        children: cols.map(c => /*#__PURE__*/_jsxDEV("th", {
+          className: c.num ? "num" : "",
+          children: c.label
+        }, c.key, false))
+      }, void 0, false)
+    }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
+      children: rows.map((r, i) => /*#__PURE__*/_jsxDEV("tr", {
+        children: cols.map(c => /*#__PURE__*/_jsxDEV("td", {
+          className: c.mono ? "mono" : c.num ? "num" : "",
+          children: c.render ? c.render(r) : r[c.key] ?? "—"
+        }, c.key, false))
+      }, i, false))
+    }, void 0, false)]
+  }, void 0, true);
 }
 function AssetDetail({
   D,
@@ -457,107 +691,548 @@ function AssetDetail({
   go
 }) {
   const a = (D.assets || []).find(x => x.name === name);
-  if (!a) return /*#__PURE__*/React.createElement("div", {
-    className: "empty"
-  }, "\u0410\u043A\u0442\u0438\u0432 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D.");
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "crumb",
-    style: {
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "link",
-    onClick: () => go({
-      view: "assets"
-    })
-  }, "\u0410\u043A\u0442\u0438\u0432\u044B"), /*#__PURE__*/React.createElement("span", {
-    className: "sep"
-  }, "/"), /*#__PURE__*/React.createElement("b", null, name)), /*#__PURE__*/React.createElement("div", {
-    className: "pagehead"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ic"
-  }, (a.kind || "").toLowerCase().includes("сетев") ? "🖧" : "🖥"), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "h1",
-    style: {
-      margin: 0
-    }
-  }, name), /*#__PURE__*/React.createElement("div", {
-    className: "meta mono"
-  }, a.ips, a.os ? " · " + a.os : ""))), /*#__PURE__*/React.createElement("div", {
-    className: "detail",
-    style: {
-      marginTop: 10
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "\u041E\u0442\u043A\u0440\u044B\u0442\u044B\u0435 \u0441\u0435\u0440\u0432\u0438\u0441\u044B")), /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, (a.services || []).length ? (a.services || []).map((s, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    className: "mono",
-    style: {
-      padding: "5px 0",
-      fontSize: 12.5
-    }
-  }, s)) : /*#__PURE__*/React.createElement("div", {
-    className: "sub2"
-  }, "\u041E\u0442\u043A\u0440\u044B\u0442\u044B\u0445 \u0441\u0435\u0440\u0432\u0438\u0441\u043E\u0432 \u043D\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E."))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u0432\u0435\u0434\u0435\u043D\u0438\u044F")), /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "kv"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "k"
-  }, "\u0422\u0438\u043F"), /*#__PURE__*/React.createElement("span", {
-    className: "v"
-  }, a.kind)), /*#__PURE__*/React.createElement("div", {
-    className: "kv"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "k"
-  }, "IP"), /*#__PURE__*/React.createElement("span", {
-    className: "v mono"
-  }, a.ips || "—")), /*#__PURE__*/React.createElement("div", {
-    className: "kv"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "k"
-  }, "\u041E\u0421 / \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430"), /*#__PURE__*/React.createElement("span", {
-    className: "v"
-  }, a.os || "—")), /*#__PURE__*/React.createElement("div", {
-    className: "kv"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "k"
-  }, "\u041F\u0430\u043A\u0435\u0442\u043E\u0432 / \u041F\u041E"), /*#__PURE__*/React.createElement("span", {
-    className: "v"
-  }, a.software || 0)), /*#__PURE__*/React.createElement("div", {
-    className: "kv"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "k"
-  }, "\u041E\u0442\u043A\u0440\u044B\u0442\u044B\u0445 \u0441\u0435\u0440\u0432\u0438\u0441\u043E\u0432"), /*#__PURE__*/React.createElement("span", {
-    className: "v"
-  }, (a.services || []).length)))), a.sec_tools && a.sec_tools.length ? /*#__PURE__*/React.createElement("div", {
-    className: "card",
-    style: {
-      marginTop: 16
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u0440\u0435\u0434\u0441\u0442\u0432\u0430 \u0437\u0430\u0449\u0438\u0442\u044B")), /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, a.sec_tools.map((t, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      padding: "5px 0"
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    style: {
-      color: "var(--ok)"
-    }
-  }, "\u2713"), " ", t)))) : null)));
+  const [tab, setTab] = useState("overview");
+  const [swFilter, setSwFilter] = useState("");
+  if (!a) return /*#__PURE__*/_jsxDEV("div", {
+    className: "empty",
+    children: "Актив не найден."
+  }, void 0, false);
+  const inv = a.inventory || {};
+  const fam = a.os_family || "";
+  const software = inv.software || [];
+  const swShown = swFilter ? software.filter(s => (s.name || "").toLowerCase().includes(swFilter.toLowerCase())) : software;
+  const listening = inv.listening || [];
+  const tabs = [{
+    id: "overview",
+    label: "Обзор"
+  }, {
+    id: "software",
+    label: "ПО",
+    count: software.length
+  }];
+  if (fam === "windows") tabs.push({
+    id: "hotfixes",
+    label: "Обновления",
+    count: (inv.hotfixes || []).length
+  });
+  if (fam === "windows" || fam === "linux") tabs.push({
+    id: "users",
+    label: "Пользователи"
+  });
+  tabs.push({
+    id: "network",
+    label: "Сеть и службы",
+    count: (a.services || []).length + listening.length
+  });
+  if (fam === "windows" || fam === "linux") tabs.push({
+    id: "security",
+    label: "Защита"
+  });
+  if (inv.config) tabs.push({
+    id: "config",
+    label: "Конфигурация"
+  });
+  return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("div", {
+      className: "crumb",
+      style: {
+        marginBottom: 10
+      },
+      children: [/*#__PURE__*/_jsxDEV("span", {
+        className: "link",
+        onClick: () => go({
+          view: "assets"
+        }),
+        children: "Активы"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+        className: "sep",
+        children: "/"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("b", {
+        children: name
+      }, void 0, false)]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+      className: "pagehead",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "ic",
+        children: (a.kind || "").toLowerCase().includes("сетев") ? "🖧" : "🖥"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "h1",
+          style: {
+            margin: 0
+          },
+          children: name
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "meta mono",
+          children: [a.ips, a.os ? " · " + a.os : ""]
+        }, void 0, true)]
+      }, void 0, true)]
+    }, void 0, true), a.partial ? /*#__PURE__*/_jsxDEV("div", {
+      className: "warn",
+      style: {
+        margin: "10px 0"
+      },
+      children: "Сбор выполнен без root/sudo — часть данных (учётки, конфиги) может быть неполной."
+    }, void 0, false) : null, /*#__PURE__*/_jsxDEV("div", {
+      className: "tabs",
+      children: tabs.map(t => /*#__PURE__*/_jsxDEV("div", {
+        className: "tab" + (tab === t.id ? " on" : ""),
+        onClick: () => setTab(t.id),
+        children: [t.label, t.count !== undefined ? /*#__PURE__*/_jsxDEV("span", {
+          className: "cnt",
+          children: t.count
+        }, void 0, false) : null]
+      }, t.id, true))
+    }, void 0, false), tab === "overview" && /*#__PURE__*/_jsxDEV("div", {
+      className: "detail",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: /*#__PURE__*/_jsxDEV("h3", {
+            children: "Сведения"
+          }, void 0, false)
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: [/*#__PURE__*/_jsxDEV(KV, {
+            k: "Тип",
+            v: a.kind
+          }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+            k: "IP",
+            v: a.ips
+          }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+            k: "ОС / платформа",
+            v: a.os
+          }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+            k: "Сборка / версия",
+            v: a.build
+          }, void 0, false), fam === "windows" ? /*#__PURE__*/_jsxDEV(_Fragment, {
+            children: [/*#__PURE__*/_jsxDEV(KV, {
+              k: "Домен",
+              v: inv.part_of_domain ? inv.domain : "рабочая группа"
+            }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+              k: "Архитектура",
+              v: inv.architecture
+            }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+              k: "Тип установки",
+              v: inv.installation_type
+            }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+              k: "Последняя загрузка",
+              v: inv.last_boot
+            }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+              k: "Сбор от администратора",
+              v: inv.is_admin === true ? "да" : inv.is_admin === false ? "нет" : "—"
+            }, void 0, false)]
+          }, void 0, true) : null, fam === "linux" ? /*#__PURE__*/_jsxDEV(KV, {
+            k: "Сбор от root",
+            v: inv.is_root === true ? "да" : inv.is_root === false ? "нет (sudo/частично)" : "—"
+          }, void 0, false) : null, /*#__PURE__*/_jsxDEV(KV, {
+            k: "Источник сбора",
+            v: a.source
+          }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+            k: "Собрано",
+            v: a.collected_at
+          }, void 0, false)]
+        }, void 0, true)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "card",
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            className: "ch",
+            children: /*#__PURE__*/_jsxDEV("h3", {
+              children: "Итоги"
+            }, void 0, false)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+            className: "cb",
+            children: [/*#__PURE__*/_jsxDEV(KV, {
+              k: "Пакетов / ПО",
+              v: software.length
+            }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+              k: "Открытых сервисов (сеть)",
+              v: (a.services || []).length
+            }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+              k: "Слушающих портов (ОС)",
+              v: listening.length
+            }, void 0, false), fam === "windows" ? /*#__PURE__*/_jsxDEV(KV, {
+              k: "Обновлений (KB)",
+              v: (inv.hotfixes || []).length
+            }, void 0, false) : null]
+          }, void 0, true)]
+        }, void 0, true), a.sec_tools && a.sec_tools.length ? /*#__PURE__*/_jsxDEV("div", {
+          className: "card",
+          style: {
+            marginTop: 16
+          },
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            className: "ch",
+            children: /*#__PURE__*/_jsxDEV("h3", {
+              children: "Средства защиты"
+            }, void 0, false)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+            className: "cb",
+            children: a.sec_tools.map((t, i) => /*#__PURE__*/_jsxDEV("div", {
+              style: {
+                padding: "5px 0"
+              },
+              children: [/*#__PURE__*/_jsxDEV("span", {
+                style: {
+                  color: "var(--ok)"
+                },
+                children: "✓"
+              }, void 0, false), " ", t]
+            }, i, true))
+          }, void 0, false)]
+        }, void 0, true) : null]
+      }, void 0, true)]
+    }, void 0, true), tab === "software" && /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "ch",
+        children: [/*#__PURE__*/_jsxDEV("h3", {
+          children: "Установленное ПО / пакеты"
+        }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
+          value: swFilter,
+          onChange: e => setSwFilter(e.target.value),
+          placeholder: "Фильтр по имени…",
+          style: {
+            marginLeft: "auto",
+            fontSize: 12.5,
+            padding: "4px 8px"
+          }
+        }, void 0, false)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: /*#__PURE__*/_jsxDEV(SimpleTable, {
+          empty: "ПО не обнаружено.",
+          cols: [{
+            key: "name",
+            label: "Название"
+          }, {
+            key: "version",
+            label: "Версия",
+            mono: true
+          }, {
+            key: "vendor",
+            label: "Производитель"
+          }, {
+            key: "ecosystem",
+            label: "Тип"
+          }],
+          rows: swShown
+        }, void 0, false)
+      }, void 0, false)]
+    }, void 0, true), tab === "hotfixes" && /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "ch",
+        children: /*#__PURE__*/_jsxDEV("h3", {
+          children: "Установленные обновления"
+        }, void 0, false)
+      }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: (inv.hotfixes || []).length ? /*#__PURE__*/_jsxDEV("div", {
+          style: {
+            display: "flex",
+            flexWrap: "wrap",
+            gap: 8
+          },
+          children: inv.hotfixes.map(kb => /*#__PURE__*/_jsxDEV("span", {
+            className: "mono chip c-low",
+            children: ["KB", kb]
+          }, kb, true))
+        }, void 0, false) : /*#__PURE__*/_jsxDEV("div", {
+          className: "sub2",
+          children: "Обновления не собраны."
+        }, void 0, false)
+      }, void 0, false)]
+    }, void 0, true), tab === "users" && /*#__PURE__*/_jsxDEV("div", {
+      className: "detail",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: /*#__PURE__*/_jsxDEV("h3", {
+            children: "Учётные записи"
+          }, void 0, false)
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: fam === "windows" ? /*#__PURE__*/_jsxDEV(SimpleTable, {
+            empty: "Локальные учётки не собраны.",
+            cols: [{
+              key: "name",
+              label: "Имя"
+            }, {
+              key: "disabled",
+              label: "Отключена",
+              render: r => r.disabled ? "да" : "нет"
+            }, {
+              key: "password_required",
+              label: "Треб. пароль",
+              render: r => r.password_required ? "да" : "нет"
+            }, {
+              key: "password_expires",
+              label: "Пароль истекает",
+              render: r => r.password_expires ? "да" : "нет"
+            }],
+            rows: inv.users
+          }, void 0, false) : /*#__PURE__*/_jsxDEV(SimpleTable, {
+            empty: "Пользователи не собраны.",
+            cols: [{
+              key: "name",
+              label: "Логин"
+            }],
+            rows: (inv.login_users || []).map(n => ({
+              name: n
+            }))
+          }, void 0, false)
+        }, void 0, false)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        children: fam === "windows" ? /*#__PURE__*/_jsxDEV("div", {
+          className: "card",
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            className: "ch",
+            children: /*#__PURE__*/_jsxDEV("h3", {
+              children: "Администраторы"
+            }, void 0, false)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+            className: "cb",
+            children: (inv.admins || []).length ? inv.admins.map((n, i) => /*#__PURE__*/_jsxDEV("div", {
+              className: "mono",
+              style: {
+                padding: "4px 0",
+                fontSize: 12.5
+              },
+              children: n
+            }, i, false)) : /*#__PURE__*/_jsxDEV("div", {
+              className: "sub2",
+              children: "Группа «Администраторы» пуста или не собрана."
+            }, void 0, false)
+          }, void 0, false)]
+        }, void 0, true) : /*#__PURE__*/_jsxDEV(_Fragment, {
+          children: /*#__PURE__*/_jsxDEV("div", {
+            className: "card",
+            children: [/*#__PURE__*/_jsxDEV("div", {
+              className: "ch",
+              children: /*#__PURE__*/_jsxDEV("h3", {
+                children: "UID 0 / sudo без пароля"
+              }, void 0, false)
+            }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+              className: "cb",
+              children: [/*#__PURE__*/_jsxDEV(KV, {
+                k: "UID 0 (кроме root)",
+                v: (inv.uid0_users || []).join(", ") || "—"
+              }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+                k: "sudo NOPASSWD",
+                v: inv.sudo_nopasswd === null ? "нет доступа к данным" : (inv.sudo_nopasswd || []).join("; ") || "нет"
+              }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+                k: "Пустой пароль",
+                v: inv.empty_password_users === null ? "нет доступа к данным" : (inv.empty_password_users || []).join(", ") || "нет"
+              }, void 0, false)]
+            }, void 0, true)]
+          }, void 0, true)
+        }, void 0, false)
+      }, void 0, false)]
+    }, void 0, true), tab === "network" && /*#__PURE__*/_jsxDEV("div", {
+      className: "detail",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: /*#__PURE__*/_jsxDEV("h3", {
+            children: "Открытые сервисы (сетевой скан)"
+          }, void 0, false)
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: (a.services || []).length ? (a.services || []).map((s, i) => /*#__PURE__*/_jsxDEV("div", {
+            className: "mono",
+            style: {
+              padding: "5px 0",
+              fontSize: 12.5
+            },
+            children: s
+          }, i, false)) : /*#__PURE__*/_jsxDEV("div", {
+            className: "sub2",
+            children: "Открытых сервисов не обнаружено."
+          }, void 0, false)
+        }, void 0, false)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: /*#__PURE__*/_jsxDEV("h3", {
+            children: "Слушающие порты (на хосте)"
+          }, void 0, false)
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: /*#__PURE__*/_jsxDEV(SimpleTable, {
+            empty: "Не собрано.",
+            cols: [{
+              key: "proto",
+              label: "Протокол"
+            }, {
+              key: "port",
+              label: "Порт",
+              num: true
+            }, {
+              key: "address",
+              label: "Адрес",
+              mono: true
+            }, {
+              key: "process",
+              label: "Процесс"
+            }],
+            rows: listening
+          }, void 0, false)
+        }, void 0, false)]
+      }, void 0, true), fam === "windows" && (inv.services || []).length ? /*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        style: {
+          gridColumn: "1 / -1"
+        },
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: /*#__PURE__*/_jsxDEV("h3", {
+            children: "Службы Windows"
+          }, void 0, false)
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: /*#__PURE__*/_jsxDEV(SimpleTable, {
+            empty: "Не собрано.",
+            cols: [{
+              key: "display",
+              label: "Название"
+            }, {
+              key: "state",
+              label: "Состояние"
+            }, {
+              key: "start_mode",
+              label: "Запуск"
+            }, {
+              key: "account",
+              label: "Учётка",
+              mono: true
+            }],
+            rows: inv.services
+          }, void 0, false)
+        }, void 0, false)]
+      }, void 0, true) : null]
+    }, void 0, true), tab === "security" && /*#__PURE__*/_jsxDEV("div", {
+      className: "detail",
+      children: fam === "windows" ? /*#__PURE__*/_jsxDEV(_Fragment, {
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "card",
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            className: "ch",
+            children: /*#__PURE__*/_jsxDEV("h3", {
+              children: "Межсетевой экран"
+            }, void 0, false)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+            className: "cb",
+            children: Object.keys(inv.firewall || {}).length ? Object.entries(inv.firewall).map(([k, v]) => /*#__PURE__*/_jsxDEV(KV, {
+              k: k,
+              v: v ? "включён" : "отключён"
+            }, k, false)) : /*#__PURE__*/_jsxDEV("div", {
+              className: "sub2",
+              children: "Не собрано."
+            }, void 0, false)
+          }, void 0, false)]
+        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+          className: "card",
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            className: "ch",
+            children: /*#__PURE__*/_jsxDEV("h3", {
+              children: "Антивирус / Defender"
+            }, void 0, false)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+            className: "cb",
+            children: [(inv.antivirus || []).map((av, i) => /*#__PURE__*/_jsxDEV("div", {
+              style: {
+                padding: "4px 0"
+              },
+              children: [/*#__PURE__*/_jsxDEV("span", {
+                style: {
+                  color: "var(--ok)"
+                },
+                children: "✓"
+              }, void 0, false), " ", av.name]
+            }, i, true)), inv.defender ? /*#__PURE__*/_jsxDEV(_Fragment, {
+              children: [/*#__PURE__*/_jsxDEV(KV, {
+                k: "Defender включён",
+                v: inv.defender.enabled ? "да" : "нет"
+              }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+                k: "Защита в реальном времени",
+                v: inv.defender.realtime ? "да" : "нет"
+              }, void 0, false), /*#__PURE__*/_jsxDEV(KV, {
+                k: "Обновление сигнатур",
+                v: inv.defender.signatures
+              }, void 0, false)]
+            }, void 0, true) : null, (!inv.antivirus || inv.antivirus.length === 0) && !inv.defender ? /*#__PURE__*/_jsxDEV("div", {
+              className: "sub2",
+              children: "Не собрано."
+            }, void 0, false) : null]
+          }, void 0, true)]
+        }, void 0, true)]
+      }, void 0, true) : /*#__PURE__*/_jsxDEV(_Fragment, {
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "card",
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            className: "ch",
+            children: /*#__PURE__*/_jsxDEV("h3", {
+              children: "SSH"
+            }, void 0, false)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+            className: "cb",
+            children: inv.sshd ? Object.entries(inv.sshd).map(([k, v]) => /*#__PURE__*/_jsxDEV(KV, {
+              k: k,
+              v: v
+            }, k, false)) : /*#__PURE__*/_jsxDEV("div", {
+              className: "sub2",
+              children: "sshd не собран."
+            }, void 0, false)
+          }, void 0, false)]
+        }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+          className: "card",
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            className: "ch",
+            children: /*#__PURE__*/_jsxDEV("h3", {
+              children: "Активные службы безопасности"
+            }, void 0, false)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+            className: "cb",
+            children: Object.keys(inv.services_active || {}).length ? Object.entries(inv.services_active).map(([k, v]) => /*#__PURE__*/_jsxDEV(KV, {
+              k: k,
+              v: v
+            }, k, false)) : /*#__PURE__*/_jsxDEV("div", {
+              className: "sub2",
+              children: "Не собрано."
+            }, void 0, false)
+          }, void 0, false)]
+        }, void 0, true)]
+      }, void 0, true)
+    }, void 0, false), tab === "config" && /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "ch",
+        children: [/*#__PURE__*/_jsxDEV("h3", {
+          children: "Конфигурация устройства"
+        }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+          className: "sub2",
+          children: "секреты замаскированы"
+        }, void 0, false)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: /*#__PURE__*/_jsxDEV("pre", {
+          className: "mono",
+          style: {
+            whiteSpace: "pre-wrap",
+            fontSize: 12,
+            margin: 0
+          },
+          children: inv.config
+        }, void 0, false)
+      }, void 0, false)]
+    }, void 0, true)]
+  }, void 0, true);
 }
 
 /* ----------------------------------------------------------------- Схема сети */
@@ -690,67 +1365,90 @@ function NetMap({
     a.download = "network-map.png";
     a.click();
   };
-  if (err) return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
-    className: "h1"
-  }, "\u0421\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438"), /*#__PURE__*/React.createElement("div", {
-    className: "empty"
-  }, err, ". \u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u0438 \u0434\u043E\u0436\u0434\u0438\u0442\u0435\u0441\u044C \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438."));
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "maptools"
-  }, /*#__PURE__*/React.createElement("h1", {
-    className: "h1",
-    style: {
-      margin: 0
-    }
-  }, "\u0421\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438"), /*#__PURE__*/React.createElement("span", {
-    className: "sp"
-  }), /*#__PURE__*/React.createElement("button", {
-    className: "btn ghost",
-    onClick: fit
-  }, "\u0412\u043F\u0438\u0441\u0430\u0442\u044C"), /*#__PURE__*/React.createElement("button", {
-    className: "btn ghost",
-    onClick: () => relayout("breadthfirst")
-  }, "\u0421\u043B\u043E\u0438"), /*#__PURE__*/React.createElement("button", {
-    className: "btn ghost",
-    onClick: () => relayout("cose")
-  }, "\u0421\u0432\u043E\u0431\u043E\u0434\u043D\u043E"), /*#__PURE__*/React.createElement("button", {
-    className: "btn ghost",
-    onClick: exportPng
-  }, "\u042D\u043A\u0441\u043F\u043E\u0440\u0442 PNG"), /*#__PURE__*/React.createElement("a", {
-    className: "btn",
-    href: "/tasks/" + taskId + "/topology.svg",
-    target: "_blank",
-    style: {
-      textDecoration: "none"
-    }
-  }, "\u042D\u043A\u0441\u043F\u043E\u0440\u0442 SVG")), /*#__PURE__*/React.createElement("div", {
-    id: "cy",
-    ref: box
-  }), /*#__PURE__*/React.createElement("div", {
-    className: "legend2"
-  }, /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
-    style: {
-      background: "#3D4EA6",
-      transform: "rotate(45deg)"
-    }
-  }), "\u042F\u0434\u0440\u043E \u0441\u0435\u0442\u0438"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
-    style: {
-      background: "#E8EAEF"
-    }
-  }), "\u041F\u043E\u0434\u0441\u0435\u0442\u044C"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
-    style: {
-      background: "#11141B"
-    }
-  }), "\u0421\u0435\u0442\u0435\u0432\u043E\u0435 \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u043E"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
-    style: {
-      background: "#fff",
-      border: "1px solid #C4CAD4"
-    }
-  }), "\u0425\u043E\u0441\u0442"), /*#__PURE__*/React.createElement("span", {
-    style: {
-      marginLeft: "auto"
-    }
-  }, "\u043A\u043B\u0438\u043A \u043F\u043E \u0443\u0437\u043B\u0443 \u2014 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u0430", stats ? ` · узлов ${stats.nodes}, связей ${stats.edges}` : "")));
+  if (err) return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("h1", {
+      className: "h1",
+      children: "Схема сети"
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "empty",
+      children: [err, ". Запустите сканирование и дождитесь готовности."]
+    }, void 0, true)]
+  }, void 0, true);
+  return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("div", {
+      className: "maptools",
+      children: [/*#__PURE__*/_jsxDEV("h1", {
+        className: "h1",
+        style: {
+          margin: 0
+        },
+        children: "Схема сети"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+        className: "sp"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
+        className: "btn ghost",
+        onClick: fit,
+        children: "Вписать"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
+        className: "btn ghost",
+        onClick: () => relayout("breadthfirst"),
+        children: "Слои"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
+        className: "btn ghost",
+        onClick: () => relayout("cose"),
+        children: "Свободно"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("button", {
+        className: "btn ghost",
+        onClick: exportPng,
+        children: "Экспорт PNG"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("a", {
+        className: "btn",
+        href: "/tasks/" + taskId + "/topology.svg",
+        target: "_blank",
+        style: {
+          textDecoration: "none"
+        },
+        children: "Экспорт SVG"
+      }, void 0, false)]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+      id: "cy",
+      ref: box
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "legend2",
+      children: [/*#__PURE__*/_jsxDEV("span", {
+        children: [/*#__PURE__*/_jsxDEV("i", {
+          style: {
+            background: "#3D4EA6",
+            transform: "rotate(45deg)"
+          }
+        }, void 0, false), "Ядро сети"]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("span", {
+        children: [/*#__PURE__*/_jsxDEV("i", {
+          style: {
+            background: "#E8EAEF"
+          }
+        }, void 0, false), "Подсеть"]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("span", {
+        children: [/*#__PURE__*/_jsxDEV("i", {
+          style: {
+            background: "#11141B"
+          }
+        }, void 0, false), "Сетевое устройство"]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("span", {
+        children: [/*#__PURE__*/_jsxDEV("i", {
+          style: {
+            background: "#fff",
+            border: "1px solid #C4CAD4"
+          }
+        }, void 0, false), "Хост"]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("span", {
+        style: {
+          marginLeft: "auto"
+        },
+        children: ["клик по узлу — карточка актива", stats ? ` · узлов ${stats.nodes}, связей ${stats.edges}` : ""]
+      }, void 0, true)]
+    }, void 0, true)]
+  }, void 0, true);
 }
 
 /* ----------------------------------------------------------------- Карточка задачи */
@@ -789,9 +1487,10 @@ function TaskDetail({
   useEffect(() => {
     if (logRef.current) logRef.current.scrollTop = logRef.current.scrollHeight;
   }, [t]);
-  if (!t) return /*#__PURE__*/React.createElement("div", {
-    className: "empty"
-  }, "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0437\u0430\u0434\u0430\u0447\u0438\u2026");
+  if (!t) return /*#__PURE__*/_jsxDEV("div", {
+    className: "empty",
+    children: "Загрузка задачи…"
+  }, void 0, false);
   const p = t.params || {},
     r = t.result || {},
     coll = r.collect;
@@ -811,141 +1510,218 @@ function TaskDetail({
     initTargets: p.targets || (r.targets || []).join(", "),
     initCreds: (p.creds || []).map(c => c.id).filter(Boolean)
   });
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    className: "crumb",
-    style: {
-      marginBottom: 10
-    }
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "link",
-    onClick: () => go({
-      view: "surveys"
-    })
-  }, "\u0421\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"), /*#__PURE__*/React.createElement("span", {
-    className: "sep"
-  }, "/"), /*#__PURE__*/React.createElement("b", null, t.name || "Задача #" + t.id)), /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      gap: 12,
-      flexWrap: "wrap"
-    }
-  }, /*#__PURE__*/React.createElement("h1", {
-    className: "h1",
-    style: {
-      margin: 0
-    }
-  }, t.name || "Задача #" + t.id), /*#__PURE__*/React.createElement("span", {
-    className: "chip c-" + (ST_CHIP[t.status] || "medium")
-  }, ST_LABEL[t.status] || t.status), /*#__PURE__*/React.createElement("div", {
-    style: {
-      marginLeft: "auto",
-      display: "flex",
-      gap: 8
-    }
-  }, running ? /*#__PURE__*/React.createElement("button", {
-    className: "btn ghost",
-    disabled: busy,
-    onClick: cancel
-  }, "\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C") : null, /*#__PURE__*/React.createElement("button", {
-    className: "btn ghost",
-    onClick: repeat
-  }, "\u041F\u043E\u0432\u0442\u043E\u0440\u0438\u0442\u044C"), t.status === "done" && t.has_report ? /*#__PURE__*/React.createElement("button", {
-    className: "btn ghost",
-    onClick: () => {
-      setActive(t.id);
-      go({
-        view: "netmap"
-      });
-    }
-  }, "\u0421\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438") : null, t.status === "done" ? /*#__PURE__*/React.createElement("button", {
-    className: "btn",
-    onClick: () => {
-      setActive(t.id);
-      go({
-        view: "dash"
-      });
-    }
-  }, "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442") : null)), /*#__PURE__*/React.createElement("p", {
-    className: "sub"
-  }, "\u0426\u0435\u043B\u0438: ", /*#__PURE__*/React.createElement("span", {
-    className: "mono"
-  }, p.targets || (r.targets || []).join(", ") || "—"), running ? " · обновляется каждые 2 c" : ""), /*#__PURE__*/React.createElement("div", {
-    className: "cols dash",
-    style: {
-      marginTop: 4
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "card",
-    style: {
-      gridColumn: "span 2"
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "\u0416\u0443\u0440\u043D\u0430\u043B \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F")), /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "tasklog",
-    ref: logRef
-  }, (t.progress || []).length === 0 ? /*#__PURE__*/React.createElement("div", {
-    className: "sub2"
-  }, "\u041F\u043E\u043A\u0430 \u043D\u0435\u0442 \u0437\u0430\u043F\u0438\u0441\u0435\u0439. \u0414\u043B\u044F \u0434\u0435\u043C\u043E-\u0437\u0430\u0434\u0430\u0447 \u0436\u0443\u0440\u043D\u0430\u043B \u043D\u0435 \u0432\u0435\u0434\u0451\u0442\u0441\u044F.") : (t.progress || []).map((l, i) => /*#__PURE__*/React.createElement("div", {
-    key: i
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "lt"
-  }, l.t), " ", l.m))), t.status === "error" && t.error ? /*#__PURE__*/React.createElement("div", {
-    className: "warn",
-    style: {
-      marginTop: 10,
-      whiteSpace: "pre-wrap",
-      fontFamily: "JetBrains Mono, monospace",
-      fontSize: 12
-    }
-  }, t.error) : null)), /*#__PURE__*/React.createElement("div", {
-    className: "card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438")), /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, (p.creds || []).length === 0 ? /*#__PURE__*/React.createElement("div", {
-    className: "sub2"
-  }, "\u0411\u0435\u0437 \u0423\u0417 \u2014 \u0442\u043E\u043B\u044C\u043A\u043E \u0441\u0435\u0442\u0435\u0432\u043E\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435.") : (p.creds || []).map((c, i) => /*#__PURE__*/React.createElement("div", {
-    key: i,
-    style: {
-      padding: "4px 0",
-      fontSize: 13
-    }
-  }, /*#__PURE__*/React.createElement("b", null, c.name || c.username || c.type), " ", /*#__PURE__*/React.createElement("span", {
-    className: "sub2"
-  }, "\xB7 ", c.type, c.username ? " · " + c.username : "")))))), coll ? /*#__PURE__*/React.createElement("div", {
-    className: "card",
-    style: {
-      marginTop: 16
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u0431\u043E\u0440 \u043F\u043E \u0430\u043A\u0442\u0438\u0432\u0430\u043C"), /*#__PURE__*/React.createElement("span", {
-    className: "sub2"
-  }, "\u0443\u0441\u043F\u0435\u0448\u043D\u043E ", coll.collected.length, " \xB7 \u043D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C ", coll.failed.length)), /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u0410\u043A\u0442\u0438\u0432"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "\u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B"), /*#__PURE__*/React.createElement("th", null, "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442"))), /*#__PURE__*/React.createElement("tbody", null, coll.collected.map((c, i) => /*#__PURE__*/React.createElement("tr", {
-    key: "c" + i
-  }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, c.asset)), /*#__PURE__*/React.createElement("td", {
-    className: "mono"
-  }, c.ip), /*#__PURE__*/React.createElement("td", null, c.proto), /*#__PURE__*/React.createElement("td", {
-    style: {
-      color: "var(--ok,#2e7d32)"
-    }
-  }, "\u2713 \u0441\u043E\u0431\u0440\u0430\u043D\u043E (\u0423\u0417 ", c.cred || "—", ")"))), coll.failed.map((c, i) => /*#__PURE__*/React.createElement("tr", {
-    key: "f" + i
-  }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, c.asset)), /*#__PURE__*/React.createElement("td", {
-    className: "mono"
-  }, c.ip), /*#__PURE__*/React.createElement("td", null, c.proto), /*#__PURE__*/React.createElement("td", {
-    className: "sub2"
-  }, "\u2715 ", c.error))), coll.collected.length === 0 && coll.failed.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    colSpan: "4",
-    className: "sub2"
-  }, "\u0410\u043A\u0442\u0438\u0432\u043E\u0432 \u0434\u043B\u044F \u0441\u0431\u043E\u0440\u0430 \u043D\u0435 \u0431\u044B\u043B\u043E.")))))) : null);
+  return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("div", {
+      className: "crumb",
+      style: {
+        marginBottom: 10
+      },
+      children: [/*#__PURE__*/_jsxDEV("span", {
+        className: "link",
+        onClick: () => go({
+          view: "surveys"
+        }),
+        children: "Сканирования"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+        className: "sep",
+        children: "/"
+      }, void 0, false), /*#__PURE__*/_jsxDEV("b", {
+        children: t.name || "Задача #" + t.id
+      }, void 0, false)]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        flexWrap: "wrap"
+      },
+      children: [/*#__PURE__*/_jsxDEV("h1", {
+        className: "h1",
+        style: {
+          margin: 0
+        },
+        children: t.name || "Задача #" + t.id
+      }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+        className: "chip c-" + (ST_CHIP[t.status] || "medium"),
+        children: ST_LABEL[t.status] || t.status
+      }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+        style: {
+          marginLeft: "auto",
+          display: "flex",
+          gap: 8
+        },
+        children: [running ? /*#__PURE__*/_jsxDEV("button", {
+          className: "btn ghost",
+          disabled: busy,
+          onClick: cancel,
+          children: "Отменить"
+        }, void 0, false) : null, /*#__PURE__*/_jsxDEV("button", {
+          className: "btn ghost",
+          onClick: repeat,
+          children: "Повторить"
+        }, void 0, false), t.status === "done" && t.has_report ? /*#__PURE__*/_jsxDEV("button", {
+          className: "btn ghost",
+          onClick: () => {
+            setActive(t.id);
+            go({
+              view: "netmap"
+            });
+          },
+          children: "Схема сети"
+        }, void 0, false) : null, t.status === "done" ? /*#__PURE__*/_jsxDEV("button", {
+          className: "btn",
+          onClick: () => {
+            setActive(t.id);
+            go({
+              view: "dash"
+            });
+          },
+          children: "Открыть результат"
+        }, void 0, false) : null]
+      }, void 0, true)]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("p", {
+      className: "sub",
+      children: ["Цели: ", /*#__PURE__*/_jsxDEV("span", {
+        className: "mono",
+        children: p.targets || (r.targets || []).join(", ") || "—"
+      }, void 0, false), running ? " · обновляется каждые 2 c" : ""]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+      className: "cols dash",
+      style: {
+        marginTop: 4
+      },
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        style: {
+          gridColumn: "span 2"
+        },
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: /*#__PURE__*/_jsxDEV("h3", {
+            children: "Журнал выполнения"
+          }, void 0, false)
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: [/*#__PURE__*/_jsxDEV("div", {
+            className: "tasklog",
+            ref: logRef,
+            children: (t.progress || []).length === 0 ? /*#__PURE__*/_jsxDEV("div", {
+              className: "sub2",
+              children: "Пока нет записей. Для демо-задач журнал не ведётся."
+            }, void 0, false) : (t.progress || []).map((l, i) => /*#__PURE__*/_jsxDEV("div", {
+              children: [/*#__PURE__*/_jsxDEV("span", {
+                className: "lt",
+                children: l.t
+              }, void 0, false), " ", l.m]
+            }, i, true))
+          }, void 0, false), t.status === "error" && t.error ? /*#__PURE__*/_jsxDEV("div", {
+            className: "warn",
+            style: {
+              marginTop: 10,
+              whiteSpace: "pre-wrap",
+              fontFamily: "JetBrains Mono, monospace",
+              fontSize: 12
+            },
+            children: t.error
+          }, void 0, false) : null]
+        }, void 0, true)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        className: "card",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "ch",
+          children: /*#__PURE__*/_jsxDEV("h3", {
+            children: "Учётные записи"
+          }, void 0, false)
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "cb",
+          children: (p.creds || []).length === 0 ? /*#__PURE__*/_jsxDEV("div", {
+            className: "sub2",
+            children: "Без УЗ — только сетевое обнаружение."
+          }, void 0, false) : (p.creds || []).map((c, i) => /*#__PURE__*/_jsxDEV("div", {
+            style: {
+              padding: "4px 0",
+              fontSize: 13
+            },
+            children: [/*#__PURE__*/_jsxDEV("b", {
+              children: c.name || c.username || c.type
+            }, void 0, false), " ", /*#__PURE__*/_jsxDEV("span", {
+              className: "sub2",
+              children: ["· ", c.type, c.username ? " · " + c.username : ""]
+            }, void 0, true)]
+          }, i, true))
+        }, void 0, false)]
+      }, void 0, true)]
+    }, void 0, true), coll ? /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      style: {
+        marginTop: 16
+      },
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "ch",
+        children: [/*#__PURE__*/_jsxDEV("h3", {
+          children: "Сбор по активам"
+        }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+          className: "sub2",
+          children: ["успешно ", coll.collected.length, " · не удалось ", coll.failed.length]
+        }, void 0, true)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: /*#__PURE__*/_jsxDEV("table", {
+          children: [/*#__PURE__*/_jsxDEV("thead", {
+            children: /*#__PURE__*/_jsxDEV("tr", {
+              children: [/*#__PURE__*/_jsxDEV("th", {
+                children: "Актив"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "IP"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Протокол"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Результат"
+              }, void 0, false)]
+            }, void 0, true)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
+            children: [coll.collected.map((c, i) => /*#__PURE__*/_jsxDEV("tr", {
+              children: [/*#__PURE__*/_jsxDEV("td", {
+                children: /*#__PURE__*/_jsxDEV("b", {
+                  children: c.asset
+                }, void 0, false)
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                className: "mono",
+                children: c.ip
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                children: c.proto
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                style: {
+                  color: "var(--ok,#2e7d32)"
+                },
+                children: ["✓ собрано (УЗ ", c.cred || "—", ")"]
+              }, void 0, true)]
+            }, "c" + i, true)), coll.failed.map((c, i) => /*#__PURE__*/_jsxDEV("tr", {
+              children: [/*#__PURE__*/_jsxDEV("td", {
+                children: /*#__PURE__*/_jsxDEV("b", {
+                  children: c.asset
+                }, void 0, false)
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                className: "mono",
+                children: c.ip
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                children: c.proto
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                className: "sub2",
+                children: ["✕ ", c.error]
+              }, void 0, true)]
+            }, "f" + i, true)), coll.collected.length === 0 && coll.failed.length === 0 && /*#__PURE__*/_jsxDEV("tr", {
+              children: /*#__PURE__*/_jsxDEV("td", {
+                colSpan: "4",
+                className: "sub2",
+                children: "Активов для сбора не было."
+              }, void 0, false)
+            }, void 0, false)]
+          }, void 0, true)]
+        }, void 0, true)
+      }, void 0, false)]
+    }, void 0, true) : null]
+  }, void 0, true);
 }
 
 /* ----------------------------------------------------------------- Обследования */
@@ -955,77 +1731,123 @@ function Surveys({
   onNew,
   setActive
 }) {
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
-    style: {
-      display: "flex",
-      alignItems: "center",
-      marginBottom: 16
-    }
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
-    className: "h1",
-    style: {
-      margin: 0
-    }
-  }, "\u0421\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"), /*#__PURE__*/React.createElement("p", {
-    className: "sub",
-    style: {
-      margin: "2px 0 0"
-    }
-  }, "\u0417\u0430\u043F\u0443\u0441\u043A, \u0441\u0442\u0430\u0442\u0443\u0441, \u0441\u0445\u0435\u043C\u0430 \u0438 \u0430\u043A\u0442\u0438\u0432\u044B.")), /*#__PURE__*/React.createElement("button", {
-    className: "btn",
-    style: {
-      marginLeft: "auto"
-    },
-    onClick: onNew
-  }, "+ \u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435")), /*#__PURE__*/React.createElement("div", {
-    className: "card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", null, "\u0421\u043A\u0430\u043D"), /*#__PURE__*/React.createElement("th", null, "\u0426\u0435\u043B\u0438"), /*#__PURE__*/React.createElement("th", null, "\u0421\u0442\u0430\u0442\u0443\u0441"), /*#__PURE__*/React.createElement("th", {
-    className: "num"
-  }, "\u0421\u043E\u0431\u0440\u0430\u043D\u043E \u043F\u043E \u0423\u0417"), /*#__PURE__*/React.createElement("th", null, "\u0421\u0445\u0435\u043C\u0430"))), /*#__PURE__*/React.createElement("tbody", null, tasks.map(t => {
-    const st = ST_LABEL[t.status] || t.status;
-    const p = t.params || {};
-    const tg = p.targets || t.result && (t.result.targets || []).join(", ") || (p.kind === "demo" ? "демо" : "—");
-    const nc = (p.creds || []).length;
-    const coll = t.result && t.result.collect;
-    return /*#__PURE__*/React.createElement("tr", {
-      key: t.id
-    }, /*#__PURE__*/React.createElement("td", {
-      className: "mono"
-    }, t.id), /*#__PURE__*/React.createElement("td", {
-      className: "link",
-      onClick: () => go({
-        view: "task",
-        taskId: t.id
-      })
-    }, /*#__PURE__*/React.createElement("b", null, t.name || "—"), nc ? /*#__PURE__*/React.createElement("div", {
-      className: "sub2"
-    }, nc, " \u0423\u0417", coll ? ` · собрано ${coll.collected.length}` : "") : null), /*#__PURE__*/React.createElement("td", {
-      className: "sub2 mono"
-    }, tg), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", {
-      className: "chip c-" + (ST_CHIP[t.status] || "medium")
-    }, st)), /*#__PURE__*/React.createElement("td", {
-      className: "num"
-    }, coll ? coll.collected.length : "—"), /*#__PURE__*/React.createElement("td", null, t.has_report ? /*#__PURE__*/React.createElement("span", {
-      className: "link",
-      onClick: () => {
-        setActive(t.id);
-        go({
-          view: "netmap"
-        });
-      }
-    }, "\u0441\u0445\u0435\u043C\u0430 \u2192") : /*#__PURE__*/React.createElement("span", {
-      className: "link",
-      onClick: () => go({
-        view: "task",
-        taskId: t.id
-      })
-    }, "\u043E\u0442\u043A\u0440\u044B\u0442\u044C \u2192")));
-  }), tasks.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    colSpan: "6",
-    className: "sub2"
-  }, "\u041F\u043E\u043A\u0430 \u043D\u0435\u0442 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0439 \u2014 \u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 \xAB+ \u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435\xBB.")))))));
+  return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("div", {
+      style: {
+        display: "flex",
+        alignItems: "center",
+        marginBottom: 16
+      },
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        children: [/*#__PURE__*/_jsxDEV("h1", {
+          className: "h1",
+          style: {
+            margin: 0
+          },
+          children: "Сканирования"
+        }, void 0, false), /*#__PURE__*/_jsxDEV("p", {
+          className: "sub",
+          style: {
+            margin: "2px 0 0"
+          },
+          children: "Запуск, статус, схема и активы."
+        }, void 0, false)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("button", {
+        className: "btn",
+        style: {
+          marginLeft: "auto"
+        },
+        onClick: onNew,
+        children: "+ Новое сканирование"
+      }, void 0, false)]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      children: /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: /*#__PURE__*/_jsxDEV("table", {
+          children: [/*#__PURE__*/_jsxDEV("thead", {
+            children: /*#__PURE__*/_jsxDEV("tr", {
+              children: [/*#__PURE__*/_jsxDEV("th", {
+                children: "#"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Скан"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Цели"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Статус"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                className: "num",
+                children: "Собрано по УЗ"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Схема"
+              }, void 0, false)]
+            }, void 0, true)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
+            children: [tasks.map(t => {
+              const st = ST_LABEL[t.status] || t.status;
+              const p = t.params || {};
+              const tg = p.targets || t.result && (t.result.targets || []).join(", ") || (p.kind === "demo" ? "демо" : "—");
+              const nc = (p.creds || []).length;
+              const coll = t.result && t.result.collect;
+              return /*#__PURE__*/_jsxDEV("tr", {
+                children: [/*#__PURE__*/_jsxDEV("td", {
+                  className: "mono",
+                  children: t.id
+                }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                  className: "link",
+                  onClick: () => go({
+                    view: "task",
+                    taskId: t.id
+                  }),
+                  children: [/*#__PURE__*/_jsxDEV("b", {
+                    children: t.name || "—"
+                  }, void 0, false), nc ? /*#__PURE__*/_jsxDEV("div", {
+                    className: "sub2",
+                    children: [nc, " УЗ", coll ? ` · собрано ${coll.collected.length}` : ""]
+                  }, void 0, true) : null]
+                }, void 0, true), /*#__PURE__*/_jsxDEV("td", {
+                  className: "sub2 mono",
+                  children: tg
+                }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                  children: /*#__PURE__*/_jsxDEV("span", {
+                    className: "chip c-" + (ST_CHIP[t.status] || "medium"),
+                    children: st
+                  }, void 0, false)
+                }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                  className: "num",
+                  children: coll ? coll.collected.length : "—"
+                }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                  children: t.has_report ? /*#__PURE__*/_jsxDEV("span", {
+                    className: "link",
+                    onClick: () => {
+                      setActive(t.id);
+                      go({
+                        view: "netmap"
+                      });
+                    },
+                    children: "схема →"
+                  }, void 0, false) : /*#__PURE__*/_jsxDEV("span", {
+                    className: "link",
+                    onClick: () => go({
+                      view: "task",
+                      taskId: t.id
+                    }),
+                    children: "открыть →"
+                  }, void 0, false)
+                }, void 0, false)]
+              }, t.id, true);
+            }), tasks.length === 0 && /*#__PURE__*/_jsxDEV("tr", {
+              children: /*#__PURE__*/_jsxDEV("td", {
+                colSpan: "6",
+                className: "sub2",
+                children: "Пока нет сканирований — запустите «+ Новое сканирование»."
+              }, void 0, false)
+            }, void 0, false)]
+          }, void 0, true)]
+        }, void 0, true)
+      }, void 0, false)
+    }, void 0, false)]
+  }, void 0, true);
 }
 
 /* ----------------------------------------------------------------- Коннекторы */
@@ -1050,43 +1872,78 @@ function Connectors() {
     setName("");
     refresh();
   };
-  return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
-    className: "h1"
-  }, "\u041A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440\u044B"), /*#__PURE__*/React.createElement("p", {
-    className: "sub"
-  }, "\u0410\u0433\u0435\u043D\u0442\u044B \u0441\u0431\u043E\u0440\u0430 \u0443 \u0437\u0430\u043A\u0430\u0437\u0447\u0438\u043A\u0430 (pull-\u043C\u043E\u0434\u0435\u043B\u044C, \u0442\u043E\u043B\u044C\u043A\u043E \u0438\u0441\u0445\u043E\u0434\u044F\u0449\u0438\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F; \u043E\u0444\u043B\u0430\u0439\u043D-\u043A\u0443\u0440\u044C\u0435\u0440 \u0434\u043B\u044F \u0438\u0437\u043E\u043B\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u043E\u0433\u043E \u043A\u043E\u043D\u0442\u0443\u0440\u0430)."), /*#__PURE__*/React.createElement("div", {
-    className: "card",
-    style: {
-      marginBottom: 16
-    }
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cb row"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "field"
-  }, /*#__PURE__*/React.createElement("label", null, "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440\u0430"), /*#__PURE__*/React.createElement("input", {
-    value: name,
-    onChange: e => setName(e.target.value),
-    placeholder: "\u041A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440-1",
-    style: {
-      minWidth: 260
-    }
-  })), /*#__PURE__*/React.createElement("button", {
-    className: "btn",
-    onClick: add
-  }, "\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u0442\u044C"))), /*#__PURE__*/React.createElement("div", {
-    className: "card"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", null, "\u041A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440"), /*#__PURE__*/React.createElement("th", null, "\u041F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0439 \u0434\u043E\u0437\u0432\u043E\u043D"))), /*#__PURE__*/React.createElement("tbody", null, list.map(c => /*#__PURE__*/React.createElement("tr", {
-    key: c.id
-  }, /*#__PURE__*/React.createElement("td", {
-    className: "mono"
-  }, c.id), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, c.name)), /*#__PURE__*/React.createElement("td", {
-    className: "sub2"
-  }, c.last_seen ? c.last_seen.replace("T", " ").slice(0, 16) : "ни разу"))), list.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
-    colSpan: "3",
-    className: "sub2"
-  }, "\u041A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440\u044B \u043D\u0435 \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u043D\u044B.")))))));
+  return /*#__PURE__*/_jsxDEV("div", {
+    children: [/*#__PURE__*/_jsxDEV("h1", {
+      className: "h1",
+      children: "Коннекторы"
+    }, void 0, false), /*#__PURE__*/_jsxDEV("p", {
+      className: "sub",
+      children: "Агенты сбора у заказчика (pull-модель, только исходящие соединения; офлайн-курьер для изолированного контура)."
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      style: {
+        marginBottom: 16
+      },
+      children: /*#__PURE__*/_jsxDEV("div", {
+        className: "cb row",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "field",
+          children: [/*#__PURE__*/_jsxDEV("label", {
+            children: "Название коннектора"
+          }, void 0, false), /*#__PURE__*/_jsxDEV("input", {
+            value: name,
+            onChange: e => setName(e.target.value),
+            placeholder: "Коннектор-1",
+            style: {
+              minWidth: 260
+            }
+          }, void 0, false)]
+        }, void 0, true), /*#__PURE__*/_jsxDEV("button", {
+          className: "btn",
+          onClick: add,
+          children: "Зарегистрировать"
+        }, void 0, false)]
+      }, void 0, true)
+    }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+      className: "card",
+      children: /*#__PURE__*/_jsxDEV("div", {
+        className: "cb",
+        children: /*#__PURE__*/_jsxDEV("table", {
+          children: [/*#__PURE__*/_jsxDEV("thead", {
+            children: /*#__PURE__*/_jsxDEV("tr", {
+              children: [/*#__PURE__*/_jsxDEV("th", {
+                children: "#"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Коннектор"
+              }, void 0, false), /*#__PURE__*/_jsxDEV("th", {
+                children: "Последний дозвон"
+              }, void 0, false)]
+            }, void 0, true)
+          }, void 0, false), /*#__PURE__*/_jsxDEV("tbody", {
+            children: [list.map(c => /*#__PURE__*/_jsxDEV("tr", {
+              children: [/*#__PURE__*/_jsxDEV("td", {
+                className: "mono",
+                children: c.id
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                children: /*#__PURE__*/_jsxDEV("b", {
+                  children: c.name
+                }, void 0, false)
+              }, void 0, false), /*#__PURE__*/_jsxDEV("td", {
+                className: "sub2",
+                children: c.last_seen ? c.last_seen.replace("T", " ").slice(0, 16) : "ни разу"
+              }, void 0, false)]
+            }, c.id, true)), list.length === 0 && /*#__PURE__*/_jsxDEV("tr", {
+              children: /*#__PURE__*/_jsxDEV("td", {
+                colSpan: "3",
+                className: "sub2",
+                children: "Коннекторы не зарегистрированы."
+              }, void 0, false)
+            }, void 0, false)]
+          }, void 0, true)]
+        }, void 0, true)
+      }, void 0, false)
+    }, void 0, false)]
+  }, void 0, true);
 }
 
 /* ----------------------------------------------------------------- приложение */
@@ -1218,100 +2075,124 @@ function App() {
   };
   const counts = D ? D.totals || {} : {};
   let screen;
-  if (nav.view === "dash") screen = /*#__PURE__*/React.createElement(Dash, {
+  if (nav.view === "dash") screen = /*#__PURE__*/_jsxDEV(Dash, {
     D: D,
     tasks: tasks,
     go: go
-  });else if (nav.view === "surveys") screen = /*#__PURE__*/React.createElement(Surveys, {
+  }, void 0, false);else if (nav.view === "surveys") screen = /*#__PURE__*/_jsxDEV(Surveys, {
     tasks: tasks,
     go: go,
     onNew: () => go({
       view: "newscan"
     }),
     setActive: setActive
-  });else if (nav.view === "task") screen = /*#__PURE__*/React.createElement(TaskDetail, {
+  }, void 0, false);else if (nav.view === "task") screen = /*#__PURE__*/_jsxDEV(TaskDetail, {
     taskId: nav.taskId,
     go: go,
     setActive: setActive
-  });else if (nav.view === "newscan") screen = /*#__PURE__*/React.createElement(NewScan, {
+  }, void 0, false);else if (nav.view === "newscan") screen = /*#__PURE__*/_jsxDEV(NewScan, {
     onRun: runScan,
     busy: busy,
     go: go,
     savedCreds: savedCreds,
     initTargets: nav.initTargets,
     initCreds: nav.initCreds
-  });else if (nav.view === "assets") screen = /*#__PURE__*/React.createElement(Assets, {
+  }, void 0, false);else if (nav.view === "assets") screen = /*#__PURE__*/_jsxDEV(Assets, {
     D: D,
     go: go
-  });else if (nav.view === "asset") screen = /*#__PURE__*/React.createElement(AssetDetail, {
+  }, void 0, false);else if (nav.view === "asset") screen = /*#__PURE__*/_jsxDEV(AssetDetail, {
     D: D,
     name: nav.assetName,
     go: go
-  });else if (nav.view === "netmap") screen = /*#__PURE__*/React.createElement(NetMap, {
+  }, void 0, false);else if (nav.view === "netmap") screen = /*#__PURE__*/_jsxDEV(NetMap, {
     taskId: activeId,
     go: go
-  });else if (nav.view === "creds") screen = /*#__PURE__*/React.createElement(Credentials, {
+  }, void 0, false);else if (nav.view === "creds") screen = /*#__PURE__*/_jsxDEV(Credentials, {
     onChange: loadCreds
-  });else if (nav.view === "connectors") screen = /*#__PURE__*/React.createElement(Connectors, null);else screen = /*#__PURE__*/React.createElement(Dash, {
+  }, void 0, false);else if (nav.view === "connectors") screen = /*#__PURE__*/_jsxDEV(Connectors, {}, void 0, false);else screen = /*#__PURE__*/_jsxDEV(Dash, {
     D: D,
     tasks: tasks,
     go: go
-  });
-  const crumb = nav.view === "asset" ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
-    className: "link",
-    onClick: () => go({
-      view: "assets"
-    })
-  }, "\u0410\u043A\u0442\u0438\u0432\u044B"), /*#__PURE__*/React.createElement("span", {
-    className: "sep"
-  }, "/"), /*#__PURE__*/React.createElement("b", null, nav.assetName)) : /*#__PURE__*/React.createElement("b", null, TITLES[nav.view] || "Дашборд");
-  return /*#__PURE__*/React.createElement("div", {
-    className: "app"
-  }, /*#__PURE__*/React.createElement("aside", {
-    className: "nav"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "brand"
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "logo"
-  }, "\u25E2"), "surveyscan"), NAV.map(g => /*#__PURE__*/React.createElement(React.Fragment, {
-    key: g.sec
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "navsec"
-  }, g.sec), g.items.map(it => {
-    const on = nav.view === it.id || it.id === "assets" && nav.view === "asset";
-    const cc = it.cnt && counts[it.cnt] != null ? counts[it.cnt] : null;
-    return /*#__PURE__*/React.createElement("button", {
-      className: "navi" + (on ? " on" : ""),
-      key: it.id,
+  }, void 0, false);
+  const crumb = nav.view === "asset" ? /*#__PURE__*/_jsxDEV(_Fragment, {
+    children: [/*#__PURE__*/_jsxDEV("span", {
+      className: "link",
       onClick: () => go({
-        view: it.id
-      })
-    }, /*#__PURE__*/React.createElement("span", {
-      className: "ico"
-    }, it.ic), it.l, cc ? /*#__PURE__*/React.createElement("span", {
-      className: "cnt"
-    }, cc) : null);
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "foot"
-  }, "\u0441\u043A\u0430\u043D\u0435\u0440 \u0438\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u0438\u0437\u0430\u0446\u0438\u0438", /*#__PURE__*/React.createElement("br", null), "\u0438 \u0441\u0445\u0435\u043C\u044B \u0441\u0435\u0442\u0438")), /*#__PURE__*/React.createElement("div", {
-    className: "main"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "top"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "crumb"
-  }, crumb), /*#__PURE__*/React.createElement("div", {
-    className: "search"
-  }, "\u2315 \u041F\u043E\u0438\u0441\u043A \u043F\u043E \u0430\u043A\u0442\u0438\u0432\u0430\u043C, IP\u2026"), /*#__PURE__*/React.createElement("div", {
-    className: "right"
-  }, /*#__PURE__*/React.createElement("button", {
-    className: "btn",
-    onClick: () => go({
-      view: "newscan"
-    })
-  }, "+ \u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435"), /*#__PURE__*/React.createElement("div", {
-    className: "av"
-  }, "\u0418\u041F"))), /*#__PURE__*/React.createElement("div", {
-    className: "body"
-  }, screen)));
+        view: "assets"
+      }),
+      children: "Активы"
+    }, void 0, false), /*#__PURE__*/_jsxDEV("span", {
+      className: "sep",
+      children: "/"
+    }, void 0, false), /*#__PURE__*/_jsxDEV("b", {
+      children: nav.assetName
+    }, void 0, false)]
+  }, void 0, true) : /*#__PURE__*/_jsxDEV("b", {
+    children: TITLES[nav.view] || "Дашборд"
+  }, void 0, false);
+  return /*#__PURE__*/_jsxDEV("div", {
+    className: "app",
+    children: [/*#__PURE__*/_jsxDEV("aside", {
+      className: "nav",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "brand",
+        children: [/*#__PURE__*/_jsxDEV("span", {
+          className: "logo",
+          children: "◢"
+        }, void 0, false), "surveyscan"]
+      }, void 0, true), NAV.map(g => /*#__PURE__*/_jsxDEV(React.Fragment, {
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "navsec",
+          children: g.sec
+        }, void 0, false), g.items.map(it => {
+          const on = nav.view === it.id || it.id === "assets" && nav.view === "asset";
+          const cc = it.cnt && counts[it.cnt] != null ? counts[it.cnt] : null;
+          return /*#__PURE__*/_jsxDEV("button", {
+            className: "navi" + (on ? " on" : ""),
+            onClick: () => go({
+              view: it.id
+            }),
+            children: [/*#__PURE__*/_jsxDEV("span", {
+              className: "ico",
+              children: it.ic
+            }, void 0, false), it.l, cc ? /*#__PURE__*/_jsxDEV("span", {
+              className: "cnt",
+              children: cc
+            }, void 0, false) : null]
+          }, it.id, true);
+        })]
+      }, g.sec, true)), /*#__PURE__*/_jsxDEV("div", {
+        className: "foot",
+        children: ["сканер инвентаризации", /*#__PURE__*/_jsxDEV("br", {}, void 0, false), "и схемы сети"]
+      }, void 0, true)]
+    }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+      className: "main",
+      children: [/*#__PURE__*/_jsxDEV("div", {
+        className: "top",
+        children: [/*#__PURE__*/_jsxDEV("div", {
+          className: "crumb",
+          children: crumb
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "search",
+          children: "⌕ Поиск по активам, IP…"
+        }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+          className: "right",
+          children: [/*#__PURE__*/_jsxDEV("button", {
+            className: "btn",
+            onClick: () => go({
+              view: "newscan"
+            }),
+            children: "+ Новое сканирование"
+          }, void 0, false), /*#__PURE__*/_jsxDEV("div", {
+            className: "av",
+            children: "ИП"
+          }, void 0, false)]
+        }, void 0, true)]
+      }, void 0, true), /*#__PURE__*/_jsxDEV("div", {
+        className: "body",
+        children: screen
+      }, void 0, false)]
+    }, void 0, true)]
+  }, void 0, true);
 }
-ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(App, null));
+ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/_jsxDEV(App, {}, void 0, false));

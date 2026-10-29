@@ -17,7 +17,7 @@ from pathlib import Path
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
 from .bdu import bdu_version_label
-from .configcheck import load_catalog
+from .configcheck import load_catalog, mask_secrets
 from .reporttpl import load_template, sev_allowed
 
 SEV_ORDER = {"critical": 0, "high": 1, "medium": 2, "low": 3, "unknown": 4}
@@ -33,6 +33,46 @@ _DONUT_C = 2 * math.pi * _DONUT_R
 def _asset_label(a) -> str:
     ips = json.loads(a["ips"] or "[]")
     return a["hostname"] or (ips[0] if ips else f"актив {a['id']}")
+
+
+def _build_inventory(a, facts: dict, software: list[dict], hotfixes: list[str]) -> dict:
+    """Полная инвентаризация актива для карточки в UI — из facts коллектора (SSH/WinRM/SNMP)."""
+    fam = a["os_family"] or ""
+    inv: dict = {"software": software}
+    if fam == "windows":
+        osd = facts.get("os") or {}
+        hotfixes_sorted = sorted(hotfixes, key=lambda k: (-int(k) if k.isdigit() else 0, k))
+        inv.update({
+            "hotfixes": hotfixes_sorted,
+            "domain": osd.get("domain"), "part_of_domain": osd.get("part_of_domain"),
+            "last_boot": osd.get("last_boot"), "architecture": osd.get("architecture"),
+            "installation_type": osd.get("installation_type"),
+            "is_admin": facts.get("is_admin"),
+            "users": facts.get("users") or [],
+            "admins": facts.get("admins") or [],
+            "services": facts.get("services") or [],
+            "firewall": facts.get("firewall") or {},
+            "antivirus": facts.get("antivirus") or [],
+            "defender": facts.get("defender"),
+            "listening": facts.get("listening") or [],
+        })
+    elif fam == "linux":
+        inv.update({
+            "login_users": facts.get("login_users") or [],
+            "uid0_users": facts.get("uid0_users") or [],
+            "sudo_nopasswd": facts.get("sudo_nopasswd"),
+            "empty_password_users": facts.get("empty_password_users"),
+            "sshd": facts.get("sshd"),
+            "mounts": facts.get("mounts") or {},
+            "listening": facts.get("listening") or [],
+            "services_active": facts.get("services_active") or {},
+            "services_enabled": facts.get("services_enabled") or [],
+            "audit_rules": len(facts.get("audit_rules") or []),
+            "is_root": facts.get("is_root"),
+        })
+    elif fam == "netdev" or a["kind"] == "netdev":
+        inv["config"] = mask_secrets(facts.get("config") or "")
+    return inv
 
 
 def make_donut(pairs: list[tuple[str, str, int]]) -> dict | None:
@@ -67,6 +107,13 @@ def collect(con: sqlite3.Connection, catalog_dir: Path, tpl: dict) -> dict:
     allowed_ids = {a["id"] for a in assets}
 
     sw_count = dict(con.execute("SELECT asset_id, COUNT(*) FROM software GROUP BY asset_id").fetchall())
+    sw_list = defaultdict(list)
+    for s in con.execute("SELECT asset_id, name, version, vendor, ecosystem FROM software ORDER BY name"):
+        sw_list[s["asset_id"]].append({"name": s["name"], "version": s["version"] or "",
+                                       "vendor": s["vendor"], "ecosystem": s["ecosystem"]})
+    hotfix_list = defaultdict(list)
+    for h in con.execute("SELECT asset_id, kb FROM hotfix ORDER BY kb"):
+        hotfix_list[h["asset_id"]].append(h["kb"])
     svc = defaultdict(list)
     for s in con.execute("SELECT * FROM service ORDER BY port"):
         if s["asset_id"] in allowed_ids:
@@ -82,12 +129,13 @@ def collect(con: sqlite3.Connection, catalog_dir: Path, tpl: dict) -> dict:
             sec_tools = [n for n, v in act.items() if v == "active" and n in ("kesl", "klnagent", "drweb-configd")]
         row = {
             "id": a["id"], "name": label[a["id"]], "kind": KIND_RU.get(a["kind"], a["kind"]),
-            "ips": ", ".join(json.loads(a["ips"] or "[]")),
+            "os_family": a["os_family"] or "", "ips": ", ".join(json.loads(a["ips"] or "[]")),
             "os": a["os_pretty"] or " ".join(x for x in (a["os_id"], a["os_version"]) if x) or "—",
             "build": a["os_build"] or a["kernel"] or "", "software": sw_count.get(a["id"], 0),
             "services": svc.get(a["id"], []), "source": a["source"] or "", "sec_tools": sec_tools,
             "role": a["role"] or "", "collected_at": a["collected_at"] or "",
             "partial": a["os_family"] == "linux" and not facts.get("is_root", True),
+            "inventory": _build_inventory(a, facts, sw_list.get(a["id"], []), hotfix_list.get(a["id"], [])),
         }
         asset_rows.append(row)
         asset_by_name[row["name"]] = row

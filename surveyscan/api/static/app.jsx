@@ -183,18 +183,19 @@ function Assets({D, go}) {
       <p className="sub">Инвентаризация активов обследования «{D.survey && D.survey.name}».</p>
       <div className="card"><div className="cb">
         <table>
-          <thead><tr><th>Актив</th><th>IP</th><th>ОС / платформа</th><th>Тип</th><th className="num">Сервисов</th></tr></thead>
+          <thead><tr><th>Актив</th><th>IP</th><th>ОС / платформа</th><th>Тип</th><th className="num">ПО</th><th className="num">Сервисов</th></tr></thead>
           <tbody>
             {assets.map(a => (
               <tr key={a.name} className="click" onClick={() => go({view: "asset", assetName: a.name})}>
-                <td><b>{a.name}</b></td>
+                <td><b>{a.name}</b>{a.partial ? <span className="chip c-medium" style={{marginLeft: 8}}>сбор без root</span> : null}</td>
                 <td className="mono">{a.ips || "—"}</td>
                 <td>{a.os || "—"}{a.build ? <div className="sub2 mono">{a.build}</div> : null}</td>
                 <td>{a.kind}</td>
+                <td className="num">{a.software || 0}</td>
                 <td className="num">{(a.services || []).length}</td>
               </tr>
             ))}
-            {assets.length === 0 && <tr><td colSpan="5" className="sub2">Активы не найдены.</td></tr>}
+            {assets.length === 0 && <tr><td colSpan="6" className="sub2">Активы не найдены.</td></tr>}
           </tbody>
         </table>
       </div></div>
@@ -202,9 +203,46 @@ function Assets({D, go}) {
   );
 }
 
+/* --- вспомогательные блоки карточки актива --- */
+function KV({k, v}) {
+  return <div className="kv"><span className="k">{k}</span><span className="v">{v === null || v === undefined || v === "" ? "—" : String(v)}</span></div>;
+}
+
+function SimpleTable({cols, rows, empty}) {
+  if (!rows || rows.length === 0) return <div className="sub2">{empty}</div>;
+  return (
+    <table>
+      <thead><tr>{cols.map(c => <th key={c.key} className={c.num ? "num" : ""}>{c.label}</th>)}</tr></thead>
+      <tbody>
+        {rows.map((r, i) => (
+          <tr key={i}>{cols.map(c => <td key={c.key} className={c.mono ? "mono" : (c.num ? "num" : "")}>{c.render ? c.render(r) : (r[c.key] ?? "—")}</td>)}</tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
 function AssetDetail({D, name, go}) {
   const a = (D.assets || []).find(x => x.name === name);
+  const [tab, setTab] = useState("overview");
+  const [swFilter, setSwFilter] = useState("");
   if (!a) return <div className="empty">Актив не найден.</div>;
+  const inv = a.inventory || {};
+  const fam = a.os_family || "";
+  const software = inv.software || [];
+  const swShown = swFilter ? software.filter(s => (s.name || "").toLowerCase().includes(swFilter.toLowerCase())) : software;
+  const listening = inv.listening || [];
+
+  const tabs = [
+    {id: "overview", label: "Обзор"},
+    {id: "software", label: "ПО", count: software.length},
+  ];
+  if (fam === "windows") tabs.push({id: "hotfixes", label: "Обновления", count: (inv.hotfixes || []).length});
+  if (fam === "windows" || fam === "linux") tabs.push({id: "users", label: "Пользователи"});
+  tabs.push({id: "network", label: "Сеть и службы", count: (a.services || []).length + listening.length});
+  if (fam === "windows" || fam === "linux") tabs.push({id: "security", label: "Защита"});
+  if (inv.config) tabs.push({id: "config", label: "Конфигурация"});
+
   return (
     <div>
       <div className="crumb" style={{marginBottom: 10}}><span className="link" onClick={() => go({view: "assets"})}>Активы</span><span className="sep">/</span><b>{name}</b></div>
@@ -212,26 +250,167 @@ function AssetDetail({D, name, go}) {
         <div className="ic">{(a.kind || "").toLowerCase().includes("сетев") ? "🖧" : "🖥"}</div>
         <div><div className="h1" style={{margin: 0}}>{name}</div><div className="meta mono">{a.ips}{a.os ? " · " + a.os : ""}</div></div>
       </div>
-      <div className="detail" style={{marginTop: 10}}>
-        <div className="card"><div className="ch"><h3>Открытые сервисы</h3></div><div className="cb">
-          {(a.services || []).length
-            ? (a.services || []).map((s, i) => <div key={i} className="mono" style={{padding: "5px 0", fontSize: 12.5}}>{s}</div>)
-            : <div className="sub2">Открытых сервисов не обнаружено.</div>}
-        </div></div>
-        <div>
-          <div className="card"><div className="ch"><h3>Сведения</h3></div><div className="cb">
-            <div className="kv"><span className="k">Тип</span><span className="v">{a.kind}</span></div>
-            <div className="kv"><span className="k">IP</span><span className="v mono">{a.ips || "—"}</span></div>
-            <div className="kv"><span className="k">ОС / платформа</span><span className="v">{a.os || "—"}</span></div>
-            <div className="kv"><span className="k">Пакетов / ПО</span><span className="v">{a.software || 0}</span></div>
-            <div className="kv"><span className="k">Открытых сервисов</span><span className="v">{(a.services || []).length}</span></div>
-          </div></div>
-          {a.sec_tools && a.sec_tools.length ? (
-            <div className="card" style={{marginTop: 16}}><div className="ch"><h3>Средства защиты</h3></div><div className="cb">
-              {a.sec_tools.map((t, i) => <div key={i} style={{padding: "5px 0"}}><span style={{color: "var(--ok)"}}>✓</span> {t}</div>)}
-            </div></div>) : null}
-        </div>
+      {a.partial ? <div className="warn" style={{margin: "10px 0"}}>Сбор выполнен без root/sudo — часть данных (учётки, конфиги) может быть неполной.</div> : null}
+
+      <div className="tabs">
+        {tabs.map(t => (
+          <div key={t.id} className={"tab" + (tab === t.id ? " on" : "")} onClick={() => setTab(t.id)}>
+            {t.label}{t.count !== undefined ? <span className="cnt">{t.count}</span> : null}
+          </div>
+        ))}
       </div>
+
+      {tab === "overview" && (
+        <div className="detail">
+          <div className="card"><div className="ch"><h3>Сведения</h3></div><div className="cb">
+            <KV k="Тип" v={a.kind}/>
+            <KV k="IP" v={a.ips}/>
+            <KV k="ОС / платформа" v={a.os}/>
+            <KV k="Сборка / версия" v={a.build}/>
+            {fam === "windows" ? <>
+              <KV k="Домен" v={inv.part_of_domain ? inv.domain : "рабочая группа"}/>
+              <KV k="Архитектура" v={inv.architecture}/>
+              <KV k="Тип установки" v={inv.installation_type}/>
+              <KV k="Последняя загрузка" v={inv.last_boot}/>
+              <KV k="Сбор от администратора" v={inv.is_admin === true ? "да" : (inv.is_admin === false ? "нет" : "—")}/>
+            </> : null}
+            {fam === "linux" ? <KV k="Сбор от root" v={inv.is_root === true ? "да" : (inv.is_root === false ? "нет (sudo/частично)" : "—")}/> : null}
+            <KV k="Источник сбора" v={a.source}/>
+            <KV k="Собрано" v={a.collected_at}/>
+          </div></div>
+          <div>
+            <div className="card"><div className="ch"><h3>Итоги</h3></div><div className="cb">
+              <KV k="Пакетов / ПО" v={software.length}/>
+              <KV k="Открытых сервисов (сеть)" v={(a.services || []).length}/>
+              <KV k="Слушающих портов (ОС)" v={listening.length}/>
+              {fam === "windows" ? <KV k="Обновлений (KB)" v={(inv.hotfixes || []).length}/> : null}
+            </div></div>
+            {a.sec_tools && a.sec_tools.length ? (
+              <div className="card" style={{marginTop: 16}}><div className="ch"><h3>Средства защиты</h3></div><div className="cb">
+                {a.sec_tools.map((t, i) => <div key={i} style={{padding: "5px 0"}}><span style={{color: "var(--ok)"}}>✓</span> {t}</div>)}
+              </div></div>) : null}
+          </div>
+        </div>
+      )}
+
+      {tab === "software" && (
+        <div className="card"><div className="ch"><h3>Установленное ПО / пакеты</h3>
+          <input value={swFilter} onChange={e => setSwFilter(e.target.value)} placeholder="Фильтр по имени…"
+                 style={{marginLeft: "auto", fontSize: 12.5, padding: "4px 8px"}}/>
+        </div><div className="cb">
+          <SimpleTable empty="ПО не обнаружено." cols={[
+            {key: "name", label: "Название"}, {key: "version", label: "Версия", mono: true},
+            {key: "vendor", label: "Производитель"}, {key: "ecosystem", label: "Тип"},
+          ]} rows={swShown}/>
+        </div></div>
+      )}
+
+      {tab === "hotfixes" && (
+        <div className="card"><div className="ch"><h3>Установленные обновления</h3></div><div className="cb">
+          {(inv.hotfixes || []).length
+            ? <div style={{display: "flex", flexWrap: "wrap", gap: 8}}>
+                {inv.hotfixes.map(kb => <span key={kb} className="mono chip c-low">KB{kb}</span>)}
+              </div>
+            : <div className="sub2">Обновления не собраны.</div>}
+        </div></div>
+      )}
+
+      {tab === "users" && (
+        <div className="detail">
+          <div className="card"><div className="ch"><h3>Учётные записи</h3></div><div className="cb">
+            {fam === "windows"
+              ? <SimpleTable empty="Локальные учётки не собраны." cols={[
+                  {key: "name", label: "Имя"},
+                  {key: "disabled", label: "Отключена", render: r => r.disabled ? "да" : "нет"},
+                  {key: "password_required", label: "Треб. пароль", render: r => r.password_required ? "да" : "нет"},
+                  {key: "password_expires", label: "Пароль истекает", render: r => r.password_expires ? "да" : "нет"},
+                ]} rows={inv.users}/>
+              : <SimpleTable empty="Пользователи не собраны." cols={[{key: "name", label: "Логин"}]}
+                  rows={(inv.login_users || []).map(n => ({name: n}))}/>}
+          </div></div>
+          <div>
+            {fam === "windows" ? (
+              <div className="card"><div className="ch"><h3>Администраторы</h3></div><div className="cb">
+                {(inv.admins || []).length
+                  ? inv.admins.map((n, i) => <div key={i} className="mono" style={{padding: "4px 0", fontSize: 12.5}}>{n}</div>)
+                  : <div className="sub2">Группа «Администраторы» пуста или не собрана.</div>}
+              </div></div>
+            ) : (
+              <>
+                <div className="card"><div className="ch"><h3>UID 0 / sudo без пароля</h3></div><div className="cb">
+                  <KV k="UID 0 (кроме root)" v={(inv.uid0_users || []).join(", ") || "—"}/>
+                  <KV k="sudo NOPASSWD" v={inv.sudo_nopasswd === null ? "нет доступа к данным" : ((inv.sudo_nopasswd || []).join("; ") || "нет")}/>
+                  <KV k="Пустой пароль" v={inv.empty_password_users === null ? "нет доступа к данным" : ((inv.empty_password_users || []).join(", ") || "нет")}/>
+                </div></div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {tab === "network" && (
+        <div className="detail">
+          <div className="card"><div className="ch"><h3>Открытые сервисы (сетевой скан)</h3></div><div className="cb">
+            {(a.services || []).length
+              ? (a.services || []).map((s, i) => <div key={i} className="mono" style={{padding: "5px 0", fontSize: 12.5}}>{s}</div>)
+              : <div className="sub2">Открытых сервисов не обнаружено.</div>}
+          </div></div>
+          <div className="card"><div className="ch"><h3>Слушающие порты (на хосте)</h3></div><div className="cb">
+            <SimpleTable empty="Не собрано." cols={[
+              {key: "proto", label: "Протокол"}, {key: "port", label: "Порт", num: true},
+              {key: "address", label: "Адрес", mono: true}, {key: "process", label: "Процесс"},
+            ]} rows={listening}/>
+          </div></div>
+          {fam === "windows" && (inv.services || []).length ? (
+            <div className="card" style={{gridColumn: "1 / -1"}}><div className="ch"><h3>Службы Windows</h3></div><div className="cb">
+              <SimpleTable empty="Не собрано." cols={[
+                {key: "display", label: "Название"}, {key: "state", label: "Состояние"},
+                {key: "start_mode", label: "Запуск"}, {key: "account", label: "Учётка", mono: true},
+              ]} rows={inv.services}/>
+            </div></div>
+          ) : null}
+        </div>
+      )}
+
+      {tab === "security" && (
+        <div className="detail">
+          {fam === "windows" ? (
+            <>
+              <div className="card"><div className="ch"><h3>Межсетевой экран</h3></div><div className="cb">
+                {Object.keys(inv.firewall || {}).length
+                  ? Object.entries(inv.firewall).map(([k, v]) => <KV key={k} k={k} v={v ? "включён" : "отключён"}/>)
+                  : <div className="sub2">Не собрано.</div>}
+              </div></div>
+              <div className="card"><div className="ch"><h3>Антивирус / Defender</h3></div><div className="cb">
+                {(inv.antivirus || []).map((av, i) => <div key={i} style={{padding: "4px 0"}}><span style={{color: "var(--ok)"}}>✓</span> {av.name}</div>)}
+                {inv.defender ? <>
+                  <KV k="Defender включён" v={inv.defender.enabled ? "да" : "нет"}/>
+                  <KV k="Защита в реальном времени" v={inv.defender.realtime ? "да" : "нет"}/>
+                  <KV k="Обновление сигнатур" v={inv.defender.signatures}/>
+                </> : null}
+                {(!inv.antivirus || inv.antivirus.length === 0) && !inv.defender ? <div className="sub2">Не собрано.</div> : null}
+              </div></div>
+            </>
+          ) : (
+            <>
+              <div className="card"><div className="ch"><h3>SSH</h3></div><div className="cb">
+                {inv.sshd ? Object.entries(inv.sshd).map(([k, v]) => <KV key={k} k={k} v={v}/>) : <div className="sub2">sshd не собран.</div>}
+              </div></div>
+              <div className="card"><div className="ch"><h3>Активные службы безопасности</h3></div><div className="cb">
+                {Object.keys(inv.services_active || {}).length
+                  ? Object.entries(inv.services_active).map(([k, v]) => <KV key={k} k={k} v={v}/>)
+                  : <div className="sub2">Не собрано.</div>}
+              </div></div>
+            </>
+          )}
+        </div>
+      )}
+
+      {tab === "config" && (
+        <div className="card"><div className="ch"><h3>Конфигурация устройства</h3><span className="sub2">секреты замаскированы</span></div><div className="cb">
+          <pre className="mono" style={{whiteSpace: "pre-wrap", fontSize: 12, margin: 0}}>{inv.config}</pre>
+        </div></div>
+      )}
     </div>
   );
 }
