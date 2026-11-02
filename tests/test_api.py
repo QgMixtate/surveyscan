@@ -88,6 +88,16 @@ def test_flag_injection_target_rejected(client):
     assert client.post("/tasks", json={"kind": "inventory", "targets": "-oG/tmp/x"}).status_code == 400
 
 
+def test_separator_only_targets_rejected(client):
+    assert client.post('/tasks', json={'kind': 'inventory', 'targets': ', ; ,'}).status_code == 400
+
+
+def test_invalid_task_options_rejected_before_queueing(client):
+    for options in ({'template': 'missing'}, {'run': 'syncc'}):
+        assert client.post('/tasks', json={'kind': 'demo', **options}).status_code == 422
+    assert client.get('/tasks?limit=-1').status_code == 422
+
+
 def test_cancel_validation(client):
     # несуществующую нельзя
     assert client.post("/tasks/999999/cancel").status_code == 404

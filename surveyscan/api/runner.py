@@ -17,6 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 from . import store
+from ..collect import redact_secrets
 
 _TARGET_RE = re.compile(r"^[A-Za-z0-9_.:\-/]+$")   # IP / CIDR / hostname / ipv6 — без спецсимволов оболочки
 
@@ -88,12 +89,20 @@ def parse_targets(raw) -> list[str]:
 
 def _run_nmap(args: list[str], timeout: int, task_id) -> subprocess.CompletedProcess:
     """Запуск nmap через Popen с регистрацией процесса (чтобы задачу можно было отменить)."""
-    proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-    if task_id is not None:
-        with _CANCEL_LOCK:
+    # Проверка и регистрация под одним замком: отмена не должна потеряться при старте.
+    with _CANCEL_LOCK:
+        if task_id in _CANCELLED:
+            raise _Cancelled()
+        proc = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        if task_id is not None:
             _PROCS[task_id] = proc
     try:
-        out, err = proc.communicate(timeout=timeout)
+        try:
+            out, err = proc.communicate(timeout=timeout)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.communicate()
+            raise
     finally:
         if task_id is not None:
             with _CANCEL_LOCK:
@@ -134,21 +143,25 @@ def run_sync(task_id: int) -> None:
 
 
 def _run(task_id: int) -> None:
-    store.mark_started(task_id)
     creds = _pop_secrets(task_id)        # секреты из памяти; вынимаем один раз
     try:
+        if _is_cancelled(task_id):
+            raise _Cancelled()
+        store.mark_started(task_id)
         task = store.get_task(task_id)
         params = task.get("params") or {}
         result, html, dash = run_pipeline(task.get("name"), task.get("customer"), params,
-                                          creds=creds, log=lambda m: _log(task_id, m),
+                                          creds=creds, log=lambda m: _log(task_id, redact_secrets(m, creds)),
                                           task_id=task_id, cancel_check=lambda: _is_cancelled(task_id))
+        if _is_cancelled(task_id):
+            raise _Cancelled()
         store.mark_done(task_id, result, html, dash)
         _log(task_id, "готово")
     except _Cancelled:
         store.mark_cancelled(task_id)
         _log(task_id, "отменено пользователем")
-    except Exception:
-        tb = traceback.format_exc(limit=6)
+    except (Exception, SystemExit):
+        tb = redact_secrets(traceback.format_exc(limit=6), creds)
         store.mark_error(task_id, tb)
         _log(task_id, "ОШИБКА: " + (tb.strip().splitlines()[-1] if tb.strip() else "неизвестно"))
     finally:
@@ -159,8 +172,8 @@ def _run(task_id: int) -> None:
 
 
 def run_pipeline(name, customer, params: dict, raw_dir=None, creds=None, log=None,
-                 task_id=None, cancel_check=None) -> tuple[dict, str]:
-    """Прогон ядра. Возвращает (сводка, HTML-отчёт).
+                 task_id=None, cancel_check=None) -> tuple[dict, str, dict]:
+    """Прогон ядра. Возвращает (сводка, HTML-отчёт, данные для UI).
 
     Срез пайплайна: сбор баз → инвентаризация → анализ → конфигурации → отчёт.
     Базы знаний (БДУ, MSRC, фиды) берутся из комплекта центра. Сырьё инвентаризации:
@@ -178,11 +191,6 @@ def run_pipeline(name, customer, params: dict, raw_dir=None, creds=None, log=Non
     from ..pgcompat import drop_db
 
     s = ROOT / "samples"
-    workdir = Path(tempfile.mkdtemp(prefix="surveyscan-task-"))
-    sv = workdir / "survey.sqlite"
-    bd = workdir / "bdu.sqlite"
-    ms = workdir / "msrc.sqlite"
-    ad = workdir / "adv.sqlite"
     # профиль сканирования задаёт, какие этапы включать
     kind = params.get("kind", "demo")
     do_vulns = kind in ("demo", "vuln")
@@ -192,7 +200,19 @@ def run_pipeline(name, customer, params: dict, raw_dir=None, creds=None, log=Non
     real = bool(targets)                              # реальный скан vs демо-синтетика
     log = log or (lambda m: None)
     collect_summary = None
+    workdir = Path(tempfile.mkdtemp(prefix="surveyscan-task-"))
+    sv = workdir / "survey.sqlite"
+    bd = workdir / "bdu.sqlite"
+    ms = workdir / "msrc.sqlite"
+    ad = workdir / "adv.sqlite"
+    con = None
+
+    def check_cancelled():
+        if cancel_check and cancel_check():
+            raise _Cancelled()
+
     try:
+        check_cancelled()
         drop_db(sv)                                   # чистая рабочая БД задачи
         if real:                                      # реальное сетевое обнаружение целей
             nmap_xml = workdir / "nmap.xml"
@@ -201,6 +221,7 @@ def run_pipeline(name, customer, params: dict, raw_dir=None, creds=None, log=Non
             log("nmap: завершено")
 
         if do_vulns:                                  # базы знаний нужны только для поиска уязвимостей
+            check_cancelled()
             bdu.import_bdu(s / "bdu" / "vulxml_sample.xml", bd)
             msrc.sync(ms, files=[s / "msrc_cvrf_sample.json"])
             advisories.import_feeds(
@@ -229,6 +250,7 @@ def run_pipeline(name, customer, params: dict, raw_dir=None, creds=None, log=Non
                     ingest_file(con, f)
         con.commit()
 
+        check_cancelled()
         stats = {}
         if do_vulns:                                  # сопоставление с БДУ и фидами
             stats = analyze(con, Catalog(ROOT / "rules" / "products.yaml"), ms, ad)
@@ -239,10 +261,11 @@ def run_pipeline(name, customer, params: dict, raw_dir=None, creds=None, log=Non
         con.commit()
 
         cfg = {}
-        if do_config and not real:                    # проверки конфигураций требуют выгрузок коллекторов (SSH/WinRM)
+        if do_config:                                # у nmap-only активов нет facts — run_checks их пропустит
             for prof in ("base", "customer-example"):
                 cfg[prof] = run_checks(con, ROOT / "checks", ROOT / "catalog", ROOT / "profiles" / f"{prof}.yaml")
 
+        check_cancelled()
         out_html = workdir / "report.html"
         _, data = render_html_with_data(con, ROOT / "catalog", out_html,
                                         template=template, reports_dir=ROOT / "reports")
@@ -253,7 +276,6 @@ def run_pipeline(name, customer, params: dict, raw_dir=None, creds=None, log=Non
         if collect_summary and collect_summary.get("l2_links"):   # связи L2 из SNMP (LLDP)
             merge_l2(dash["topology"], collect_summary["l2_links"])
             dash["topology"]["stats"]["edges"] = len(dash["topology"]["elements"]["edges"])
-        con.close()
 
         # сводка сбора без секретов (для UI/отчёта)
         collect_public = None
@@ -272,6 +294,11 @@ def run_pipeline(name, customer, params: dict, raw_dir=None, creds=None, log=Non
         }
         return result, html, dash
     finally:
-        drop_db(sv)                                   # не оставляем БД задачи в PostgreSQL
-        import shutil
-        shutil.rmtree(workdir, ignore_errors=True)
+        try:
+            if con is not None:
+                con.close()
+        finally:
+            try:
+                drop_db(sv)                           # не оставляем БД задачи в PostgreSQL
+            finally:
+                shutil.rmtree(workdir, ignore_errors=True)

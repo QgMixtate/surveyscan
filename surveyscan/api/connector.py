@@ -16,7 +16,7 @@ import json
 import secrets
 import tempfile
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import APIRouter, Header, HTTPException
 from pydantic import BaseModel
@@ -107,7 +107,7 @@ def create_job(connector_id: int, name=None, customer=None, template=None, targe
 def next_job(connector_id: int) -> Optional[dict]:
     con = _conn()
     r = con.execute("SELECT * FROM connector_job WHERE connector_id = ? AND status = 'assigned' "
-                    "ORDER BY id LIMIT 1", (connector_id,)).fetchone()
+                    "ORDER BY id LIMIT 1 FOR UPDATE SKIP LOCKED", (connector_id,)).fetchone()
     if not r:
         con.close()
         return None
@@ -126,33 +126,49 @@ def get_job(job_id: int) -> Optional[dict]:
     return _job_dict(r) if r else None
 
 
-def submit_result(job_id: int, files: dict[str, str]) -> dict:
+def submit_result(job_id: int, files: dict[str, str], connector_id: int) -> dict:
     """Приём сырья от коннектора: запись файлов, прогон ядра базами центра, создание задачи."""
     job = get_job(job_id)
     if not job:
         raise HTTPException(404, "задание не найдено")
-    raw = Path(tempfile.mkdtemp(prefix="surveyscan-conn-"))
-    for fname, content in files.items():
-        safe = Path(fname).name                      # без путей — только имя файла
-        (raw / safe).write_text(content, encoding="utf-8")
-    tid = store.create_task("connector", name=job["name"], customer=job["customer"],
-                            params={"template": job["template"], "source": "connector",
-                                    "connector_job": job_id})
-    store.mark_started(tid)
+    if job["connector_id"] != connector_id:
+        raise HTTPException(403, "задание принадлежит другому коннектору")
+    con = _conn()
     try:
+        claimed = con.execute(
+            "UPDATE connector_job SET status='analyzing', updated_at=now() "
+            "WHERE id=? AND status IN ('assigned', 'collecting', 'error') RETURNING id", (job_id,)).fetchone()
+        con.commit()
+    finally:
+        con.close()
+    if not claimed:
+        raise HTTPException(409, "результат уже принят или обрабатывается")
+    raw = None
+    tid = None
+    try:
+        raw = Path(tempfile.mkdtemp(prefix="surveyscan-conn-"))
+        for fname, content in files.items():
+            safe = Path(fname).name                  # без путей — только имя файла
+            (raw / safe).write_text(content, encoding="utf-8")
+        tid = store.create_task("connector", name=job["name"], customer=job["customer"],
+                                params={"template": job["template"], "source": "connector",
+                                        "connector_job": job_id})
+        store.mark_started(tid)
         result, html, dash = runner.run_pipeline(job["name"], job["customer"],
                                                   {"template": job["template"]}, raw_dir=raw)
         result["source"] = "connector"
         store.mark_done(tid, result, html, dash)
         _set_job_done(job_id, tid)
-    except Exception:
+    except (Exception, SystemExit):
         import traceback
-        store.mark_error(tid, traceback.format_exc(limit=6))
+        if tid is not None:
+            store.mark_error(tid, traceback.format_exc(limit=6))
         _set_job_status(job_id, "error")
         raise HTTPException(500, "ошибка анализа на центре")
     finally:
         import shutil
-        shutil.rmtree(raw, ignore_errors=True)
+        if raw is not None:
+            shutil.rmtree(raw, ignore_errors=True)
     return {"job_id": job_id, "task_id": tid, "status": "done"}
 
 
@@ -182,7 +198,7 @@ class JobCreate(BaseModel):
     connector_id: int
     name: Optional[str] = None
     customer: Optional[str] = None
-    template: Optional[str] = None
+    template: Optional[Literal['full', 'executive', 'vuln', 'config', 'inventory']] = None
     targets: Optional[list] = None
 
 
@@ -193,7 +209,10 @@ class ResultSubmit(BaseModel):
 def _auth(authorization: Optional[str]) -> dict:
     if not authorization or not authorization.lower().startswith("bearer "):
         raise HTTPException(401, "нужен токен коннектора (Authorization: Bearer …)")
-    c = connector_by_token(authorization.split(None, 1)[1].strip())
+    token = authorization[7:].strip()
+    if not token:
+        raise HTTPException(401, "нужен токен коннектора (Authorization: Bearer …)")
+    c = connector_by_token(token)
     if not c:
         raise HTTPException(401, "неизвестный токен коннектора")
     return c
@@ -244,7 +263,7 @@ def api_job_bundle(job_id: int) -> dict:
 @router.post("/connector/jobs/{job_id}/result")
 def api_submit_result(job_id: int, body: ResultSubmit,
                       authorization: Optional[str] = Header(default=None)) -> dict:
-    _auth(authorization)
+    c = _auth(authorization)
     if not body.files:
         raise HTTPException(400, "пустой результат: нет файлов выгрузки")
-    return submit_result(job_id, body.files)
+    return submit_result(job_id, body.files, c["id"])

@@ -45,6 +45,21 @@ def test_snmpwalk_raises_on_failure(monkeypatch):
         collect._snmpwalk("10.0.0.9", "wrong", "1.3.6.1.2.1.1.5.0")
 
 
+def test_snmp_timeout_does_not_expose_community(monkeypatch):
+    import subprocess
+    secret = 'private-community-test'
+    monkeypatch.setattr(collect, '_assets_from_db', lambda con: [
+        {'id': 1, 'hostname': 'switch', 'ips': ['192.0.2.1'], 'ports': {161}, 'os': '', 'kind': 'netdev'}])
+
+    def timeout(*args, **kwargs):
+        raise subprocess.TimeoutExpired(['snmpwalk', '-c', secret], 1)
+
+    monkeypatch.setattr(collect, '_snmp_collect', timeout)
+    summary = collect.collect(None, [{'type': 'snmp', 'secret': secret}], ROOT)
+    assert summary['failed']
+    assert secret not in str(summary)
+
+
 def test_collect_ssh_enriches_asset(monkeypatch):
     sv = Path(tempfile.mkdtemp()) / "s.sqlite"
     drop_db(sv)

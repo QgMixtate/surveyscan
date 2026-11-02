@@ -13,9 +13,13 @@ import argparse
 import getpass
 import shutil
 import sys
+import sysconfig
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if not (ROOT / "rules" / "products.yaml").is_file():
+    # При установке wheel данные лежат отдельно от Python-модулей.
+    ROOT = Path(sysconfig.get_path("data")) / "share" / "surveyscan"
 DATA = ROOT / "data"
 
 

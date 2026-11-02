@@ -37,6 +37,12 @@ python3 -m venv .venv && . .venv/bin/activate
 pip install -r requirements.txt
 ```
 
+Пакет также можно установить командой `pip install ".[api,ssh,winrm]"` из корня
+исходников либо установить собранный wheel с теми же extras. В wheel включены
+веб-интерфейс, коллекторы и справочные данные; каталоги данных размещаются в
+`share/surveyscan` внутри окружения Python. Для тестов из исходников:
+`pip install ".[api,ssh,winrm,test]"`, затем `python -m pytest -q` (нужен PostgreSQL).
+
 PostgreSQL (один раз):
 ```bash
 sudo -u postgres psql -c "CREATE ROLE surveyscan LOGIN PASSWORD 'surveyscan' CREATEDB;"

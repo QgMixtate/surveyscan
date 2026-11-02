@@ -8,9 +8,9 @@ from __future__ import annotations
 
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -57,8 +57,8 @@ class TaskCreate(BaseModel):
     snmp_community: Optional[str] = None  # ярлык: SNMP community -> добавляется как УЗ типа snmp
     cred_ids: Optional[list[int]] = None  # выбранные УЗ из хранилища (расшифровываются на сервере)
     creds: Optional[list[Cred]] = None    # разовые УЗ (для API/тестов); UI использует cred_ids
-    template: Optional[str] = None     # шаблон отчёта: full|executive|vuln|config|inventory
-    run: str = "async"                 # async (очередь) | sync (дождаться результата)
+    template: Optional[Literal['full', 'executive', 'vuln', 'config', 'inventory']] = None
+    run: Literal['async', 'sync'] = "async"
 
 
 class CredentialCreate(BaseModel):
@@ -111,12 +111,12 @@ def health() -> dict:
 def create_task(body: TaskCreate) -> dict:
     if body.kind not in KINDS:
         raise HTTPException(400, f"неизвестный вид задачи: {body.kind}")
-    if body.kind != "demo" and not (body.targets and body.targets.strip()):
-        raise HTTPException(400, "укажите цели сканирования (подсети/хосты), напр. 10.0.0.0/24")
     try:
-        runner.parse_targets(body.targets)        # ранняя валидация целей
+        targets = runner.parse_targets(body.targets)  # ранняя валидация целей
     except ValueError as e:
         raise HTTPException(400, str(e))
+    if body.kind != "demo" and not targets:
+        raise HTTPException(400, "укажите цели сканирования (подсети/хосты), напр. 10.0.0.0/24")
 
     # набор УЗ: из хранилища (cred_ids, расшифровка) + ярлык snmp_community + разовые creds
     creds: list[dict] = []
@@ -166,7 +166,7 @@ def create_task(body: TaskCreate) -> dict:
 
 
 @app.get("/tasks")
-def list_tasks(limit: int = 50) -> list[dict]:
+def list_tasks(limit: int = Query(default=50, ge=1, le=1000)) -> list[dict]:
     return store.list_tasks(limit)
 
 

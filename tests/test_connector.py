@@ -62,3 +62,29 @@ def test_empty_result_rejected():
         h = {"Authorization": f"Bearer {conn['token']}"}
         jid = c.post("/connector/jobs", json={"connector_id": conn["id"], "name": "J3"}).json()["id"]
         assert c.post(f"/connector/jobs/{jid}/result", json={"files": {}}, headers=h).status_code == 400
+
+
+def test_results_are_owned_and_cannot_be_replayed(monkeypatch):
+    from surveyscan.api import runner
+    monkeypatch.setattr(runner, 'run_pipeline', lambda *a, **k: ({}, '<html>ok</html>', {}))
+    with TestClient(app) as c:
+        owner = c.post('/connectors', json={'name': 'owner'}).json()
+        other = c.post('/connectors', json={'name': 'other'}).json()
+        jid = c.post('/connector/jobs', json={'connector_id': owner['id']}).json()['id']
+        url = f'/connector/jobs/{jid}/result'
+        body = {'files': {'host.surv': 'sample'}}
+        assert c.post(url, json=body, headers={'Authorization': f"Bearer {other['token']}"}).status_code == 403
+        headers = {'Authorization': f"Bearer {owner['token']}"}
+        assert c.post(url, json=body, headers=headers).status_code == 200
+        assert c.post(url, json=body, headers=headers).status_code == 409
+
+
+def test_concurrent_pollers_only_receive_job_once():
+    from concurrent.futures import ThreadPoolExecutor
+    from surveyscan.api import connector
+    with TestClient(app) as c:
+        owner = c.post('/connectors', json={'name': 'concurrent'}).json()
+        jid = c.post('/connector/jobs', json={'connector_id': owner['id']}).json()['id']
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            results = list(pool.map(lambda _: connector.next_job(owner['id']), range(8)))
+        assert [r['id'] for r in results if r] == [jid]

@@ -7,6 +7,7 @@ cryptography>=42   # шифрование секретов УЗ в хранил�
 pytest>=7         # только для тестов
 httpx>=0.27       # только для тестов (fastapi TestClient)
 
-fastapi
-uvicorn[standard]
-psycopg[binary]
+fastapi>=0.100
+pydantic>=2
+uvicorn[standard]>=0.23
+psycopg[binary]>=3.1

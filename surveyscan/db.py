@@ -85,3 +85,13 @@ def find_or_create_asset(con: sqlite3.Connection, *, hostname: str = None, ips: 
     cur = con.execute(f"INSERT INTO asset ({', '.join(cols)}) VALUES ({', '.join('?' * len(cols))}) RETURNING id",
                       tuple(cols.values()))
     return cur.fetchone()[0]
+
+
+def apply_role_guess(con, asset_id: int) -> None:
+    """Базовая роль после импорта; уже заданную оператором роль не переопределяем.
+
+    Специализированные роли АСУ ТП/СЗИ требуют подтверждения оператором.
+    """
+    con.execute(
+        "UPDATE asset SET role=CASE WHEN kind='netdev' OR kind LIKE ? THEN 'netdev' ELSE 'it' END "
+        "WHERE id=? AND (role IS NULL OR role='')", ('%сетев%', asset_id))

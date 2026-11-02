@@ -33,6 +33,14 @@ def _noop(*_a, **_k):
     pass
 
 
+def redact_secrets(text: str, creds: list[dict] | None) -> str:
+    """Исключения библиотек и subprocess могут включать пароль/командную строку."""
+    secrets = {c.get(k) for c in creds or [] for k in ('secret', 'key') if c.get(k)}
+    for secret in sorted(secrets, key=len, reverse=True):
+        text = text.replace(secret, '******')
+    return text
+
+
 # --------------------------------------------------------------------------- выбор цели/протокола
 def _first_ipv4(ips) -> str | None:
     for p in ips or []:
@@ -222,7 +230,7 @@ def collect(con, creds: list[dict], root: Path, log=None, should_cancel=None) ->
                         ok = True
                         break
                     except Exception as e:
-                        last_err = str(e)[:160]
+                        last_err = redact_secrets(str(e), creds)[:160]
                 if not ok:
                     failed.append({"asset": label, "ip": ip, "proto": "snmp", "error": last_err})
                 continue
@@ -238,16 +246,17 @@ def collect(con, creds: list[dict], root: Path, log=None, should_cancel=None) ->
                     out = fn(ip, c, script)
                     if not out or ("@@@SURVEY:" not in out and '"collector"' not in out and "collector" not in out):
                         raise RuntimeError("коллектор вернул пустой/неожиданный результат")
-                    tmp = Path(tempfile.mkdtemp(prefix="surveyscan-collect-")) / (label + suffix)
-                    tmp.write_text(out, encoding="utf-8")
-                    kind, new_id = ingest_file(con, tmp)
+                    with tempfile.TemporaryDirectory(prefix="surveyscan-collect-") as raw:
+                        tmp = Path(raw) / ('inventory' + suffix)
+                        tmp.write_text(out, encoding="utf-8")
+                        kind, new_id = ingest_file(con, tmp)
                     if new_id and new_id != a["id"]:          # коллектор создал отдельный актив — склеиваем
                         _merge_into(a["id"], new_id, ip)
                     collected.append({"asset": label, "ip": ip, "proto": proto, "cred": c.get("username"), "kind": kind})
                     ok = True
                     break
                 except Exception as e:
-                    last_err = str(e)[:160]
+                    last_err = redact_secrets(str(e), creds)[:160]
             if not ok:
                 failed.append({"asset": label, "ip": ip, "proto": proto, "error": last_err})
             else:

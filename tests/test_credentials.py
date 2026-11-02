@@ -18,6 +18,30 @@ def test_secretbox_roundtrip():
     assert secretbox.decrypt(tok) == "S3cr3t!"
 
 
+def test_concurrent_first_encryptions_use_same_key(monkeypatch):
+    import threading
+    import time
+    from concurrent.futures import ThreadPoolExecutor
+    from cryptography.fernet import Fernet
+
+    monkeypatch.setattr(secretbox, '_fernet', None)
+
+    def load():
+        time.sleep(0.05)
+        return Fernet.generate_key()
+
+    monkeypatch.setattr(secretbox, '_load_key', load)
+    start = threading.Barrier(2)
+
+    def encrypt(_):
+        start.wait(timeout=5)
+        return secretbox.encrypt('first-use')
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        tokens = list(pool.map(encrypt, range(2)))
+    assert [secretbox.decrypt(t) for t in tokens] == ['first-use', 'first-use']
+
+
 def test_credential_crud_hides_secret(client):
     r = client.post("/credentials", json={"name": "Тест-УЗ", "type": "ssh",
                                            "username": "audit", "secret": "p@ss", "port": 22})

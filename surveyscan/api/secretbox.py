@@ -15,11 +15,13 @@ from __future__ import annotations
 import base64
 import hashlib
 import os
+import threading
 from pathlib import Path
 
 from cryptography.fernet import Fernet
 
 _fernet: Fernet | None = None
+_fernet_lock = threading.Lock()
 
 
 def _coerce_key(s: str) -> bytes:
@@ -53,7 +55,9 @@ def _load_key() -> bytes:
 def _f() -> Fernet:
     global _fernet
     if _fernet is None:
-        _fernet = Fernet(_load_key())
+        with _fernet_lock:
+            if _fernet is None:
+                _fernet = Fernet(_load_key())
     return _fernet
 
 
