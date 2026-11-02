@@ -8,7 +8,20 @@
 param([string]$Out = "")
 
 $ErrorActionPreference = "SilentlyContinue"
-$CollectorVersion = "0.1"
+$CollectorVersion = "0.2"
+$collectionStatus = [ordered]@{}
+
+function Read-Inventory($Name, [scriptblock]$Collect) {
+    $items = New-Object 'System.Collections.Generic.List[object]'
+    $ErrorActionPreference = "Stop"
+    try {
+        & $Collect | ForEach-Object { $items.Add($_) }
+        $collectionStatus[$Name] = "ok"
+    } catch {
+        $collectionStatus[$Name] = if ($items.Count) { "partial" } else { "unavailable" }
+    }
+    $items.ToArray()
+}
 
 function Get-RegValue($Path, $Name) {
     try { (Get-ItemProperty -Path $Path -Name $Name -ErrorAction Stop).$Name } catch { $null }
@@ -34,29 +47,28 @@ $osInfo = [ordered]@{
 }
 
 # --- Сеть
-$netCfgs = @(Get-CimInstance Win32_NetworkAdapterConfiguration -Filter "IPEnabled=True")
+$netCfgs = @(Read-Inventory "nics" { Get-CimInstance Win32_NetworkAdapterConfiguration -Filter "IPEnabled=True" -ErrorAction Stop })
 $ips = @($netCfgs | ForEach-Object { $_.IPAddress } | Where-Object { $_ })
 
 # --- Сетевые интерфейсы (MAC, IP, маска, шлюз, DNS, DHCP)
-$interfacesNet = @()
+$adaptersByIdx = @{}
 try {
-    $adaptersByIdx = @{}
     Get-CimInstance Win32_NetworkAdapter -ErrorAction Stop | ForEach-Object { $adaptersByIdx[$_.InterfaceIndex] = $_ }
-    $interfacesNet = @($netCfgs | ForEach-Object {
+} catch { if ($netCfgs.Count) { $collectionStatus["nics"] = "partial" } }
+$interfacesNet = @($netCfgs | ForEach-Object {
         $ad = $adaptersByIdx[$_.InterfaceIndex]
         [ordered]@{
             name = if ($ad) { $ad.NetConnectionID } else { $_.Description }
             mac = $_.MACAddress
             status = if ($ad) { switch ($ad.NetConnectionStatus) { 2 { "Connected" } 7 { "Disconnected" } default { [string]$ad.NetConnectionStatus } } } else { $null }
             ip = @($_.IPAddress)
-            mask = @($_.IPSubnet | Where-Object { $_ -notmatch ":" })
+            mask = @($_.IPSubnet)
             gateway = @($_.DefaultIPGateway)
             dns = @($_.DNSServerSearchOrder)
             dhcp_enabled = [bool]$_.DHCPEnabled
             dhcp_server = $_.DHCPServer
         }
     })
-} catch {}
 
 # --- Таблица маршрутизации
 $routes = @()
@@ -64,12 +76,11 @@ try {
     $routes = @(Get-NetRoute -AddressFamily IPv4 -ErrorAction Stop | Where-Object { $_.NextHop -ne "0.0.0.0" -or $_.DestinationPrefix -ne "0.0.0.0/0" } | ForEach-Object {
         [ordered]@{ destination = $_.DestinationPrefix; gateway = $_.NextHop; interface = $_.InterfaceAlias; metric = $_.RouteMetric }
     })
+    $collectionStatus["routes"] = "ok"
 } catch {
-    try {
-        $routes = @(Get-CimInstance Win32_IP4RouteTable -ErrorAction Stop | ForEach-Object {
+        $routes = @(Read-Inventory "routes" { Get-CimInstance Win32_IP4RouteTable -ErrorAction Stop | ForEach-Object {
             [ordered]@{ destination = "$($_.Destination)/$($_.Mask)"; gateway = $_.NextHop; interface = [string]$_.InterfaceIndex; metric = $_.Metric1 }
-        })
-    } catch {}
+        } })
 }
 
 # --- Обновления (KB)
@@ -89,10 +100,10 @@ $software = @(Get-ItemProperty $uninstallPaths | Where-Object { $_.DisplayName -
     } | Sort-Object { $_.name } -Unique)
 
 # --- Службы
-$services = @(Get-CimInstance Win32_Service | ForEach-Object {
+$services = @(Read-Inventory "services" { Get-CimInstance Win32_Service -ErrorAction Stop | ForEach-Object {
     [ordered]@{ name = $_.Name; display = $_.DisplayName; start_mode = $_.StartMode; state = $_.State;
                 account = $_.StartName; path = $_.PathName; description = $_.Description }
-})
+} })
 
 # --- Локальные учётные записи и администраторы
 $users = @(Get-CimInstance Win32_UserAccount -Filter "LocalAccount=True" | ForEach-Object {
@@ -107,40 +118,39 @@ try {
 }
 
 # --- Локальные группы безопасности и их состав
-$groups = @()
+$wmiGroups = @(Read-Inventory "groups" { Get-CimInstance Win32_Group -Filter "LocalAccount=True" -ErrorAction Stop })
+$wmiAssoc = @()
+$groupMembersAvailable = $true
 try {
-    $wmiGroups = @(Get-CimInstance Win32_Group -Filter "LocalAccount=True" -ErrorAction Stop)
     $wmiAssoc = @(Get-CimInstance Win32_GroupUser -ErrorAction Stop)
-    $groups = @($wmiGroups | ForEach-Object {
+} catch {
+    $groupMembersAvailable = $false
+    if ($wmiGroups.Count) { $collectionStatus["groups"] = "partial" }
+}
+$groups = @($wmiGroups | ForEach-Object {
         $g = $_
-        $gnamePattern = 'Name\s*=\s*"' + [regex]::Escape($g.Name) + '"'
-        $members = @($wmiAssoc | Where-Object { $_.GroupComponent.ToString() -match $gnamePattern } |
-            ForEach-Object { if ($_.PartComponent.ToString() -match 'Name\s*=\s*"([^"]+)"') { $Matches[1] } })
+        # CIM-ссылки содержат Domain/Name. Домен нужен для различения одноимённых УЗ.
+        $members = $null
+        if ($groupMembersAvailable) {
+            $members = @($wmiAssoc | Where-Object {
+                $_.GroupComponent.Name -eq $g.Name -and $_.GroupComponent.Domain -eq $g.Domain
+            } | ForEach-Object { "$($_.PartComponent.Domain)\$($_.PartComponent.Name)" })
+        }
         [ordered]@{ name = $g.Name; sid = $g.SID; description = $g.Description; members = $members }
     })
-} catch {}
 
 # --- Диски, общие папки, USB-устройства
-$disks = @()
-try {
-    $disks = @(Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -ErrorAction Stop | ForEach-Object {
+$disks = @(Read-Inventory "disks" { Get-CimInstance Win32_LogicalDisk -Filter "DriveType=3" -ErrorAction Stop | ForEach-Object {
         [ordered]@{ id = $_.DeviceID; name = $_.VolumeName; size_gb = if ($_.Size) { [math]::Round($_.Size / 1GB, 1) } else { $null };
                     free_gb = if ($null -ne $_.FreeSpace) { [math]::Round($_.FreeSpace / 1GB, 1) } else { $null } }
-    })
-} catch {}
-$shares = @()
-try {
-    $shares = @(Get-CimInstance Win32_Share -Filter "Type=0" -ErrorAction Stop | ForEach-Object {
+    } })
+$shares = @(Read-Inventory "shares" { Get-CimInstance Win32_Share -Filter "Type=0" -ErrorAction Stop | ForEach-Object {
         [ordered]@{ name = $_.Name; path = $_.Path; description = $_.Description }
-    })
-} catch {}
-$usbDevices = @()
-try {
-    $usbDevices = @(Get-CimInstance Win32_PnPEntity -Filter "PNPDeviceID LIKE 'USB%'" -ErrorAction Stop |
+    } })
+$usbDevices = @(Read-Inventory "usb_devices" { Get-CimInstance Win32_PnPEntity -Filter "PNPDeviceID LIKE 'USB%'" -ErrorAction Stop |
         Where-Object { $_.Name } | ForEach-Object {
             [ordered]@{ name = $_.Name; device_id = $_.PNPDeviceID; description = $_.Description }
-        })
-} catch {}
+        } })
 
 # --- Локальная политика безопасности (secedit)
 $secedit = [ordered]@{}
@@ -202,22 +212,23 @@ $firewall = [ordered]@{}
 try { Get-NetFirewallProfile -ErrorAction Stop | ForEach-Object { $firewall[[string]$_.Name] = [bool]$_.Enabled } } catch {}
 
 # --- Слушающие порты и установленные соединения
-$listening = @()
-$connections = @()
-try {
-    $procs = @{}; Get-Process | ForEach-Object { $procs[$_.Id] = $_.ProcessName }
-    $listening = @(Get-NetTCPConnection -State Listen -ErrorAction Stop | ForEach-Object {
+$procs = @{}; Get-Process | ForEach-Object { $procs[$_.Id] = $_.ProcessName }
+# Запрос всех TCP-записей даёт корректный пустой результат при отсутствии нужного состояния.
+$tcp = @(Read-Inventory "tcp" { Get-NetTCPConnection -ErrorAction Stop })
+$listening = @($tcp | Where-Object { $_.State -eq "Listen" } | ForEach-Object {
         [ordered]@{ proto = "tcp"; address = $_.LocalAddress; port = $_.LocalPort; process = $procs[[int]$_.OwningProcess] }
     })
-    $listening += @(Get-NetUDPEndpoint -ErrorAction Stop | ForEach-Object {
+    $listening += @(Read-Inventory "udp" { Get-NetUDPEndpoint -ErrorAction Stop | ForEach-Object {
         [ordered]@{ proto = "udp"; address = $_.LocalAddress; port = $_.LocalPort; process = $procs[[int]$_.OwningProcess] }
-    })
-    $connections = @(Get-NetTCPConnection -State Established -ErrorAction Stop | ForEach-Object {
+    } })
+    $connections = @($tcp | Where-Object { $_.State -eq "Established" } | ForEach-Object {
         [ordered]@{ local_address = $_.LocalAddress; local_port = $_.LocalPort;
                     remote_address = $_.RemoteAddress; remote_port = $_.RemotePort;
                     process = $procs[[int]$_.OwningProcess] }
     })
-} catch {}
+$collectionStatus["connections"] = $collectionStatus["tcp"]
+$collectionStatus["listening"] = if ($collectionStatus["tcp"] -eq "ok" -and $collectionStatus["udp"] -eq "ok") { "ok" }
+    elseif ($listening.Count) { "partial" } else { "unavailable" }
 
 # --- Антивирус (Центр безопасности есть только на клиентских ОС) и Defender
 $av = @()
@@ -249,6 +260,7 @@ $result = [ordered]@{
         registry = $registry; smb1_enabled = $smb1Feature; firewall = $firewall; listening = $listening;
         connections = $connections; nics = $interfacesNet; routes = $routes;
         disks = $disks; shares = $shares; usb_devices = $usbDevices;
+        collection_status = $collectionStatus;
         antivirus = $av; defender = $defender
     }
 }

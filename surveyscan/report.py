@@ -38,7 +38,16 @@ def _asset_label(a) -> str:
 def _build_inventory(a, facts: dict, software: list[dict], hotfixes: list[str]) -> dict:
     """Полная инвентаризация актива для карточки в UI — из facts коллектора (SSH/WinRM/SNMP)."""
     fam = a["os_family"] or ""
-    inv: dict = {"software": software}
+    inv: dict = {"software": software, "collection_status": dict(facts.get("collection_status") or {})}
+    if fam == "linux":
+        statuses = inv["collection_status"]
+        if "ip_addr" in statuses or "ip_link" in statuses:
+            states = [statuses.get(k, "unknown") for k in ("ip_addr", "ip_link")]
+            statuses["nics"] = "ok" if all(s == "ok" for s in states) else "unavailable"
+    # Команда может успеть вернуть часть строк до ошибки. Их сохраняем с пометкой.
+    for key, status in list(inv["collection_status"].items()):
+        if status == "unavailable" and facts.get(key):
+            inv["collection_status"][key] = "partial"
     if fam == "windows":
         osd = facts.get("os") or {}
         hotfixes_sorted = sorted(hotfixes, key=lambda k: (-int(k) if k.isdigit() else 0, k))
@@ -150,7 +159,7 @@ def collect(con: sqlite3.Connection, catalog_dir: Path, tpl: dict) -> dict:
             "build": a["os_build"] or a["kernel"] or "", "software": sw_count.get(a["id"], 0),
             "services": svc.get(a["id"], []), "source": a["source"] or "", "sec_tools": sec_tools,
             "role": a["role"] or "", "collected_at": a["collected_at"] or "",
-            "partial": a["os_family"] == "linux" and not facts.get("is_root", True),
+            "partial": a["os_family"] == "linux" and facts.get("is_root") is False,
             "inventory": _build_inventory(a, facts, sw_list.get(a["id"], []), hotfix_list.get(a["id"], [])),
             # для построения схемы сети из конфигов (surveyscan.topology): VLAN/interfaces на
             # узле устройства + потенциальные L2-соседи из description интерфейсов.

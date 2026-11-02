@@ -240,7 +240,7 @@ function Assets({D, go}) {
           <tbody>
             {assets.map(a => (
               <tr key={a.name} className="click" onClick={() => go({view: "asset", assetName: a.name})}>
-                <td><b>{a.name}</b>{a.partial ? <span className="chip c-medium" style={{marginLeft: 8}}>сбор без root</span> : null}</td>
+                <td><b>{a.name}</b>{assetPartial(a) ? <span className="chip c-medium" style={{marginLeft: 8}}>{a.os_family === "windows" ? "без прав администратора" : "сбор без root"}</span> : null}</td>
                 <td className="mono">{a.ips || "—"}</td>
                 <td>{a.os || "—"}{a.build ? <div className="sub2 mono">{a.build}</div> : null}</td>
                 <td>{a.kind}</td>
@@ -276,6 +276,26 @@ function SimpleTable({cols, rows, empty}) {
   );
 }
 
+function InventoryTable({inv, section, cols, rows, filtered = false}) {
+  const status = (inv.collection_status || {})[section];
+  const message = filtered ? "Нет совпадений по фильтру." : status === "ok" ? "Записей не обнаружено."
+    : status === "unavailable" ? "Данные недоступны: ошибка сбора или нет доступа."
+    : status === "partial" ? "Данные собраны частично." : "Нет данных о сборе.";
+  return <>
+    {status === "partial" && (rows || []).length ? <div className="warn" style={{marginBottom: 8}}>Данные собраны частично.</div> : null}
+    <SimpleTable cols={cols} rows={rows} empty={message}/>
+  </>;
+}
+
+function inventoryCount(inv, key) {
+  const count = (inv[key] || []).length;
+  return count || ((inv.collection_status || {})[key] === "ok" ? 0 : "—");
+}
+
+function assetPartial(a) {
+  return a.partial || (a.os_family === "windows" && (a.inventory || {}).is_admin === false);
+}
+
 function AssetDetail({D, name, go, taskId, onRoleChange}) {
   const a = (D.assets || []).find(x => x.name === name);
   const [tab, setTab] = useState("overview");
@@ -301,7 +321,6 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
   const svcShown = svcFilter
     ? winServices.filter(s => ((s.display || "") + " " + (s.name || "")).toLowerCase().includes(svcFilter.toLowerCase()))
     : winServices;
-  const hasDevices = (inv.disks || []).length || (inv.shares || []).length || (inv.usb_devices || []).length;
 
   const tabs = [
     {id: "overview", label: "Обзор"},
@@ -311,7 +330,7 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
   if (fam === "windows" || fam === "linux") tabs.push({id: "users", label: "Пользователи"});
   tabs.push({id: "network", label: "Сеть и службы", count: (a.services || []).length + listening.length});
   if (fam === "windows" || fam === "linux") tabs.push({id: "security", label: "Защита"});
-  if (fam === "windows" && hasDevices) tabs.push({id: "devices", label: "Диски и устройства"});
+  if (fam === "windows") tabs.push({id: "devices", label: "Диски и устройства"});
   if (inv.config) tabs.push({id: "config", label: "Конфигурация"});
 
   return (
@@ -321,7 +340,7 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
         <div className="ic">{assetIcon(a)}</div>
         <div><div className="h1" style={{margin: 0}}>{name}</div><div className="meta mono">{a.ips}{a.os ? " · " + a.os : ""}</div></div>
       </div>
-      {a.partial ? <div className="warn" style={{margin: "10px 0"}}>Сбор выполнен без root/sudo — часть данных (учётки, конфиги) может быть неполной.</div> : null}
+      {assetPartial(a) ? <div className="warn" style={{margin: "10px 0"}}>Сбор выполнен {fam === "windows" ? "без прав администратора" : "без root/sudo"} — часть данных может быть неполной.</div> : null}
 
       <div className="tabs">
         {tabs.map(t => (
@@ -341,7 +360,7 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
             <KV k="ОС / платформа" v={a.os}/>
             <KV k="Сборка / версия" v={a.build}/>
             {fam === "windows" ? <>
-              <KV k="Домен" v={inv.part_of_domain ? inv.domain : "рабочая группа"}/>
+              <KV k="Домен / рабочая группа" v={inv.part_of_domain === true ? inv.domain : inv.part_of_domain === false ? (inv.domain || "рабочая группа") : null}/>
               <KV k="Архитектура" v={inv.architecture}/>
               <KV k="Тип установки" v={inv.installation_type}/>
               <KV k="Последняя загрузка" v={inv.last_boot}/>
@@ -355,7 +374,7 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
             <div className="card"><div className="ch"><h3>Итоги</h3></div><div className="cb">
               <KV k="Пакетов / ПО" v={software.length}/>
               <KV k="Открытых сервисов (сеть)" v={(a.services || []).length}/>
-              <KV k="Слушающих портов (ОС)" v={listening.length}/>
+              <KV k="Слушающих портов (ОС)" v={inventoryCount(inv, "listening")}/>
               {fam === "windows" ? <KV k="Обновлений (KB)" v={(inv.hotfixes || []).length}/> : null}
             </div></div>
             {a.sec_tools && a.sec_tools.length ? (
@@ -371,7 +390,7 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
           <input value={swFilter} onChange={e => setSwFilter(e.target.value)} placeholder="Фильтр по имени…"
                  style={{marginLeft: "auto", fontSize: 12.5, padding: "4px 8px"}}/>
         </div><div className="cb">
-          <SimpleTable empty="ПО не обнаружено." cols={[
+          <SimpleTable empty={swFilter ? "Нет совпадений по фильтру." : "Нет данных об установленном ПО."} cols={[
             {key: "name", label: "Название"}, {key: "version", label: "Версия", mono: true},
             {key: "vendor", label: "Производитель"}, {key: "ecosystem", label: "Тип"},
           ]} rows={swShown}/>
@@ -410,10 +429,10 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
                     : <div className="sub2">Группа «Администраторы» пуста или не собрана.</div>}
                 </div></div>
                 <div className="card" style={{marginTop: 16}}><div className="ch"><h3>Локальные группы</h3></div><div className="cb">
-                  <SimpleTable empty="Группы не собраны." cols={[
+                  <InventoryTable inv={inv} section="groups" cols={[
                     {key: "name", label: "Наименование"}, {key: "sid", label: "SID", mono: true},
                     {key: "description", label: "Описание"},
-                    {key: "members", label: "Члены группы", render: r => (r.members || []).join(", ") || "—"},
+                    {key: "members", label: "Члены группы", render: r => r.members == null ? "Не собрано" : (r.members.join(", ") || "нет")},
                   ]} rows={inv.groups}/>
                 </div></div>
               </>
@@ -432,31 +451,39 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
 
       {tab === "network" && (
         <div className="detail">
-          {(fam === "windows" || fam === "linux") && (inv.nics || []).length ? (
+          {(fam === "windows" || fam === "linux") ? (
             <div className="card" style={{gridColumn: "1 / -1"}}><div className="ch"><h3>Сетевые интерфейсы</h3></div><div className="cb">
               {fam === "windows"
-                ? <SimpleTable empty="Не собрано." cols={[
+                ? <InventoryTable inv={inv} section="nics" cols={[
                     {key: "name", label: "Наименование"}, {key: "mac", label: "MAC адрес", mono: true},
                     {key: "status", label: "Статус"},
                     {key: "ip", label: "IP адрес", mono: true, render: r => (r.ip || []).join(", ") || "—"},
                     {key: "mask", label: "Маска подсети", mono: true, render: r => (r.mask || []).join(", ") || "—"},
                     {key: "gateway", label: "Основной шлюз", mono: true, render: r => (r.gateway || []).join(", ") || "—"},
                     {key: "dns", label: "DNS сервер", mono: true, render: r => (r.dns || []).join(", ") || "—"},
-                    {key: "dhcp_server", label: "DHCP сервер", mono: true, render: r => r.dhcp_enabled ? (r.dhcp_server || "да") : "отключён"},
+                    {key: "dhcp_server", label: "DHCP сервер", mono: true, render: r => r.dhcp_enabled === true ? (r.dhcp_server || "включён") : r.dhcp_enabled === false ? "отключён" : "—"},
                   ]} rows={inv.nics}/>
-                : <SimpleTable empty="Не собрано." cols={[
+                : <InventoryTable inv={inv} section="nics" cols={[
                     {key: "name", label: "Наименование"}, {key: "mac", label: "MAC адрес", mono: true},
                     {key: "addresses", label: "IP адрес / маска", mono: true,
-                     render: r => (r.addresses || []).map(x => x.ip + "/" + x.prefix).join(", ") || "—"},
+                     render: r => (r.addresses || []).map(x => x.ip + (x.prefix == null ? "" : "/" + x.prefix)).join(", ") || "—"},
                   ]} rows={inv.nics}/>}
             </div></div>
           ) : null}
 
-          {(fam === "windows" || fam === "linux") && (inv.routes || []).length ? (
+          {fam === "linux" ? (
+            <div className="card"><div className="ch"><h3>DNS серверы</h3></div><div className="cb">
+              <InventoryTable inv={inv} section="dns" cols={[{key: "address", label: "Адрес", mono: true}]}
+                rows={(inv.dns || []).map(address => ({address}))}/>
+            </div></div>
+          ) : null}
+
+          {(fam === "windows" || fam === "linux") ? (
             <div className="card" style={{gridColumn: "1 / -1"}}><div className="ch"><h3>Таблица маршрутизации</h3></div><div className="cb">
-              <SimpleTable empty="Не собрано." cols={[
+              <InventoryTable inv={inv} section="routes" cols={[
                 {key: "destination", label: "Сеть", mono: true}, {key: "gateway", label: "Шлюз", mono: true},
                 {key: "interface", label: "Интерфейс"},
+                {key: "metric", label: "Метрика", num: true},
               ]} rows={inv.routes}/>
             </div></div>
           ) : null}
@@ -467,15 +494,15 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
               : <div className="sub2">Открытых сервисов не обнаружено.</div>}
           </div></div>
           <div className="card"><div className="ch"><h3>Слушающие порты (на хосте)</h3></div><div className="cb">
-            <SimpleTable empty="Не собрано." cols={[
+            <InventoryTable inv={inv} section="listening" cols={[
               {key: "proto", label: "Протокол"}, {key: "port", label: "Порт", num: true},
               {key: "address", label: "Адрес", mono: true}, {key: "process", label: "Процесс"},
             ]} rows={listening}/>
           </div></div>
 
-          {connections.length ? (
+          {(fam === "windows" || fam === "linux") ? (
             <div className="card" style={{gridColumn: "1 / -1"}}><div className="ch"><h3>Используемые сетевые соединения</h3></div><div className="cb">
-              <SimpleTable empty="Не собрано." cols={[
+              <InventoryTable inv={inv} section="connections" cols={[
                 {key: "local_address", label: "Локальный адрес", mono: true}, {key: "local_port", label: "Локальный порт", num: true},
                 {key: "remote_address", label: "Удалённый адрес", mono: true}, {key: "remote_port", label: "Удалённый порт", num: true},
                 {key: "process", label: "Процесс"},
@@ -483,14 +510,14 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
             </div></div>
           ) : null}
 
-          {fam === "windows" && winServices.length ? (
+          {fam === "windows" ? (
             <div className="card" style={{gridColumn: "1 / -1"}}>
               <div className="ch"><h3>Службы Windows</h3><span className="sub2">{winServices.length}</span>
                 <input value={svcFilter} onChange={e => setSvcFilter(e.target.value)} placeholder="Фильтр по имени…"
                        style={{marginLeft: "auto", fontSize: 12.5, padding: "4px 8px"}}/>
               </div>
               <div className="cb">
-                <SimpleTable empty="Не найдено." cols={[
+                <InventoryTable inv={inv} section="services" filtered={!!svcFilter && winServices.length > 0} cols={[
                   {key: "display", label: "Полное имя"}, {key: "name", label: "Имя службы", mono: true},
                   {key: "state", label: "Статус"}, {key: "start_mode", label: "Тип запуска"},
                   {key: "account", label: "Учётная запись", mono: true}, {key: "path", label: "Путь до файла", mono: true},
@@ -503,20 +530,20 @@ function AssetDetail({D, name, go, taskId, onRoleChange}) {
 
       {tab === "devices" && (
         <div className="detail">
-          <div className="card"><div className="ch"><h3>Жёсткие диски</h3></div><div className="cb">
-            <SimpleTable empty="Не собрано." cols={[
+          <div className="card"><div className="ch"><h3>Локальные тома</h3></div><div className="cb">
+            <InventoryTable inv={inv} section="disks" cols={[
               {key: "id", label: "ID диска", mono: true}, {key: "name", label: "Наименование"},
               {key: "size_gb", label: "Объём, ГБ", num: true}, {key: "free_gb", label: "Свободно, ГБ", num: true},
             ]} rows={inv.disks}/>
           </div></div>
           <div className="card"><div className="ch"><h3>Общие папки</h3></div><div className="cb">
-            <SimpleTable empty="Не собрано." cols={[
+            <InventoryTable inv={inv} section="shares" cols={[
               {key: "name", label: "Наименование"}, {key: "path", label: "Путь", mono: true},
               {key: "description", label: "Описание"},
             ]} rows={inv.shares}/>
           </div></div>
           <div className="card" style={{gridColumn: "1 / -1"}}><div className="ch"><h3>Подключённые USB-устройства</h3></div><div className="cb">
-            <SimpleTable empty="Не собрано." cols={[
+            <InventoryTable inv={inv} section="usb_devices" cols={[
               {key: "name", label: "Наименование"}, {key: "device_id", label: "ID устройства", mono: true},
               {key: "description", label: "Описание"},
             ]} rows={inv.usb_devices}/>

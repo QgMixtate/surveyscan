@@ -7,10 +7,21 @@
 #
 # Формат вывода: секции, каждая начинается строкой @@@SURVEY:<имя>@@@ .
 
-COLLECTOR_VERSION="0.1"
+COLLECTOR_VERSION="0.2"
 sec() { printf '\n@@@SURVEY:%s@@@\n' "$1"; }
 have() { command -v "$1" >/dev/null 2>&1; }
 run() { "$@" 2>/dev/null; }
+INVENTORY_STATUS=""
+# Успешная пустая выдача отличается от отсутствующей команды/ошибки доступа.
+inventory_run() {
+  inv_key="$1"; shift
+  inv_status=unavailable
+  if have "$1"; then
+    "$@" 2>/dev/null
+    [ "$?" -eq 0 ] && inv_status=ok
+  fi
+  INVENTORY_STATUS="${INVENTORY_STATUS}${inv_key}=${inv_status}\n"
+}
 
 sec meta
 echo "collector=linux_collect.sh"
@@ -23,16 +34,16 @@ run hostname
 run hostname -f
 
 sec ip_addr
-if have ip; then run ip -o addr show; else run ifconfig -a; fi
+if have ip; then inventory_run ip_addr ip -o addr show; else inventory_run ip_addr ifconfig -a; fi
 
 sec ip_link
-if have ip; then run ip -o link show; fi
+inventory_run ip_link ip -o link show
 
 sec ip_route
-if have ip; then run ip -o route show; elif have route; then run route -n; fi
+if have ip; then inventory_run routes ip -o route show; else inventory_run routes route -n; fi
 
 sec resolv_conf
-run cat /etc/resolv.conf
+inventory_run dns cat /etc/resolv.conf
 
 sec os_release
 run cat /etc/os-release
@@ -101,10 +112,15 @@ for f in /etc/passwd /etc/shadow /etc/group /etc/gshadow /etc/sudoers /etc/ssh/s
 done
 
 sec listening
-if have ss; then run ss -H -tulpn; elif have netstat; then run netstat -tulpn; fi
+if have ss; then inventory_run listening ss -H -tulpn; else inventory_run listening netstat -tulpn; fi
 
 sec connections
-if have ss; then run ss -H -tnp state established; elif have netstat; then run netstat -tnp 2>/dev/null | grep ESTABLISHED; fi
+if have ss; then
+  inventory_run connections ss -H -tnp state established
+else
+  # Фильтрация в парсере: grep вернул бы ошибку на корректном пустом списке.
+  inventory_run connections netstat -tnp
+fi
 
 sec services_enabled
 if have systemctl; then run systemctl list-unit-files --type=service --state=enabled --no-legend --no-pager; fi
@@ -133,6 +149,9 @@ if have astra-sudo-control; then echo "sudo_control=$(astra-sudo-control is-enab
 if have astra-console-lock; then echo "console_lock=$(astra-console-lock is-enabled 2>/dev/null)"; fi
 if have astra-interpreters-lock; then echo "interpreters_lock=$(astra-interpreters-lock is-enabled 2>/dev/null)"; fi
 if have astra-swapwiper-control; then echo "swapwiper=$(astra-swapwiper-control is-enabled 2>/dev/null)"; fi
+
+sec collection_status
+printf '%b' "$INVENTORY_STATUS"
 
 sec end
 echo ok

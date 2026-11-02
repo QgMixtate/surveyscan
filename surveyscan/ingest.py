@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import datetime as dt
 import hashlib
+import ipaddress
 import json
 import re
 import sqlite3
@@ -128,7 +129,8 @@ def _pam_args(pam_text: str, module: str) -> dict:
 def linux_facts(sec: dict[str, str]) -> dict:
     facts: dict = {}
     meta = _kv(sec.get("meta"))
-    facts["is_root"] = meta.get("uid") == "0"
+    facts["is_root"] = meta.get("uid") == "0" if meta.get("uid") else None
+    facts["collection_status"] = _kv(sec.get("collection_status"))
     facts["os_release"] = _kv(sec.get("os_release"))
     facts["sysctl"] = _kv(sec.get("sysctl"), " = ") or _kv(sec.get("sysctl"))
     cmdline = (sec.get("cmdline") or "").strip()
@@ -172,8 +174,8 @@ def linux_facts(sec: dict[str, str]) -> dict:
     facts["connections"] = _parse_ss_conn(sec.get("connections", ""))
     facts["nics"] = _parse_linux_interfaces(sec.get("ip_link", ""), sec.get("ip_addr", ""))
     facts["routes"] = _parse_linux_routes(sec.get("ip_route", ""))
-    facts["dns"] = [l.split()[1] for l in (sec.get("resolv_conf") or "").splitlines()
-                    if l.startswith("nameserver") and len(l.split()) > 1]
+    facts["dns"] = [p[1] for l in (sec.get("resolv_conf") or "").splitlines()
+                    if len(p := l.split()) > 1 and p[0] == "nameserver"]
     facts["services_enabled"] = [l.split()[0] for l in (sec.get("services_enabled") or "").splitlines() if l.strip()]
     facts["services_active"] = _kv(sec.get("services_active"))
     facts["audit_rules"] = [l for l in (sec.get("audit_rules") or "").splitlines() if l and l != "No rules"]
@@ -198,11 +200,13 @@ def _parse_ss(text: str) -> list[dict]:
         p = line.split()
         if len(p) < 5 or p[0] not in ("tcp", "udp", "tcp6", "udp6"):
             continue
-        local = p[4]
+        # ss: proto state recv send local peer; netstat: proto recv send local peer state pid/name.
+        local = p[3] if p[1].isdigit() else p[4]
         addr, _, port = local.rpartition(":")
-        proc = re.search(r'users:\(\("([^"]+)"', line)
+        if not port:
+            continue
         out.append({"proto": p[0].rstrip("6"), "address": addr.strip("[]"), "port": int(port) if port.isdigit() else port,
-                    "process": proc.group(1) if proc else None})
+                    "process": _socket_process(line)})
     return out
 
 
@@ -211,25 +215,46 @@ def _parse_ss_conn(text: str) -> list[dict]:
     out = []
     for line in text.splitlines():
         p = line.split()
-        if len(p) < 6 or p[0] not in ("tcp", "udp", "tcp6", "udp6"):
+        if not p:
             continue
-        laddr, _, lport = p[4].rpartition(":")
-        raddr, _, rport = p[5].rpartition(":")
-        proc = re.search(r'users:\(\("([^"]+)"', line)
+        if p[0] in ("tcp", "udp", "tcp6", "udp6"):
+            offset = 3 if len(p) > 1 and p[1].isdigit() else 4
+            if offset == 3 and (len(p) < 6 or p[5] != "ESTABLISHED"):
+                continue
+        elif p[0].isdigit():  # ss с фильтром state: без Netid и State
+            offset = 2
+        elif p[0] in ("ESTAB", "ESTABLISHED"):
+            offset = 3
+        else:
+            continue
+        if len(p) < offset + 2:
+            continue
+        laddr, _, lport = p[offset].rpartition(":")
+        raddr, _, rport = p[offset + 1].rpartition(":")
+        if not lport or not rport:
+            continue
         out.append({"local_address": laddr.strip("[]"), "local_port": int(lport) if lport.isdigit() else lport,
                     "remote_address": raddr.strip("[]"), "remote_port": int(rport) if rport.isdigit() else rport,
-                    "process": proc.group(1) if proc else None})
+                    "process": _socket_process(line)})
     return out
 
 
-def _parse_linux_links(text: str) -> dict[str, str]:
+def _socket_process(line: str) -> str | None:
+    proc = re.search(r'users:\(\("([^"]+)"', line)
+    if proc:
+        return proc.group(1)
+    proc = re.search(r"\b\d+/([^\s]+)", line)
+    return proc.group(1) if proc else None
+
+
+def _parse_linux_links(text: str) -> dict[str, str | None]:
     """ifname -> MAC из `ip -o link show`."""
     macs = {}
     for line in text.splitlines():
         m = re.match(r"^\d+:\s+(\S+?)(@\S+)?:\s+<", line)
         mac = re.search(r"link/\S+\s+([0-9a-fA-F:]{17})", line)
-        if m and mac:
-            macs[m.group(1)] = mac.group(1)
+        if m:
+            macs[m.group(1)] = mac.group(1) if mac else None
     return macs
 
 
@@ -242,6 +267,34 @@ def _parse_linux_interfaces(link_text: str, addr_text: str) -> list[dict]:
         if m:
             name, _, ip, prefix = m.groups()
             addrs.setdefault(name, []).append({"ip": ip, "prefix": int(prefix)})
+    # Запасной путь коллектора: ifconfig (net-tools старого и нового формата).
+    current = None
+    for line in addr_text.splitlines():
+        if line and not line[0].isspace() and not re.match(r"^\d+:", line):
+            current = line.split()[0].rstrip(":")
+            addrs.setdefault(current, [])
+        if current is None:
+            continue
+        mac = re.search(r"(?:ether|HWaddr)\s+([0-9a-fA-F:]{17})", line)
+        if mac:
+            macs[current] = mac.group(1)
+        addr = re.search(r"\binet6?\s+(?:addr:\s*)?([0-9a-fA-F:.]+)(?:/(\d+))?", line)
+        if not addr:
+            continue
+        ip, prefix = addr.groups()
+        mask = re.search(r"(?:netmask\s+|Mask:)([0-9a-fA-F.x]+)", line)
+        if prefix is None and ":" not in ip and mask:
+            try:
+                value = mask.group(1)
+                if value.startswith("0x"):
+                    value = str(ipaddress.IPv4Address(int(value, 16)))
+                prefix = str(ipaddress.IPv4Network(f"0.0.0.0/{value}").prefixlen)
+            except ValueError:
+                pass
+        if prefix is None:
+            length = re.search(r"\bprefixlen\s+(\d+)", line)
+            prefix = length.group(1) if length else None
+        addrs[current].append({"ip": ip, "prefix": int(prefix) if prefix is not None else None})
     names = sorted(set(macs) | set(addrs))
     return [{"name": n, "mac": macs.get(n), "addresses": addrs.get(n, [])} for n in names]
 
@@ -251,11 +304,27 @@ def _parse_linux_routes(text: str) -> list[dict]:
     out = []
     for line in text.splitlines():
         p = line.split()
-        if not p:
+        if not p or p[0] in ("Kernel", "Destination"):
             continue
-        gw = p[p.index("via") + 1] if "via" in p else None
-        dev = p[p.index("dev") + 1] if "dev" in p else None
-        out.append({"destination": p[0], "gateway": gw, "interface": dev})
+        if len(p) >= 8 and re.fullmatch(r"[0-9.]+", p[0]) and re.fullmatch(r"[0-9.]+", p[2]):
+            try:
+                destination = str(ipaddress.IPv4Network(f"{p[0]}/{p[2]}", strict=False))
+            except ValueError:
+                continue
+            out.append({"destination": destination, "gateway": None if p[1] == "0.0.0.0" else p[1],
+                        "interface": p[7], "metric": p[4]})
+            continue
+        def after(key):
+            i = p.index(key) + 1 if key in p else len(p)
+            return p[i] if i < len(p) else None
+        destination = p[1] if p[0] in ("blackhole", "unreachable", "prohibit", "throw") and len(p) > 1 else p[0]
+        if destination != "default":
+            try:
+                ipaddress.ip_network(destination, strict=False)
+            except ValueError:
+                continue
+        out.append({"destination": destination, "gateway": after("via"), "interface": after("dev"),
+                    "metric": after("metric")})
     return out
 
 
@@ -264,7 +333,7 @@ def ingest_linux(con, path: Path) -> int:
     facts = linux_facts(sec)
     osr = facts["os_release"]
     names = [l.strip() for l in (sec.get("hostname") or "").splitlines() if l.strip()]
-    ips = re.findall(r"inet6? ([0-9a-f.:]+)/", sec.get("ip_addr", ""))
+    ips = [addr["ip"] for nic in facts["nics"] for addr in nic["addresses"]]
     uname = (sec.get("uname") or "").split()
     kernel = uname[1] if len(uname) > 1 else None
     os_id = osr.get("ID", "linux")

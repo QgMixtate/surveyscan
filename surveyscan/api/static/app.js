@@ -25,9 +25,9 @@ function NewScan({
   const toggle = id => setSel(s => s.includes(id) ? s.filter(x => x !== id) : [...s, id]);
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
     className: "h1"
-  }, "Новое сканирование"), /*#__PURE__*/React.createElement("p", {
+  }, "\u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435"), /*#__PURE__*/React.createElement("p", {
     className: "sub"
-  }, "Укажите подсети и хосты. Сбор — сетевой (nmap): живые хосты, порты, версии сервисов, ОС → схема сети. Выберите учётные записи — сканер подключится к активам (SSH/WinRM/SNMP) и соберёт полный инвентарь; к каждому активу УЗ подбирается автоматически."), /*#__PURE__*/React.createElement("div", {
+  }, "\u0423\u043A\u0430\u0436\u0438\u0442\u0435 \u043F\u043E\u0434\u0441\u0435\u0442\u0438 \u0438 \u0445\u043E\u0441\u0442\u044B. \u0421\u0431\u043E\u0440 \u2014 \u0441\u0435\u0442\u0435\u0432\u043E\u0439 (nmap): \u0436\u0438\u0432\u044B\u0435 \u0445\u043E\u0441\u0442\u044B, \u043F\u043E\u0440\u0442\u044B, \u0432\u0435\u0440\u0441\u0438\u0438 \u0441\u0435\u0440\u0432\u0438\u0441\u043E\u0432, \u041E\u0421 \u2192 \u0441\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438. \u0412\u044B\u0431\u0435\u0440\u0438\u0442\u0435 \u0443\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438 \u2014 \u0441\u043A\u0430\u043D\u0435\u0440 \u043F\u043E\u0434\u043A\u043B\u044E\u0447\u0438\u0442\u0441\u044F \u043A \u0430\u043A\u0442\u0438\u0432\u0430\u043C (SSH/WinRM/SNMP) \u0438 \u0441\u043E\u0431\u0435\u0440\u0451\u0442 \u043F\u043E\u043B\u043D\u044B\u0439 \u0438\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u044C; \u043A \u043A\u0430\u0436\u0434\u043E\u043C\u0443 \u0430\u043A\u0442\u0438\u0432\u0443 \u0423\u0417 \u043F\u043E\u0434\u0431\u0438\u0440\u0430\u0435\u0442\u0441\u044F \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438."), /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       maxWidth: 820
@@ -36,7 +36,7 @@ function NewScan({
     className: "cb"
   }, /*#__PURE__*/React.createElement("div", {
     className: "field"
-  }, /*#__PURE__*/React.createElement("label", null, "Цели: подсети / хосты"), /*#__PURE__*/React.createElement("textarea", {
+  }, /*#__PURE__*/React.createElement("label", null, "\u0426\u0435\u043B\u0438: \u043F\u043E\u0434\u0441\u0435\u0442\u0438 / \u0445\u043E\u0441\u0442\u044B"), /*#__PURE__*/React.createElement("textarea", {
     rows: "4",
     value: targets,
     onChange: e => setTargets(e.target.value),
@@ -47,7 +47,7 @@ function NewScan({
     }
   }), /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Через запятую, пробел или с новой строки. Примеры: ", /*#__PURE__*/React.createElement("span", {
+  }, "\u0427\u0435\u0440\u0435\u0437 \u0437\u0430\u043F\u044F\u0442\u0443\u044E, \u043F\u0440\u043E\u0431\u0435\u043B \u0438\u043B\u0438 \u0441 \u043D\u043E\u0432\u043E\u0439 \u0441\u0442\u0440\u043E\u043A\u0438. \u041F\u0440\u0438\u043C\u0435\u0440\u044B: ", /*#__PURE__*/React.createElement("span", {
     className: "mono"
   }, "192.168.1.0/24"), ", ", /*#__PURE__*/React.createElement("span", {
     className: "mono"
@@ -65,12 +65,12 @@ function NewScan({
     style: {
       margin: 0
     }
-  }, "Учётные записи для сбора ", /*#__PURE__*/React.createElement("span", {
+  }, "\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438 \u0434\u043B\u044F \u0441\u0431\u043E\u0440\u0430 ", /*#__PURE__*/React.createElement("span", {
     className: "sub2",
     style: {
       fontWeight: 400
     }
-  }, "(опционально — без них только сетевое обнаружение)")), /*#__PURE__*/React.createElement("span", {
+  }, "(\u043E\u043F\u0446\u0438\u043E\u043D\u0430\u043B\u044C\u043D\u043E \u2014 \u0431\u0435\u0437 \u043D\u0438\u0445 \u0442\u043E\u043B\u044C\u043A\u043E \u0441\u0435\u0442\u0435\u0432\u043E\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435)")), /*#__PURE__*/React.createElement("span", {
     className: "more",
     style: {
       marginLeft: "auto"
@@ -78,17 +78,17 @@ function NewScan({
     onClick: () => go({
       view: "creds"
     })
-  }, "Управление УЗ →")), !savedCreds || savedCreds.length === 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "\u0423\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u0438\u0435 \u0423\u0417 \u2192")), !savedCreds || savedCreds.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "sub2",
     style: {
       margin: "8px 0"
     }
-  }, "Сохранённых УЗ нет. ", /*#__PURE__*/React.createElement("span", {
+  }, "\u0421\u043E\u0445\u0440\u0430\u043D\u0451\u043D\u043D\u044B\u0445 \u0423\u0417 \u043D\u0435\u0442. ", /*#__PURE__*/React.createElement("span", {
     className: "link",
     onClick: () => go({
       view: "creds"
     })
-  }, "Добавьте учётную запись"), " во вкладке «Учётные записи» — затем выбирайте её здесь.") : /*#__PURE__*/React.createElement("div", {
+  }, "\u0414\u043E\u0431\u0430\u0432\u044C\u0442\u0435 \u0443\u0447\u0451\u0442\u043D\u0443\u044E \u0437\u0430\u043F\u0438\u0441\u044C"), " \u0432\u043E \u0432\u043A\u043B\u0430\u0434\u043A\u0435 \xAB\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438\xBB \u2014 \u0437\u0430\u0442\u0435\u043C \u0432\u044B\u0431\u0438\u0440\u0430\u0439\u0442\u0435 \u0435\u0451 \u0437\u0434\u0435\u0441\u044C.") : /*#__PURE__*/React.createElement("div", {
     className: "credpick"
   }, savedCreds.map(c => /*#__PURE__*/React.createElement("label", {
     className: "credopt" + (sel.includes(c.id) ? " on" : ""),
@@ -118,13 +118,13 @@ function NewScan({
     onClick: () => go({
       view: "dash"
     })
-  }, "Отмена")))), /*#__PURE__*/React.createElement("div", {
+  }, "\u041E\u0442\u043C\u0435\u043D\u0430")))), /*#__PURE__*/React.createElement("div", {
     className: "warn",
     style: {
       maxWidth: 820,
       marginTop: 14
     }
-  }, "Секреты хранятся в базе в зашифрованном виде (ключ — в переменной окружения, не в БД) и расшифровываются только на время задачи. К каждому активу применяется подходящая по типу УЗ (перебор до первой успешной); в сводке фиксируется только логин."));
+  }, "\u0421\u0435\u043A\u0440\u0435\u0442\u044B \u0445\u0440\u0430\u043D\u044F\u0442\u0441\u044F \u0432 \u0431\u0430\u0437\u0435 \u0432 \u0437\u0430\u0448\u0438\u0444\u0440\u043E\u0432\u0430\u043D\u043D\u043E\u043C \u0432\u0438\u0434\u0435 (\u043A\u043B\u044E\u0447 \u2014 \u0432 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u043E\u0439 \u043E\u043A\u0440\u0443\u0436\u0435\u043D\u0438\u044F, \u043D\u0435 \u0432 \u0411\u0414) \u0438 \u0440\u0430\u0441\u0448\u0438\u0444\u0440\u043E\u0432\u044B\u0432\u0430\u044E\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043D\u0430 \u0432\u0440\u0435\u043C\u044F \u0437\u0430\u0434\u0430\u0447\u0438. \u041A \u043A\u0430\u0436\u0434\u043E\u043C\u0443 \u0430\u043A\u0442\u0438\u0432\u0443 \u043F\u0440\u0438\u043C\u0435\u043D\u044F\u0435\u0442\u0441\u044F \u043F\u043E\u0434\u0445\u043E\u0434\u044F\u0449\u0430\u044F \u043F\u043E \u0442\u0438\u043F\u0443 \u0423\u0417 (\u043F\u0435\u0440\u0435\u0431\u043E\u0440 \u0434\u043E \u043F\u0435\u0440\u0432\u043E\u0439 \u0443\u0441\u043F\u0435\u0448\u043D\u043E\u0439); \u0432 \u0441\u0432\u043E\u0434\u043A\u0435 \u0444\u0438\u043A\u0441\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u043B\u043E\u0433\u0438\u043D."));
 }
 function Credentials({
   onChange
@@ -188,9 +188,9 @@ function Credentials({
   };
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
     className: "h1"
-  }, "Учётные записи"), /*#__PURE__*/React.createElement("p", {
+  }, "\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438"), /*#__PURE__*/React.createElement("p", {
     className: "sub"
-  }, "Хранилище УЗ для аутентифицированного сбора. Заводятся один раз — затем выбираются в форме скана. Секреты шифруются в БД (ключ в переменной окружения, не в базе)."), /*#__PURE__*/React.createElement("div", {
+  }, "\u0425\u0440\u0430\u043D\u0438\u043B\u0438\u0449\u0435 \u0423\u0417 \u0434\u043B\u044F \u0430\u0443\u0442\u0435\u043D\u0442\u0438\u0444\u0438\u0446\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u043E\u0433\u043E \u0441\u0431\u043E\u0440\u0430. \u0417\u0430\u0432\u043E\u0434\u044F\u0442\u0441\u044F \u043E\u0434\u0438\u043D \u0440\u0430\u0437 \u2014 \u0437\u0430\u0442\u0435\u043C \u0432\u044B\u0431\u0438\u0440\u0430\u044E\u0442\u0441\u044F \u0432 \u0444\u043E\u0440\u043C\u0435 \u0441\u043A\u0430\u043D\u0430. \u0421\u0435\u043A\u0440\u0435\u0442\u044B \u0448\u0438\u0444\u0440\u0443\u044E\u0442\u0441\u044F \u0432 \u0411\u0414 (\u043A\u043B\u044E\u0447 \u0432 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u043E\u0439 \u043E\u043A\u0440\u0443\u0436\u0435\u043D\u0438\u044F, \u043D\u0435 \u0432 \u0431\u0430\u0437\u0435)."), /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       marginBottom: 16,
@@ -201,7 +201,7 @@ function Credentials({
   }, /*#__PURE__*/React.createElement("div", {
     className: "credrow"
   }, /*#__PURE__*/React.createElement("input", {
-    placeholder: "Имя: Linux-аудит",
+    placeholder: "\u0418\u043C\u044F: Linux-\u0430\u0443\u0434\u0438\u0442",
     value: f.name,
     style: {
       flex: 1.4
@@ -212,11 +212,11 @@ function Credentials({
     onChange: e => setFF("type", e.target.value)
   }, /*#__PURE__*/React.createElement("option", {
     value: "ssh"
-  }, "SSH · Linux"), /*#__PURE__*/React.createElement("option", {
+  }, "SSH \xB7 Linux"), /*#__PURE__*/React.createElement("option", {
     value: "winrm"
-  }, "WinRM · Windows"), /*#__PURE__*/React.createElement("option", {
+  }, "WinRM \xB7 Windows"), /*#__PURE__*/React.createElement("option", {
     value: "snmp"
-  }, "SNMP · оборуд.")), /*#__PURE__*/React.createElement("input", {
+  }, "SNMP \xB7 \u043E\u0431\u043E\u0440\u0443\u0434.")), /*#__PURE__*/React.createElement("input", {
     placeholder: f.type === "snmp" ? "— (не нужно)" : "логин",
     value: f.username,
     disabled: f.type === "snmp",
@@ -228,14 +228,14 @@ function Credentials({
     autoComplete: "new-password",
     onChange: e => setFF("secret", e.target.value)
   }), f.type === "winrm" ? /*#__PURE__*/React.createElement("input", {
-    placeholder: "домен",
+    placeholder: "\u0434\u043E\u043C\u0435\u043D",
     value: f.domain,
     style: {
       width: 90
     },
     onChange: e => setFF("domain", e.target.value)
   }) : null, /*#__PURE__*/React.createElement("input", {
-    placeholder: "порт",
+    placeholder: "\u043F\u043E\u0440\u0442",
     value: f.port,
     style: {
       width: 64
@@ -244,7 +244,7 @@ function Credentials({
   }), /*#__PURE__*/React.createElement("button", {
     className: "btn sm",
     onClick: add
-  }, "Сохранить")), err ? /*#__PURE__*/React.createElement("div", {
+  }, "\u0421\u043E\u0445\u0440\u0430\u043D\u0438\u0442\u044C")), err ? /*#__PURE__*/React.createElement("div", {
     className: "sub2",
     style: {
       color: "var(--crit,#b4232a)",
@@ -257,7 +257,7 @@ function Credentials({
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Имя"), /*#__PURE__*/React.createElement("th", null, "Тип"), /*#__PURE__*/React.createElement("th", null, "Логин / порт"), /*#__PURE__*/React.createElement("th", null, "Добавлена"), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, list.map(c => /*#__PURE__*/React.createElement("tr", {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u0418\u043C\u044F"), /*#__PURE__*/React.createElement("th", null, "\u0422\u0438\u043F"), /*#__PURE__*/React.createElement("th", null, "\u041B\u043E\u0433\u0438\u043D / \u043F\u043E\u0440\u0442"), /*#__PURE__*/React.createElement("th", null, "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u0430"), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, list.map(c => /*#__PURE__*/React.createElement("tr", {
     key: c.id
   }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, c.name)), /*#__PURE__*/React.createElement("td", null, CRED_KIND[c.type] || c.type), /*#__PURE__*/React.createElement("td", {
     className: "mono sub2"
@@ -269,20 +269,20 @@ function Credentials({
     }
   }, /*#__PURE__*/React.createElement("button", {
     className: "xbtn",
-    title: "Удалить",
+    title: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C",
     onClick: () => del(c.id)
-  }, "✕")))), list.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+  }, "\u2715")))), list.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: "5",
     className: "sub2"
-  }, "УЗ не заведены. Добавьте первую выше.")))))), /*#__PURE__*/React.createElement("div", {
+  }, "\u0423\u0417 \u043D\u0435 \u0437\u0430\u0432\u0435\u0434\u0435\u043D\u044B. \u0414\u043E\u0431\u0430\u0432\u044C\u0442\u0435 \u043F\u0435\u0440\u0432\u0443\u044E \u0432\u044B\u0448\u0435.")))))), /*#__PURE__*/React.createElement("div", {
     className: "warn",
     style: {
       maxWidth: 820,
       marginTop: 14
     }
-  }, "Пароли, ключи и community хранятся зашифрованными (Fernet). Мастер-ключ берётся из ", /*#__PURE__*/React.createElement("span", {
+  }, "\u041F\u0430\u0440\u043E\u043B\u0438, \u043A\u043B\u044E\u0447\u0438 \u0438 community \u0445\u0440\u0430\u043D\u044F\u0442\u0441\u044F \u0437\u0430\u0448\u0438\u0444\u0440\u043E\u0432\u0430\u043D\u043D\u044B\u043C\u0438 (Fernet). \u041C\u0430\u0441\u0442\u0435\u0440-\u043A\u043B\u044E\u0447 \u0431\u0435\u0440\u0451\u0442\u0441\u044F \u0438\u0437 ", /*#__PURE__*/React.createElement("span", {
     className: "mono"
-  }, "SURVEYSCAN_SECRET_KEY"), " и в базе не лежит — дамп БД сам по себе секреты не раскроет. Задайте эту переменную в своём окружении (иначе ключ генерируется в томе данных и теряется вместе с ним)."));
+  }, "SURVEYSCAN_SECRET_KEY"), " \u0438 \u0432 \u0431\u0430\u0437\u0435 \u043D\u0435 \u043B\u0435\u0436\u0438\u0442 \u2014 \u0434\u0430\u043C\u043F \u0411\u0414 \u0441\u0430\u043C \u043F\u043E \u0441\u0435\u0431\u0435 \u0441\u0435\u043A\u0440\u0435\u0442\u044B \u043D\u0435 \u0440\u0430\u0441\u043A\u0440\u043E\u0435\u0442. \u0417\u0430\u0434\u0430\u0439\u0442\u0435 \u044D\u0442\u0443 \u043F\u0435\u0440\u0435\u043C\u0435\u043D\u043D\u0443\u044E \u0432 \u0441\u0432\u043E\u0451\u043C \u043E\u043A\u0440\u0443\u0436\u0435\u043D\u0438\u0438 (\u0438\u043D\u0430\u0447\u0435 \u043A\u043B\u044E\u0447 \u0433\u0435\u043D\u0435\u0440\u0438\u0440\u0443\u0435\u0442\u0441\u044F \u0432 \u0442\u043E\u043C\u0435 \u0434\u0430\u043D\u043D\u044B\u0445 \u0438 \u0442\u0435\u0440\u044F\u0435\u0442\u0441\u044F \u0432\u043C\u0435\u0441\u0442\u0435 \u0441 \u043D\u0438\u043C)."));
 }
 
 /* ----------------------------------------------------------------- Diff между прогонами */
@@ -295,22 +295,22 @@ function DiffBanner({
     nChg = (diff.changed || []).length;
   if (!nNew && !nGone && !nChg) return /*#__PURE__*/React.createElement("div", {
     className: "diffbar"
-  }, "Без изменений с прошлого прогона по этой цели.");
+  }, "\u0411\u0435\u0437 \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u0439 \u0441 \u043F\u0440\u043E\u0448\u043B\u043E\u0433\u043E \u043F\u0440\u043E\u0433\u043E\u043D\u0430 \u043F\u043E \u044D\u0442\u043E\u0439 \u0446\u0435\u043B\u0438.");
   return /*#__PURE__*/React.createElement("div", {
     className: "diffbar"
-  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("b", null, "Изменения с прошлого прогона:"), " ", nNew ? /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("b", null, "\u0418\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u044F \u0441 \u043F\u0440\u043E\u0448\u043B\u043E\u0433\u043E \u043F\u0440\u043E\u0433\u043E\u043D\u0430:"), " ", nNew ? /*#__PURE__*/React.createElement("span", {
     className: "chip c-low",
     style: {
       marginRight: 6
     }
-  }, "+", nNew, " новых") : null, nGone ? /*#__PURE__*/React.createElement("span", {
+  }, "+", nNew, " \u043D\u043E\u0432\u044B\u0445") : null, nGone ? /*#__PURE__*/React.createElement("span", {
     className: "chip c-critical",
     style: {
       marginRight: 6
     }
-  }, "−", nGone, " исчезло") : null, nChg ? /*#__PURE__*/React.createElement("span", {
+  }, "\u2212", nGone, " \u0438\u0441\u0447\u0435\u0437\u043B\u043E") : null, nChg ? /*#__PURE__*/React.createElement("span", {
     className: "chip c-medium"
-  }, nChg, " изменили сервисы") : null), /*#__PURE__*/React.createElement("details", {
+  }, nChg, " \u0438\u0437\u043C\u0435\u043D\u0438\u043B\u0438 \u0441\u0435\u0440\u0432\u0438\u0441\u044B") : null), /*#__PURE__*/React.createElement("details", {
     style: {
       marginTop: 6
     }
@@ -319,17 +319,17 @@ function DiffBanner({
     style: {
       cursor: "pointer"
     }
-  }, "Подробнее"), nNew ? /*#__PURE__*/React.createElement("div", {
+  }, "\u041F\u043E\u0434\u0440\u043E\u0431\u043D\u0435\u0435"), nNew ? /*#__PURE__*/React.createElement("div", {
     className: "sub2",
     style: {
       marginTop: 4
     }
-  }, "Новые: ", diff.new_hosts.join(", ")) : null, nGone ? /*#__PURE__*/React.createElement("div", {
+  }, "\u041D\u043E\u0432\u044B\u0435: ", diff.new_hosts.join(", ")) : null, nGone ? /*#__PURE__*/React.createElement("div", {
     className: "sub2",
     style: {
       marginTop: 4
     }
-  }, "Исчезли: ", diff.gone_hosts.join(", ")) : null, diff.changed.map(c => /*#__PURE__*/React.createElement("div", {
+  }, "\u0418\u0441\u0447\u0435\u0437\u043B\u0438: ", diff.gone_hosts.join(", ")) : null, diff.changed.map(c => /*#__PURE__*/React.createElement("div", {
     key: c.name,
     className: "sub2",
     style: {
@@ -347,7 +347,7 @@ function Dash({
 }) {
   if (!D) return /*#__PURE__*/React.createElement("div", {
     className: "empty"
-  }, "Нет данных. Запустите сканирование: «+ Новое сканирование».");
+  }, "\u041D\u0435\u0442 \u0434\u0430\u043D\u043D\u044B\u0445. \u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435: \xAB+ \u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435\xBB.");
   const ts = D.topology && D.topology.stats || {};
   const assets = D.assets || [];
   const kpi = (n, l, c) => /*#__PURE__*/React.createElement("div", {
@@ -364,7 +364,7 @@ function Dash({
     className: "h1"
   }, D.survey && D.survey.name || "Обследование"), /*#__PURE__*/React.createElement("p", {
     className: "sub"
-  }, "Инвентаризация сети · ", D.generated), /*#__PURE__*/React.createElement(DiffBanner, {
+  }, "\u0418\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u0438\u0437\u0430\u0446\u0438\u044F \u0441\u0435\u0442\u0438 \xB7 ", D.generated), /*#__PURE__*/React.createElement(DiffBanner, {
     diff: diff
   }), /*#__PURE__*/React.createElement("div", {
     className: "kpis"
@@ -374,14 +374,14 @@ function Dash({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Активы"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0410\u043A\u0442\u0438\u0432\u044B"), /*#__PURE__*/React.createElement("span", {
     className: "more",
     onClick: () => go({
       view: "assets"
     })
-  }, "Все активы →")), /*#__PURE__*/React.createElement("div", {
+  }, "\u0412\u0441\u0435 \u0430\u043A\u0442\u0438\u0432\u044B \u2192")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Актив"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "ОС / платформа"), /*#__PURE__*/React.createElement("th", null, "Сервисы"))), /*#__PURE__*/React.createElement("tbody", null, assets.slice(0, 6).map(a => /*#__PURE__*/React.createElement("tr", {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u0410\u043A\u0442\u0438\u0432"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "\u041E\u0421 / \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430"), /*#__PURE__*/React.createElement("th", null, "\u0421\u0435\u0440\u0432\u0438\u0441\u044B"))), /*#__PURE__*/React.createElement("tbody", null, assets.slice(0, 6).map(a => /*#__PURE__*/React.createElement("tr", {
     key: a.name,
     className: "click",
     onClick: () => go({
@@ -395,16 +395,16 @@ function Dash({
   }, (a.services || []).length))), assets.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: "4",
     className: "sub2"
-  }, "Активы не найдены.")))))), /*#__PURE__*/React.createElement("div", {
+  }, "\u0410\u043A\u0442\u0438\u0432\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B.")))))), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Схема сети"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438"), /*#__PURE__*/React.createElement("span", {
     className: "more",
     onClick: () => go({
       view: "netmap"
     })
-  }, "Открыть →")), /*#__PURE__*/React.createElement("div", {
+  }, "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u2192")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, /*#__PURE__*/React.createElement("div", {
     style: {
@@ -412,19 +412,19 @@ function Dash({
       color: "var(--muted)",
       lineHeight: 1.7
     }
-  }, "Узлов: ", /*#__PURE__*/React.createElement("b", {
+  }, "\u0423\u0437\u043B\u043E\u0432: ", /*#__PURE__*/React.createElement("b", {
     style: {
       color: "var(--ink)"
     }
-  }, ts.nodes || 0), /*#__PURE__*/React.createElement("br", null), "Подсетей: ", /*#__PURE__*/React.createElement("b", {
+  }, ts.nodes || 0), /*#__PURE__*/React.createElement("br", null), "\u041F\u043E\u0434\u0441\u0435\u0442\u0435\u0439: ", /*#__PURE__*/React.createElement("b", {
     style: {
       color: "var(--ink)"
     }
-  }, ts.subnets || 0), /*#__PURE__*/React.createElement("br", null), "Сетевых устройств: ", /*#__PURE__*/React.createElement("b", {
+  }, ts.subnets || 0), /*#__PURE__*/React.createElement("br", null), "\u0421\u0435\u0442\u0435\u0432\u044B\u0445 \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432: ", /*#__PURE__*/React.createElement("b", {
     style: {
       color: "var(--ink)"
     }
-  }, ts.devices || 0), /*#__PURE__*/React.createElement("br", null), "Связей: ", /*#__PURE__*/React.createElement("b", {
+  }, ts.devices || 0), /*#__PURE__*/React.createElement("br", null), "\u0421\u0432\u044F\u0437\u0435\u0439: ", /*#__PURE__*/React.createElement("b", {
     style: {
       color: "var(--ink)"
     }
@@ -436,16 +436,16 @@ function Dash({
     onClick: () => go({
       view: "netmap"
     })
-  }, "Открыть схему сети"))), /*#__PURE__*/React.createElement("div", {
+  }, "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0441\u0445\u0435\u043C\u0443 \u0441\u0435\u0442\u0438"))), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Сканирования"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"), /*#__PURE__*/React.createElement("span", {
     className: "more",
     onClick: () => go({
       view: "surveys"
     })
-  }, "Все →")), /*#__PURE__*/React.createElement("div", {
+  }, "\u0412\u0441\u0435 \u2192")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, tasks.slice(0, 6).map(tk => {
     const cls = tk.status === "done" ? "d-ok" : tk.status === "running" ? "d-run" : tk.status === "error" ? "d-err" : "d-wait";
@@ -467,7 +467,7 @@ function Dash({
     }, st));
   }), tasks.length === 0 && /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Пока нет сканирований.")))));
+  }, "\u041F\u043E\u043A\u0430 \u043D\u0435\u0442 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0439.")))));
 }
 
 /* ----------------------------------------------------------------- Роль актива (ИТ/сетевое/АСУ ТП/СЗИ) */
@@ -522,33 +522,33 @@ function Assets({
 }) {
   if (!D) return /*#__PURE__*/React.createElement("div", {
     className: "empty"
-  }, "Нет данных. Запустите сканирование.");
+  }, "\u041D\u0435\u0442 \u0434\u0430\u043D\u043D\u044B\u0445. \u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435.");
   const assets = D.assets || [];
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
     className: "h1"
-  }, "Активы"), /*#__PURE__*/React.createElement("p", {
+  }, "\u0410\u043A\u0442\u0438\u0432\u044B"), /*#__PURE__*/React.createElement("p", {
     className: "sub"
-  }, "Инвентаризация активов обследования «", D.survey && D.survey.name, "»."), /*#__PURE__*/React.createElement("div", {
+  }, "\u0418\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u0438\u0437\u0430\u0446\u0438\u044F \u0430\u043A\u0442\u0438\u0432\u043E\u0432 \u043E\u0431\u0441\u043B\u0435\u0434\u043E\u0432\u0430\u043D\u0438\u044F \xAB", D.survey && D.survey.name, "\xBB."), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Актив"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "ОС / платформа"), /*#__PURE__*/React.createElement("th", null, "Тип"), /*#__PURE__*/React.createElement("th", null, "Роль"), /*#__PURE__*/React.createElement("th", {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u0410\u043A\u0442\u0438\u0432"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "\u041E\u0421 / \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430"), /*#__PURE__*/React.createElement("th", null, "\u0422\u0438\u043F"), /*#__PURE__*/React.createElement("th", null, "\u0420\u043E\u043B\u044C"), /*#__PURE__*/React.createElement("th", {
     className: "num"
-  }, "ПО"), /*#__PURE__*/React.createElement("th", {
+  }, "\u041F\u041E"), /*#__PURE__*/React.createElement("th", {
     className: "num"
-  }, "Сервисов"))), /*#__PURE__*/React.createElement("tbody", null, assets.map(a => /*#__PURE__*/React.createElement("tr", {
+  }, "\u0421\u0435\u0440\u0432\u0438\u0441\u043E\u0432"))), /*#__PURE__*/React.createElement("tbody", null, assets.map(a => /*#__PURE__*/React.createElement("tr", {
     key: a.name,
     className: "click",
     onClick: () => go({
       view: "asset",
       assetName: a.name
     })
-  }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, a.name), a.partial ? /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, a.name), assetPartial(a) ? /*#__PURE__*/React.createElement("span", {
     className: "chip c-medium",
     style: {
       marginLeft: 8
     }
-  }, "сбор без root") : null), /*#__PURE__*/React.createElement("td", {
+  }, a.os_family === "windows" ? "без прав администратора" : "сбор без root") : null), /*#__PURE__*/React.createElement("td", {
     className: "mono"
   }, a.ips || "—"), /*#__PURE__*/React.createElement("td", null, a.os || "—", a.build ? /*#__PURE__*/React.createElement("div", {
     className: "sub2 mono"
@@ -561,7 +561,7 @@ function Assets({
   }, (a.services || []).length))), assets.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: "7",
     className: "sub2"
-  }, "Активы не найдены.")))))));
+  }, "\u0410\u043A\u0442\u0438\u0432\u044B \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u044B.")))))));
 }
 
 /* --- вспомогательные блоки карточки актива --- */
@@ -595,6 +595,33 @@ function SimpleTable({
     className: c.mono ? "mono" : c.num ? "num" : ""
   }, c.render ? c.render(r) : r[c.key] ?? "—"))))));
 }
+function InventoryTable({
+  inv,
+  section,
+  cols,
+  rows,
+  filtered = false
+}) {
+  const status = (inv.collection_status || {})[section];
+  const message = filtered ? "Нет совпадений по фильтру." : status === "ok" ? "Записей не обнаружено." : status === "unavailable" ? "Данные недоступны: ошибка сбора или нет доступа." : status === "partial" ? "Данные собраны частично." : "Нет данных о сборе.";
+  return /*#__PURE__*/React.createElement(React.Fragment, null, status === "partial" && (rows || []).length ? /*#__PURE__*/React.createElement("div", {
+    className: "warn",
+    style: {
+      marginBottom: 8
+    }
+  }, "\u0414\u0430\u043D\u043D\u044B\u0435 \u0441\u043E\u0431\u0440\u0430\u043D\u044B \u0447\u0430\u0441\u0442\u0438\u0447\u043D\u043E.") : null, /*#__PURE__*/React.createElement(SimpleTable, {
+    cols: cols,
+    rows: rows,
+    empty: message
+  }));
+}
+function inventoryCount(inv, key) {
+  const count = (inv[key] || []).length;
+  return count || ((inv.collection_status || {})[key] === "ok" ? 0 : "—");
+}
+function assetPartial(a) {
+  return a.partial || a.os_family === "windows" && (a.inventory || {}).is_admin === false;
+}
 function AssetDetail({
   D,
   name,
@@ -609,7 +636,7 @@ function AssetDetail({
   const [roleErr, setRoleErr] = useState("");
   if (!a) return /*#__PURE__*/React.createElement("div", {
     className: "empty"
-  }, "Актив не найден.");
+  }, "\u0410\u043A\u0442\u0438\u0432 \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D.");
   const saveRole = async role => {
     setRoleErr("");
     try {
@@ -635,7 +662,6 @@ function AssetDetail({
   const connections = inv.connections || [];
   const winServices = inv.services || [];
   const svcShown = svcFilter ? winServices.filter(s => ((s.display || "") + " " + (s.name || "")).toLowerCase().includes(svcFilter.toLowerCase())) : winServices;
-  const hasDevices = (inv.disks || []).length || (inv.shares || []).length || (inv.usb_devices || []).length;
   const tabs = [{
     id: "overview",
     label: "Обзор"
@@ -662,7 +688,7 @@ function AssetDetail({
     id: "security",
     label: "Защита"
   });
-  if (fam === "windows" && hasDevices) tabs.push({
+  if (fam === "windows") tabs.push({
     id: "devices",
     label: "Диски и устройства"
   });
@@ -680,7 +706,7 @@ function AssetDetail({
     onClick: () => go({
       view: "assets"
     })
-  }, "Активы"), /*#__PURE__*/React.createElement("span", {
+  }, "\u0410\u043A\u0442\u0438\u0432\u044B"), /*#__PURE__*/React.createElement("span", {
     className: "sep"
   }, "/"), /*#__PURE__*/React.createElement("b", null, name)), /*#__PURE__*/React.createElement("div", {
     className: "pagehead"
@@ -693,12 +719,12 @@ function AssetDetail({
     }
   }, name), /*#__PURE__*/React.createElement("div", {
     className: "meta mono"
-  }, a.ips, a.os ? " · " + a.os : ""))), a.partial ? /*#__PURE__*/React.createElement("div", {
+  }, a.ips, a.os ? " · " + a.os : ""))), assetPartial(a) ? /*#__PURE__*/React.createElement("div", {
     className: "warn",
     style: {
       margin: "10px 0"
     }
-  }, "Сбор выполнен без root/sudo — часть данных (учётки, конфиги) может быть неполной.") : null, /*#__PURE__*/React.createElement("div", {
+  }, "\u0421\u0431\u043E\u0440 \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D ", fam === "windows" ? "без прав администратора" : "без root/sudo", " \u2014 \u0447\u0430\u0441\u0442\u044C \u0434\u0430\u043D\u043D\u044B\u0445 \u043C\u043E\u0436\u0435\u0442 \u0431\u044B\u0442\u044C \u043D\u0435\u043F\u043E\u043B\u043D\u043E\u0439.") : null, /*#__PURE__*/React.createElement("div", {
     className: "tabs"
   }, tabs.map(t => /*#__PURE__*/React.createElement("div", {
     key: t.id,
@@ -712,16 +738,16 @@ function AssetDetail({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Сведения")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u0432\u0435\u0434\u0435\u043D\u0438\u044F")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, /*#__PURE__*/React.createElement(KV, {
-    k: "Тип",
+    k: "\u0422\u0438\u043F",
     v: a.kind
   }), /*#__PURE__*/React.createElement("div", {
     className: "kv"
   }, /*#__PURE__*/React.createElement("span", {
     className: "k"
-  }, "Роль"), /*#__PURE__*/React.createElement("span", {
+  }, "\u0420\u043E\u043B\u044C"), /*#__PURE__*/React.createElement("span", {
     className: "v"
   }, /*#__PURE__*/React.createElement(RoleSelect, {
     value: a.role,
@@ -736,52 +762,52 @@ function AssetDetail({
     k: "IP",
     v: a.ips
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "ОС / платформа",
+    k: "\u041E\u0421 / \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u0430",
     v: a.os
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Сборка / версия",
+    k: "\u0421\u0431\u043E\u0440\u043A\u0430 / \u0432\u0435\u0440\u0441\u0438\u044F",
     v: a.build
   }), fam === "windows" ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(KV, {
-    k: "Домен",
-    v: inv.part_of_domain ? inv.domain : "рабочая группа"
+    k: "\u0414\u043E\u043C\u0435\u043D / \u0440\u0430\u0431\u043E\u0447\u0430\u044F \u0433\u0440\u0443\u043F\u043F\u0430",
+    v: inv.part_of_domain === true ? inv.domain : inv.part_of_domain === false ? inv.domain || "рабочая группа" : null
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Архитектура",
+    k: "\u0410\u0440\u0445\u0438\u0442\u0435\u043A\u0442\u0443\u0440\u0430",
     v: inv.architecture
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Тип установки",
+    k: "\u0422\u0438\u043F \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043A\u0438",
     v: inv.installation_type
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Последняя загрузка",
+    k: "\u041F\u043E\u0441\u043B\u0435\u0434\u043D\u044F\u044F \u0437\u0430\u0433\u0440\u0443\u0437\u043A\u0430",
     v: inv.last_boot
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Сбор от администратора",
+    k: "\u0421\u0431\u043E\u0440 \u043E\u0442 \u0430\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440\u0430",
     v: inv.is_admin === true ? "да" : inv.is_admin === false ? "нет" : "—"
   })) : null, fam === "linux" ? /*#__PURE__*/React.createElement(KV, {
-    k: "Сбор от root",
+    k: "\u0421\u0431\u043E\u0440 \u043E\u0442 root",
     v: inv.is_root === true ? "да" : inv.is_root === false ? "нет (sudo/частично)" : "—"
   }) : null, /*#__PURE__*/React.createElement(KV, {
-    k: "Источник сбора",
+    k: "\u0418\u0441\u0442\u043E\u0447\u043D\u0438\u043A \u0441\u0431\u043E\u0440\u0430",
     v: a.source
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Собрано",
+    k: "\u0421\u043E\u0431\u0440\u0430\u043D\u043E",
     v: a.collected_at
   }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Итоги")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0418\u0442\u043E\u0433\u0438")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, /*#__PURE__*/React.createElement(KV, {
-    k: "Пакетов / ПО",
+    k: "\u041F\u0430\u043A\u0435\u0442\u043E\u0432 / \u041F\u041E",
     v: software.length
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Открытых сервисов (сеть)",
+    k: "\u041E\u0442\u043A\u0440\u044B\u0442\u044B\u0445 \u0441\u0435\u0440\u0432\u0438\u0441\u043E\u0432 (\u0441\u0435\u0442\u044C)",
     v: (a.services || []).length
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Слушающих портов (ОС)",
-    v: listening.length
+    k: "\u0421\u043B\u0443\u0448\u0430\u044E\u0449\u0438\u0445 \u043F\u043E\u0440\u0442\u043E\u0432 (\u041E\u0421)",
+    v: inventoryCount(inv, "listening")
   }), fam === "windows" ? /*#__PURE__*/React.createElement(KV, {
-    k: "Обновлений (KB)",
+    k: "\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0439 (KB)",
     v: (inv.hotfixes || []).length
   }) : null)), a.sec_tools && a.sec_tools.length ? /*#__PURE__*/React.createElement("div", {
     className: "card",
@@ -790,7 +816,7 @@ function AssetDetail({
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Средства защиты")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u0440\u0435\u0434\u0441\u0442\u0432\u0430 \u0437\u0430\u0449\u0438\u0442\u044B")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, a.sec_tools.map((t, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
@@ -801,14 +827,14 @@ function AssetDetail({
     style: {
       color: "var(--ok)"
     }
-  }, "✓"), " ", t)))) : null)), tab === "software" && /*#__PURE__*/React.createElement("div", {
+  }, "\u2713"), " ", t)))) : null)), tab === "software" && /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Установленное ПО / пакеты"), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0423\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u043D\u043E\u0435 \u041F\u041E / \u043F\u0430\u043A\u0435\u0442\u044B"), /*#__PURE__*/React.createElement("input", {
     value: swFilter,
     onChange: e => setSwFilter(e.target.value),
-    placeholder: "Фильтр по имени…",
+    placeholder: "\u0424\u0438\u043B\u044C\u0442\u0440 \u043F\u043E \u0438\u043C\u0435\u043D\u0438\u2026",
     style: {
       marginLeft: "auto",
       fontSize: 12.5,
@@ -817,7 +843,7 @@ function AssetDetail({
   })), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "ПО не обнаружено.",
+    empty: swFilter ? "Нет совпадений по фильтру." : "Нет данных об установленном ПО.",
     cols: [{
       key: "name",
       label: "Название"
@@ -837,7 +863,7 @@ function AssetDetail({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Установленные обновления")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0423\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, (inv.hotfixes || []).length ? /*#__PURE__*/React.createElement("div", {
     style: {
@@ -850,16 +876,16 @@ function AssetDetail({
     className: "mono chip c-low"
   }, "KB", kb))) : /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Обновления не собраны."))), tab === "users" && /*#__PURE__*/React.createElement("div", {
+  }, "\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043D\u0435 \u0441\u043E\u0431\u0440\u0430\u043D\u044B."))), tab === "users" && /*#__PURE__*/React.createElement("div", {
     className: "detail"
   }, /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Учётные записи")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, fam === "windows" ? /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Локальные учётки не собраны.",
+    empty: "\u041B\u043E\u043A\u0430\u043B\u044C\u043D\u044B\u0435 \u0443\u0447\u0451\u0442\u043A\u0438 \u043D\u0435 \u0441\u043E\u0431\u0440\u0430\u043D\u044B.",
     cols: [{
       key: "name",
       label: "Имя"
@@ -878,7 +904,7 @@ function AssetDetail({
     }],
     rows: inv.users
   }) : /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Пользователи не собраны.",
+    empty: "\u041F\u043E\u043B\u044C\u0437\u043E\u0432\u0430\u0442\u0435\u043B\u0438 \u043D\u0435 \u0441\u043E\u0431\u0440\u0430\u043D\u044B.",
     cols: [{
       key: "name",
       label: "Логин"
@@ -890,7 +916,7 @@ function AssetDetail({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Администраторы")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0410\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440\u044B")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, (inv.admins || []).length ? inv.admins.map((n, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
@@ -901,17 +927,18 @@ function AssetDetail({
     }
   }, n)) : /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Группа «Администраторы» пуста или не собрана."))), /*#__PURE__*/React.createElement("div", {
+  }, "\u0413\u0440\u0443\u043F\u043F\u0430 \xAB\u0410\u0434\u043C\u0438\u043D\u0438\u0441\u0442\u0440\u0430\u0442\u043E\u0440\u044B\xBB \u043F\u0443\u0441\u0442\u0430 \u0438\u043B\u0438 \u043D\u0435 \u0441\u043E\u0431\u0440\u0430\u043D\u0430."))), /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       marginTop: 16
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Локальные группы")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u041B\u043E\u043A\u0430\u043B\u044C\u043D\u044B\u0435 \u0433\u0440\u0443\u043F\u043F\u044B")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Группы не собраны.",
+  }, /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "groups",
     cols: [{
       key: "name",
       label: "Наименование"
@@ -925,37 +952,38 @@ function AssetDetail({
     }, {
       key: "members",
       label: "Члены группы",
-      render: r => (r.members || []).join(", ") || "—"
+      render: r => r.members == null ? "Не собрано" : r.members.join(", ") || "нет"
     }],
     rows: inv.groups
   })))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "UID 0 / sudo без пароля")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "UID 0 / sudo \u0431\u0435\u0437 \u043F\u0430\u0440\u043E\u043B\u044F")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, /*#__PURE__*/React.createElement(KV, {
-    k: "UID 0 (кроме root)",
+    k: "UID 0 (\u043A\u0440\u043E\u043C\u0435 root)",
     v: (inv.uid0_users || []).join(", ") || "—"
   }), /*#__PURE__*/React.createElement(KV, {
     k: "sudo NOPASSWD",
     v: inv.sudo_nopasswd === null ? "нет доступа к данным" : (inv.sudo_nopasswd || []).join("; ") || "нет"
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Пустой пароль",
+    k: "\u041F\u0443\u0441\u0442\u043E\u0439 \u043F\u0430\u0440\u043E\u043B\u044C",
     v: inv.empty_password_users === null ? "нет доступа к данным" : (inv.empty_password_users || []).join(", ") || "нет"
   })))))), tab === "network" && /*#__PURE__*/React.createElement("div", {
     className: "detail"
-  }, (fam === "windows" || fam === "linux") && (inv.nics || []).length ? /*#__PURE__*/React.createElement("div", {
+  }, fam === "windows" || fam === "linux" ? /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       gridColumn: "1 / -1"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Сетевые интерфейсы")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u0435\u0442\u0435\u0432\u044B\u0435 \u0438\u043D\u0442\u0435\u0440\u0444\u0435\u0439\u0441\u044B")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, fam === "windows" ? /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Не собрано.",
+  }, fam === "windows" ? /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "nics",
     cols: [{
       key: "name",
       label: "Наименование"
@@ -990,11 +1018,12 @@ function AssetDetail({
       key: "dhcp_server",
       label: "DHCP сервер",
       mono: true,
-      render: r => r.dhcp_enabled ? r.dhcp_server || "да" : "отключён"
+      render: r => r.dhcp_enabled === true ? r.dhcp_server || "включён" : r.dhcp_enabled === false ? "отключён" : "—"
     }],
     rows: inv.nics
-  }) : /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Не собрано.",
+  }) : /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "nics",
     cols: [{
       key: "name",
       label: "Наименование"
@@ -1006,20 +1035,38 @@ function AssetDetail({
       key: "addresses",
       label: "IP адрес / маска",
       mono: true,
-      render: r => (r.addresses || []).map(x => x.ip + "/" + x.prefix).join(", ") || "—"
+      render: r => (r.addresses || []).map(x => x.ip + (x.prefix == null ? "" : "/" + x.prefix)).join(", ") || "—"
     }],
     rows: inv.nics
-  }))) : null, (fam === "windows" || fam === "linux") && (inv.routes || []).length ? /*#__PURE__*/React.createElement("div", {
+  }))) : null, fam === "linux" ? /*#__PURE__*/React.createElement("div", {
+    className: "card"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "ch"
+  }, /*#__PURE__*/React.createElement("h3", null, "DNS \u0441\u0435\u0440\u0432\u0435\u0440\u044B")), /*#__PURE__*/React.createElement("div", {
+    className: "cb"
+  }, /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "dns",
+    cols: [{
+      key: "address",
+      label: "Адрес",
+      mono: true
+    }],
+    rows: (inv.dns || []).map(address => ({
+      address
+    }))
+  }))) : null, fam === "windows" || fam === "linux" ? /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       gridColumn: "1 / -1"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Таблица маршрутизации")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0422\u0430\u0431\u043B\u0438\u0446\u0430 \u043C\u0430\u0440\u0448\u0440\u0443\u0442\u0438\u0437\u0430\u0446\u0438\u0438")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Не собрано.",
+  }, /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "routes",
     cols: [{
       key: "destination",
       label: "Сеть",
@@ -1031,13 +1078,17 @@ function AssetDetail({
     }, {
       key: "interface",
       label: "Интерфейс"
+    }, {
+      key: "metric",
+      label: "Метрика",
+      num: true
     }],
     rows: inv.routes
   }))) : null, /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Открытые сервисы (сетевой скан)")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u041E\u0442\u043A\u0440\u044B\u0442\u044B\u0435 \u0441\u0435\u0440\u0432\u0438\u0441\u044B (\u0441\u0435\u0442\u0435\u0432\u043E\u0439 \u0441\u043A\u0430\u043D)")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, (a.services || []).length ? (a.services || []).map((s, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
@@ -1048,14 +1099,15 @@ function AssetDetail({
     }
   }, s)) : /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Открытых сервисов не обнаружено."))), /*#__PURE__*/React.createElement("div", {
+  }, "\u041E\u0442\u043A\u0440\u044B\u0442\u044B\u0445 \u0441\u0435\u0440\u0432\u0438\u0441\u043E\u0432 \u043D\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u043E."))), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Слушающие порты (на хосте)")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u043B\u0443\u0448\u0430\u044E\u0449\u0438\u0435 \u043F\u043E\u0440\u0442\u044B (\u043D\u0430 \u0445\u043E\u0441\u0442\u0435)")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Не собрано.",
+  }, /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "listening",
     cols: [{
       key: "proto",
       label: "Протокол"
@@ -1072,17 +1124,18 @@ function AssetDetail({
       label: "Процесс"
     }],
     rows: listening
-  }))), connections.length ? /*#__PURE__*/React.createElement("div", {
+  }))), fam === "windows" || fam === "linux" ? /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       gridColumn: "1 / -1"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Используемые сетевые соединения")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0418\u0441\u043F\u043E\u043B\u044C\u0437\u0443\u0435\u043C\u044B\u0435 \u0441\u0435\u0442\u0435\u0432\u044B\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Не собрано.",
+  }, /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "connections",
     cols: [{
       key: "local_address",
       label: "Локальный адрес",
@@ -1104,19 +1157,19 @@ function AssetDetail({
       label: "Процесс"
     }],
     rows: connections
-  }))) : null, fam === "windows" && winServices.length ? /*#__PURE__*/React.createElement("div", {
+  }))) : null, fam === "windows" ? /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       gridColumn: "1 / -1"
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Службы Windows"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u043B\u0443\u0436\u0431\u044B Windows"), /*#__PURE__*/React.createElement("span", {
     className: "sub2"
   }, winServices.length), /*#__PURE__*/React.createElement("input", {
     value: svcFilter,
     onChange: e => setSvcFilter(e.target.value),
-    placeholder: "Фильтр по имени…",
+    placeholder: "\u0424\u0438\u043B\u044C\u0442\u0440 \u043F\u043E \u0438\u043C\u0435\u043D\u0438\u2026",
     style: {
       marginLeft: "auto",
       fontSize: 12.5,
@@ -1124,8 +1177,10 @@ function AssetDetail({
     }
   })), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Не найдено.",
+  }, /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "services",
+    filtered: !!svcFilter && winServices.length > 0,
     cols: [{
       key: "display",
       label: "Полное имя"
@@ -1155,10 +1210,11 @@ function AssetDetail({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Жёсткие диски")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u041B\u043E\u043A\u0430\u043B\u044C\u043D\u044B\u0435 \u0442\u043E\u043C\u0430")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Не собрано.",
+  }, /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "disks",
     cols: [{
       key: "id",
       label: "ID диска",
@@ -1180,10 +1236,11 @@ function AssetDetail({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Общие папки")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u041E\u0431\u0449\u0438\u0435 \u043F\u0430\u043F\u043A\u0438")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Не собрано.",
+  }, /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "shares",
     cols: [{
       key: "name",
       label: "Наименование"
@@ -1203,10 +1260,11 @@ function AssetDetail({
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Подключённые USB-устройства")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u041F\u043E\u0434\u043A\u043B\u044E\u0447\u0451\u043D\u043D\u044B\u0435 USB-\u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u0430")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement(SimpleTable, {
-    empty: "Не собрано.",
+  }, /*#__PURE__*/React.createElement(InventoryTable, {
+    inv: inv,
+    section: "usb_devices",
     cols: [{
       key: "name",
       label: "Наименование"
@@ -1225,7 +1283,7 @@ function AssetDetail({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Межсетевой экран")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u041C\u0435\u0436\u0441\u0435\u0442\u0435\u0432\u043E\u0439 \u044D\u043A\u0440\u0430\u043D")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, Object.keys(inv.firewall || {}).length ? Object.entries(inv.firewall).map(([k, v]) => /*#__PURE__*/React.createElement(KV, {
     key: k,
@@ -1233,11 +1291,11 @@ function AssetDetail({
     v: v ? "включён" : "отключён"
   })) : /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Не собрано."))), /*#__PURE__*/React.createElement("div", {
+  }, "\u041D\u0435 \u0441\u043E\u0431\u0440\u0430\u043D\u043E."))), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Антивирус / Defender")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0410\u043D\u0442\u0438\u0432\u0438\u0440\u0443\u0441 / Defender")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, (inv.antivirus || []).map((av, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
@@ -1248,18 +1306,18 @@ function AssetDetail({
     style: {
       color: "var(--ok)"
     }
-  }, "✓"), " ", av.name)), inv.defender ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(KV, {
-    k: "Defender включён",
+  }, "\u2713"), " ", av.name)), inv.defender ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(KV, {
+    k: "Defender \u0432\u043A\u043B\u044E\u0447\u0451\u043D",
     v: inv.defender.enabled ? "да" : "нет"
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Защита в реальном времени",
+    k: "\u0417\u0430\u0449\u0438\u0442\u0430 \u0432 \u0440\u0435\u0430\u043B\u044C\u043D\u043E\u043C \u0432\u0440\u0435\u043C\u0435\u043D\u0438",
     v: inv.defender.realtime ? "да" : "нет"
   }), /*#__PURE__*/React.createElement(KV, {
-    k: "Обновление сигнатур",
+    k: "\u041E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0441\u0438\u0433\u043D\u0430\u0442\u0443\u0440",
     v: inv.defender.signatures
   })) : null, (!inv.antivirus || inv.antivirus.length === 0) && !inv.defender ? /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Не собрано.") : null))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
+  }, "\u041D\u0435 \u0441\u043E\u0431\u0440\u0430\u043D\u043E.") : null))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
@@ -1271,11 +1329,11 @@ function AssetDetail({
     v: v
   })) : /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "sshd не собран."))), /*#__PURE__*/React.createElement("div", {
+  }, "sshd \u043D\u0435 \u0441\u043E\u0431\u0440\u0430\u043D."))), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Активные службы безопасности")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0410\u043A\u0442\u0438\u0432\u043D\u044B\u0435 \u0441\u043B\u0443\u0436\u0431\u044B \u0431\u0435\u0437\u043E\u043F\u0430\u0441\u043D\u043E\u0441\u0442\u0438")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, Object.keys(inv.services_active || {}).length ? Object.entries(inv.services_active).map(([k, v]) => /*#__PURE__*/React.createElement(KV, {
     key: k,
@@ -1283,13 +1341,13 @@ function AssetDetail({
     v: v
   })) : /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Не собрано."))))), tab === "config" && /*#__PURE__*/React.createElement("div", {
+  }, "\u041D\u0435 \u0441\u043E\u0431\u0440\u0430\u043D\u043E."))))), tab === "config" && /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Конфигурация устройства"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u041A\u043E\u043D\u0444\u0438\u0433\u0443\u0440\u0430\u0446\u0438\u044F \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u0430"), /*#__PURE__*/React.createElement("span", {
     className: "sub2"
-  }, "секреты замаскированы")), /*#__PURE__*/React.createElement("div", {
+  }, "\u0441\u0435\u043A\u0440\u0435\u0442\u044B \u0437\u0430\u043C\u0430\u0441\u043A\u0438\u0440\u043E\u0432\u0430\u043D\u044B")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, /*#__PURE__*/React.createElement("pre", {
     className: "mono",
@@ -1448,9 +1506,9 @@ function NetMap({
   };
   if (err) return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
     className: "h1"
-  }, "Схема сети"), /*#__PURE__*/React.createElement("div", {
+  }, "\u0421\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438"), /*#__PURE__*/React.createElement("div", {
     className: "empty"
-  }, err, ". Запустите сканирование и дождитесь готовности."));
+  }, err, ". \u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435 \u0438 \u0434\u043E\u0436\u0434\u0438\u0442\u0435\u0441\u044C \u0433\u043E\u0442\u043E\u0432\u043D\u043E\u0441\u0442\u0438."));
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "maptools"
   }, /*#__PURE__*/React.createElement("h1", {
@@ -1458,28 +1516,28 @@ function NetMap({
     style: {
       margin: 0
     }
-  }, "Схема сети"), /*#__PURE__*/React.createElement("span", {
+  }, "\u0421\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438"), /*#__PURE__*/React.createElement("span", {
     className: "sp"
   }), /*#__PURE__*/React.createElement("button", {
     className: "btn ghost",
     onClick: fit
-  }, "Вписать"), /*#__PURE__*/React.createElement("button", {
+  }, "\u0412\u043F\u0438\u0441\u0430\u0442\u044C"), /*#__PURE__*/React.createElement("button", {
     className: "btn ghost",
     onClick: () => relayout("breadthfirst")
-  }, "Слои"), /*#__PURE__*/React.createElement("button", {
+  }, "\u0421\u043B\u043E\u0438"), /*#__PURE__*/React.createElement("button", {
     className: "btn ghost",
     onClick: () => relayout("cose")
-  }, "Свободно"), /*#__PURE__*/React.createElement("button", {
+  }, "\u0421\u0432\u043E\u0431\u043E\u0434\u043D\u043E"), /*#__PURE__*/React.createElement("button", {
     className: "btn ghost",
     onClick: exportPng
-  }, "Экспорт PNG"), /*#__PURE__*/React.createElement("a", {
+  }, "\u042D\u043A\u0441\u043F\u043E\u0440\u0442 PNG"), /*#__PURE__*/React.createElement("a", {
     className: "btn",
     href: "/tasks/" + taskId + "/topology.svg",
     target: "_blank",
     style: {
       textDecoration: "none"
     }
-  }, "Экспорт SVG")), /*#__PURE__*/React.createElement(DiffBanner, {
+  }, "\u042D\u043A\u0441\u043F\u043E\u0440\u0442 SVG")), /*#__PURE__*/React.createElement(DiffBanner, {
     diff: diff
   }), /*#__PURE__*/React.createElement("div", {
     id: "cy",
@@ -1491,32 +1549,32 @@ function NetMap({
       background: "#3D4EA6",
       transform: "rotate(45deg)"
     }
-  }), "Ядро сети"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+  }), "\u042F\u0434\u0440\u043E \u0441\u0435\u0442\u0438"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     style: {
       background: "#E8EAEF"
     }
-  }), "Подсеть"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+  }), "\u041F\u043E\u0434\u0441\u0435\u0442\u044C"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     style: {
       background: "#11141B"
     }
-  }), "Сетевое устройство"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+  }), "\u0421\u0435\u0442\u0435\u0432\u043E\u0435 \u0443\u0441\u0442\u0440\u043E\u0439\u0441\u0442\u0432\u043E"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     style: {
       background: "#fff",
       border: "1px solid #C4CAD4"
     }
-  }), "Хост"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+  }), "\u0425\u043E\u0441\u0442"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     style: {
       background: "#8A4B16"
     }
-  }), "АСУ ТП"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
+  }), "\u0410\u0421\u0423 \u0422\u041F"), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("i", {
     style: {
       background: "#1B6B4A"
     }
-  }), "СЗИ"), /*#__PURE__*/React.createElement("span", {
+  }), "\u0421\u0417\u0418"), /*#__PURE__*/React.createElement("span", {
     style: {
       marginLeft: "auto"
     }
-  }, "клик по узлу — карточка актива", stats ? ` · узлов ${stats.nodes}, связей ${stats.edges}` : "")));
+  }, "\u043A\u043B\u0438\u043A \u043F\u043E \u0443\u0437\u043B\u0443 \u2014 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0430 \u0430\u043A\u0442\u0438\u0432\u0430", stats ? ` · узлов ${stats.nodes}, связей ${stats.edges}` : "")));
 }
 
 /* ----------------------------------------------------------------- Карточка задачи */
@@ -1557,7 +1615,7 @@ function TaskDetail({
   }, [t]);
   if (!t) return /*#__PURE__*/React.createElement("div", {
     className: "empty"
-  }, "Загрузка задачи…");
+  }, "\u0417\u0430\u0433\u0440\u0443\u0437\u043A\u0430 \u0437\u0430\u0434\u0430\u0447\u0438\u2026");
   const p = t.params || {},
     r = t.result || {},
     coll = r.collect;
@@ -1587,7 +1645,7 @@ function TaskDetail({
     onClick: () => go({
       view: "surveys"
     })
-  }, "Сканирования"), /*#__PURE__*/React.createElement("span", {
+  }, "\u0421\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"), /*#__PURE__*/React.createElement("span", {
     className: "sep"
   }, "/"), /*#__PURE__*/React.createElement("b", null, t.name || "Задача #" + t.id)), /*#__PURE__*/React.createElement("div", {
     style: {
@@ -1613,10 +1671,10 @@ function TaskDetail({
     className: "btn ghost",
     disabled: busy,
     onClick: cancel
-  }, "Отменить") : null, /*#__PURE__*/React.createElement("button", {
+  }, "\u041E\u0442\u043C\u0435\u043D\u0438\u0442\u044C") : null, /*#__PURE__*/React.createElement("button", {
     className: "btn ghost",
     onClick: repeat
-  }, "Повторить"), t.status === "done" && t.has_report ? /*#__PURE__*/React.createElement("button", {
+  }, "\u041F\u043E\u0432\u0442\u043E\u0440\u0438\u0442\u044C"), t.status === "done" && t.has_report ? /*#__PURE__*/React.createElement("button", {
     className: "btn ghost",
     onClick: () => {
       setActive(t.id);
@@ -1624,7 +1682,7 @@ function TaskDetail({
         view: "netmap"
       });
     }
-  }, "Схема сети") : null, t.status === "done" ? /*#__PURE__*/React.createElement("button", {
+  }, "\u0421\u0445\u0435\u043C\u0430 \u0441\u0435\u0442\u0438") : null, t.status === "done" ? /*#__PURE__*/React.createElement("button", {
     className: "btn",
     onClick: () => {
       setActive(t.id);
@@ -1632,9 +1690,9 @@ function TaskDetail({
         view: "dash"
       });
     }
-  }, "Открыть результат") : null)), /*#__PURE__*/React.createElement("p", {
+  }, "\u041E\u0442\u043A\u0440\u044B\u0442\u044C \u0440\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442") : null)), /*#__PURE__*/React.createElement("p", {
     className: "sub"
-  }, "Цели: ", /*#__PURE__*/React.createElement("span", {
+  }, "\u0426\u0435\u043B\u0438: ", /*#__PURE__*/React.createElement("span", {
     className: "mono"
   }, p.targets || (r.targets || []).join(", ") || "—"), running ? " · обновляется каждые 2 c" : ""), /*#__PURE__*/React.createElement(DiffBanner, {
     diff: t.diff
@@ -1650,14 +1708,14 @@ function TaskDetail({
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Журнал выполнения")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0416\u0443\u0440\u043D\u0430\u043B \u0432\u044B\u043F\u043E\u043B\u043D\u0435\u043D\u0438\u044F")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, /*#__PURE__*/React.createElement("div", {
     className: "tasklog",
     ref: logRef
   }, (t.progress || []).length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Пока нет записей. Для демо-задач журнал не ведётся.") : (t.progress || []).map((l, i) => /*#__PURE__*/React.createElement("div", {
+  }, "\u041F\u043E\u043A\u0430 \u043D\u0435\u0442 \u0437\u0430\u043F\u0438\u0441\u0435\u0439. \u0414\u043B\u044F \u0434\u0435\u043C\u043E-\u0437\u0430\u0434\u0430\u0447 \u0436\u0443\u0440\u043D\u0430\u043B \u043D\u0435 \u0432\u0435\u0434\u0451\u0442\u0441\u044F.") : (t.progress || []).map((l, i) => /*#__PURE__*/React.createElement("div", {
     key: i
   }, /*#__PURE__*/React.createElement("span", {
     className: "lt"
@@ -1673,11 +1731,11 @@ function TaskDetail({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Учётные записи")), /*#__PURE__*/React.createElement("div", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438")), /*#__PURE__*/React.createElement("div", {
     className: "cb"
   }, (p.creds || []).length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "sub2"
-  }, "Без УЗ — только сетевое обнаружение.") : (p.creds || []).map((c, i) => /*#__PURE__*/React.createElement("div", {
+  }, "\u0411\u0435\u0437 \u0423\u0417 \u2014 \u0442\u043E\u043B\u044C\u043A\u043E \u0441\u0435\u0442\u0435\u0432\u043E\u0435 \u043E\u0431\u043D\u0430\u0440\u0443\u0436\u0435\u043D\u0438\u0435.") : (p.creds || []).map((c, i) => /*#__PURE__*/React.createElement("div", {
     key: i,
     style: {
       padding: "4px 0",
@@ -1685,18 +1743,18 @@ function TaskDetail({
     }
   }, /*#__PURE__*/React.createElement("b", null, c.name || c.username || c.type), " ", /*#__PURE__*/React.createElement("span", {
     className: "sub2"
-  }, "· ", c.type, c.username ? " · " + c.username : "")))))), coll ? /*#__PURE__*/React.createElement("div", {
+  }, "\xB7 ", c.type, c.username ? " · " + c.username : "")))))), coll ? /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       marginTop: 16
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "ch"
-  }, /*#__PURE__*/React.createElement("h3", null, "Сбор по активам"), /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("h3", null, "\u0421\u0431\u043E\u0440 \u043F\u043E \u0430\u043A\u0442\u0438\u0432\u0430\u043C"), /*#__PURE__*/React.createElement("span", {
     className: "sub2"
-  }, "успешно ", coll.collected.length, " · не удалось ", coll.failed.length)), /*#__PURE__*/React.createElement("div", {
+  }, "\u0443\u0441\u043F\u0435\u0448\u043D\u043E ", coll.collected.length, " \xB7 \u043D\u0435 \u0443\u0434\u0430\u043B\u043E\u0441\u044C ", coll.failed.length)), /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Актив"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "Протокол"), /*#__PURE__*/React.createElement("th", null, "Результат"))), /*#__PURE__*/React.createElement("tbody", null, coll.collected.map((c, i) => /*#__PURE__*/React.createElement("tr", {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u0410\u043A\u0442\u0438\u0432"), /*#__PURE__*/React.createElement("th", null, "IP"), /*#__PURE__*/React.createElement("th", null, "\u041F\u0440\u043E\u0442\u043E\u043A\u043E\u043B"), /*#__PURE__*/React.createElement("th", null, "\u0420\u0435\u0437\u0443\u043B\u044C\u0442\u0430\u0442"))), /*#__PURE__*/React.createElement("tbody", null, coll.collected.map((c, i) => /*#__PURE__*/React.createElement("tr", {
     key: "c" + i
   }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, c.asset)), /*#__PURE__*/React.createElement("td", {
     className: "mono"
@@ -1704,16 +1762,16 @@ function TaskDetail({
     style: {
       color: "var(--ok,#2e7d32)"
     }
-  }, "✓ собрано (УЗ ", c.cred || "—", ")"))), coll.failed.map((c, i) => /*#__PURE__*/React.createElement("tr", {
+  }, "\u2713 \u0441\u043E\u0431\u0440\u0430\u043D\u043E (\u0423\u0417 ", c.cred || "—", ")"))), coll.failed.map((c, i) => /*#__PURE__*/React.createElement("tr", {
     key: "f" + i
   }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, c.asset)), /*#__PURE__*/React.createElement("td", {
     className: "mono"
   }, c.ip), /*#__PURE__*/React.createElement("td", null, c.proto), /*#__PURE__*/React.createElement("td", {
     className: "sub2"
-  }, "✕ ", c.error))), coll.collected.length === 0 && coll.failed.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+  }, "\u2715 ", c.error))), coll.collected.length === 0 && coll.failed.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: "4",
     className: "sub2"
-  }, "Активов для сбора не было.")))))) : null);
+  }, "\u0410\u043A\u0442\u0438\u0432\u043E\u0432 \u0434\u043B\u044F \u0441\u0431\u043E\u0440\u0430 \u043D\u0435 \u0431\u044B\u043B\u043E.")))))) : null);
 }
 
 /* ----------------------------------------------------------------- Обследования */
@@ -1734,24 +1792,24 @@ function Surveys({
     style: {
       margin: 0
     }
-  }, "Сканирования"), /*#__PURE__*/React.createElement("p", {
+  }, "\u0421\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F"), /*#__PURE__*/React.createElement("p", {
     className: "sub",
     style: {
       margin: "2px 0 0"
     }
-  }, "Запуск, статус, схема и активы.")), /*#__PURE__*/React.createElement("button", {
+  }, "\u0417\u0430\u043F\u0443\u0441\u043A, \u0441\u0442\u0430\u0442\u0443\u0441, \u0441\u0445\u0435\u043C\u0430 \u0438 \u0430\u043A\u0442\u0438\u0432\u044B.")), /*#__PURE__*/React.createElement("button", {
     className: "btn",
     style: {
       marginLeft: "auto"
     },
     onClick: onNew
-  }, "+ Новое сканирование")), /*#__PURE__*/React.createElement("div", {
+  }, "+ \u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435")), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", null, "Скан"), /*#__PURE__*/React.createElement("th", null, "Цели"), /*#__PURE__*/React.createElement("th", null, "Статус"), /*#__PURE__*/React.createElement("th", {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", null, "\u0421\u043A\u0430\u043D"), /*#__PURE__*/React.createElement("th", null, "\u0426\u0435\u043B\u0438"), /*#__PURE__*/React.createElement("th", null, "\u0421\u0442\u0430\u0442\u0443\u0441"), /*#__PURE__*/React.createElement("th", {
     className: "num"
-  }, "Собрано по УЗ"), /*#__PURE__*/React.createElement("th", null, "Схема"))), /*#__PURE__*/React.createElement("tbody", null, tasks.map(t => {
+  }, "\u0421\u043E\u0431\u0440\u0430\u043D\u043E \u043F\u043E \u0423\u0417"), /*#__PURE__*/React.createElement("th", null, "\u0421\u0445\u0435\u043C\u0430"))), /*#__PURE__*/React.createElement("tbody", null, tasks.map(t => {
     const st = ST_LABEL[t.status] || t.status;
     const p = t.params || {};
     const tg = p.targets || t.result && (t.result.targets || []).join(", ") || (p.kind === "demo" ? "демо" : "—");
@@ -1769,7 +1827,7 @@ function Surveys({
       })
     }, /*#__PURE__*/React.createElement("b", null, t.name || "—"), nc ? /*#__PURE__*/React.createElement("div", {
       className: "sub2"
-    }, nc, " УЗ", coll ? ` · собрано ${coll.collected.length}` : "") : null), /*#__PURE__*/React.createElement("td", {
+    }, nc, " \u0423\u0417", coll ? ` · собрано ${coll.collected.length}` : "") : null), /*#__PURE__*/React.createElement("td", {
       className: "sub2 mono"
     }, tg), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("span", {
       className: "chip c-" + (ST_CHIP[t.status] || "medium")
@@ -1783,17 +1841,17 @@ function Surveys({
           view: "netmap"
         });
       }
-    }, "схема →") : /*#__PURE__*/React.createElement("span", {
+    }, "\u0441\u0445\u0435\u043C\u0430 \u2192") : /*#__PURE__*/React.createElement("span", {
       className: "link",
       onClick: () => go({
         view: "task",
         taskId: t.id
       })
-    }, "открыть →")));
+    }, "\u043E\u0442\u043A\u0440\u044B\u0442\u044C \u2192")));
   }), tasks.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: "6",
     className: "sub2"
-  }, "Пока нет сканирований — запустите «+ Новое сканирование».")))))));
+  }, "\u041F\u043E\u043A\u0430 \u043D\u0435\u0442 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0439 \u2014 \u0437\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u0435 \xAB+ \u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435\xBB.")))))));
 }
 
 /* ----------------------------------------------------------------- Коннекторы */
@@ -1820,9 +1878,9 @@ function Connectors() {
   };
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
     className: "h1"
-  }, "Коннекторы"), /*#__PURE__*/React.createElement("p", {
+  }, "\u041A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440\u044B"), /*#__PURE__*/React.createElement("p", {
     className: "sub"
-  }, "Агенты сбора у заказчика (pull-модель, только исходящие соединения; офлайн-курьер для изолированного контура)."), /*#__PURE__*/React.createElement("div", {
+  }, "\u0410\u0433\u0435\u043D\u0442\u044B \u0441\u0431\u043E\u0440\u0430 \u0443 \u0437\u0430\u043A\u0430\u0437\u0447\u0438\u043A\u0430 (pull-\u043C\u043E\u0434\u0435\u043B\u044C, \u0442\u043E\u043B\u044C\u043A\u043E \u0438\u0441\u0445\u043E\u0434\u044F\u0449\u0438\u0435 \u0441\u043E\u0435\u0434\u0438\u043D\u0435\u043D\u0438\u044F; \u043E\u0444\u043B\u0430\u0439\u043D-\u043A\u0443\u0440\u044C\u0435\u0440 \u0434\u043B\u044F \u0438\u0437\u043E\u043B\u0438\u0440\u043E\u0432\u0430\u043D\u043D\u043E\u0433\u043E \u043A\u043E\u043D\u0442\u0443\u0440\u0430)."), /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       marginBottom: 16
@@ -1831,21 +1889,21 @@ function Connectors() {
     className: "cb row"
   }, /*#__PURE__*/React.createElement("div", {
     className: "field"
-  }, /*#__PURE__*/React.createElement("label", null, "Название коннектора"), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("label", null, "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435 \u043A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440\u0430"), /*#__PURE__*/React.createElement("input", {
     value: name,
     onChange: e => setName(e.target.value),
-    placeholder: "Коннектор-1",
+    placeholder: "\u041A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440-1",
     style: {
       minWidth: 260
     }
   })), /*#__PURE__*/React.createElement("button", {
     className: "btn",
     onClick: add
-  }, "Зарегистрировать"))), /*#__PURE__*/React.createElement("div", {
+  }, "\u0417\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u0442\u044C"))), /*#__PURE__*/React.createElement("div", {
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", null, "Коннектор"), /*#__PURE__*/React.createElement("th", null, "Последний дозвон"))), /*#__PURE__*/React.createElement("tbody", null, list.map(c => /*#__PURE__*/React.createElement("tr", {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "#"), /*#__PURE__*/React.createElement("th", null, "\u041A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440"), /*#__PURE__*/React.createElement("th", null, "\u041F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0439 \u0434\u043E\u0437\u0432\u043E\u043D"))), /*#__PURE__*/React.createElement("tbody", null, list.map(c => /*#__PURE__*/React.createElement("tr", {
     key: c.id
   }, /*#__PURE__*/React.createElement("td", {
     className: "mono"
@@ -1854,7 +1912,7 @@ function Connectors() {
   }, c.last_seen ? c.last_seen.replace("T", " ").slice(0, 16) : "ни разу"))), list.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: "3",
     className: "sub2"
-  }, "Коннекторы не зарегистрированы.")))))));
+  }, "\u041A\u043E\u043D\u043D\u0435\u043A\u0442\u043E\u0440\u044B \u043D\u0435 \u0437\u0430\u0440\u0435\u0433\u0438\u0441\u0442\u0440\u0438\u0440\u043E\u0432\u0430\u043D\u044B.")))))));
 }
 
 /* ----------------------------------------------------------------- Расписания */
@@ -1942,9 +2000,9 @@ function Schedules({
   const fmt = s => s ? s.replace("T", " ").slice(0, 16) : "—";
   return /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", {
     className: "h1"
-  }, "Расписания"), /*#__PURE__*/React.createElement("p", {
+  }, "\u0420\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u044F"), /*#__PURE__*/React.createElement("p", {
     className: "sub"
-  }, "Периодический пересбор по заданным целям — без ручного запуска. При срабатывании ставится обычная задача сканирования; изменения с прошлого прогона видны в карточке задачи и на дашборде."), /*#__PURE__*/React.createElement("div", {
+  }, "\u041F\u0435\u0440\u0438\u043E\u0434\u0438\u0447\u0435\u0441\u043A\u0438\u0439 \u043F\u0435\u0440\u0435\u0441\u0431\u043E\u0440 \u043F\u043E \u0437\u0430\u0434\u0430\u043D\u043D\u044B\u043C \u0446\u0435\u043B\u044F\u043C \u2014 \u0431\u0435\u0437 \u0440\u0443\u0447\u043D\u043E\u0433\u043E \u0437\u0430\u043F\u0443\u0441\u043A\u0430. \u041F\u0440\u0438 \u0441\u0440\u0430\u0431\u0430\u0442\u044B\u0432\u0430\u043D\u0438\u0438 \u0441\u0442\u0430\u0432\u0438\u0442\u0441\u044F \u043E\u0431\u044B\u0447\u043D\u0430\u044F \u0437\u0430\u0434\u0430\u0447\u0430 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u044F; \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u044F \u0441 \u043F\u0440\u043E\u0448\u043B\u043E\u0433\u043E \u043F\u0440\u043E\u0433\u043E\u043D\u0430 \u0432\u0438\u0434\u043D\u044B \u0432 \u043A\u0430\u0440\u0442\u043E\u0447\u043A\u0435 \u0437\u0430\u0434\u0430\u0447\u0438 \u0438 \u043D\u0430 \u0434\u0430\u0448\u0431\u043E\u0440\u0434\u0435."), /*#__PURE__*/React.createElement("div", {
     className: "card",
     style: {
       marginBottom: 16,
@@ -1954,21 +2012,21 @@ function Schedules({
     className: "cb"
   }, /*#__PURE__*/React.createElement("div", {
     className: "field"
-  }, /*#__PURE__*/React.createElement("label", null, "Название"), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("label", null, "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435"), /*#__PURE__*/React.createElement("input", {
     value: f.name,
     onChange: e => setFF("name", e.target.value),
-    placeholder: "Периметр — ежечасно"
+    placeholder: "\u041F\u0435\u0440\u0438\u043C\u0435\u0442\u0440 \u2014 \u0435\u0436\u0435\u0447\u0430\u0441\u043D\u043E"
   })), /*#__PURE__*/React.createElement("div", {
     className: "field",
     style: {
       marginTop: 10
     }
-  }, /*#__PURE__*/React.createElement("label", null, "Цели: подсети / хосты ", f.kind === "demo" ? /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("label", null, "\u0426\u0435\u043B\u0438: \u043F\u043E\u0434\u0441\u0435\u0442\u0438 / \u0445\u043E\u0441\u0442\u044B ", f.kind === "demo" ? /*#__PURE__*/React.createElement("span", {
     className: "sub2",
     style: {
       fontWeight: 400
     }
-  }, "(не нужны для демо)") : null), /*#__PURE__*/React.createElement("textarea", {
+  }, "(\u043D\u0435 \u043D\u0443\u0436\u043D\u044B \u0434\u043B\u044F \u0434\u0435\u043C\u043E)") : null), /*#__PURE__*/React.createElement("textarea", {
     rows: "2",
     value: f.targets,
     onChange: e => setFF("targets", e.target.value),
@@ -1982,7 +2040,7 @@ function Schedules({
     }
   }, /*#__PURE__*/React.createElement("div", {
     className: "field"
-  }, /*#__PURE__*/React.createElement("label", null, "Вид"), /*#__PURE__*/React.createElement("select", {
+  }, /*#__PURE__*/React.createElement("label", null, "\u0412\u0438\u0434"), /*#__PURE__*/React.createElement("select", {
     value: f.kind,
     onChange: e => setFF("kind", e.target.value)
   }, Object.entries(SCHED_KINDS).map(([k, l]) => /*#__PURE__*/React.createElement("option", {
@@ -1990,7 +2048,7 @@ function Schedules({
     value: k
   }, l)))), /*#__PURE__*/React.createElement("div", {
     className: "field"
-  }, /*#__PURE__*/React.createElement("label", null, "Интервал, мин"), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("label", null, "\u0418\u043D\u0442\u0435\u0440\u0432\u0430\u043B, \u043C\u0438\u043D"), /*#__PURE__*/React.createElement("input", {
     type: "number",
     min: "1",
     style: {
@@ -2003,12 +2061,12 @@ function Schedules({
     style: {
       marginTop: 10
     }
-  }, /*#__PURE__*/React.createElement("label", null, "Учётные записи для сбора ", /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("label", null, "\u0423\u0447\u0451\u0442\u043D\u044B\u0435 \u0437\u0430\u043F\u0438\u0441\u0438 \u0434\u043B\u044F \u0441\u0431\u043E\u0440\u0430 ", /*#__PURE__*/React.createElement("span", {
     className: "sub2",
     style: {
       fontWeight: 400
     }
-  }, "(опционально)")), /*#__PURE__*/React.createElement("div", {
+  }, "(\u043E\u043F\u0446\u0438\u043E\u043D\u0430\u043B\u044C\u043D\u043E)")), /*#__PURE__*/React.createElement("div", {
     className: "credpick"
   }, savedCreds.map(c => /*#__PURE__*/React.createElement("label", {
     className: "credopt" + (f.cred_ids.includes(c.id) ? " on" : ""),
@@ -2027,7 +2085,7 @@ function Schedules({
       marginTop: 14
     },
     onClick: add
-  }, "Создать расписание"), err ? /*#__PURE__*/React.createElement("div", {
+  }, "\u0421\u043E\u0437\u0434\u0430\u0442\u044C \u0440\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u0435"), err ? /*#__PURE__*/React.createElement("div", {
     className: "sub2",
     style: {
       color: "var(--crit,#b4232a)",
@@ -2037,13 +2095,13 @@ function Schedules({
     className: "card"
   }, /*#__PURE__*/React.createElement("div", {
     className: "cb"
-  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "Название"), /*#__PURE__*/React.createElement("th", null, "Цели"), /*#__PURE__*/React.createElement("th", null, "Интервал"), /*#__PURE__*/React.createElement("th", null, "Включено"), /*#__PURE__*/React.createElement("th", null, "Последний запуск"), /*#__PURE__*/React.createElement("th", null, "Следующий"), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, list.map(s => /*#__PURE__*/React.createElement("tr", {
+  }, /*#__PURE__*/React.createElement("table", null, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("th", null, "\u041D\u0430\u0437\u0432\u0430\u043D\u0438\u0435"), /*#__PURE__*/React.createElement("th", null, "\u0426\u0435\u043B\u0438"), /*#__PURE__*/React.createElement("th", null, "\u0418\u043D\u0442\u0435\u0440\u0432\u0430\u043B"), /*#__PURE__*/React.createElement("th", null, "\u0412\u043A\u043B\u044E\u0447\u0435\u043D\u043E"), /*#__PURE__*/React.createElement("th", null, "\u041F\u043E\u0441\u043B\u0435\u0434\u043D\u0438\u0439 \u0437\u0430\u043F\u0443\u0441\u043A"), /*#__PURE__*/React.createElement("th", null, "\u0421\u043B\u0435\u0434\u0443\u044E\u0449\u0438\u0439"), /*#__PURE__*/React.createElement("th", null))), /*#__PURE__*/React.createElement("tbody", null, list.map(s => /*#__PURE__*/React.createElement("tr", {
     key: s.id
   }, /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("b", null, s.name || "Расписание #" + s.id), /*#__PURE__*/React.createElement("div", {
     className: "sub2"
   }, SCHED_KINDS[s.kind] || s.kind)), /*#__PURE__*/React.createElement("td", {
     className: "sub2 mono"
-  }, s.targets || "демо"), /*#__PURE__*/React.createElement("td", null, s.interval_minutes, " мин"), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("label", {
+  }, s.targets || "демо"), /*#__PURE__*/React.createElement("td", null, s.interval_minutes, " \u043C\u0438\u043D"), /*#__PURE__*/React.createElement("td", null, /*#__PURE__*/React.createElement("label", {
     style: {
       display: "inline-flex",
       alignItems: "center",
@@ -2066,14 +2124,14 @@ function Schedules({
   }, /*#__PURE__*/React.createElement("button", {
     className: "btn sm ghost",
     onClick: () => runNow(s.id)
-  }, "Запустить сейчас"), " ", /*#__PURE__*/React.createElement("button", {
+  }, "\u0417\u0430\u043F\u0443\u0441\u0442\u0438\u0442\u044C \u0441\u0435\u0439\u0447\u0430\u0441"), " ", /*#__PURE__*/React.createElement("button", {
     className: "xbtn",
-    title: "Удалить",
+    title: "\u0423\u0434\u0430\u043B\u0438\u0442\u044C",
     onClick: () => del(s.id)
-  }, "✕")))), list.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
+  }, "\u2715")))), list.length === 0 && /*#__PURE__*/React.createElement("tr", null, /*#__PURE__*/React.createElement("td", {
     colSpan: "7",
     className: "sub2"
-  }, "Расписаний нет. Создайте первое выше — пересбор будет запускаться автоматически.")))))));
+  }, "\u0420\u0430\u0441\u043F\u0438\u0441\u0430\u043D\u0438\u0439 \u043D\u0435\u0442. \u0421\u043E\u0437\u0434\u0430\u0439\u0442\u0435 \u043F\u0435\u0440\u0432\u043E\u0435 \u0432\u044B\u0448\u0435 \u2014 \u043F\u0435\u0440\u0435\u0441\u0431\u043E\u0440 \u0431\u0443\u0434\u0435\u0442 \u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0442\u044C\u0441\u044F \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0447\u0435\u0441\u043A\u0438.")))))));
 }
 
 /* ----------------------------------------------------------------- приложение */
@@ -2160,9 +2218,9 @@ function SearchBox({
   };
   return /*#__PURE__*/React.createElement("div", {
     className: "search"
-  }, /*#__PURE__*/React.createElement("span", null, "⌕"), /*#__PURE__*/React.createElement("input", {
+  }, /*#__PURE__*/React.createElement("span", null, "\u2315"), /*#__PURE__*/React.createElement("input", {
     value: q,
-    placeholder: "Поиск по активам, IP…",
+    placeholder: "\u041F\u043E\u0438\u0441\u043A \u043F\u043E \u0430\u043A\u0442\u0438\u0432\u0430\u043C, IP\u2026",
     disabled: !taskId,
     onChange: e => setQ(e.target.value),
     onFocus: () => q.trim() && setOpen(true),
@@ -2177,7 +2235,7 @@ function SearchBox({
     className: "searchDrop"
   }, results.length === 0 ? /*#__PURE__*/React.createElement("div", {
     className: "searchItem sub2"
-  }, "Ничего не найдено") : results.map(r => /*#__PURE__*/React.createElement("div", {
+  }, "\u041D\u0438\u0447\u0435\u0433\u043E \u043D\u0435 \u043D\u0430\u0439\u0434\u0435\u043D\u043E") : results.map(r => /*#__PURE__*/React.createElement("div", {
     className: "searchItem",
     key: r.name,
     onMouseDown: () => pick(r.name)
@@ -2326,7 +2384,7 @@ function App() {
     onClick: () => go({
       view: "assets"
     })
-  }, "Активы"), /*#__PURE__*/React.createElement("span", {
+  }, "\u0410\u043A\u0442\u0438\u0432\u044B"), /*#__PURE__*/React.createElement("span", {
     className: "sep"
   }, "/"), /*#__PURE__*/React.createElement("b", null, nav.assetName)) : /*#__PURE__*/React.createElement("b", null, TITLES[nav.view] || "Дашборд");
   return /*#__PURE__*/React.createElement("div", {
@@ -2337,7 +2395,7 @@ function App() {
     className: "brand"
   }, /*#__PURE__*/React.createElement("span", {
     className: "logo"
-  }, "◢"), "surveyscan"), NAV.map(g => /*#__PURE__*/React.createElement(React.Fragment, {
+  }, "\u25E2"), "surveyscan"), NAV.map(g => /*#__PURE__*/React.createElement(React.Fragment, {
     key: g.sec
   }, /*#__PURE__*/React.createElement("div", {
     className: "navsec"
@@ -2357,7 +2415,7 @@ function App() {
     }, cc) : null);
   }))), /*#__PURE__*/React.createElement("div", {
     className: "foot"
-  }, "сканер инвентаризации", /*#__PURE__*/React.createElement("br", null), "и схемы сети")), /*#__PURE__*/React.createElement("div", {
+  }, "\u0441\u043A\u0430\u043D\u0435\u0440 \u0438\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u0438\u0437\u0430\u0446\u0438\u0438", /*#__PURE__*/React.createElement("br", null), "\u0438 \u0441\u0445\u0435\u043C\u044B \u0441\u0435\u0442\u0438")), /*#__PURE__*/React.createElement("div", {
     className: "main"
   }, /*#__PURE__*/React.createElement("div", {
     className: "top"
@@ -2373,9 +2431,9 @@ function App() {
     onClick: () => go({
       view: "newscan"
     })
-  }, "+ Новое сканирование"), /*#__PURE__*/React.createElement("div", {
+  }, "+ \u041D\u043E\u0432\u043E\u0435 \u0441\u043A\u0430\u043D\u0438\u0440\u043E\u0432\u0430\u043D\u0438\u0435"), /*#__PURE__*/React.createElement("div", {
     className: "av"
-  }, "ИП"))), /*#__PURE__*/React.createElement("div", {
+  }, "\u0418\u041F"))), /*#__PURE__*/React.createElement("div", {
     className: "body"
   }, screen)));
 }

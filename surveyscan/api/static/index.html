@@ -94,7 +94,9 @@
   .tab.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
   .tab .cnt{background:#EEF0F3;color:#667085;border-radius:10px;font-size:11px;padding:0 7px}
   /* two-col detail */
-  .detail{display:grid;grid-template-columns:1fr 420px;gap:16px} @media(max-width:1000px){.detail{grid-template-columns:1fr}}
+  .detail{display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:16px}
+  .detail > *{min-width:0} .detail .cb{overflow-x:auto}
+  @media(max-width:1000px){.detail{grid-template-columns:minmax(0,1fr)}}
   .kv{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--line2);font-size:13px} .kv:first-child{border-top:0} .kv .k{color:var(--muted)} .kv .v{font-weight:600}
   .seg{margin-top:14px} .seg .lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);margin-bottom:5px}
   .cvsstile{border:1px solid var(--line);border-radius:8px;padding:14px 18px;text-align:center;min-width:150px}
