@@ -1,0 +1,51 @@
+{
+  "payload": {
+    "schema_version": {
+      "major": 2,
+      "minor": 0
+    },
+    "observation_id": "00000000-0000-4000-8000-000000000006",
+    "tenant_id": "00000000-0000-4000-8000-000000000001",
+    "origin": {
+      "source_id": "00000000-0000-4000-8000-000000000002",
+      "source_kind": "agent",
+      "generation_id": "00000000-0000-4000-8000-000000000003"
+    },
+    "source_record": {
+      "namespace": "host",
+      "source_local_id": "host-record-001"
+    },
+    "scope": {
+      "site_id": "00000000-0000-4000-8000-000000000004",
+      "network_scope_id": "00000000-0000-4000-8000-000000000005"
+    },
+    "source_sequence": "10",
+    "collected_at": "2026-11-03T07:00:00Z",
+    "clock_quality": "trusted",
+    "identity_candidates": [
+      {
+        "kind": "hostname",
+        "namespace": "hostname.raw",
+        "value": "тестовый-хост"
+      }
+    ],
+    "sections": [
+      {
+        "name": "identity",
+        "collected_at": "2026-11-03T07:00:00Z",
+        "status": "ok",
+        "collection_complete": true,
+        "reason_code": "OK",
+        "record_count": 1,
+        "records": [
+          {
+            "hostname": "тестовый-хост"
+          }
+        ]
+      }
+    ]
+  },
+  "digest": "37c44d6c8ee6efbd3304e855f0c84598e68161a81bdf860bf99b0d4793f3a81f",
+  "key_id": "00000000-0000-4000-8000-000000000014",
+  "signature": "G8a7s1mayn1P-RMvX3CjEgQ82hJGLF1-EBcRDB7-Ll3199mE9LOA-HEgQkBj3xS-suFX1o66Z_MaYKCIAoTqBw"
+}

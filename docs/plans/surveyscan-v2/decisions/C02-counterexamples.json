@@ -1,0 +1,324 @@
+{
+  "package": "C02",
+  "date": "2026-11-03",
+  "kind": "design counterexamples; not runtime test fixtures",
+  "cases": [
+    {
+      "id": "C02-X01",
+      "title": "Повтор того же observation",
+      "initial_state": "Есть resolved source record S→A и observation O/digest H/seq10",
+      "action": "Повторить O,H,seq10",
+      "expected_result": "Вернуть прежний result; один history/effect, тот же asset A",
+      "invariants": [
+        "INV-03",
+        "INV-05",
+        "INV-11",
+        "INV-12"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X02",
+      "title": "Тот же ID, другой payload",
+      "initial_state": "Есть O/digest H",
+      "action": "Отправить O/digest H2",
+      "expected_result": "Conflict; исходный payload и result не перезаписаны",
+      "invariants": [
+        "INV-05",
+        "INV-11"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X03",
+      "title": "Смена IP у известного источника",
+      "initial_state": "S→A, seq10, IP=10.0.0.1",
+      "action": "Отправить seq11 с IP=10.0.0.2 и непротиворечивой identity",
+      "expected_result": "A сохранён; новая техническая проекция/история; IP не создаёт новый UID",
+      "invariants": [
+        "INV-02",
+        "INV-03",
+        "INV-07"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X04",
+      "title": "Клон VM с копией agent state",
+      "initial_state": "Агент S привязан к A",
+      "action": "Второй хост использует тот же agent state, но противоречащий hardware evidence",
+      "expected_result": "Не перезаписать A молча; conflict/quarantine и re-enrollment policy; не объявлять физическую идентичность по agent_id",
+      "invariants": [
+        "INV-02",
+        "INV-04",
+        "INV-12"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X05",
+      "title": "Одинаковый IP в разных tenant",
+      "initial_state": "Tenant T1 и T2, свои источники и scope",
+      "action": "Оба сообщают IP=10.0.0.1",
+      "expected_result": "Отдельные assets и правообласти; нет cross-tenant mapping",
+      "invariants": [
+        "INV-01",
+        "INV-04"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X06",
+      "title": "Поздняя offline-запись",
+      "initial_state": "Доверенная generation G источника S уже seq20",
+      "action": "Приходит запоздавший seq15 того же record",
+      "expected_result": "Сохранить историю без rollback current facts и без обновления freshness по received_at",
+      "invariants": [
+        "INV-05",
+        "INV-07",
+        "INV-14"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X07",
+      "title": "Partial empty",
+      "initial_state": "Есть успешный факт/коллекция seq10",
+      "action": "seq11 partial, facts=[], collection_complete=false",
+      "expected_result": "Диагностика попытки видна; прежние успешные values/provenance не удалены",
+      "invariants": [
+        "INV-06",
+        "INV-07"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X08",
+      "title": "Подтверждённая пустая коллекция",
+      "initial_state": "Есть элементы только в scope коллекции K",
+      "action": "Новый ok, complete=true, authoritative K, facts=[]",
+      "expected_result": "Удаление допустимо только в K; ручные поля и другие scopes не затронуты",
+      "invariants": [
+        "INV-06",
+        "INV-08"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X09",
+      "title": "Claim чужого asset_uid",
+      "initial_state": "Источник разрешён только для T1",
+      "action": "Передать asserted UID принадлежащий T2",
+      "expected_result": "Авторизация отклоняет; чужой asset/данные не раскрываются и не меняются",
+      "invariants": [
+        "INV-01",
+        "INV-13"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X10",
+      "title": "Смена collector у того же агента",
+      "initial_state": "Origin S→A доставлял через C1",
+      "action": "Авторизованно переназначить collector C2 в той же tenant",
+      "expected_result": "Origin/mapping/asset A сохраняются; маршрут и аудит обновлены",
+      "invariants": [
+        "INV-02",
+        "INV-03",
+        "INV-13"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X11",
+      "title": "Новый источник с конфликтующим serial",
+      "initial_state": "A уже имеет identifier X, новый source U сообщает X с другим evidence",
+      "action": "Resolve нового record U",
+      "expected_result": "Не auto-merge; conflict candidate и pending record, ручное разрешение позже",
+      "invariants": [
+        "INV-04",
+        "INV-05"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X12",
+      "title": "Площадка или collector недоступны",
+      "initial_state": "Есть asset A и успешный inventory",
+      "action": "Пропустить heartbeat/scan из-за outage",
+      "expected_result": "Source health/freshness degraded; asset не списан, ответственность не очищена",
+      "invariants": [
+        "INV-09",
+        "INV-14"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X13",
+      "title": "Сбой создания asset",
+      "initial_state": "Создание A ещё не committed",
+      "action": "Ошибка после записи A до fallback/outbox",
+      "expected_result": "Rollback всех участников TX-01; нет бесхозного или наполовину созданного asset",
+      "invariants": [
+        "INV-09",
+        "INV-10"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X14",
+      "title": "Конкурентная передача ответственности",
+      "initial_state": "A имеет одну active accountable role",
+      "action": "Два оператора меняют subject по одному revision",
+      "expected_result": "Один успех, второй conflict/retry; ровно одна active роль и полная история",
+      "invariants": [
+        "INV-09",
+        "INV-12"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X15",
+      "title": "Reset sequence новой generation",
+      "initial_state": "S/G1 уже seq100",
+      "action": "Авторизованный re-enroll выпускает G2/seq1",
+      "expected_result": "Не сравнивать 1<100 вне generation; continuity policy C03, при неясности сохранить history/conflict без rollback",
+      "invariants": [
+        "INV-03",
+        "INV-07",
+        "INV-12"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X16",
+      "title": "Разрешение отложенного наблюдения",
+      "initial_state": "O хранится без asset link в pending conflict",
+      "action": "Оператор авторизованно связывает O с A",
+      "expected_result": "Payload O не изменён; новая temporal link и controlled projection rebuild с audit",
+      "invariants": [
+        "INV-04",
+        "INV-05",
+        "INV-10"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X17",
+      "title": "Два workers применяют один record",
+      "initial_state": "Один delivery/record/digest зарезервирован",
+      "action": "Оба доходят до commit",
+      "expected_result": "Unique/lock/revision обеспечивает один effect и согласованный checkpoint/result",
+      "invariants": [
+        "INV-05",
+        "INV-10",
+        "INV-11",
+        "INV-12"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X18",
+      "title": "Scope не соответствует site",
+      "initial_state": "Asset указал site A и scope site B одной tenant",
+      "action": "Создать или изменить asset",
+      "expected_result": "Composite FK/guard отвергает mismatch, существующий asset не изменён",
+      "invariants": [
+        "INV-01",
+        "INV-13"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X19",
+      "title": "Неверный source subtype",
+      "initial_state": "source_kind=collector",
+      "action": "Создать AGENT со ссылкой на этот source",
+      "expected_result": "Discriminator CHECK/FK отвергает subtype mismatch",
+      "invariants": [
+        "INV-13"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X20",
+      "title": "Collector online, агент offline",
+      "initial_state": "Collector жив, агент давно не контактировал",
+      "action": "Получить новый collector heartbeat и старый buffered heartbeat агента",
+      "expected_result": "Контакт collector обновлён; agent contact не становится свежим от relay/replay",
+      "invariants": [
+        "INV-07",
+        "INV-14"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X21",
+      "title": "Retention исходного evidence",
+      "initial_state": "Current fact ссылается на O/link",
+      "action": "Запустить очистку старых observations",
+      "expected_result": "Запретить dangling provenance; сначала согласованная компактизация/архив, без CASCADE удаления asset/facts",
+      "invariants": [
+        "INV-02",
+        "INV-05"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    },
+    {
+      "id": "C02-X22",
+      "title": "Ручное имя против нового inventory",
+      "initial_state": "У A ручной display_name и старый observed hostname",
+      "action": "Новый сбор сообщает другой hostname",
+      "expected_result": "Observed hostname обновлён по policy; ручное имя/назначение сохранены",
+      "invariants": [
+        "INV-07",
+        "INV-08"
+      ],
+      "review_status": "reviewed_in_design",
+      "runtime_status": "unrun",
+      "mock_status": "not_run"
+    }
+  ]
+}

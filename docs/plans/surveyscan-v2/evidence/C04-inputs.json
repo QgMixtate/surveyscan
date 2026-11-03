@@ -1,0 +1,11 @@
+{
+  "package": "C04",
+  "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
+  "branch": "work",
+  "input_plan_sha256": "2fa6502f7b8386176df514543aa6ddbe2e2ab14170e07cf1d649eb72a9918fcc",
+  "scope": "C04 only, R-016",
+  "publication": "local only",
+  "go_version": "1.27.3",
+  "go_linux_amd64_sha256": "65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40",
+  "runtime_targets": "isolated local Docker Linux/amd64; no production; legacy v1 untouched"
+}

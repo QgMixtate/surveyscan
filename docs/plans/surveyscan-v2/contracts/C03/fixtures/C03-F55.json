@@ -1,0 +1,29 @@
+{
+  "payload": {
+    "schema_version": {
+      "major": 1,
+      "minor": 0
+    },
+    "receipt_id": "00000000-0000-4000-8000-000000000008",
+    "tenant_id": "00000000-0000-4000-8000-000000000001",
+    "delivery_id": "00000000-0000-4000-8000-000000000007",
+    "batch_digest": "50303fca1881a0d2879a25d9ea9c294f6a5992b292b039af538b2dcc8de6d512",
+    "committed_at": "2026-11-03T07:00:10Z",
+    "result_revision": "1",
+    "status": "completed",
+    "results": [
+      {
+        "origin_source_id": "00000000-0000-4000-8000-000000000002",
+        "observation_id": "00000000-0000-4000-8000-000000000006",
+        "observation_digest": "5e3cb43614f4f36fec2ce942e84f0bf0627ceb725e20b777e4ebb927f1c8cf04",
+        "disposition": "recorded_pending_resolution",
+        "asset_uid": null,
+        "reason_code": "IDENTITY_CONFLICT",
+        "spool_action": "remove"
+      }
+    ]
+  },
+  "digest": "09f6c7c217d5ec9b828d4c872bfed7251c789e1cdb2337e1682ea9821b71e3c5",
+  "key_id": "00000000-0000-4000-8000-000000000015",
+  "signature": "sc-f9nD0fTlyziZRqssPD6bJdT-Y-HM6OeUTskSbvD21fGSR8fK7vGBSe8SLhXgTq1RO4HC5uLiRd_4LCehzDA"
+}

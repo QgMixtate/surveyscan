@@ -1,0 +1,1064 @@
+{
+  "package": "C02",
+  "version": "logical-model-1",
+  "date": "2026-11-03",
+  "status": "engineering design; not DDL or implemented schema",
+  "source_architecture": "0.5",
+  "entities": [
+    {
+      "name": "tenants",
+      "owner": "Access",
+      "fields": [
+        "tenant_id",
+        "name",
+        "status",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id"
+      ],
+      "unique": [],
+      "references": [],
+      "note": ""
+    },
+    {
+      "name": "subjects",
+      "owner": "Responsibility",
+      "fields": [
+        "tenant_id",
+        "subject_id",
+        "kind",
+        "name",
+        "contact",
+        "active",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "subject_id"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "target_fields": [
+            "tenant_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "team/person reference is not an auth login; E1 fallback team, person flows later"
+    },
+    {
+      "name": "sites",
+      "owner": "Scope",
+      "fields": [
+        "tenant_id",
+        "site_id",
+        "name",
+        "fallback_subject_id",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "site_id"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "target_fields": [
+            "tenant_id"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "fallback_subject_id"
+          ],
+          "target": "subjects",
+          "target_fields": [
+            "tenant_id",
+            "subject_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": ""
+    },
+    {
+      "name": "network_scopes",
+      "owner": "Scope",
+      "fields": [
+        "tenant_id",
+        "scope_id",
+        "site_id",
+        "namespace",
+        "metadata",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "scope_id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "site_id",
+          "namespace"
+        ],
+        [
+          "tenant_id",
+          "scope_id",
+          "site_id"
+        ]
+      ],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "site_id"
+          ],
+          "target": "sites",
+          "target_fields": [
+            "tenant_id",
+            "site_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "site default scope in E1; VRF/VLAN evidence capabilities E2"
+    },
+    {
+      "name": "sources",
+      "owner": "Sources",
+      "fields": [
+        "tenant_id",
+        "source_id",
+        "source_kind",
+        "site_id",
+        "state",
+        "generation_id",
+        "last_contact_at",
+        "last_successful_inventory_at",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "source_id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "source_id",
+          "source_kind"
+        ]
+      ],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "site_id"
+          ],
+          "target": "sites",
+          "target_fields": [
+            "tenant_id",
+            "site_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": ""
+    },
+    {
+      "name": "collectors",
+      "owner": "Sources",
+      "fields": [
+        "tenant_id",
+        "collector_id",
+        "source_id",
+        "source_kind",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "collector_id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "source_id"
+        ]
+      ],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "source_id",
+            "source_kind"
+          ],
+          "target": "sources",
+          "target_fields": [
+            "tenant_id",
+            "source_id",
+            "source_kind"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "source_kind=collector CHECK; own observations only, relay agent preserves agent source_id"
+    },
+    {
+      "name": "agents",
+      "owner": "Sources",
+      "fields": [
+        "tenant_id",
+        "agent_id",
+        "source_id",
+        "source_kind",
+        "collector_id",
+        "enrollment_revision",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "agent_id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "source_id"
+        ]
+      ],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "source_id",
+            "source_kind"
+          ],
+          "target": "sources",
+          "target_fields": [
+            "tenant_id",
+            "source_id",
+            "source_kind"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "collector_id"
+          ],
+          "target": "collectors",
+          "target_fields": [
+            "tenant_id",
+            "collector_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "source_kind=agent CHECK; key/certificate details Access C05/C11"
+    },
+    {
+      "name": "assets",
+      "owner": "Assets",
+      "fields": [
+        "tenant_id",
+        "asset_uid",
+        "site_id",
+        "scope_id",
+        "asset_type",
+        "aggregate_version",
+        "lifecycle_state",
+        "created_at",
+        "retired_at"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "asset_uid"
+      ],
+      "unique": [
+        [
+          "asset_uid"
+        ]
+      ],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "site_id"
+          ],
+          "target": "sites",
+          "target_fields": [
+            "tenant_id",
+            "site_id"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "scope_id",
+            "site_id"
+          ],
+          "target": "network_scopes",
+          "target_fields": [
+            "tenant_id",
+            "scope_id",
+            "site_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "UUID globally unique in E1 PG; never identity by address; no physical delete/reuse"
+    },
+    {
+      "name": "asset_business_fields",
+      "owner": "Assets",
+      "fields": [
+        "tenant_id",
+        "asset_uid",
+        "display_name",
+        "purpose",
+        "criticality",
+        "tags",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "asset_uid"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "target": "assets",
+          "target_fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": ""
+    },
+    {
+      "name": "source_records",
+      "owner": "Assets",
+      "fields": [
+        "tenant_id",
+        "source_record_key",
+        "source_id",
+        "namespace",
+        "source_local_id",
+        "resolution_state",
+        "asset_uid",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "source_record_key"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "source_id",
+          "namespace",
+          "source_local_id"
+        ],
+        [
+          "tenant_id",
+          "source_record_key",
+          "source_id"
+        ]
+      ],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "source_id"
+          ],
+          "target": "sources",
+          "target_fields": [
+            "tenant_id",
+            "source_id"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "target": "assets",
+          "target_fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "nullable": true
+        }
+      ],
+      "note": "stable key uses origin source, not relay; pending conflict has nullable asset_uid"
+    },
+    {
+      "name": "asset_identifiers",
+      "owner": "Assets",
+      "fields": [
+        "tenant_id",
+        "identifier_id",
+        "asset_uid",
+        "kind",
+        "namespace",
+        "normalized_value",
+        "strength",
+        "source_record_key",
+        "valid_from",
+        "valid_to"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "identifier_id"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "target": "assets",
+          "target_fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "source_record_key"
+          ],
+          "target": "source_records",
+          "target_fields": [
+            "tenant_id",
+            "source_record_key"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "search index not UNIQUE global MAC/IP/hostname/serial; contradictions remain evidence"
+    },
+    {
+      "name": "reconciliation_conflicts",
+      "owner": "Assets",
+      "fields": [
+        "tenant_id",
+        "conflict_id",
+        "source_record_key",
+        "candidate_asset_uids",
+        "reason_code",
+        "state",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "conflict_id"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "source_record_key"
+          ],
+          "target": "source_records",
+          "target_fields": [
+            "tenant_id",
+            "source_record_key"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "candidate rows via domain port, no blind cross-tenant array trust; physical candidate table deferred if needed"
+    },
+    {
+      "name": "deliveries",
+      "owner": "Imports",
+      "fields": [
+        "tenant_id",
+        "delivery_id",
+        "collector_id",
+        "digest",
+        "state",
+        "received_at",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "delivery_id"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "collector_id"
+          ],
+          "target": "collectors",
+          "target_fields": [
+            "tenant_id",
+            "collector_id"
+          ],
+          "nullable": true
+        }
+      ],
+      "note": "digest conflict does not overwrite existing delivery; portable ingress authenticated separately"
+    },
+    {
+      "name": "import_checkpoints",
+      "owner": "Imports",
+      "fields": [
+        "tenant_id",
+        "delivery_id",
+        "record_key",
+        "state",
+        "observation_id",
+        "reason_code",
+        "revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "delivery_id",
+        "record_key"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "delivery_id"
+          ],
+          "target": "deliveries",
+          "target_fields": [
+            "tenant_id",
+            "delivery_id"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "observation_id"
+          ],
+          "target": "observations",
+          "target_fields": [
+            "tenant_id",
+            "observation_id"
+          ],
+          "nullable": true
+        }
+      ],
+      "note": "observation relation added after table creation; digest and result ledger transactional"
+    },
+    {
+      "name": "observations",
+      "owner": "Inventory",
+      "fields": [
+        "tenant_id",
+        "observation_id",
+        "source_record_key",
+        "source_id",
+        "generation_id",
+        "source_sequence",
+        "collected_at",
+        "received_at",
+        "clock_quality",
+        "digest",
+        "asserted_asset_uid",
+        "payload"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "observation_id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "source_id",
+          "generation_id",
+          "source_record_key",
+          "source_sequence"
+        ]
+      ],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "source_record_key",
+            "source_id"
+          ],
+          "target": "source_records",
+          "target_fields": [
+            "tenant_id",
+            "source_record_key",
+            "source_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "immutable payload; asserted_asset_uid is untrusted claim, not authorizing FK"
+    },
+    {
+      "name": "observation_sections",
+      "owner": "Inventory",
+      "fields": [
+        "tenant_id",
+        "observation_id",
+        "section_name",
+        "status",
+        "collection_complete",
+        "reason_code",
+        "record_count",
+        "facts"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "observation_id",
+        "section_name"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "observation_id"
+          ],
+          "target": "observations",
+          "target_fields": [
+            "tenant_id",
+            "observation_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": ""
+    },
+    {
+      "name": "observation_links",
+      "owner": "Assets",
+      "fields": [
+        "tenant_id",
+        "link_id",
+        "observation_id",
+        "asset_uid",
+        "assignment_revision",
+        "valid_from",
+        "valid_to",
+        "reason_code"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "link_id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "observation_id",
+          "assignment_revision"
+        ],
+        [
+          "tenant_id",
+          "link_id",
+          "asset_uid",
+          "observation_id"
+        ]
+      ],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "observation_id"
+          ],
+          "target": "observations",
+          "target_fields": [
+            "tenant_id",
+            "observation_id"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "target": "assets",
+          "target_fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "partial UNIQUE(tenant_id, observation_id) WHERE valid_to IS NULL; assignments temporal, payload unchanged"
+    },
+    {
+      "name": "current_facts",
+      "owner": "Inventory",
+      "fields": [
+        "tenant_id",
+        "asset_uid",
+        "section_name",
+        "fact_key",
+        "value",
+        "observation_id",
+        "link_id",
+        "projection_revision",
+        "policy_revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "asset_uid",
+        "section_name",
+        "fact_key"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "link_id",
+            "asset_uid",
+            "observation_id"
+          ],
+          "target": "observation_links",
+          "target_fields": [
+            "tenant_id",
+            "link_id",
+            "asset_uid",
+            "observation_id"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "observation_id",
+            "section_name"
+          ],
+          "target": "observation_sections",
+          "target_fields": [
+            "tenant_id",
+            "observation_id",
+            "section_name"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "active link/eligible fact enforced domain guard under lock, not cross-row CHECK"
+    },
+    {
+      "name": "section_state",
+      "owner": "Inventory",
+      "fields": [
+        "tenant_id",
+        "asset_uid",
+        "section_name",
+        "last_attempt_id",
+        "last_success_id",
+        "last_status",
+        "projection_revision"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "asset_uid",
+        "section_name"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "target": "assets",
+          "target_fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "last_attempt_id",
+            "section_name"
+          ],
+          "target": "observation_sections",
+          "target_fields": [
+            "tenant_id",
+            "observation_id",
+            "section_name"
+          ],
+          "nullable": true
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "last_success_id",
+            "section_name"
+          ],
+          "target": "observation_sections",
+          "target_fields": [
+            "tenant_id",
+            "observation_id",
+            "section_name"
+          ],
+          "nullable": true
+        }
+      ],
+      "note": "eligibility/order separate; latest attempt is not latest successful value"
+    },
+    {
+      "name": "responsibility_assignments",
+      "owner": "Responsibility",
+      "fields": [
+        "tenant_id",
+        "assignment_id",
+        "asset_uid",
+        "subject_id",
+        "role",
+        "valid_from",
+        "valid_to",
+        "reason_code",
+        "actor_ref"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "assignment_id"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "target": "assets",
+          "target_fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "nullable": false
+        },
+        {
+          "fields": [
+            "tenant_id",
+            "subject_id"
+          ],
+          "target": "subjects",
+          "target_fields": [
+            "tenant_id",
+            "subject_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "partial UNIQUE tenant/asset/role for active assignment; minimum-one enforced transaction/deferred constraint not merely UNIQUE"
+    },
+    {
+      "name": "asset_changes",
+      "owner": "Assets",
+      "fields": [
+        "tenant_id",
+        "change_id",
+        "asset_uid",
+        "aggregate_version",
+        "reason_code",
+        "provenance",
+        "occurred_at",
+        "actor_ref"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "change_id"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "target": "assets",
+          "target_fields": [
+            "tenant_id",
+            "asset_uid"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": ""
+    },
+    {
+      "name": "audit_events",
+      "owner": "Audit",
+      "fields": [
+        "tenant_id",
+        "audit_id",
+        "actor_ref",
+        "action",
+        "object_type",
+        "object_id",
+        "occurred_at",
+        "safe_metadata"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "audit_id"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "target_fields": [
+            "tenant_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "append via AuditPort in shared transaction; safe metadata, auth data defined C05"
+    },
+    {
+      "name": "outbox_events",
+      "owner": "Messaging",
+      "fields": [
+        "tenant_id",
+        "event_id",
+        "producer_module",
+        "aggregate_type",
+        "aggregate_id",
+        "aggregate_version",
+        "event_type",
+        "schema_version",
+        "occurred_at",
+        "correlation_id",
+        "causation_id",
+        "payload"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "event_id"
+      ],
+      "unique": [
+        [
+          "tenant_id",
+          "aggregate_type",
+          "aggregate_id",
+          "aggregate_version"
+        ]
+      ],
+      "references": [
+        {
+          "fields": [
+            "tenant_id"
+          ],
+          "target": "tenants",
+          "target_fields": [
+            "tenant_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "shared infrastructure, producer uses event port with same SQL tx; aggregate_id may be asset or observation/source; one primary event per aggregate version; multiple events need distinct versions or an explicit ordinal contract in C03"
+    },
+    {
+      "name": "consumer_checkpoints",
+      "owner": "Messaging",
+      "fields": [
+        "tenant_id",
+        "consumer_name",
+        "event_id",
+        "state",
+        "attempts",
+        "lease_until",
+        "applied_at"
+      ],
+      "primary_key": [
+        "tenant_id",
+        "consumer_name",
+        "event_id"
+      ],
+      "unique": [],
+      "references": [
+        {
+          "fields": [
+            "tenant_id",
+            "event_id"
+          ],
+          "target": "outbox_events",
+          "target_fields": [
+            "tenant_id",
+            "event_id"
+          ],
+          "nullable": false
+        }
+      ],
+      "note": "consumer inbox/checkpoint, keep event until every required consumer passed retention safety"
+    }
+  ],
+  "section_statuses": [
+    "ok",
+    "partial",
+    "unavailable",
+    "unsupported",
+    "not_requested",
+    "unknown"
+  ],
+  "source_kinds": [
+    "agent",
+    "collector",
+    "portable"
+  ],
+  "clock_qualities": [
+    "trusted",
+    "estimated",
+    "unknown",
+    "skewed"
+  ],
+  "resolution_states": [
+    "unresolved",
+    "resolved",
+    "conflict"
+  ],
+  "invariants": [
+    "INV-01",
+    "INV-02",
+    "INV-03",
+    "INV-04",
+    "INV-05",
+    "INV-06",
+    "INV-07",
+    "INV-08",
+    "INV-09",
+    "INV-10",
+    "INV-11",
+    "INV-12",
+    "INV-13",
+    "INV-14"
+  ],
+  "implementation": "C04 migrations + C05/C06/C07/C10 domain invariants; not performed here"
+}

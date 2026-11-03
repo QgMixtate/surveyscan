@@ -1,0 +1,2523 @@
+{
+  "contract_version": "1.0",
+  "cases": [
+    {
+      "id": "C03-F01",
+      "title": "Signed observation with Unicode",
+      "schema": "SignedObservation",
+      "file": "C03-F01.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F02",
+      "title": "Bound batch",
+      "schema": "Batch",
+      "file": "C03-F02.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F03",
+      "title": "Local receipt retains spool",
+      "schema": "TransportReceipt",
+      "file": "C03-F03.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F04",
+      "title": "Signed final applied receipt",
+      "schema": "SignedCenterResult",
+      "file": "C03-F04.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "batch": {
+          "schema_version": {
+            "major": 1,
+            "minor": 0
+          },
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "delivery_id": "00000000-0000-4000-8000-000000000007",
+          "records": [
+            {
+              "payload": {
+                "schema_version": {
+                  "major": 1,
+                  "minor": 0
+                },
+                "observation_id": "00000000-0000-4000-8000-000000000006",
+                "tenant_id": "00000000-0000-4000-8000-000000000001",
+                "origin": {
+                  "source_id": "00000000-0000-4000-8000-000000000002",
+                  "source_kind": "agent",
+                  "generation_id": "00000000-0000-4000-8000-000000000003"
+                },
+                "source_record": {
+                  "namespace": "host",
+                  "source_local_id": "host-record-001"
+                },
+                "scope": {
+                  "site_id": "00000000-0000-4000-8000-000000000004",
+                  "network_scope_id": "00000000-0000-4000-8000-000000000005"
+                },
+                "source_sequence": "10",
+                "collected_at": "2026-11-03T07:00:00Z",
+                "clock_quality": "trusted",
+                "identity_candidates": [
+                  {
+                    "kind": "hostname",
+                    "namespace": "hostname.raw",
+                    "value": "тестовый-хост"
+                  }
+                ],
+                "sections": [
+                  {
+                    "name": "identity",
+                    "collected_at": "2026-11-03T07:00:00Z",
+                    "status": "ok",
+                    "collection_complete": true,
+                    "reason_code": "OK",
+                    "record_count": 1,
+                    "records": [
+                      {
+                        "hostname": "тестовый-хост"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "digest": "5e3cb43614f4f36fec2ce942e84f0bf0627ceb725e20b777e4ebb927f1c8cf04",
+              "key_id": "00000000-0000-4000-8000-000000000014",
+              "signature": "TA6SML9T8Vi9-6GgALIRoXyAfIYgWzpVY5SogwK_4M0QADCod4aopoVGzkf7j4MPZClC3B7_hocOA8WyBmW7Cg"
+            }
+          ]
+        }
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F05",
+      "title": "Signed central conflict retained centrally; source may trim",
+      "schema": "SignedCenterResult",
+      "file": "C03-F05.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "batch": {
+          "schema_version": {
+            "major": 1,
+            "minor": 0
+          },
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "delivery_id": "00000000-0000-4000-8000-000000000007",
+          "records": [
+            {
+              "payload": {
+                "schema_version": {
+                  "major": 1,
+                  "minor": 0
+                },
+                "observation_id": "00000000-0000-4000-8000-000000000006",
+                "tenant_id": "00000000-0000-4000-8000-000000000001",
+                "origin": {
+                  "source_id": "00000000-0000-4000-8000-000000000002",
+                  "source_kind": "agent",
+                  "generation_id": "00000000-0000-4000-8000-000000000003"
+                },
+                "source_record": {
+                  "namespace": "host",
+                  "source_local_id": "host-record-001"
+                },
+                "scope": {
+                  "site_id": "00000000-0000-4000-8000-000000000004",
+                  "network_scope_id": "00000000-0000-4000-8000-000000000005"
+                },
+                "source_sequence": "10",
+                "collected_at": "2026-11-03T07:00:00Z",
+                "clock_quality": "trusted",
+                "identity_candidates": [
+                  {
+                    "kind": "hostname",
+                    "namespace": "hostname.raw",
+                    "value": "тестовый-хост"
+                  }
+                ],
+                "sections": [
+                  {
+                    "name": "identity",
+                    "collected_at": "2026-11-03T07:00:00Z",
+                    "status": "ok",
+                    "collection_complete": true,
+                    "reason_code": "OK",
+                    "record_count": 1,
+                    "records": [
+                      {
+                        "hostname": "тестовый-хост"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "digest": "5e3cb43614f4f36fec2ce942e84f0bf0627ceb725e20b777e4ebb927f1c8cf04",
+              "key_id": "00000000-0000-4000-8000-000000000014",
+              "signature": "TA6SML9T8Vi9-6GgALIRoXyAfIYgWzpVY5SogwK_4M0QADCod4aopoVGzkf7j4MPZClC3B7_hocOA8WyBmW7Cg"
+            }
+          ]
+        }
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F06",
+      "title": "Fresh challenge heartbeat",
+      "schema": "SignedHeartbeat",
+      "file": "C03-F06.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "challenge": {
+          "purpose": "heartbeat",
+          "challenge_id": "00000000-0000-4000-8000-00000000000b",
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "generation_id": "00000000-0000-4000-8000-000000000003",
+          "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "issued_at": "2026-11-03T07:00:00Z",
+          "expires_at": "2026-11-03T07:02:00Z"
+        }
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F07",
+      "title": "Spoof tenant",
+      "schema": "SignedObservation",
+      "file": "C03-F07.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "AUTH_SCOPE_MISMATCH",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F08",
+      "title": "Unknown major",
+      "schema": "SignedObservation",
+      "file": "C03-F08.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "UNSUPPORTED_SCHEMA_VERSION",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F09",
+      "title": "Unadvertised minor",
+      "schema": "SignedObservation",
+      "file": "C03-F09.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "UNSUPPORTED_SCHEMA_VERSION",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F10",
+      "title": "Payload digest tampered",
+      "schema": "SignedObservation",
+      "file": "C03-F10.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "DIGEST_MISMATCH",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F11",
+      "title": "Signature tampered",
+      "schema": "SignedObservation",
+      "file": "C03-F11.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SIGNATURE_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F12",
+      "title": "Unregistered origin",
+      "schema": "SignedObservation",
+      "file": "C03-F12.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SOURCE_NOT_AUTHORIZED",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F13",
+      "title": "Unknown section status",
+      "schema": "SignedObservation",
+      "file": "C03-F13.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SCHEMA_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F14",
+      "title": "Partial empty does not assert complete collection",
+      "schema": "SignedObservation",
+      "file": "C03-F14.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F15",
+      "title": "Unavailable with fake records",
+      "schema": "SignedObservation",
+      "file": "C03-F15.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SCHEMA_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F16",
+      "title": "Duplicate section names",
+      "schema": "SignedObservation",
+      "file": "C03-F16.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SECTION_DUPLICATE",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F17",
+      "title": "Sequence encoded as unsafe JSON number",
+      "schema": "SignedObservation",
+      "file": "C03-F17.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SCHEMA_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F18",
+      "title": "Sequence exceeds uint64",
+      "schema": "SignedObservation",
+      "file": "C03-F18.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "INTEGER_OUT_OF_RANGE",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F19",
+      "title": "IPv4 prefix out of range",
+      "schema": "SignedObservation",
+      "file": "C03-F19.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "INVALID_PREFIX",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F20",
+      "title": "Heartbeat challenge replay",
+      "schema": "SignedHeartbeat",
+      "file": "C03-F20.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "challenge": {
+          "purpose": "heartbeat",
+          "challenge_id": "00000000-0000-4000-8000-00000000000b",
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "generation_id": "00000000-0000-4000-8000-000000000003",
+          "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "issued_at": "2026-11-03T07:00:00Z",
+          "expires_at": "2026-11-03T07:02:00Z"
+        },
+        "consumed": true
+      },
+      "expected": "HEARTBEAT_REPLAY",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F21",
+      "title": "Same heartbeat id/digest returns original accepted timestamp",
+      "schema": "SignedHeartbeat",
+      "file": "C03-F21.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "challenge": {
+          "purpose": "heartbeat",
+          "challenge_id": "00000000-0000-4000-8000-00000000000b",
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "generation_id": "00000000-0000-4000-8000-000000000003",
+          "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "issued_at": "2026-11-03T07:00:00Z",
+          "expires_at": "2026-11-03T07:02:00Z"
+        },
+        "consumed": true,
+        "prior_heartbeat_id": "00000000-0000-4000-8000-00000000000c",
+        "prior_heartbeat_digest": "22d3c6efc7a36412de6da4f257c604d7827da798652c5f00e50e03294a64ec5e"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F22",
+      "title": "Expired challenge",
+      "schema": "SignedHeartbeat",
+      "file": "C03-F22.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:03:00Z",
+        "challenge": {
+          "purpose": "heartbeat",
+          "challenge_id": "00000000-0000-4000-8000-00000000000b",
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "generation_id": "00000000-0000-4000-8000-000000000003",
+          "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "issued_at": "2026-11-03T07:00:00Z",
+          "expires_at": "2026-11-03T07:02:00Z"
+        }
+      },
+      "expected": "HEARTBEAT_EXPIRED",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F23",
+      "title": "Collector cannot authorize trimming",
+      "schema": "TransportReceipt",
+      "file": "C03-F23.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SCHEMA_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F24",
+      "title": "Collector/origin key cannot forge center result",
+      "schema": "SignedCenterResult",
+      "file": "C03-F24.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "batch": {
+          "schema_version": {
+            "major": 1,
+            "minor": 0
+          },
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "delivery_id": "00000000-0000-4000-8000-000000000007",
+          "records": [
+            {
+              "payload": {
+                "schema_version": {
+                  "major": 1,
+                  "minor": 0
+                },
+                "observation_id": "00000000-0000-4000-8000-000000000006",
+                "tenant_id": "00000000-0000-4000-8000-000000000001",
+                "origin": {
+                  "source_id": "00000000-0000-4000-8000-000000000002",
+                  "source_kind": "agent",
+                  "generation_id": "00000000-0000-4000-8000-000000000003"
+                },
+                "source_record": {
+                  "namespace": "host",
+                  "source_local_id": "host-record-001"
+                },
+                "scope": {
+                  "site_id": "00000000-0000-4000-8000-000000000004",
+                  "network_scope_id": "00000000-0000-4000-8000-000000000005"
+                },
+                "source_sequence": "10",
+                "collected_at": "2026-11-03T07:00:00Z",
+                "clock_quality": "trusted",
+                "identity_candidates": [
+                  {
+                    "kind": "hostname",
+                    "namespace": "hostname.raw",
+                    "value": "тестовый-хост"
+                  }
+                ],
+                "sections": [
+                  {
+                    "name": "identity",
+                    "collected_at": "2026-11-03T07:00:00Z",
+                    "status": "ok",
+                    "collection_complete": true,
+                    "reason_code": "OK",
+                    "record_count": 1,
+                    "records": [
+                      {
+                        "hostname": "тестовый-хост"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "digest": "5e3cb43614f4f36fec2ce942e84f0bf0627ceb725e20b777e4ebb927f1c8cf04",
+              "key_id": "00000000-0000-4000-8000-000000000014",
+              "signature": "TA6SML9T8Vi9-6GgALIRoXyAfIYgWzpVY5SogwK_4M0QADCod4aopoVGzkf7j4MPZClC3B7_hocOA8WyBmW7Cg"
+            }
+          ]
+        }
+      },
+      "expected": "SIGNATURE_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F25",
+      "title": "Receipt for another batch",
+      "schema": "SignedCenterResult",
+      "file": "C03-F25.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "batch": {
+          "schema_version": {
+            "major": 1,
+            "minor": 0
+          },
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "delivery_id": "00000000-0000-4000-8000-000000000007",
+          "records": [
+            {
+              "payload": {
+                "schema_version": {
+                  "major": 1,
+                  "minor": 0
+                },
+                "observation_id": "00000000-0000-4000-8000-000000000006",
+                "tenant_id": "00000000-0000-4000-8000-000000000001",
+                "origin": {
+                  "source_id": "00000000-0000-4000-8000-000000000002",
+                  "source_kind": "agent",
+                  "generation_id": "00000000-0000-4000-8000-000000000003"
+                },
+                "source_record": {
+                  "namespace": "host",
+                  "source_local_id": "host-record-001"
+                },
+                "scope": {
+                  "site_id": "00000000-0000-4000-8000-000000000004",
+                  "network_scope_id": "00000000-0000-4000-8000-000000000005"
+                },
+                "source_sequence": "10",
+                "collected_at": "2026-11-03T07:00:00Z",
+                "clock_quality": "trusted",
+                "identity_candidates": [
+                  {
+                    "kind": "hostname",
+                    "namespace": "hostname.raw",
+                    "value": "тестовый-хост"
+                  }
+                ],
+                "sections": [
+                  {
+                    "name": "identity",
+                    "collected_at": "2026-11-03T07:00:00Z",
+                    "status": "ok",
+                    "collection_complete": true,
+                    "reason_code": "OK",
+                    "record_count": 1,
+                    "records": [
+                      {
+                        "hostname": "тестовый-хост"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "digest": "5e3cb43614f4f36fec2ce942e84f0bf0627ceb725e20b777e4ebb927f1c8cf04",
+              "key_id": "00000000-0000-4000-8000-000000000014",
+              "signature": "TA6SML9T8Vi9-6GgALIRoXyAfIYgWzpVY5SogwK_4M0QADCod4aopoVGzkf7j4MPZClC3B7_hocOA8WyBmW7Cg"
+            }
+          ]
+        }
+      },
+      "expected": "RECEIPT_BINDING_MISMATCH",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F26",
+      "title": "Same delivery ID with different digest",
+      "schema": "Batch",
+      "file": "C03-F26.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "prior_delivery_digest": "0000000000000000000000000000000000000000000000000000000000000000"
+      },
+      "expected": "DELIVERY_DIGEST_CONFLICT",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F27",
+      "title": "Duplicate record in batch",
+      "schema": "Batch",
+      "file": "C03-F27.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "BATCH_RECORD_DUPLICATE",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F28",
+      "title": "Partial job completion state",
+      "schema": "Job",
+      "file": "C03-F28.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F29",
+      "title": "Versioned outbox event",
+      "schema": "OutboxEvent",
+      "file": "C03-F29.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F30",
+      "title": "Event aggregate/owner mismatch",
+      "schema": "OutboxEvent",
+      "file": "C03-F30.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "EVENT_BINDING_MISMATCH",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F31",
+      "title": "Record count differs from array",
+      "schema": "SignedObservation",
+      "file": "C03-F31.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "RECORD_COUNT_MISMATCH",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F32",
+      "title": "Raw claim of unauthorized asset",
+      "schema": "SignedObservation",
+      "file": "C03-F32.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "ASSET_ASSERTION_FORBIDDEN",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F33",
+      "title": "Duplicate JSON property rejected",
+      "schema": "Batch",
+      "file": "C03-F33.raw",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "INVALID_JSON",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F34",
+      "title": "Nonfinite JSON rejected",
+      "schema": "Batch",
+      "file": "C03-F34.raw",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "INVALID_JSON",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F35",
+      "title": "Unexpected secret-shaped field rejected by strict schema",
+      "schema": "SignedObservation",
+      "file": "C03-F35.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SCHEMA_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F36",
+      "title": "Unannounced source generation",
+      "schema": "SignedObservation",
+      "file": "C03-F36.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "GENERATION_MISMATCH",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F37",
+      "title": "Unknown legacy status only via explicit adapter",
+      "schema": "SignedObservation",
+      "file": "C03-F37.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "legacy_import": true
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F38",
+      "title": "Native unknown status rejected",
+      "schema": "SignedObservation",
+      "file": "C03-F38.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "LEGACY_STATUS_NOT_ALLOWED",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F39",
+      "title": "Partial cannot claim complete collection",
+      "schema": "SignedObservation",
+      "file": "C03-F39.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SECTION_COMPLETENESS_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F40",
+      "title": "Nullable claimed UID accepted as no claim",
+      "schema": "SignedObservation",
+      "file": "C03-F40.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F41",
+      "title": "Versioned machine config",
+      "schema": "MachineConfig",
+      "file": "C03-F41.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F42",
+      "title": "Safe API error",
+      "schema": "Error",
+      "file": "C03-F42.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F43",
+      "title": "Lease with fencing version",
+      "schema": "Lease",
+      "file": "C03-F43.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F44",
+      "title": "Exact accepted heartbeat retry after TTL returns prior result without refreshing contact",
+      "schema": "SignedHeartbeat",
+      "file": "C03-F44.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:03:00Z",
+        "challenge": {
+          "purpose": "heartbeat",
+          "challenge_id": "00000000-0000-4000-8000-00000000000b",
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "generation_id": "00000000-0000-4000-8000-000000000003",
+          "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "issued_at": "2026-11-03T07:00:00Z",
+          "expires_at": "2026-11-03T07:02:00Z"
+        },
+        "consumed": true,
+        "prior_heartbeat_id": "00000000-0000-4000-8000-00000000000c",
+        "prior_heartbeat_digest": "22d3c6efc7a36412de6da4f257c604d7827da798652c5f00e50e03294a64ec5e"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F45",
+      "title": "Section one nanosecond later than observation",
+      "schema": "SignedObservation",
+      "file": "C03-F45.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "SECTION_TIME_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F46",
+      "title": "Enrollment is bound to preapproved CSR and signing public key",
+      "schema": "EnrollmentRequest",
+      "file": "C03-F46.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "grant": {
+          "grant_id": "00000000-0000-4000-8000-00000000003c",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "csr_sha256": "ffe56f163339208a532268185639caf0c064bef08bdf3401c5419766e24042c4",
+          "signing_public_key": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ",
+          "expires_at": "2026-11-03T07:15:00Z"
+        }
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F47",
+      "title": "Relay cannot substitute signing public key during enrollment",
+      "schema": "EnrollmentRequest",
+      "file": "C03-F47.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "grant": {
+          "grant_id": "00000000-0000-4000-8000-00000000003c",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "csr_sha256": "ffe56f163339208a532268185639caf0c064bef08bdf3401c5419766e24042c4",
+          "signing_public_key": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ",
+          "expires_at": "2026-11-03T07:15:00Z"
+        }
+      },
+      "expected": "ENROLLMENT_BINDING_MISMATCH",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F48",
+      "title": "Enrollment CSR fingerprint mismatch",
+      "schema": "EnrollmentRequest",
+      "file": "C03-F48.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "grant": {
+          "grant_id": "00000000-0000-4000-8000-00000000003c",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "csr_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+          "signing_public_key": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ",
+          "expires_at": "2026-11-03T07:15:00Z"
+        }
+      },
+      "expected": "ENROLLMENT_BINDING_MISMATCH",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F49",
+      "title": "Renewal signed by existing origin key",
+      "schema": "RenewRequest",
+      "file": "C03-F49.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "challenge": {
+          "purpose": "cert_renew",
+          "challenge_id": "00000000-0000-4000-8000-00000000000b",
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "generation_id": "00000000-0000-4000-8000-000000000003",
+          "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "issued_at": "2026-11-03T07:00:00Z",
+          "expires_at": "2026-11-03T07:02:00Z"
+        }
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F50",
+      "title": "Renewal cannot reuse heartbeat challenge",
+      "schema": "RenewRequest",
+      "file": "C03-F50.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "challenge": {
+          "purpose": "heartbeat",
+          "challenge_id": "00000000-0000-4000-8000-00000000000b",
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "generation_id": "00000000-0000-4000-8000-000000000003",
+          "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "issued_at": "2026-11-03T07:00:00Z",
+          "expires_at": "2026-11-03T07:02:00Z"
+        }
+      },
+      "expected": "RENEWAL_CHALLENGE_MISMATCH",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F51",
+      "title": "Relay cannot renew agent without its current signing key",
+      "schema": "RenewRequest",
+      "file": "C03-F51.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "challenge": {
+          "purpose": "cert_renew",
+          "challenge_id": "00000000-0000-4000-8000-00000000000b",
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "generation_id": "00000000-0000-4000-8000-000000000003",
+          "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "issued_at": "2026-11-03T07:00:00Z",
+          "expires_at": "2026-11-03T07:02:00Z"
+        }
+      },
+      "expected": "SIGNATURE_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F52",
+      "title": "Unpaired Unicode surrogate rejected by strict parser",
+      "schema": "Batch",
+      "file": "C03-F52.raw",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "INVALID_JSON",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F53",
+      "title": "JSON exponent overflowing finite number rejected",
+      "schema": "Batch",
+      "file": "C03-F53.raw",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "INVALID_JSON",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F54",
+      "title": "Fresh nonce does not accept regressed heartbeat sequence",
+      "schema": "SignedHeartbeat",
+      "file": "C03-F54.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "challenge": {
+          "purpose": "heartbeat",
+          "challenge_id": "00000000-0000-4000-8000-00000000000b",
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "source_id": "00000000-0000-4000-8000-000000000002",
+          "generation_id": "00000000-0000-4000-8000-000000000003",
+          "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+          "issued_at": "2026-11-03T07:00:00Z",
+          "expires_at": "2026-11-03T07:02:00Z"
+        },
+        "prior_heartbeat_sequence": "10"
+      },
+      "expected": "HEARTBEAT_SEQUENCE_STALE",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F55",
+      "title": "Pending resolution cannot be reported as fully applied completion",
+      "schema": "SignedCenterResult",
+      "file": "C03-F55.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "batch": {
+          "schema_version": {
+            "major": 1,
+            "minor": 0
+          },
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "delivery_id": "00000000-0000-4000-8000-000000000007",
+          "records": [
+            {
+              "payload": {
+                "schema_version": {
+                  "major": 1,
+                  "minor": 0
+                },
+                "observation_id": "00000000-0000-4000-8000-000000000006",
+                "tenant_id": "00000000-0000-4000-8000-000000000001",
+                "origin": {
+                  "source_id": "00000000-0000-4000-8000-000000000002",
+                  "source_kind": "agent",
+                  "generation_id": "00000000-0000-4000-8000-000000000003"
+                },
+                "source_record": {
+                  "namespace": "host",
+                  "source_local_id": "host-record-001"
+                },
+                "scope": {
+                  "site_id": "00000000-0000-4000-8000-000000000004",
+                  "network_scope_id": "00000000-0000-4000-8000-000000000005"
+                },
+                "source_sequence": "10",
+                "collected_at": "2026-11-03T07:00:00Z",
+                "clock_quality": "trusted",
+                "identity_candidates": [
+                  {
+                    "kind": "hostname",
+                    "namespace": "hostname.raw",
+                    "value": "тестовый-хост"
+                  }
+                ],
+                "sections": [
+                  {
+                    "name": "identity",
+                    "collected_at": "2026-11-03T07:00:00Z",
+                    "status": "ok",
+                    "collection_complete": true,
+                    "reason_code": "OK",
+                    "record_count": 1,
+                    "records": [
+                      {
+                        "hostname": "тестовый-хост"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "digest": "5e3cb43614f4f36fec2ce942e84f0bf0627ceb725e20b777e4ebb927f1c8cf04",
+              "key_id": "00000000-0000-4000-8000-000000000014",
+              "signature": "TA6SML9T8Vi9-6GgALIRoXyAfIYgWzpVY5SogwK_4M0QADCod4aopoVGzkf7j4MPZClC3B7_hocOA8WyBmW7Cg"
+            }
+          ]
+        }
+      },
+      "expected": "RECEIPT_STATE_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F56",
+      "title": "Rejected result cannot instruct spool deletion",
+      "schema": "SignedCenterResult",
+      "file": "C03-F56.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z",
+        "batch": {
+          "schema_version": {
+            "major": 1,
+            "minor": 0
+          },
+          "tenant_id": "00000000-0000-4000-8000-000000000001",
+          "delivery_id": "00000000-0000-4000-8000-000000000007",
+          "records": [
+            {
+              "payload": {
+                "schema_version": {
+                  "major": 1,
+                  "minor": 0
+                },
+                "observation_id": "00000000-0000-4000-8000-000000000006",
+                "tenant_id": "00000000-0000-4000-8000-000000000001",
+                "origin": {
+                  "source_id": "00000000-0000-4000-8000-000000000002",
+                  "source_kind": "agent",
+                  "generation_id": "00000000-0000-4000-8000-000000000003"
+                },
+                "source_record": {
+                  "namespace": "host",
+                  "source_local_id": "host-record-001"
+                },
+                "scope": {
+                  "site_id": "00000000-0000-4000-8000-000000000004",
+                  "network_scope_id": "00000000-0000-4000-8000-000000000005"
+                },
+                "source_sequence": "10",
+                "collected_at": "2026-11-03T07:00:00Z",
+                "clock_quality": "trusted",
+                "identity_candidates": [
+                  {
+                    "kind": "hostname",
+                    "namespace": "hostname.raw",
+                    "value": "тестовый-хост"
+                  }
+                ],
+                "sections": [
+                  {
+                    "name": "identity",
+                    "collected_at": "2026-11-03T07:00:00Z",
+                    "status": "ok",
+                    "collection_complete": true,
+                    "reason_code": "OK",
+                    "record_count": 1,
+                    "records": [
+                      {
+                        "hostname": "тестовый-хост"
+                      }
+                    ]
+                  }
+                ]
+              },
+              "digest": "5e3cb43614f4f36fec2ce942e84f0bf0627ceb725e20b777e4ebb927f1c8cf04",
+              "key_id": "00000000-0000-4000-8000-000000000014",
+              "signature": "TA6SML9T8Vi9-6GgALIRoXyAfIYgWzpVY5SogwK_4M0QADCod4aopoVGzkf7j4MPZClC3B7_hocOA8WyBmW7Cg"
+            }
+          ]
+        }
+      },
+      "expected": "SCHEMA_INVALID",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F57",
+      "title": "Excessive JSON nesting rejected before schema",
+      "schema": "Batch",
+      "file": "C03-F57.raw",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "INVALID_JSON",
+      "kind": "executable contract fixture; not service integration"
+    },
+    {
+      "id": "C03-F58",
+      "title": "Maximum uint64 sequence remains exact decimal string",
+      "schema": "SignedObservation",
+      "file": "C03-F58.json",
+      "context": {
+        "tenant_id": "00000000-0000-4000-8000-000000000001",
+        "origin_keys": {
+          "00000000-0000-4000-8000-000000000014": "9fg5C6onZ-7KZ7GjSYqQEk1acloPpdl47utgpDOr5GQ"
+        },
+        "center_keys": {
+          "00000000-0000-4000-8000-000000000015": "c_drV1a10E4Jx0hm7uZ-MSmKjV7UyscesFjfUfC7-Mk"
+        },
+        "sources": {
+          "00000000-0000-4000-8000-000000000002": {
+            "source_kind": "agent",
+            "generation_id": "00000000-0000-4000-8000-000000000003",
+            "key_ids": [
+              "00000000-0000-4000-8000-000000000014"
+            ],
+            "scope": {
+              "site_id": "00000000-0000-4000-8000-000000000004",
+              "network_scope_id": "00000000-0000-4000-8000-000000000005"
+            }
+          }
+        },
+        "capabilities": [
+          "agent",
+          "collector"
+        ],
+        "now": "2026-11-03T07:00:30Z"
+      },
+      "expected": "OK",
+      "kind": "executable contract fixture; not service integration"
+    }
+  ],
+  "private_keys": "not persisted; ephemeral fixture-only keys"
+}

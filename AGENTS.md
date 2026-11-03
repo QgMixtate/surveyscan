@@ -17,21 +17,39 @@
 - Публиковать обновления документации по разрешению пользователя вести журнал в GitHub. Изменения кода, слияния и деплой требуют соответствующего поручения.
 - Не хранить в документации токены, пароли, приватные ключи и чувствительные выгрузки клиентов.
 
-## Целевая версия v2
-[Спецификация Go Asset Management](docs/specifications/go-asset-management-v2.md) — проект 0.3,
-не утверждённое ТЗ. Перед новой реализацией проверить решения D-01–18 и поручение пользователя.
-Go-монолит, постоянный реестр PostgreSQL и контракт portable описаны как целевая архитектура.
-Требования R-008: OpenBao; local как scope portable; agentless discovery/topology;
-сквозной asset_uid и ответственность; CLI/API; outbox/события без внешней шины;
-Tantivy или Bluge (не выбран); георезервирование. Волна 2 — ЖЦ/склад, волна 3 — ITSM.
-R-009: отдельная серверная поставка Web UI и независимые релизы по OpenAPI.
-Backend — модульный монолит с ownership данных и возможностью выделения сервисов;
-combined/api/worker — предложенные роли. Embedded UI только возможная опция portable.
-100 пользователей — сценарий проверки, не доказанный предел/SLA.
-Правила snapshot/dashboard ниже относятся к текущей v1 и не являются архитектурой v2.
+## Целевая версия v2 и план выполнения
+[Спецификация](docs/specifications/go-asset-management-v2.md) — проект 0.5, не полностью утверждённое ТЗ.
+R-011 имеет приоритет над R-008: local/host agent — минимальная постоянная служба на хосте,
+отправляет данные постоянному site collector; portable — разовый аудит без установки службы.
+Безагентный сбор выполняет collector; он не требует установки agent на всех активах.
+Система постоянно обновляет реестр; source health, heartbeat, freshness, presence и бизнес-состояние различаются.
+OpenBao выбран; asset_uid неизменен, agent_id/collector_id — отдельные IDs. Outbox без внешней шины.
+Отдельный Web UI; Go-backend с ownership модулей и ролями combined/api/worker.
+FTS Tantivy/Bluge ещё выбирается; 100 active users — сценарий проверки, не доказанный SLA.
+Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
+Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
+
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — локальный Go-каркас/dev-стенд; C05–C50 planned.
+Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
+Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
+краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
+Локальные изменения 0.5/плана не считать опубликованными до фактической записи в GitHub.
+Планирование не означает разрешение сразу реализовать все пакеты или выполнить production deployment.
+Следующий пакет — C05; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
+Матрица замечаний: docs/specifications/requirements-traceability-v0.5.md;
+исследование аналогов: docs/research/inventory-platform-analogues.md.
+Правила snapshot/dashboard ниже относятся к текущей Python v1, не архитектуре v2.
 
 ## Ограничения текущей версии v1
 UI и документация — на русском. SPA использует локальные UMD-ресурсы без CDN; после app.jsx пересобирать app.js с Babel runtime classic.
 Данные карточек сохраняются в dashboard JSON: рабочая БД задачи удаляется после выполнения.
 Секреты УЗ не должны попадать в логи, результаты задач и отчёты.
 Не включать незавершённые изменения параллельных задач в свой коммит.
+
+C01: см. docs/plans/surveyscan-v2/handoffs/C01.md. Порядок C01→C02→C03→C04 сохранён; версии/runtime и первая ОС агента не считаются подтверждённой совместимостью до фактических проверок соответствующих пакетов.
+
+C02: docs/plans/surveyscan-v2/handoffs/C02.md. Mapping использует origin source, collector relay не меняет UID; observations payload неизменяем, assignments temporal, current facts и ручные business fields разделены. Документы C03 читают эту модель, SQL/продуктовые проверки ещё unrun.
+
+C03: docs/plans/surveyscan-v2/handoffs/C03.md и contracts/C03/. 26 операций/54 схемы, 58 fixtures проверены; HTTP/mTLS/PG runtime unrun. В C04 начать Go-каркас, миграции и CI; сохранить текущие схемы/fixture corpus и не объявлять handlers готовыми по reference checker.
+
+C04: docs/plans/surveyscan-v2/handoffs/C04.md. Новый v2/ с 18 embedded PG migrations, отдельным Bao Raft/backend/nginx; make verify/build/integration и scripts/smoke.py проверены локально. GitHub Actions unrun, секреты только в игнорируемом v2/.local/. Не редактировать применённые SQL; C05 добавляет auth/access migrations. Legacy v1/connector сохранены.

@@ -1,0 +1,90 @@
+services:
+  db:
+    image: postgres:17.11-bookworm@sha256:839fbb5a4942a7758dd93e18b42ea5649807491a0545b5eeeb8f0b8bb11857a5
+    platform: linux/amd64
+    environment:
+      POSTGRES_DB: surveyscan_v2
+      POSTGRES_USER: surveyscan_v2
+      POSTGRES_PASSWORD_FILE: /run/secrets/pg_password
+    secrets: [pg_password]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    ports: ["127.0.0.1:55432:5432"]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U surveyscan_v2 -d surveyscan_v2"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  bao:
+    image: openbao/openbao:2.7.2@sha256:5046911075e137e154ce49ab051502f4ec7cf367d484ae4a4dce665d9b90561f
+    platform: linux/amd64
+    command: [server]
+    volumes:
+      - baodata:/openbao/file
+      - ./bao.hcl:/openbao/config/c04.hcl:ro
+    ports: ["127.0.0.1:58200:8200"]
+    environment:
+      BAO_ADDR: http://127.0.0.1:8200
+      NO_PROXY: "${NO_PROXY:-},localhost,127.0.0.1,db,bao,backend"
+    healthcheck:
+      test: [CMD-SHELL, "bao status >/dev/null"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  migrate:
+    build: {context: .., dockerfile: deploy/Dockerfile}
+    image: surveyscan-v2-c04:local
+    user: "${DEV_UID:-1000}:${DEV_GID:-1000}"
+    command: [migrate]
+    environment: &backend_environment
+      SURVEYSCAN_V2_DATABASE_URL: postgres://surveyscan_v2@db:5432/surveyscan_v2?sslmode=disable
+      SURVEYSCAN_V2_DATABASE_PASSWORD_FILE: /run/secrets/pg_password
+      SURVEYSCAN_V2_LISTEN: 0.0.0.0:8080
+      SURVEYSCAN_V2_BAO_ADDR: http://bao:8200
+      NO_PROXY: "${NO_PROXY:-},localhost,127.0.0.1,db,bao,backend"
+    secrets: [pg_password]
+    depends_on:
+      db: {condition: service_healthy}
+  backend:
+    build: {context: .., dockerfile: deploy/Dockerfile}
+    image: surveyscan-v2-c04:local
+    user: "${DEV_UID:-1000}:${DEV_GID:-1000}"
+    command: [serve]
+    environment: *backend_environment
+    secrets: [pg_password]
+    ports: ["127.0.0.1:58080:8080"]
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    depends_on:
+      db: {condition: service_healthy}
+      bao: {condition: service_healthy}
+    healthcheck:
+      test: [CMD, /surveyscan-server, healthcheck]
+      interval: 3s
+      timeout: 4s
+      retries: 20
+  edge:
+    image: nginxinc/nginx-unprivileged:1.30-alpine@sha256:f5116ed4606f3eb015dd4a8e28cb9b351476dc0ad4bc6e9f93b19cec130cdf03
+    platform: linux/amd64
+    entrypoint: [nginx, -g, "daemon off;"]
+    read_only: true
+    tmpfs: [/tmp]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ../.dist/contracts:/usr/share/nginx/contracts:ro
+      - ../web/public:/usr/share/nginx/html:ro
+    ports: ["127.0.0.1:58081:8080"]
+    depends_on:
+      backend: {condition: service_healthy}
+    healthcheck:
+      test: [CMD-SHELL, "wget -Y off -q -O /dev/null http://127.0.0.1:8080/health/live"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+secrets:
+  pg_password: {file: ../.local/pg_password}
+volumes:
+  pgdata:
+  baodata:

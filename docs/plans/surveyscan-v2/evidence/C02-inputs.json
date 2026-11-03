@@ -1,0 +1,14 @@
+{
+  "package": "C02",
+  "date": "2026-11-03",
+  "baseline_head": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
+  "remote_main_observed": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
+  "input_plan_sha256": "daaaff2e247fa152b7a5abd06836e3390385baf2ab5c05cf0914b096e7e86291",
+  "dependency": "C01 done as documentation; Go v2 implementation unrun",
+  "input_snapshot": {
+    "docs/specifications/go-asset-management-v2.md": "b5a23cb0e47e04762a3566c6cafdddeaf418b2b58d4e3fbcf6e3d0f795791b72",
+    "docs/plans/surveyscan-v2/handoffs/C01.md": "f9a6b6d9e1b69d143be38060a5d52e933040655636d2182ef9a2f114acb7ac6c",
+    "docs/plans/surveyscan-v2/decisions/C01-smb-scope.md": "fecd914feed75e550f5824cc38adc9c938cb6a5bccb1a5c0d673fec1cd9a301f",
+    "docs/plans/surveyscan-v2/decisions/C01-decisions.md": "b35d37f614676175fcdf0b20412fded5c0a24913408011a0bee01ebe2f2c325f"
+  }
+}

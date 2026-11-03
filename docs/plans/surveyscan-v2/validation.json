@@ -1,0 +1,16 @@
+{
+  "packages": 50,
+  "leaf_tasks": 200,
+  "requirements": 237,
+  "acceptance_criteria": 55,
+  "remarks": 19,
+  "dependency_graph": "acyclic",
+  "all_statuses": "C01-C04 done; C01-C03 design/contracts, C04 local runtime scaffold; C05-C50 planned",
+  "scope_validation": "static documentation + live local C04 tests; hosted CI and production unrun",
+  "progress": {
+    "done_packages": 4,
+    "done_tasks": 16,
+    "planned_tasks": 184
+  },
+  "latest_evidence": "evidence/C04-validation.json"
+}

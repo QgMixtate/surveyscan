@@ -1,0 +1,609 @@
+{
+  "package": "C03",
+  "kind": "executable schemas and reference-fixture validation",
+  "result": "passed",
+  "summary": {
+    "schema_definitions": 54,
+    "openapi_operations": 26,
+    "contract_cases": 58,
+    "accepted_cases": 19,
+    "negative_cases": 39,
+    "matched_contract_cases": 58,
+    "state_graph_cases": 12,
+    "canonical_vectors": 2,
+    "http_example_shapes": 3
+  },
+  "schema_validation": "JSON Schema 2020-12 and OpenAPI 3.1 valid",
+  "fixture_results": [
+    {
+      "id": "C03-F01",
+      "title": "Signed observation with Unicode",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F02",
+      "title": "Bound batch",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F03",
+      "title": "Local receipt retains spool",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F04",
+      "title": "Signed final applied receipt",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F05",
+      "title": "Signed central conflict retained centrally; source may trim",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F06",
+      "title": "Fresh challenge heartbeat",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F07",
+      "title": "Spoof tenant",
+      "expected": "AUTH_SCOPE_MISMATCH",
+      "actual": "AUTH_SCOPE_MISMATCH",
+      "matched": true
+    },
+    {
+      "id": "C03-F08",
+      "title": "Unknown major",
+      "expected": "UNSUPPORTED_SCHEMA_VERSION",
+      "actual": "UNSUPPORTED_SCHEMA_VERSION",
+      "matched": true
+    },
+    {
+      "id": "C03-F09",
+      "title": "Unadvertised minor",
+      "expected": "UNSUPPORTED_SCHEMA_VERSION",
+      "actual": "UNSUPPORTED_SCHEMA_VERSION",
+      "matched": true
+    },
+    {
+      "id": "C03-F10",
+      "title": "Payload digest tampered",
+      "expected": "DIGEST_MISMATCH",
+      "actual": "DIGEST_MISMATCH",
+      "matched": true
+    },
+    {
+      "id": "C03-F11",
+      "title": "Signature tampered",
+      "expected": "SIGNATURE_INVALID",
+      "actual": "SIGNATURE_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F12",
+      "title": "Unregistered origin",
+      "expected": "SOURCE_NOT_AUTHORIZED",
+      "actual": "SOURCE_NOT_AUTHORIZED",
+      "matched": true
+    },
+    {
+      "id": "C03-F13",
+      "title": "Unknown section status",
+      "expected": "SCHEMA_INVALID",
+      "actual": "SCHEMA_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F14",
+      "title": "Partial empty does not assert complete collection",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F15",
+      "title": "Unavailable with fake records",
+      "expected": "SCHEMA_INVALID",
+      "actual": "SCHEMA_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F16",
+      "title": "Duplicate section names",
+      "expected": "SECTION_DUPLICATE",
+      "actual": "SECTION_DUPLICATE",
+      "matched": true
+    },
+    {
+      "id": "C03-F17",
+      "title": "Sequence encoded as unsafe JSON number",
+      "expected": "SCHEMA_INVALID",
+      "actual": "SCHEMA_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F18",
+      "title": "Sequence exceeds uint64",
+      "expected": "INTEGER_OUT_OF_RANGE",
+      "actual": "INTEGER_OUT_OF_RANGE",
+      "matched": true
+    },
+    {
+      "id": "C03-F19",
+      "title": "IPv4 prefix out of range",
+      "expected": "INVALID_PREFIX",
+      "actual": "INVALID_PREFIX",
+      "matched": true
+    },
+    {
+      "id": "C03-F20",
+      "title": "Heartbeat challenge replay",
+      "expected": "HEARTBEAT_REPLAY",
+      "actual": "HEARTBEAT_REPLAY",
+      "matched": true
+    },
+    {
+      "id": "C03-F21",
+      "title": "Same heartbeat id/digest returns original accepted timestamp",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F22",
+      "title": "Expired challenge",
+      "expected": "HEARTBEAT_EXPIRED",
+      "actual": "HEARTBEAT_EXPIRED",
+      "matched": true
+    },
+    {
+      "id": "C03-F23",
+      "title": "Collector cannot authorize trimming",
+      "expected": "SCHEMA_INVALID",
+      "actual": "SCHEMA_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F24",
+      "title": "Collector/origin key cannot forge center result",
+      "expected": "SIGNATURE_INVALID",
+      "actual": "SIGNATURE_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F25",
+      "title": "Receipt for another batch",
+      "expected": "RECEIPT_BINDING_MISMATCH",
+      "actual": "RECEIPT_BINDING_MISMATCH",
+      "matched": true
+    },
+    {
+      "id": "C03-F26",
+      "title": "Same delivery ID with different digest",
+      "expected": "DELIVERY_DIGEST_CONFLICT",
+      "actual": "DELIVERY_DIGEST_CONFLICT",
+      "matched": true
+    },
+    {
+      "id": "C03-F27",
+      "title": "Duplicate record in batch",
+      "expected": "BATCH_RECORD_DUPLICATE",
+      "actual": "BATCH_RECORD_DUPLICATE",
+      "matched": true
+    },
+    {
+      "id": "C03-F28",
+      "title": "Partial job completion state",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F29",
+      "title": "Versioned outbox event",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F30",
+      "title": "Event aggregate/owner mismatch",
+      "expected": "EVENT_BINDING_MISMATCH",
+      "actual": "EVENT_BINDING_MISMATCH",
+      "matched": true
+    },
+    {
+      "id": "C03-F31",
+      "title": "Record count differs from array",
+      "expected": "RECORD_COUNT_MISMATCH",
+      "actual": "RECORD_COUNT_MISMATCH",
+      "matched": true
+    },
+    {
+      "id": "C03-F32",
+      "title": "Raw claim of unauthorized asset",
+      "expected": "ASSET_ASSERTION_FORBIDDEN",
+      "actual": "ASSET_ASSERTION_FORBIDDEN",
+      "matched": true
+    },
+    {
+      "id": "C03-F33",
+      "title": "Duplicate JSON property rejected",
+      "expected": "INVALID_JSON",
+      "actual": "INVALID_JSON",
+      "matched": true
+    },
+    {
+      "id": "C03-F34",
+      "title": "Nonfinite JSON rejected",
+      "expected": "INVALID_JSON",
+      "actual": "INVALID_JSON",
+      "matched": true
+    },
+    {
+      "id": "C03-F35",
+      "title": "Unexpected secret-shaped field rejected by strict schema",
+      "expected": "SCHEMA_INVALID",
+      "actual": "SCHEMA_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F36",
+      "title": "Unannounced source generation",
+      "expected": "GENERATION_MISMATCH",
+      "actual": "GENERATION_MISMATCH",
+      "matched": true
+    },
+    {
+      "id": "C03-F37",
+      "title": "Unknown legacy status only via explicit adapter",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F38",
+      "title": "Native unknown status rejected",
+      "expected": "LEGACY_STATUS_NOT_ALLOWED",
+      "actual": "LEGACY_STATUS_NOT_ALLOWED",
+      "matched": true
+    },
+    {
+      "id": "C03-F39",
+      "title": "Partial cannot claim complete collection",
+      "expected": "SECTION_COMPLETENESS_INVALID",
+      "actual": "SECTION_COMPLETENESS_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F40",
+      "title": "Nullable claimed UID accepted as no claim",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F41",
+      "title": "Versioned machine config",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F42",
+      "title": "Safe API error",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F43",
+      "title": "Lease with fencing version",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F44",
+      "title": "Exact accepted heartbeat retry after TTL returns prior result without refreshing contact",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F45",
+      "title": "Section one nanosecond later than observation",
+      "expected": "SECTION_TIME_INVALID",
+      "actual": "SECTION_TIME_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F46",
+      "title": "Enrollment is bound to preapproved CSR and signing public key",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F47",
+      "title": "Relay cannot substitute signing public key during enrollment",
+      "expected": "ENROLLMENT_BINDING_MISMATCH",
+      "actual": "ENROLLMENT_BINDING_MISMATCH",
+      "matched": true
+    },
+    {
+      "id": "C03-F48",
+      "title": "Enrollment CSR fingerprint mismatch",
+      "expected": "ENROLLMENT_BINDING_MISMATCH",
+      "actual": "ENROLLMENT_BINDING_MISMATCH",
+      "matched": true
+    },
+    {
+      "id": "C03-F49",
+      "title": "Renewal signed by existing origin key",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    },
+    {
+      "id": "C03-F50",
+      "title": "Renewal cannot reuse heartbeat challenge",
+      "expected": "RENEWAL_CHALLENGE_MISMATCH",
+      "actual": "RENEWAL_CHALLENGE_MISMATCH",
+      "matched": true
+    },
+    {
+      "id": "C03-F51",
+      "title": "Relay cannot renew agent without its current signing key",
+      "expected": "SIGNATURE_INVALID",
+      "actual": "SIGNATURE_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F52",
+      "title": "Unpaired Unicode surrogate rejected by strict parser",
+      "expected": "INVALID_JSON",
+      "actual": "INVALID_JSON",
+      "matched": true
+    },
+    {
+      "id": "C03-F53",
+      "title": "JSON exponent overflowing finite number rejected",
+      "expected": "INVALID_JSON",
+      "actual": "INVALID_JSON",
+      "matched": true
+    },
+    {
+      "id": "C03-F54",
+      "title": "Fresh nonce does not accept regressed heartbeat sequence",
+      "expected": "HEARTBEAT_SEQUENCE_STALE",
+      "actual": "HEARTBEAT_SEQUENCE_STALE",
+      "matched": true
+    },
+    {
+      "id": "C03-F55",
+      "title": "Pending resolution cannot be reported as fully applied completion",
+      "expected": "RECEIPT_STATE_INVALID",
+      "actual": "RECEIPT_STATE_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F56",
+      "title": "Rejected result cannot instruct spool deletion",
+      "expected": "SCHEMA_INVALID",
+      "actual": "SCHEMA_INVALID",
+      "matched": true
+    },
+    {
+      "id": "C03-F57",
+      "title": "Excessive JSON nesting rejected before schema",
+      "expected": "INVALID_JSON",
+      "actual": "INVALID_JSON",
+      "matched": true
+    },
+    {
+      "id": "C03-F58",
+      "title": "Maximum uint64 sequence remains exact decimal string",
+      "expected": "OK",
+      "actual": "OK",
+      "matched": true
+    }
+  ],
+  "state_graph_results": [
+    {
+      "id": "C03-S01",
+      "expected": true,
+      "actual": true,
+      "matched": true
+    },
+    {
+      "id": "C03-S02",
+      "expected": true,
+      "actual": true,
+      "matched": true
+    },
+    {
+      "id": "C03-S03",
+      "expected": true,
+      "actual": true,
+      "matched": true
+    },
+    {
+      "id": "C03-S04",
+      "expected": false,
+      "actual": false,
+      "matched": true
+    },
+    {
+      "id": "C03-S05",
+      "expected": false,
+      "actual": false,
+      "matched": true
+    },
+    {
+      "id": "C03-S06",
+      "expected": false,
+      "actual": false,
+      "matched": true
+    },
+    {
+      "id": "C03-S07",
+      "expected": true,
+      "actual": true,
+      "matched": true
+    },
+    {
+      "id": "C03-S08",
+      "expected": true,
+      "actual": true,
+      "matched": true
+    },
+    {
+      "id": "C03-S09",
+      "expected": false,
+      "actual": false,
+      "matched": true
+    },
+    {
+      "id": "C03-S10",
+      "expected": true,
+      "actual": true,
+      "matched": true
+    },
+    {
+      "id": "C03-S11",
+      "expected": true,
+      "actual": true,
+      "matched": true
+    },
+    {
+      "id": "C03-S12",
+      "expected": false,
+      "actual": false,
+      "matched": true
+    }
+  ],
+  "canonical_results": [
+    {
+      "id": "C03-JCS01",
+      "matched": true
+    },
+    {
+      "id": "C03-JCS02",
+      "matched": true
+    }
+  ],
+  "http_examples": [
+    {
+      "id": "C03-H01",
+      "operation": "submitObservationBatch",
+      "status": "example_shape_valid",
+      "network_call": "not_run"
+    },
+    {
+      "id": "C03-H02",
+      "operation": "getDeliveryReceipt",
+      "status": "example_shape_valid",
+      "network_call": "not_run"
+    },
+    {
+      "id": "C03-H03",
+      "operation": "submitHeartbeat",
+      "status": "example_shape_valid",
+      "network_call": "not_run"
+    }
+  ],
+  "tool_versions": {
+    "jsonschema": "4.26.0",
+    "openapi-spec-validator": "0.9.0",
+    "rfc8785": "0.1.4",
+    "cryptography": "50.0.2"
+  },
+  "runtime_http_mtls_pg_tests": "unrun",
+  "production_handler_implementation": "not_started",
+  "note": "Reference checks validate example constraints/cryptographic signatures using synthetic public keys and declarative contexts. They do not prove actual enrollment consumption, commit, lease or source authorization.",
+  "input_sha256": {
+    "compatibility.json": "1c964cd38d966c61bfb03771b616ba9e6c3ecd0a1fee442cc404dccfde8bf81c",
+    "openapi.json": "d59b26ccbd6c9ec54135f082143f31ae820e2b57ff396ac886ceec04b4d11147",
+    "README.md": "5e2cb6703180d5b7c960f25ef0ad587942d8eadb749f9246db8faf81b442e4bc",
+    "state-machines.json": "e75dd9f32e6d612afca14b0447317bf87deb37654c609d0651e50345ee69bd67",
+    "schemas/wire.schema.json": "6e103e2928444116d16d0edcc9234287d8686b9d7dde1aca444a22ed010acf3d",
+    "checks/validate_contracts.py": "f22d7a52099a209e8ccb75f7a73f85912f8357a1c66c9467b32e7b6328efb95d",
+    "checks/requirements.txt": "818f7d555b58c6915189f44724b17b8d64257ad3aa320d1cdc5fc26de63d6f68",
+    "checks/reference_checks.py": "23f81284b84ac01f48f2c20195746d31e05938696206efeb8a9c414f46c81705",
+    "fixtures/C03-F08.json": "9a86df1bf5ec441cc7df042af44e5f4f7de713b1fd91eac238785808d126431e",
+    "fixtures/C03-F16.json": "7b9b61b37bd04a8e778b65213e2b26cf1bd98ddb7bd3fa2b582a38705b0e97c3",
+    "fixtures/C03-F09.json": "57242c5449fbc208a9113b648aae9ffeb4329509c5b1944eddd110adb1648fdc",
+    "fixtures/C03-F52.raw": "adfebe803c48e286a13ff4dc084eb4ade9ae1588174e39efc459232f8af380a2",
+    "fixtures/C03-F33.raw": "4a89f67909b86733500c0bcd1e9d44a2fe3f5e6e555dd4f16632102cd93bdd6e",
+    "fixtures/C03-F40.json": "dc6beb4b0f8a13a0b577b4aaa971eed1dbc6672694563f18266deec4cf5ad3aa",
+    "fixtures/C03-F37.json": "3f9ca7a8e53f4885526c952d82737da963cf47a0d08fefa57bc661788d992e52",
+    "fixtures/C03-F26.json": "47c855f4f1f0c25d5ac501e64ac457321b770afda69e6270eb15ad77175d7d12",
+    "fixtures/C03-F48.json": "8c1111ce7c105ee5eb23be0c86d47190d0ae0e645b6f6e0f8388fb2b721f913f",
+    "fixtures/C03-F50.json": "7f301fb90cad24e0004fe9f144b090c2eaa98b38af0317460c0d61b0e740598f",
+    "fixtures/C03-F15.json": "cdcc61b9dd59c498af3f1edd5d83a09a1a5a46607058fd5a60f309d8ef009bdb",
+    "fixtures/C03-F02.json": "47c855f4f1f0c25d5ac501e64ac457321b770afda69e6270eb15ad77175d7d12",
+    "fixtures/C03-F04.json": "ba4cf920a9628457e68593987b4340856b42b137643cfbf1413a29f93091f9cc",
+    "fixtures/C03-F10.json": "c3b8297468f0f48a762ae981d6d1499c26d6388cb47f116017762a20837d8f48",
+    "fixtures/C03-F56.json": "ff4e05e81350f8a772a69dd35630849eda3e528ee3a8030d20d4381b9c753272",
+    "fixtures/C03-F38.json": "3f9ca7a8e53f4885526c952d82737da963cf47a0d08fefa57bc661788d992e52",
+    "fixtures/C03-F07.json": "228f960e34d591398556471bf820dcfc68a987c4eb4c765fad8d28db5ceca310",
+    "fixtures/C03-F58.json": "c3b31bcade2e75ec80d79f90b5b039f9b7ae62bad3b42f9051bf75022c0aaa99",
+    "fixtures/C03-F49.json": "7f301fb90cad24e0004fe9f144b090c2eaa98b38af0317460c0d61b0e740598f",
+    "fixtures/C03-F18.json": "162c57b010007d1b4ca4366dec944a1fe57fba871890941288f881ca9c05243b",
+    "fixtures/C03-F22.json": "d425690bf29452e573f90da8752eae580511c7893225df7e9263de0b212c99fb",
+    "fixtures/C03-F27.json": "9182bd3eaa1c5f571ab7e69a9bf5d6dff83c66899c539e7795bf020e96e45652",
+    "fixtures/C03-F31.json": "4387923d3163b63d3d38966751de88316a19aa4e28b1efae7eb32663821fefe3",
+    "fixtures/canonical-vectors.json": "b0bae969664d44c9d47292f977a18bb308542f8d347ae6a983921000982eb6cf",
+    "fixtures/C03-F23.json": "42033f698c5425a10f2318d47aff1e8ca859d920e0b0d1f027cad294487369b7",
+    "fixtures/C03-F19.json": "9d4060d1dc4e18a62d18929c10262cc873bc9b0040f966238bb1dbfe4163ff1c",
+    "fixtures/C03-F44.json": "d425690bf29452e573f90da8752eae580511c7893225df7e9263de0b212c99fb",
+    "fixtures/C03-F13.json": "137da4bbc03661dbc73f1135e7891127684bd8c59b43041aa5afcb22da51fa7a",
+    "fixtures/C03-F25.json": "4f7974e874fe5ae34b45bff47c71a3ad7744b03485512b105e942389d09ee92c",
+    "fixtures/C03-F01.json": "5ab1a26df2cca9093aa19021fafb674dbe8d3a133714f9ce940617a4718f4a0a",
+    "fixtures/C03-F41.json": "74a43fe6c7f0e31b92e8da2cff768376e53b8e47778041e802b000e0e20d8173",
+    "fixtures/C03-F30.json": "85cc09533443ef973384e5c0fd45b1df8ddaa4e568dcafe23d3e8eb6a541b07a",
+    "fixtures/C03-F11.json": "c8f1efe562553278cadc3aa210a88c3e36b7c74e9df6f270ce52f5a80634b0ff",
+    "fixtures/C03-F55.json": "d8d505d42ce09224265a844b813eb98f9bdb119c48f17c493155c6a0e0b6818c",
+    "fixtures/C03-F53.raw": "318f3d44b647eb80b8352742f9de6b3fd57c555240d4164a30c56415e9b0998b",
+    "fixtures/C03-F57.raw": "99504c2fc383bb51580b268e33309910b3de0d51d3eb6be7511ce3a3664f5868",
+    "fixtures/C03-F03.json": "094cb0c34e4323f6dbd9586f3e7f2d70beb76da7c9c51e5bbd475448214bed13",
+    "fixtures/C03-F54.json": "d425690bf29452e573f90da8752eae580511c7893225df7e9263de0b212c99fb",
+    "fixtures/manifest.json": "716b955cd92a0c94cad1fc068affab5abf1e4deb5892374a870d591c93506b41",
+    "fixtures/C03-F12.json": "e666a816bbb140bbb8e6c6e7bb6a28a307bf97c387059d9264e749058d5f04f6",
+    "fixtures/C03-F35.json": "d8f8bdc70eda6d70c21e6e32d4131f6abd67d41e3efc4e3ead267bdcf0940285",
+    "fixtures/C03-F06.json": "d425690bf29452e573f90da8752eae580511c7893225df7e9263de0b212c99fb",
+    "fixtures/C03-F39.json": "9453bb6749ec269cd6e582bf0c6d07c1927b5f12b1757c1009e1848670d7ad87",
+    "fixtures/C03-F21.json": "d425690bf29452e573f90da8752eae580511c7893225df7e9263de0b212c99fb",
+    "fixtures/C03-F20.json": "d425690bf29452e573f90da8752eae580511c7893225df7e9263de0b212c99fb",
+    "fixtures/C03-F32.json": "2253dfe955ace607e91e633fff7eec5befc1d32110840f9a13a811797663ee0a",
+    "fixtures/C03-F51.json": "f9c4e153f643f800084a91cf17a1a5ebd4c43f1fed6860c380b196d4cc57988b",
+    "fixtures/C03-F17.json": "99af5733b146044ee54a21c4ea62d58f0d99b7938543468e43dee822578440e9",
+    "fixtures/C03-F36.json": "ef859bc006ed70a4d19781f4e8937f4d4e154fa3e1bee454cf6c479085b799eb",
+    "fixtures/C03-F46.json": "8c1111ce7c105ee5eb23be0c86d47190d0ae0e645b6f6e0f8388fb2b721f913f",
+    "fixtures/C03-F05.json": "6bb710b71c95d48436c0c9589721e5040f9b5ec86bfb70ca3ffe4125a33534d2",
+    "fixtures/C03-F43.json": "585fb896f8e3e993cd83d71b2078d2899dd88410fa0b31ee82a2b6563d170154",
+    "fixtures/C03-F45.json": "78a61d747ba26ad7b8476046cea73834a08996004a12cf86c08706dc929e1ba3",
+    "fixtures/C03-F42.json": "2f5502ea9886d7e3ef28aa7927aa2339cdeb88dcc699facd817287ea1a88c73b",
+    "fixtures/C03-F28.json": "25f9111cd020da9b4f84321d832a2554d761c72a2f543ba0dc8c4820f060d4ac",
+    "fixtures/C03-F24.json": "9e698ff8d608f7b0cbe073d1dbdd50511dc5abfa3490bc6ffadf06ff07b5751a",
+    "fixtures/C03-F29.json": "2b89ac576d4aaf7a83ef89d2fd5ab851505433787d70b691022c0fe5cac9be41",
+    "fixtures/C03-F34.raw": "159f99e03ec6dfb7edcad87bac613ac97a235493ad8b79b33cfa4002fb4477f8",
+    "fixtures/http-examples.json": "1103d6f8a558492a14f472790c9504e2eafdbfbcf4ac9411e5a386e66d6823df",
+    "fixtures/C03-F47.json": "be62f4dd1b25a6d63e10e6663280af7be34ca1349ff60d30b347f3c295bc60ff",
+    "fixtures/C03-F14.json": "bf65750f8fdbb5193a48480f9b6c346ab6542d98bf931c1cef4e7ea37c175b8b"
+  }
+}

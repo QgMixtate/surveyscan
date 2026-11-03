@@ -1,0 +1,9 @@
+{
+  "receipt_type": "transport",
+  "tenant_id": "00000000-0000-4000-8000-000000000001",
+  "delivery_id": "00000000-0000-4000-8000-000000000007",
+  "batch_digest": "50303fca1881a0d2879a25d9ea9c294f6a5992b292b039af538b2dcc8de6d512",
+  "stage": "collector_received",
+  "spool_action": "retain",
+  "request_id": "00000000-0000-4000-8000-00000000000a"
+}

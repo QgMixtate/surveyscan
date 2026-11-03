@@ -1,0 +1,12 @@
+{
+  "job_id": "00000000-0000-4000-8000-00000000001e",
+  "attempt_id": "00000000-0000-4000-8000-000000000029",
+  "lease_version": "2",
+  "lease_until": "2026-11-03T07:02:00Z",
+  "lease_token": "synthetic-example-only",
+  "owner_source_id": "00000000-0000-4000-8000-00000000001f",
+  "target_source_ids": [
+    "00000000-0000-4000-8000-000000000002"
+  ],
+  "profile_revision": "1"
+}

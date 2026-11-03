@@ -1,0 +1,21 @@
+[
+  {
+    "operation_id": "submitObservationBatch",
+    "request_fixture": "C03-F02",
+    "expected_status": 202,
+    "response_fixture": "C03-F03",
+    "note": "Example shape; actual collector handler not run"
+  },
+  {
+    "operation_id": "getDeliveryReceipt",
+    "expected_status": 200,
+    "response_fixture": "C03-F04",
+    "note": "Signed center receipt forwarded unchanged; actual endpoint not run"
+  },
+  {
+    "operation_id": "submitHeartbeat",
+    "request_fixture": "C03-F06",
+    "expected_status": 200,
+    "note": "Fresh challenge example, actual mTLS/HTTP not run"
+  }
+]

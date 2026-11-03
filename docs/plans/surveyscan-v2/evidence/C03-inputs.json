@@ -1,0 +1,14 @@
+{
+  "package": "C03",
+  "date": "2026-11-03",
+  "base_head": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
+  "remote_main_observed": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
+  "input_plan_sha256": "449ec396a60ab75b5cdcbcf5519093ee75855200926924a6676332f8f662c08d",
+  "dependency": "C02 done as design, not runtime implementation",
+  "input_snapshots": {
+    "docs/plans/surveyscan-v2/handoffs/C02.md": "8454beb9f07c04bbadc865cf37aab262b6f4fa4d4f90c14842467d10317faa39",
+    "docs/plans/surveyscan-v2/decisions/C02-model.json": "74ebdb4a3b196874db0f799b7633db6d061d0e285c896ef3a8e22248b00a596e",
+    "docs/plans/surveyscan-v2/decisions/C02-observations.md": "0f4cda39cf8fc2546c751d74c2cadb3a7f356435c0c7d91e65e453db1a2fff50",
+    "docs/plans/surveyscan-v2/decisions/C02-ownership.md": "bd02414a4c71eaf90aa210fc8126f3059b813169c72fe90fb6f4c0bd434a21d4"
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "version": "1.0",
+  "job": {
+    "initial": "queued",
+    "terminal": [
+      "cancelled",
+      "completed",
+      "completed_partial",
+      "failed"
+    ],
+    "transitions": {
+      "queued": [
+        "leased",
+        "cancel_requested"
+      ],
+      "leased": [
+        "running",
+        "queued",
+        "cancel_requested",
+        "failed"
+      ],
+      "running": [
+        "completed",
+        "completed_partial",
+        "failed",
+        "cancel_requested",
+        "queued"
+      ],
+      "cancel_requested": [
+        "cancelled"
+      ],
+      "cancelled": [],
+      "completed": [],
+      "completed_partial": [],
+      "failed": []
+    },
+    "guards": {
+      "claim": "authorized collector, durable claim_id, atomic lease owner/attempt/version allocation",
+      "leased_or_running_to_queued": "lease expired, no cancellation intent, retry budget remains; old attempt fenced",
+      "cancel_requested_to_cancelled": "worker acknowledges or lease expires; never requeue cancelled intent",
+      "terminal": "new retry creates new job ID; no mutation of terminal outcome"
+    }
+  },
+  "delivery": {
+    "initial": "receiving",
+    "terminal": [
+      "completed",
+      "completed_with_errors",
+      "rejected"
+    ],
+    "transitions": {
+      "receiving": [
+        "validating",
+        "rejected",
+        "failed"
+      ],
+      "validating": [
+        "processing",
+        "rejected",
+        "failed"
+      ],
+      "processing": [
+        "completed",
+        "completed_with_errors",
+        "failed"
+      ],
+      "failed": [
+        "validating",
+        "processing"
+      ],
+      "completed": [],
+      "completed_with_errors": [],
+      "rejected": []
+    },
+    "guards": {
+      "retry_failed": "same tenant/delivery/digest, retained bytes, auth still valid, checkpoint resume; no overwrite of committed record results",
+      "complete": "all records have durable per-record dispositions; signs center receipt only after commit",
+      "rejected": "invalid envelope whole-batch failure does not authorize automatic spool deletion"
+    }
+  },
+  "consumer": {
+    "initial": "claimed",
+    "terminal": [
+      "applied",
+      "dead_letter"
+    ],
+    "transitions": {
+      "claimed": [
+        "applied",
+        "retry",
+        "dead_letter"
+      ],
+      "retry": [
+        "claimed",
+        "dead_letter"
+      ],
+      "applied": [],
+      "dead_letter": []
+    },
+    "guards": {
+      "effect": "effect and inbox/checkpoint same target PG tx where possible; external effects idempotency/delivery ledger",
+      "replay": "new explicit authorized replay run, no automatic external notification duplication"
+    }
+  },
+  "state_tests": [
+    {
+      "id": "C03-S01",
+      "machine": "job",
+      "from": "queued",
+      "to": "leased",
+      "allowed_edge": true
+    },
+    {
+      "id": "C03-S02",
+      "machine": "job",
+      "from": "leased",
+      "to": "queued",
+      "allowed_edge": true
+    },
+    {
+      "id": "C03-S03",
+      "machine": "job",
+      "from": "running",
+      "to": "completed_partial",
+      "allowed_edge": true
+    },
+    {
+      "id": "C03-S04",
+      "machine": "job",
+      "from": "cancel_requested",
+      "to": "queued",
+      "allowed_edge": false
+    },
+    {
+      "id": "C03-S05",
+      "machine": "job",
+      "from": "completed",
+      "to": "running",
+      "allowed_edge": false
+    },
+    {
+      "id": "C03-S06",
+      "machine": "job",
+      "from": "cancel_requested",
+      "to": "completed",
+      "allowed_edge": false
+    },
+    {
+      "id": "C03-S07",
+      "machine": "job",
+      "from": "cancel_requested",
+      "to": "cancelled",
+      "allowed_edge": true
+    },
+    {
+      "id": "C03-S08",
+      "machine": "delivery",
+      "from": "processing",
+      "to": "completed",
+      "allowed_edge": true
+    },
+    {
+      "id": "C03-S09",
+      "machine": "delivery",
+      "from": "completed",
+      "to": "processing",
+      "allowed_edge": false
+    },
+    {
+      "id": "C03-S10",
+      "machine": "delivery",
+      "from": "failed",
+      "to": "processing",
+      "allowed_edge": true
+    },
+    {
+      "id": "C03-S11",
+      "machine": "consumer",
+      "from": "retry",
+      "to": "claimed",
+      "allowed_edge": true
+    },
+    {
+      "id": "C03-S12",
+      "machine": "consumer",
+      "from": "applied",
+      "to": "claimed",
+      "allowed_edge": false
+    }
+  ],
+  "validation_note": "Allowed graph edges checked structurally. Database lease/guard/concurrency execution not tested."
+}

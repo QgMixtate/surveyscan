@@ -1,0 +1,96 @@
+{
+  "package": "C04",
+  "date": "2026-11-03",
+  "result": "passed",
+  "target": "real isolated local Docker Linux/amd64; unit httptest explicitly separate",
+  "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
+  "versions": {
+    "go": "1.27.3",
+    "pgx": "5.12.0",
+    "postgres": "17.11",
+    "openbao": "2.7.2",
+    "nginx": "1.30"
+  },
+  "commands": [
+    {
+      "command": "make GO=/workspace/.surveyscan-v2-tools/go/bin/go CONTRACT_PYTHON=/workspace/.surveyscan-contract-tools/bin/python verify build",
+      "exit_status": 0
+    },
+    {
+      "command": "python3 scripts/dev.py up",
+      "exit_status": 0
+    },
+    {
+      "command": "GO=/workspace/.surveyscan-v2-tools/go/bin/go python3 scripts/dev.py integration",
+      "exit_status": 0
+    },
+    {
+      "command": "python3 scripts/smoke.py",
+      "exit_status": 0
+    }
+  ],
+  "go_tests": {
+    "top_level_unit": 8,
+    "top_level_pg_integration": 5,
+    "integration_also_runs_unit": 8,
+    "failed": 0,
+    "skipped": 0
+  },
+  "migration_checks": {
+    "migrations": 18,
+    "domain_tables": 24,
+    "initial_apply": 18,
+    "repeat_apply": 0,
+    "rollback_and_concurrent_apply": "passed",
+    "checksum_drift": "rejected"
+  },
+  "entrypoints": [
+    {
+      "component": "collector",
+      "operational_exit": 2,
+      "claims_inventory": false
+    },
+    {
+      "component": "agent",
+      "operational_exit": 2,
+      "claims_inventory": false
+    }
+  ],
+  "smoke": {
+    "status": "passed",
+    "checks": [
+      "health and absent business handlers on 58080",
+      "health and absent business handlers on 58081",
+      "separate proxy serves OpenAPI",
+      "Bao stop/restart/unseal readiness recovery",
+      "PostgreSQL stop/restart preserves committed row and migrations",
+      "backend restart through proxy"
+    ],
+    "count": 6,
+    "business_handlers": "unimplemented C05 onward",
+    "production": "unrun"
+  },
+  "contracts": {
+    "schema_definitions": 54,
+    "openapi_operations": 26,
+    "contract_cases": 58,
+    "accepted_cases": 19,
+    "negative_cases": 39,
+    "matched_contract_cases": 58,
+    "state_graph_cases": 12,
+    "canonical_vectors": 2,
+    "http_example_shapes": 3
+  },
+  "unrun": [
+    "GitHub Actions hosted run",
+    "production deployment",
+    "auth/session/tenant middleware",
+    "HTTP/mTLS ingestion and runtime cryptography",
+    "collector/agent inventory runtime",
+    "backup/restore",
+    "24-hour soak",
+    "100-user load"
+  ],
+  "publication": "not performed",
+  "credentials": "private ignored local files; excluded from evidence and bundle"
+}

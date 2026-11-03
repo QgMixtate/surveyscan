@@ -1,0 +1,43 @@
+{
+  "wire": {
+    "major": 1,
+    "minor": 0,
+    "supported_minor_versions": [
+      0
+    ],
+    "unknown_major": "UNSUPPORTED_SCHEMA_VERSION",
+    "unadvertised_minor": "UNSUPPORTED_SCHEMA_VERSION",
+    "extensions": "optional namespaced x-* scalars only; not implicit permission to use new capability"
+  },
+  "capabilities": {
+    "agent_observation_v1": "E1 target, handlers unimplemented",
+    "collector_relay_v1": "E1 target, handlers unimplemented",
+    "portable_offline_package": "deferred C23; same logical observation schema does not claim package crypto/format implementation",
+    "legacy_unknown_section_status": "explicit adapter only; native sources rejected"
+  },
+  "legacy": {
+    "collector_id_mapping": "collector-origin becomes origin_source_id; transit collector_id is separate route",
+    "scope_local": "documented alias host only for portable parser; does not rename permanent agent",
+    "sqlite_v1": "no direct DB compatibility; migration adapter C32"
+  },
+  "limits": {
+    "batch_bytes": 1048576,
+    "observation_canonical_bytes": 65536,
+    "records_per_batch": 100,
+    "sections_per_observation": 3,
+    "sequence_max": "18446744073709551615",
+    "heartbeat_challenge_seconds": 120,
+    "enrollment_grant_max_seconds": 900,
+    "lease_seconds_default": 120,
+    "json_nesting_depth": 32
+  },
+  "digest": "SHA-256(RFC8785 canonical UTF-8 payload); lowercase hex",
+  "signature": "Ed25519(domain ASCII + RFC8785 payload); unpadded base64url",
+  "signing_domains": {
+    "observation": "SURVEYSCAN-OBSERVATION-V1\n",
+    "heartbeat": "SURVEYSCAN-HEARTBEAT-V1\n",
+    "center_result": "SURVEYSCAN-CENTER-RESULT-V1\n",
+    "cert_renewal": "SURVEYSCAN-RENEWAL-V1\n"
+  },
+  "enrollment": "grant prebinds SHA256 DER CSR and exact signing public key; renewal needs proof by existing origin signing key and cert_renew challenge"
+}

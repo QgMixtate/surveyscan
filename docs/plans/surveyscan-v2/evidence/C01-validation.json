@@ -1,0 +1,2071 @@
+{
+  "package": "C01",
+  "date": "2026-11-03",
+  "kind": "static documentation validation",
+  "result": "passed",
+  "summary": {
+    "packages": 50,
+    "tasks": 200,
+    "done_packages": 1,
+    "done_tasks": 4,
+    "planned_tasks": 196,
+    "acceptance_cases": 15,
+    "scoped_e1_AC": 23,
+    "local_links_checked": 356
+  },
+  "capability_to_case_map": {
+    "server": [
+      "E1-T01"
+    ],
+    "tenant/auth": [
+      "E1-T02",
+      "E1-T08"
+    ],
+    "identity": [
+      "E1-T03",
+      "E1-T09"
+    ],
+    "host fields": [
+      "E1-T03"
+    ],
+    "observation statuses": [
+      "E1-T04"
+    ],
+    "freshness": [
+      "E1-T10",
+      "E1-T11"
+    ],
+    "responsibility": [
+      "E1-T05"
+    ],
+    "history/outbox": [
+      "E1-T04",
+      "E1-T05",
+      "E1-T06"
+    ],
+    "collector": [
+      "E1-T03",
+      "E1-T06"
+    ],
+    "agent": [
+      "E1-T03",
+      "E1-T12"
+    ],
+    "delivery": [
+      "E1-T06",
+      "E1-T07"
+    ],
+    "web": [
+      "E1-T10"
+    ],
+    "cli": [
+      "E1-T10"
+    ],
+    "secret/trust": [
+      "E1-T08"
+    ],
+    "operations": [
+      "E1-T12",
+      "E1-T13",
+      "E1-T14"
+    ]
+  },
+  "checks": [
+    {
+      "check": "50 packages and 200 tasks retained",
+      "status": "passed"
+    },
+    {
+      "check": "only C01 done",
+      "status": "passed"
+    },
+    {
+      "check": "only four C01 tasks done",
+      "status": "passed"
+    },
+    {
+      "check": "all other packages planned",
+      "status": "passed"
+    },
+    {
+      "check": "archived plan is exact original input",
+      "status": "passed"
+    },
+    {
+      "check": "original package order and dependencies unchanged",
+      "status": "passed"
+    },
+    {
+      "check": "remaining package records preserved exactly",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T01 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T02 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T03 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T04 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T05 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T06 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T07 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T08 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T09 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T10 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T11 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T12 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T13 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T14 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "E1-T15 product scenario remains unrun",
+      "status": "passed"
+    },
+    {
+      "check": "15 unique planned acceptance cases",
+      "status": "passed"
+    },
+    {
+      "check": "all scoped E1 acceptance criteria mapped",
+      "status": "passed"
+    },
+    {
+      "check": "each E1 capability has planned evidence scenario",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/HANDOFF_TEMPLATE.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link ../../specifications/requirements-traceability-v0.5.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link ../../research/inventory-platform-analogues.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link TASK_INDEX.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link HANDOFF_TEMPLATE.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link WBS.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link TASK_INDEX.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link COVERAGE.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link plan.json",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link tasks.csv",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link HANDOFF_TEMPLATE.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link decisions/C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link decisions/C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link decisions/C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/README.md link handoffs/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link decisions/C01-baseline.json",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link decisions/C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link decisions/C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link decisions/C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/WBS.md link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C06.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C06.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C07.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C07.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C08.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C08.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C09.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C09.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C10.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C10.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C11.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C11.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C12.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C12.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C13.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C13.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C14.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C14.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C15.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C15.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C16.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C16.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C17.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C17.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C18.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C18.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C19.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C19.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C20.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C20.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C21.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C21.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C22.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C22.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C23.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C23.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C24.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C24.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C25.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C25.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C26.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C26.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C27.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C27.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C28.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C28.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C29.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C29.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C30.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C30.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C31.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C31.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C32.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C32.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C33.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C33.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C34.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C34.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C35.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C35.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C36.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C36.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C37.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C37.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C38.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C38.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C39.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C39.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C40.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C40.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C41.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C41.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C42.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C42.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C43.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C43.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C44.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C44.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C45.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C45.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C46.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C46.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C47.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C47.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C48.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C48.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C49.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C49.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link packages/C50.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/TASK_INDEX.md link prompts/C50.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/COVERAGE.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C01.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C45.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C26.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C34.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C04.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C30.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C47.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C15.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C16.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C05.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C28.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C14.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C07.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C02.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C20.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C36.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C46.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C25.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C23.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C12.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C19.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C41.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C27.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C32.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C38.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C03.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C40.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C49.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C11.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C35.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C09.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C08.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C29.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C10.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C31.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C06.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C22.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C21.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C33.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C42.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C13.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C48.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C37.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C17.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C50.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C39.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C43.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C44.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C24.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/prompts/C18.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/handoffs/C01.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/handoffs/C01.md link ../decisions/C01-baseline.json",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/handoffs/C01.md link ../decisions/C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/handoffs/C01.md link ../decisions/C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/handoffs/C01.md link ../decisions/C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/handoffs/C01.md link ../evidence/C01-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/handoffs/C01.md link ../packages/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/handoffs/C01.md link ../prompts/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/decisions/C01-smb-scope.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/decisions/C01-smb-scope.md link C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/decisions/C01-smb-scope.md link C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/decisions/C01-decisions.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/decisions/C01-decisions.md link C01-baseline.json",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/decisions/C01-decisions.md link C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/decisions/C01-acceptance.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/decisions/C01-acceptance.md link C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C01.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C01.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C01.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C01.md link ../decisions/C01-baseline.json",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C01.md link ../decisions/C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C01.md link ../decisions/C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C01.md link ../decisions/C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C01.md link ../handoffs/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C01.md link ../evidence/C01-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C45.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C45.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C45.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C26.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C26.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C26.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C34.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C34.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C34.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C04.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C04.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C04.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C30.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C30.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C30.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C47.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C47.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C47.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C15.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C15.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C15.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C16.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C16.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C16.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C05.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C05.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C05.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C28.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C28.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C28.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C14.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C14.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C14.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C07.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C07.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C07.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C02.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C02.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C02.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C20.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C20.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C20.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C36.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C36.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C36.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C46.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C46.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C46.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C25.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C25.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C25.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C23.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C23.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C23.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C12.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C12.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C12.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C19.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C19.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C19.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C41.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C41.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C41.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C27.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C27.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C27.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C32.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C32.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C32.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C38.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C38.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C38.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C03.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C03.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C03.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C40.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C40.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C40.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C49.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C49.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C49.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C11.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C11.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C11.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C35.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C35.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C35.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C09.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C09.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C09.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C08.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C08.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C08.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C29.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C29.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C29.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C10.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C10.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C10.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C31.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C31.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C31.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C06.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C06.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C06.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C22.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C22.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C22.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C21.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C21.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C21.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C33.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C33.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C33.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C42.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C42.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C42.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C13.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C13.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C13.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C48.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C48.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C48.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C37.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C37.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C37.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C17.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C17.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C17.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C50.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C50.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C50.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C39.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C39.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C39.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C43.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C43.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C43.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C44.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C44.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C44.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C24.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C24.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C24.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C18.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C18.md link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/plans/surveyscan-v2/packages/C18.md link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "AGENTS.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "AGENTS.md link docs/specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "AGENTS.md link docs/plans/surveyscan-v2/README.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link plans/surveyscan-v2/handoffs/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link plans/surveyscan-v2/TASK_INDEX.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link plans/surveyscan-v2/packages/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link plans/surveyscan-v2/prompts/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link REQUESTS.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link ../AGENTS.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link REQUESTS.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link ../CLAUDE.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link ../INSTALL.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/STATUS.md link ../README.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/REQUESTS.md fences balanced",
+      "status": "passed"
+    },
+    {
+      "check": "docs/REQUESTS.md link architecture/go-asset-management-discussion.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/REQUESTS.md link architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "docs/REQUESTS.md link specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "CSV progress matches manifest",
+      "status": "passed"
+    },
+    {
+      "check": "baseline HEAD consistent",
+      "status": "passed"
+    },
+    {
+      "check": "agent OS not silently user-approved",
+      "status": "passed"
+    },
+    {
+      "check": "no tracked application code changed",
+      "status": "passed"
+    },
+    {
+      "check": "git diff --check",
+      "status": "passed"
+    }
+  ],
+  "product_tests": "unrun",
+  "go_v2_build": "unrun",
+  "soak_24h": "unrun",
+  "publication": "not performed"
+}

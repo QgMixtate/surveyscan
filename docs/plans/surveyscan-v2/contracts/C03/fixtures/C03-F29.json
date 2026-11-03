@@ -1,0 +1,20 @@
+{
+  "schema_version": {
+    "major": 1,
+    "minor": 0
+  },
+  "event_id": "00000000-0000-4000-8000-000000000020",
+  "tenant_id": "00000000-0000-4000-8000-000000000001",
+  "producer_module": "Assets",
+  "event_type": "asset.created.v1",
+  "aggregate_type": "asset",
+  "aggregate_id": "00000000-0000-4000-8000-000000000009",
+  "aggregate_version": "1",
+  "occurred_at": "2026-11-03T07:00:10Z",
+  "correlation_id": "00000000-0000-4000-8000-000000000021",
+  "causation_id": "00000000-0000-4000-8000-000000000006",
+  "data": {
+    "asset_uid": "00000000-0000-4000-8000-000000000009",
+    "reason_code": "DISCOVERED"
+  }
+}

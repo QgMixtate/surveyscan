@@ -1,0 +1,22 @@
+{
+  "payload": {
+    "schema_version": {
+      "major": 1,
+      "minor": 0
+    },
+    "heartbeat_id": "00000000-0000-4000-8000-00000000000c",
+    "tenant_id": "00000000-0000-4000-8000-000000000001",
+    "origin": {
+      "source_id": "00000000-0000-4000-8000-000000000002",
+      "source_kind": "agent",
+      "generation_id": "00000000-0000-4000-8000-000000000003"
+    },
+    "challenge_id": "00000000-0000-4000-8000-00000000000b",
+    "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+    "heartbeat_sequence": "1",
+    "sent_at": "2026-11-03T07:00:20Z"
+  },
+  "digest": "22d3c6efc7a36412de6da4f257c604d7827da798652c5f00e50e03294a64ec5e",
+  "key_id": "00000000-0000-4000-8000-000000000014",
+  "signature": "Rz5li5Vi785GAjK4aJ26f1p2NglRThsqXKjH_eEirD3tSBRICb8aT9J7PzT8Y5sVYWdHOYaEUIJURC41LROYCg"
+}

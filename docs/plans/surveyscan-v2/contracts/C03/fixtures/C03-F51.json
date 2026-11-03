@@ -1,0 +1,22 @@
+{
+  "payload": {
+    "schema_version": {
+      "major": 1,
+      "minor": 0
+    },
+    "renewal_id": "00000000-0000-4000-8000-00000000003d",
+    "tenant_id": "00000000-0000-4000-8000-000000000001",
+    "origin": {
+      "source_id": "00000000-0000-4000-8000-000000000002",
+      "source_kind": "agent",
+      "generation_id": "00000000-0000-4000-8000-000000000003"
+    },
+    "challenge_id": "00000000-0000-4000-8000-00000000000b",
+    "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+    "csr_pem": "-----BEGIN CERTIFICATE REQUEST-----\nMIGgMFQCAQAwITEfMB0GA1UEAwwWc3ludGhldGljLWZpeHR1cmUtb25seTAqMAUG\nAytlcAMhAPX4OQuqJ2fuymexo0mKkBJNWnJaD6XZeO7rYKQzq+RkoAAwBQYDK2Vw\nA0EAuC9swh9cPqLjqiP7dtZkSLUW3a/AGGi7A/XR3ptKD0t07pIf914FgSxbuu9U\nQzB6kXEwTm0pvCxhzhC8x69SCg==\n-----END CERTIFICATE REQUEST-----\n",
+    "sent_at": "2026-11-03T07:00:20Z"
+  },
+  "digest": "876f94967e8efcbd217cc7b9b35f6e183569ae59ef40e9d3965a79e7bf31a60f",
+  "key_id": "00000000-0000-4000-8000-000000000014",
+  "signature": "sfQ1X9qXow2nmEYhNahR0o3hrPtK66kzWRVQi8w-DJvh-3dUPK1MpriuvpMwvIepr_5peT859jGQC3Y7mk0pBg"
+}

@@ -1,5 +1,7 @@
 # Go, портативный сбор и Asset Management — обсуждение
 
+> Актуальное уточнение R-011, версия 0.5: local agent постоянно установлен на хосте и передаёт в collector; portable — разовый аудит. Ниже исторические предложения, при конфликте применять 0.5.
+
 > Исторический проект R-004. После R-008 актуальны [спецификация 0.2](../specifications/go-asset-management-v2.md)
 > и [архитектура 0.2](go-target-architecture.md). Local теперь scope portable; OpenBao выбран;
 > discovery/agentless, сквозной ID, ответственность, CLI/API, outbox без шины, поиск и георезерв

@@ -1,0 +1,3458 @@
+{
+  "project": "QgMixtate/surveyscan",
+  "architecture": "0.5 local draft",
+  "date": "2026-11-03 Europe/Moscow",
+  "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
+  "status": "C01-C03 design/contracts and C04 local runtime scaffold completed; C05-C50 planned",
+  "roles": {
+    "АРХ": "Архитектор",
+    "ПМ": "Владелец продукта / руководитель проекта",
+    "БЭ": "Backend Go-разработчик",
+    "БД": "Разработчик БД / DBA",
+    "АГ": "Разработчик агента/коллектора",
+    "ФЭ": "Frontend-разработчик",
+    "SRE": "Инженер эксплуатации / сборки",
+    "QA": "Инженер проверки",
+    "ПОИСК": "Разработчик поискового контура"
+  },
+  "packages": [
+    {
+      "id": "C01",
+      "epoch": "E0",
+      "title": "Границы первого релиза и карта решений",
+      "depends_on": [],
+      "spec_sections": "1–4, 14, 17, 32, 35",
+      "tasks": [
+        {
+          "id": "C01.01",
+          "name": "Зафиксировать baseline и источники",
+          "owner": "Архитектор",
+          "depends_on": [],
+          "output": "Манифест версии 0.5, статуса веток и незавершённых документов",
+          "verification": "Различены локальное, опубликованное и реализованное",
+          "estimation_basis": "1 репозиторий; 4 исходных документа и матрица U-01–19",
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "decisions/C01-baseline.json"
+          ],
+          "verification_status": "document-reviewed; product tests unrun"
+        },
+        {
+          "id": "C01.02",
+          "name": "Описать capabilities SMB-релиза",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C01.01"
+          ],
+          "output": "Список полей E1, целевых ОС и явных исключений",
+          "verification": "Есть постоянный цикл agent→collector→card и нет enterprise prerequisite",
+          "estimation_basis": "1 профиль E1; платформенный выбор Windows либо Linux",
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "decisions/C01-smb-scope.md"
+          ],
+          "verification_status": "document-reviewed; product tests unrun"
+        },
+        {
+          "id": "C01.03",
+          "name": "Выбрать блокирующие решения E1",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C01.02"
+          ],
+          "output": "ADR scope: auth/enrollment, frontend, версии Go/PG, локальное хранилище очередей, trust",
+          "verification": "У каждого решения статус user-confirmed/proposed/blocked и аргументы",
+          "estimation_basis": "Только D-01/03/06/07/09/11/14/16/17 в части E1; прочие отложены по эпохам",
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "decisions/C01-decisions.md"
+          ],
+          "verification_status": "document-reviewed; product tests unrun"
+        },
+        {
+          "id": "C01.04",
+          "name": "Определить приёмку и пилотный стенд",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C01.03"
+          ],
+          "output": "Сценарии раннего среза и 24-часового E1 прогона",
+          "verification": "Не выданы плановые показатели за выполненные тесты",
+          "estimation_basis": "1 VM/хост выбранной ОС, 1 collector, 1 центральный стенд",
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "decisions/C01-acceptance.md"
+          ],
+          "verification_status": "document-reviewed; product tests unrun"
+        }
+      ],
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "completed_at": "2026-11-03",
+      "evidence": [
+        "handoffs/C01.md",
+        "evidence/C01-validation.json"
+      ],
+      "open_decisions": [
+        "First agent OS remains proposed until C08; does not block C02-C07",
+        "Runtime/library pins require compatibility and artifact verification in their implementation packages",
+        "All product/soak/OS service tests remain unrun"
+      ],
+      "authorization_note": "R-013: user authorized phased execution from C01; original package order preserved. This package is documentation/design only."
+    },
+    {
+      "id": "C02",
+      "epoch": "E0",
+      "title": "Минимальная ER-модель и владение данными",
+      "depends_on": [
+        "C01"
+      ],
+      "spec_sections": "2, 5, 9, 19, 21, 28",
+      "tasks": [
+        {
+          "id": "C02.01",
+          "name": "Развести сущности идентичности",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C01"
+          ],
+          "output": "ER: tenant/site/asset/identifier/source/agent/collector и scope",
+          "verification": "agent_id и IP не используются как canonical asset_uid",
+          "estimation_basis": "8 базовых сущностей; 3 способа источника",
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "decisions/C02-identity-model.md",
+            "decisions/C02-model.json"
+          ],
+          "verification_status": "design reviewed and structural documentation checks; runtime/mock tests unrun"
+        },
+        {
+          "id": "C02.02",
+          "name": "Спроектировать наблюдения и проекции",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C02.01"
+          ],
+          "output": "ER observation/section/current_fact, collected/received/sequence, statuses",
+          "verification": "Старое и partial наблюдение не стирает достоверные факты",
+          "estimation_basis": "5 статусов секции и unknown legacy; 2 временные оси",
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "decisions/C02-observations.md"
+          ],
+          "verification_status": "design reviewed and structural documentation checks; runtime/mock tests unrun"
+        },
+        {
+          "id": "C02.03",
+          "name": "Описать ownership и инварианты",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C02.02"
+          ],
+          "output": "Матрица таблица→модуль, source mapping, fallback team, outbox",
+          "verification": "Tenant constraints и запрет чужих записей проверяемы",
+          "estimation_basis": "Реестр, inventory, sources, responsibility, jobs/import",
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "decisions/C02-ownership.md"
+          ],
+          "verification_status": "design reviewed and structural documentation checks; runtime/mock tests unrun"
+        },
+        {
+          "id": "C02.04",
+          "name": "Проверить модель на контрпримерах",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C02.03"
+          ],
+          "output": "Набор примеров повтор, смена IP, клон VM, offline и конфликт",
+          "verification": "Есть ожидаемое решение каждого примера и открытые вопросы",
+          "estimation_basis": "Не менее 6 сценариев идентичности и поздних данных",
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "decisions/C02-counterexamples.md",
+            "decisions/C02-counterexamples.json"
+          ],
+          "verification_status": "design reviewed and structural documentation checks; runtime/mock tests unrun"
+        }
+      ],
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "completed_at": "2026-11-03",
+      "evidence": [
+        "handoffs/C02.md",
+        "evidence/C02-validation.json"
+      ],
+      "open_decisions": [
+        "C03: canonical envelope/digest, generation continuity and ACK semantics",
+        "C04/C06: actual FK/domain guards/transactions and concurrency tests",
+        "C25: complete cross-source reconciliation/merge/split"
+      ],
+      "authorization_note": "R-014: continue original plan with C02 only; documentation/design, no application implementation."
+    },
+    {
+      "id": "C03",
+      "epoch": "E0",
+      "title": "Контракты обмена и состояния доставки",
+      "depends_on": [
+        "C02"
+      ],
+      "spec_sections": "6–8, 11, 22–23, 33–34",
+      "tasks": [
+        {
+          "id": "C03.01",
+          "name": "Описать envelope наблюдения",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C02"
+          ],
+          "output": "Версионированная схема source/identity/section/provenance/sequence",
+          "verification": "Валидные и ошибочные образцы проходят schema checks",
+          "estimation_basis": "1 major schema, 3 source_kind, ограниченные payloads",
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "decisions/C03-envelope.md",
+            "contracts/C03/schemas/wire.schema.json"
+          ],
+          "verification_status": "schemas/reference fixtures executed; runtime HTTP/mTLS/PG unrun"
+        },
+        {
+          "id": "C03.02",
+          "name": "Задать agent→collector→center протокол",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C03.01"
+          ],
+          "output": "API enrollment/heartbeat/upload/status и state machine receipt/applied",
+          "verification": "Промежуточный ACK не выдаётся за commit центра",
+          "estimation_basis": "3 компонента; 2 этапа подтверждения; retry/dedup",
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "decisions/C03-protocol.md",
+            "contracts/C03/openapi.json"
+          ],
+          "verification_status": "schemas/reference fixtures executed; runtime HTTP/mTLS/PG unrun"
+        },
+        {
+          "id": "C03.03",
+          "name": "Описать задания и события",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C03.02"
+          ],
+          "output": "Lease/attempt/cancellation, envelope outbox и consumer checkpoint",
+          "verification": "Падение после commit допускает повтор без повторного эффекта",
+          "estimation_basis": "1 очередь заданий, 1 outbox, version/idempotency keys",
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "decisions/C03-jobs-events.md",
+            "contracts/C03/state-machines.json"
+          ],
+          "verification_status": "schemas/reference fixtures executed; runtime HTTP/mTLS/PG unrun"
+        },
+        {
+          "id": "C03.04",
+          "name": "Подготовить контрактные fixtures",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C03.03"
+          ],
+          "output": "Набор JSON/HTTP fixtures и матрица совместимости",
+          "verification": "Unknown major, подмена tenant, conflicting digest отклоняются",
+          "estimation_basis": "Минимум 8 позитивных/негативных контрактных сценариев",
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "decisions/C03-fixtures.md",
+            "contracts/C03/fixtures/manifest.json",
+            "evidence/C03-contract-validation.json"
+          ],
+          "verification_status": "schemas/reference fixtures executed; runtime HTTP/mTLS/PG unrun"
+        }
+      ],
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "completed_at": "2026-11-03",
+      "evidence": [
+        "handoffs/C03.md",
+        "evidence/C03-contract-validation.json",
+        "evidence/C03-validation.json"
+      ],
+      "open_decisions": [
+        "C04 Go toolchain/dependency compatibility and actual migrations",
+        "C05/C07/C10/C11 runtime auth, commit-bound receipts, enrollment/PKI, lease concurrency and recovery",
+        "C23 full portable signed/encrypted archive"
+      ],
+      "authorization_note": "R-015 continue original plan with C03 only; executable contract checks do not implement application handlers."
+    },
+    {
+      "id": "C04",
+      "epoch": "E1",
+      "title": "Go-каркас и воспроизводимый dev-стенд",
+      "depends_on": [
+        "C03"
+      ],
+      "spec_sections": "4, 9, 12, 28, 31",
+      "tasks": [
+        {
+          "id": "C04.01",
+          "name": "Создать структуру модульного backend",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C03"
+          ],
+          "output": "cmd/internal/contracts с границами импортов и combined entrypoint",
+          "verification": "Сборка и архитектурная проверка импортов проходят",
+          "estimation_basis": "Server, collector и agent entrypoints без бизнес-заглушек в приёмке",
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "../../../v2/cmd",
+            "../../../v2/internal/architecture",
+            "../../../v2/contracts",
+            "evidence/C04-runtime.json"
+          ],
+          "verification_status": "passed local live/unit; hosted GitHub Actions unrun"
+        },
+        {
+          "id": "C04.02",
+          "name": "Поднять постоянный PostgreSQL и миграции",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C04.01"
+          ],
+          "output": "Версионированные миграции минимальной модели и конфиг",
+          "verification": "Повторное применение безопасно; данные не зависят от scan DB",
+          "estimation_basis": "1 PG кластер; схема из C02",
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/internal/platform/migrate",
+            "../../../v2/internal/app/database_integration_test.go",
+            "evidence/C04-runtime.json"
+          ],
+          "verification_status": "passed local live/unit; hosted GitHub Actions unrun"
+        },
+        {
+          "id": "C04.03",
+          "name": "Собрать локальный инфраструктурный стенд",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C04.02"
+          ],
+          "output": "Документированный запуск PG/backend/OpenBao/proxy с локальными томами",
+          "verification": "Чистый стенд стартует и диагностирует недостающие настройки",
+          "estimation_basis": "1 поддержанный binary/container путь; без Kubernetes",
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/deploy/compose.yaml",
+            "../../../v2/scripts/dev.py",
+            "../../../v2/README.md",
+            "evidence/C04-runtime.json"
+          ],
+          "verification_status": "passed local live/unit; hosted GitHub Actions unrun"
+        },
+        {
+          "id": "C04.04",
+          "name": "Настроить CI и базовые проверки",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C04.03"
+          ],
+          "output": "Go build/test, PG integration и schema validation в CI",
+          "verification": "Проверки реально выполняются и сохраняют exit status",
+          "estimation_basis": "1 CI pipeline и воспроизводимый тестовый PG",
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "../../../.github/workflows/v2.yml",
+            "../../../v2/Makefile",
+            "../../../v2/scripts/smoke.py",
+            "evidence/C04-runtime.json"
+          ],
+          "verification_status": "passed local live/unit; hosted GitHub Actions unrun"
+        }
+      ],
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "completed_at": "2026-11-03",
+      "evidence": [
+        "handoffs/C04.md",
+        "evidence/C04-runtime.json",
+        "evidence/C04-validation.json"
+      ],
+      "open_decisions": [
+        "C05 real auth, tenant context and access handlers",
+        "C06 registry/reconciliation/projector/outbox implementation",
+        "C07/C08 collector and host agent runtime",
+        "C11 production OpenBao policies and machine PKI",
+        "GitHub-hosted CI run after publication"
+      ],
+      "authorization_note": "R-016: continue original plan with C04 only; local infrastructure deployment authorized; no production or publication performed."
+    },
+    {
+      "id": "C05",
+      "epoch": "E1",
+      "title": "Пользователи, tenant scope и базовая авторизация",
+      "depends_on": [
+        "C04"
+      ],
+      "spec_sections": "3, 11, 18, 27",
+      "tasks": [
+        {
+          "id": "C05.01",
+          "name": "Реализовать bootstrap администратора",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C04"
+          ],
+          "output": "Безопасная процедура первого пользователя и хранилище credential metadata",
+          "verification": "Нет общих заводских паролей и секретов в логах",
+          "estimation_basis": "1 bootstrap flow; reset/expiry policy по ADR",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C05.02",
+          "name": "Добавить auth и минимальные роли",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C05.01"
+          ],
+          "output": "Login/session/token, operator/viewer/admin и tenant context",
+          "verification": "Revocation/expiry и отказ неверной роли проверены",
+          "estimation_basis": "1 выбранный auth-method; 3 минимальные роли",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C05.03",
+          "name": "Защитить API и фоновые операции",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C05.02"
+          ],
+          "output": "Общий authorization contract для handlers/jobs/artifacts",
+          "verification": "Подмена UUID или tenant не даёт чужие данные",
+          "estimation_basis": "Все минимальные E1 endpoints и job context",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C05.04",
+          "name": "Проверить auth threat cases",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C05.03"
+          ],
+          "output": "Негативные интеграционные проверки и краткий threat record",
+          "verification": "Session/cookie/CSRF либо token policy соответствует ADR",
+          "estimation_basis": "2 tenant, expired/revoked credential, concurrent session",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C06",
+      "epoch": "E1",
+      "title": "Постоянный реестр, история и outbox",
+      "depends_on": [
+        "C05"
+      ],
+      "spec_sections": "5, 9, 19, 21, 23",
+      "tasks": [
+        {
+          "id": "C06.01",
+          "name": "Реализовать asset и identity mapping",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C05"
+          ],
+          "output": "Create/get/list с canonical UID и минимальной reconciliation policy",
+          "verification": "Повтор источника не создаёт дубли; конфликт виден",
+          "estimation_basis": "Минимальные поля E1 и source-local mapping",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C06.02",
+          "name": "Сохранить observations/current facts",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C06.01"
+          ],
+          "output": "Транзакционный ingest с provenance и приоритетом свежести",
+          "verification": "Partial/late не затирают бизнес-поля и новые факты",
+          "estimation_basis": "Поле имя/ОС/IP/MAC, times/statuses из C01",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C06.03",
+          "name": "Добавить ответственность, историю и outbox",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C06.02"
+          ],
+          "output": "Fallback team при создании, аудит и событие в той же транзакции",
+          "verification": "Нет бесхозной карточки или commit данных без события",
+          "estimation_basis": "1 accountable role, asset history и минимальный consumer",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C06.04",
+          "name": "Проверить реестр на PostgreSQL",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C06.03"
+          ],
+          "output": "Integration tests и fixtures повторов/конкуренции",
+          "verification": "Tenant isolation, rollback и idempotency подтверждены",
+          "estimation_basis": "2 tenant; duplicate/late/conflict/rollback",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C07",
+      "epoch": "E1",
+      "title": "Площадочный collector и приём результатов",
+      "depends_on": [
+        "C06"
+      ],
+      "spec_sections": "7–8, 33–34",
+      "tasks": [
+        {
+          "id": "C07.01",
+          "name": "Реализовать регистрацию collector",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C06"
+          ],
+          "output": "Machine identity и привязка site/tenant с ограниченными правами",
+          "verification": "Незарегистрированный/отозванный collector отклоняется",
+          "estimation_basis": "1 enrollment flow и identity lifecycle базового ADR",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C07.02",
+          "name": "Реализовать центральный upload/status pipeline",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C07.01"
+          ],
+          "output": "Staging/validation/checkpoints и передача в реестр",
+          "verification": "Размер, схема, digest и tenant проверяются до применения",
+          "estimation_basis": "E1 JSON/stream envelope; крупный portable archive позже C23",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C07.03",
+          "name": "Реализовать collector ingress для агента",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C07.02"
+          ],
+          "output": "HTTPS endpoint приёма наблюдений и outbound доставка в центр",
+          "verification": "Источник и provenance не подменяются collector metadata",
+          "estimation_basis": "1 collector; agent ingress и center egress",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C07.04",
+          "name": "Проверить минимальный сквозной путь",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C07.03"
+          ],
+          "output": "Прогон контрактного источника через collector в PG",
+          "verification": "Результат виден в API со статусом applied и mapping UID",
+          "estimation_basis": "Синтетические fixtures C03; это ещё не проверка реального host agent",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C08",
+      "epoch": "E1",
+      "title": "Минимальный host agent и первый живой цикл",
+      "depends_on": [
+        "C07"
+      ],
+      "spec_sections": "6, 33–34",
+      "tasks": [
+        {
+          "id": "C08.01",
+          "name": "Реализовать read-only адаптер первой ОС",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C07"
+          ],
+          "output": "Сбор identity/hostname/ОС/IP/MAC с section statuses",
+          "verification": "На реальном тестовом хосте получены ожидаемые сведения",
+          "estimation_basis": "1 ОС/архитектура из C01; ограниченный набор полей E1",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C08.02",
+          "name": "Реализовать agent enrollment и HTTPS client",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C08.01"
+          ],
+          "output": "Уникальная machine identity, binding к collector и TLS trust",
+          "verification": "Неверный endpoint/cert и revoked identity отклонены",
+          "estimation_basis": "1 agent→collector connection; без PG и remote target secrets",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C08.03",
+          "name": "Добавить регулярный цикл и heartbeat",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C08.02"
+          ],
+          "output": "Расписание, раздельный heartbeat, jitter, timeout и graceful stop",
+          "verification": "Несколько циклов обновляют один asset без ручного запуска",
+          "estimation_basis": "Одна configurable schedule; heartbeat и inventory интервалы",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C08.04",
+          "name": "Показать ранний работающий вертикальный срез",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C08.03"
+          ],
+          "output": "Реальный agent→collector→server→PG→API/CLI-dev просмотр",
+          "verification": "Свежие данные обновились минимум 3 цикла, UID тот же",
+          "estimation_basis": "1 живой хост; без заявления production-ready",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C09",
+      "epoch": "E1",
+      "title": "Отдельный Web UI и базовая карточка",
+      "depends_on": [
+        "C06"
+      ],
+      "spec_sections": "11, 27",
+      "tasks": [
+        {
+          "id": "C09.01",
+          "name": "Создать независимую frontend-сборку",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C06"
+          ],
+          "output": "Локальные assets, API client и version manifest",
+          "verification": "Production runtime не требует Node/CDN",
+          "estimation_basis": "1 выбранный framework из C01; отдельный pipeline",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C09.02",
+          "name": "Сделать login и реестр активов",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C09.01"
+          ],
+          "output": "Авторизация, список/фильтры/пагинация, обработка API errors",
+          "verification": "UI не получает лишние данные и не полагается на скрытие кнопок",
+          "estimation_basis": "Минимальные E1 endpoints C05/C06",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C09.03",
+          "name": "Сделать карточку и состояния источников",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C09.02"
+          ],
+          "output": "Имя/ОС/IP/ответственная команда, section status и времена",
+          "verification": "Unknown/partial/stale/source health различаются",
+          "estimation_basis": "1 карточка; 3 fixtures: полный, partial, нет контакта",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C09.04",
+          "name": "Проверить совместимость и браузер",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C09.03"
+          ],
+          "output": "Contract/E2E на реальном API и static hosting",
+          "verification": "UI и backend обновляются независимо в согласованной паре",
+          "estimation_basis": "2 ширины 800/1440, keyboard path, version mismatch",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C10",
+      "epoch": "E1",
+      "title": "Долговечная доставка и восстановление",
+      "depends_on": [
+        "C08"
+      ],
+      "spec_sections": "7–8, 23, 33–34",
+      "tasks": [
+        {
+          "id": "C10.01",
+          "name": "Сохранить agent spool и sequence state",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C08"
+          ],
+          "output": "Ограниченная локальная очередь и восстановление после reboot",
+          "verification": "Неутверждённые записи переживают crash/restart",
+          "estimation_basis": "Локальное хранилище по ADR; disk quota и retention",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C10.02",
+          "name": "Сохранить collector spool и двухэтапные ACK",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C10.01"
+          ],
+          "output": "Receipt/applied state и end-to-end confirmation routing",
+          "verification": "Потеря связи с центром не очищает agent/collector результаты",
+          "estimation_basis": "2 очереди; 2 ACK уровня; duplicate/reorder",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C10.03",
+          "name": "Укрепить jobs/import/outbox recovery",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C10.02"
+          ],
+          "output": "Lease/claim/checkpoint/inbox, retry/backoff и dead-letter state",
+          "verification": "Crash между commit и ACK не дублирует эффекты",
+          "estimation_basis": "По одной точке сбоя до/после commit и delivery",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C10.04",
+          "name": "Проверить outage и перегрузку",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C10.03"
+          ],
+          "output": "Fault tests network cut, disk full, reconnect storm",
+          "verification": "Сохранность, квоты и явные ошибки подтверждены",
+          "estimation_basis": "Agent+collector+center restart по отдельности и ограниченный reconnect burst",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C11",
+      "epoch": "E1",
+      "title": "OpenBao и жизненный цикл машинных доступов",
+      "depends_on": [
+        "C10"
+      ],
+      "spec_sections": "18, 33, 34",
+      "tasks": [
+        {
+          "id": "C11.01",
+          "name": "Настроить минимальный контур OpenBao",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C10"
+          ],
+          "output": "Bootstrap/unseal/runbook, scoped policies и backup key procedure",
+          "verification": "Приложение не использует root token и открытые пароли в PG",
+          "estimation_basis": "1 выбранная версия Bao; KV/Transit только по назначению",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C11.02",
+          "name": "Подключить server secret references",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C11.01"
+          ],
+          "output": "Получение ограниченных secrets/ключевых операций по ADR",
+          "verification": "Недоступность Bao даёт объявленную деградацию",
+          "estimation_basis": "Server identity и разрешённые E1 операции без remote target secrets",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C11.03",
+          "name": "Завершить enrollment/renew/revoke",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C11.02"
+          ],
+          "output": "Ротация agent/collector identities и защищённое хранение на ОС",
+          "verification": "Revoked identity не принимает новые задания/данные по политике",
+          "estimation_basis": "Agent, collector, server; expiry/renewal и clone case",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C11.04",
+          "name": "Проверить секреты и доверие",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C11.03"
+          ],
+          "output": "Проверки logs/artifacts/errors и отказов Bao/cert",
+          "verification": "Тестовые секреты отсутствуют в выдаче и отчётах",
+          "estimation_basis": "Позитивные и негативные auth/TLS/Bao сценарии",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C12",
+      "epoch": "E1",
+      "title": "CLI, управление циклом и наблюдаемость",
+      "depends_on": [
+        "C09",
+        "C11"
+      ],
+      "spec_sections": "7, 12, 22, 34",
+      "tasks": [
+        {
+          "id": "C12.01",
+          "name": "Реализовать минимальный CLI",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C09",
+            "C11"
+          ],
+          "output": "Login/context, assets list/get, sources/status с JSON и exit codes",
+          "verification": "CLI использует тот же API и tenant policy",
+          "estimation_basis": "Команды E1, pagination/timeout, без секретов в argv",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C12.02",
+          "name": "Добавить конфигурацию и диагностику источников",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C12.01"
+          ],
+          "output": "Versioned profile, intervals и source health API",
+          "verification": "Heartbeat/freshness/completeness не смешиваются",
+          "estimation_basis": "Agent+collector profiles и last-success/last-contact",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C12.03",
+          "name": "Добавить метрики и аудит",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C12.02"
+          ],
+          "output": "Queue age, import/outbox lag, spool/disk, cert/backup age",
+          "verification": "Недоступность/перегрузка обнаруживается по метрикам",
+          "estimation_basis": "1 минимальный набор exporters/alerts и structured logs",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C12.04",
+          "name": "Проверить операторский сценарий",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C12.03"
+          ],
+          "output": "Оператор меняет интервал и видит регулярный результат в UI/CLI",
+          "verification": "Изменения аудируются; отключённый источник не делает массовый missing",
+          "estimation_basis": "1 человек, 1 агент, 1 collector, 2 tenant негативный тест",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C13",
+      "epoch": "E1",
+      "title": "Установка, сервисы, обновление и backup",
+      "depends_on": [
+        "C12"
+      ],
+      "spec_sections": "4, 12, 31, 33–35",
+      "tasks": [
+        {
+          "id": "C13.01",
+          "name": "Оформить постоянные службы и установку",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C12"
+          ],
+          "output": "Systemd/Windows service по выбранной ОС, конфиги и data dirs",
+          "verification": "После перезагрузки весь поддержанный контур стартует сам",
+          "estimation_basis": "1 E1 платформа и 1 способ серверной установки",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C13.02",
+          "name": "Подготовить подписываемые артефакты и версии",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C13.01"
+          ],
+          "output": "Release manifest/checksums/SBOM и ручное проверяемое обновление",
+          "verification": "Артефакты проверяются до применения; версия видна оператору",
+          "estimation_basis": "Server/agent/collector/UI/CLI; совместимость по C03",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C13.03",
+          "name": "Реализовать backup/restore и миграции",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C13.02"
+          ],
+          "output": "Backup PG/artifacts/Bao state, restore runbook и upgrade procedure",
+          "verification": "На чистом стенде восстановлены UID, доступы, очередь и история",
+          "estimation_basis": "1 round-trip restore и 1 последовательное обновление схемы",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C13.04",
+          "name": "Проверить повторяемость поставки",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C13.03"
+          ],
+          "output": "Чистая установка, restart и upgrade/restore отчёт",
+          "verification": "Нет зависимости от build machine и потерянных локальных ключей",
+          "estimation_basis": "2 чистых среды или восстановленные VM snapshots",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C14",
+      "epoch": "E1",
+      "title": "Приёмка и выпуск первого рабочего SMB",
+      "depends_on": [
+        "C13"
+      ],
+      "spec_sections": "14–15, 33–35",
+      "tasks": [
+        {
+          "id": "C14.01",
+          "name": "Подготовить исполнимый план E1 приёмки",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C13"
+          ],
+          "output": "Матрица capabilities E1→AC→тесты и конфигурация стенда",
+          "verification": "Отложенные поля и функции не названы реализованными",
+          "estimation_basis": "AC E1 из §14; реальные host/collector/center",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C14.02",
+          "name": "Запустить непрерывный 24-часовой прогон",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C14.01"
+          ],
+          "output": "Периодический сбор плюс restart/network outage с журналом",
+          "verification": "Наблюдены реальные циклы, recovery, freshness, отсутствие дублей",
+          "estimation_basis": "Минимум 24ч; конфигурация интервалов и точек отказа зафиксирована",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C14.03",
+          "name": "Разобрать дефекты и повторить затронутое",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C14.02"
+          ],
+          "output": "Исправления в рамках E1 и протокол регрессии",
+          "verification": "Нерешённые обязательные дефекты блокируют release claim",
+          "estimation_basis": "Только выявленные дефекты, не расширение в E2",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C14.04",
+          "name": "Выпустить проверяемую SMB-поставку",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C14.03"
+          ],
+          "output": "Release notes, ограничения, install/operations и приёмочный отчёт",
+          "verification": "Публикация/деплой только при соответствующем поручении",
+          "estimation_basis": "1 релизный кандидат; все AC E1 с фактами passed/failed/unrun",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C15",
+      "epoch": "E2",
+      "title": "Постоянный Windows-агент",
+      "depends_on": [
+        "C14"
+      ],
+      "spec_sections": "6, 33",
+      "tasks": [
+        {
+          "id": "C15.01",
+          "name": "Уточнить Windows capabilities и права",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C14"
+          ],
+          "output": "Матрица ОС/архитектуры/полей и privileges",
+          "verification": "Недоступные API не объявлены пустыми данными",
+          "estimation_basis": "Выбранные Windows versions и стандартные/админ права",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C15.02",
+          "name": "Реализовать Windows-секции inventory",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C15.01"
+          ],
+          "output": "Оборудование, ПО/KB, службы, группы, сеть/диски/защита",
+          "verification": "Ошибка одной секции не уничтожает другие",
+          "estimation_basis": "Матрица §6.1 по поддержанным API; scripts policy C01",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C15.03",
+          "name": "Оформить service lifecycle и update",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C15.02"
+          ],
+          "output": "Install/start/stop/reboot/upgrade с identity/spool preservation",
+          "verification": "После reboot агент не регистрируется новым asset без причины",
+          "estimation_basis": "Windows service и поддержанный installer",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C15.04",
+          "name": "Проверить реальную Windows",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C15.03"
+          ],
+          "output": "Протокол данных, секций, памяти/CPU и recovery",
+          "verification": "Заглушки перечислены; реальные сценарии отличаются от mock",
+          "estimation_basis": "Минимум 1 реальный/VM Windows стенд на профиль прав",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C16",
+      "epoch": "E2",
+      "title": "Постоянный Linux-агент и platform parity",
+      "depends_on": [
+        "C14"
+      ],
+      "spec_sections": "6, 33",
+      "tasks": [
+        {
+          "id": "C16.01",
+          "name": "Уточнить Linux capabilities и дистрибутивы",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C14"
+          ],
+          "output": "Матрица distro/init/package-manager/прав",
+          "verification": "Указаны supported и unsupported сочетания",
+          "estimation_basis": "Выбранные distro/версии из D-06",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C16.02",
+          "name": "Реализовать Linux-секции inventory",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C16.01"
+          ],
+          "output": "CPU/RAM, пакеты, службы, accounts, сеть, mounts/security facts",
+          "verification": "TCP/UDP и секции независимы; секреты фильтруются",
+          "estimation_basis": "Матрица §6.1; ограниченные и root права",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C16.03",
+          "name": "Оформить daemon/service и переносимость",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C16.02"
+          ],
+          "output": "Systemd/init packaging, data dirs, privileges и update",
+          "verification": "Spool/identity сохраняются при обновлении",
+          "estimation_basis": "Поддержанные service managers и дистрибутивы",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C16.04",
+          "name": "Проверить Windows/Linux контракты",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C16.03"
+          ],
+          "output": "Эталонные нормализованные fixtures и resource measurements",
+          "verification": "Различия ОС представлены statuses, не выдуманными значениями",
+          "estimation_basis": "Общие fixtures C03; Linux measurements, полная Windows/Linux сверка в C24",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C17",
+      "epoch": "E2",
+      "title": "Безагентный SSH-сбор Linux",
+      "depends_on": [
+        "C14"
+      ],
+      "spec_sections": "6, 18",
+      "tasks": [
+        {
+          "id": "C17.01",
+          "name": "Определить remote SSH profile",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C14"
+          ],
+          "output": "Host-key policy, permissions, deadlines и attempts",
+          "verification": "Unknown host key не принимается молча",
+          "estimation_basis": "Ключ/пароль/sudo только выбранные безопасные способы",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C17.02",
+          "name": "Подключить scoped credentials через Bao",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C17.01"
+          ],
+          "output": "Collector получает только разрешённый доступ задания",
+          "verification": "Нет раздачи vault всем агентам и секретов в argv/results",
+          "estimation_basis": "1 static SSH credential и policy revoke/rotation",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C17.03",
+          "name": "Реализовать SSH-адаптер",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C17.02"
+          ],
+          "output": "Сбор секций через native/read-only commands по решению D-03",
+          "verification": "Timeout/cancel/partial отражены в общем контракте",
+          "estimation_basis": "1 поддержанная Linux family; расширение по matrix",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C17.04",
+          "name": "Проверить живой SSH и отказы",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C17.03"
+          ],
+          "output": "Протокол host key, неверных прав, sudo и отмены",
+          "verification": "Нет изменения конфигурации цели и утечки credential",
+          "estimation_basis": "1 реальная тестовая цель плюс негативные сценарии",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C18",
+      "epoch": "E2",
+      "title": "Безагентный WinRM-сбор Windows",
+      "depends_on": [
+        "C14"
+      ],
+      "spec_sections": "6, 18",
+      "tasks": [
+        {
+          "id": "C18.01",
+          "name": "Выбрать защищённый WinRM профиль",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C14"
+          ],
+          "output": "Auth/TLS policy и prerequisites цели",
+          "verification": "Нет требования AllowUnencrypted как безопасного default",
+          "estimation_basis": "Один заявленный auth метод и cert trust",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C18.02",
+          "name": "Реализовать WinRM credential scope",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C18.01"
+          ],
+          "output": "Bao reference и выдача по site/job/target",
+          "verification": "Collector не получает весь vault",
+          "estimation_basis": "1 test credential и права сбора",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C18.03",
+          "name": "Реализовать WinRM inventory adapter",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C18.02"
+          ],
+          "output": "Секции Windows со статусами, отменой/timeout",
+          "verification": "Группы, KB, TCP/UDP и локализация не ломают весь scan",
+          "estimation_basis": "Матрица Windows и политика PowerShell/native",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C18.04",
+          "name": "Проверить реальную Windows по WinRM",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C18.03"
+          ],
+          "output": "Данные/ошибки/секреты проверены на поддержанном target",
+          "verification": "Mock-run не заменяет живую проверку",
+          "estimation_basis": "1 Windows target; full/limited/denied connectivity",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C19",
+      "epoch": "E2",
+      "title": "SNMP и read-only сбор сетевых устройств",
+      "depends_on": [
+        "C14"
+      ],
+      "spec_sections": "6, 20",
+      "tasks": [
+        {
+          "id": "C19.01",
+          "name": "Определить netdev capability matrix",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C14"
+          ],
+          "output": "Vendor/OS/OID/API и поля идентичности/таблиц",
+          "verification": "Поддержка декларируется по устройству, а не слову SNMP",
+          "estimation_basis": "Выбранные Cisco/Huawei либо согласованные аналоги",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C19.02",
+          "name": "Реализовать SNMPv3 access profile",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C19.01"
+          ],
+          "output": "Bao refs, security level, retries и rate limits",
+          "verification": "v1/v2c доступны лишь по явному разрешённому профилю",
+          "estimation_basis": "1 SNMPv3 method; legacy profile отдельным флагом",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C19.03",
+          "name": "Реализовать нормализованный network inventory",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C19.02"
+          ],
+          "output": "Interfaces/VLAN/VRF/LAG/FDB/ARP/routes/neighbors по capabilities",
+          "verification": "Неизвестные таблицы помечены unavailable/unsupported",
+          "estimation_basis": "Минимум 1 выбранная модель плюс fixtures другого vendor",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C19.04",
+          "name": "Проверить реальные и частичные ответы",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C19.03"
+          ],
+          "output": "Протокол OID permissions, timeout и таблиц",
+          "verification": "Секреты community/auth/privacy не попадают в данные",
+          "estimation_basis": "Vendor lab/доступный стенд; unsupported случаи перечислены",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C20",
+      "epoch": "E2",
+      "title": "Многоисточниковое discovery",
+      "depends_on": [
+        "C17",
+        "C18",
+        "C19"
+      ],
+      "spec_sections": "20, 23",
+      "tasks": [
+        {
+          "id": "C20.01",
+          "name": "Задать scope и разрешённые источники",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C17",
+            "C18",
+            "C19"
+          ],
+          "output": "Tenant/site/VRF/VLAN ranges и запрет расширения scope",
+          "verification": "Passive finding не запускает scan чужого диапазона",
+          "estimation_basis": "Активный IP scope и пассивные DHCP/DNS/ARP/NDP источники",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C20.02",
+          "name": "Реализовать active discovery adapters",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C20.01"
+          ],
+          "output": "ICMP/TCP и доступные ARP/NDP probes",
+          "verification": "Rate limit/permissions/cancel соблюдены",
+          "estimation_basis": "IPv4/IPv6 и платформенные ограничения из matrix",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C20.03",
+          "name": "Добавить imports авторизованных таблиц",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C20.02"
+          ],
+          "output": "DHCP/DNS/ARP/FDB и базовые AD/hypervisor API наблюдения",
+          "verification": "Источник/coverage/TTL фиксируются; API deep import отдельно",
+          "estimation_basis": "Минимум 2 независимых типа источника, остальные явные capabilities",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C20.04",
+          "name": "Проверить сведение наблюдений",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C20.03"
+          ],
+          "output": "Новые/повторные/перекрывающиеся IP обнаружены корректно",
+          "verification": "Same IP в разных scopes не сливается",
+          "estimation_basis": "2 tenant/VRF и active+passive fixtures",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C21",
+      "epoch": "E2",
+      "title": "Presence и обнаружение пропавших/вернувшихся",
+      "depends_on": [
+        "C20"
+      ],
+      "spec_sections": "20, 23, 34",
+      "tasks": [
+        {
+          "id": "C21.01",
+          "name": "Задать presence policy",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C20"
+          ],
+          "output": "TTL/coverage/thresholds и states по типам источников",
+          "verification": "Нет перехода missing по одному ICMP failure",
+          "estimation_basis": "Present/suspect/missing/unknown/reappeared сценарии",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C21.02",
+          "name": "Реализовать projection и evidence",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C21.01"
+          ],
+          "output": "First/last seen, source health, transitions и события",
+          "verification": "Late package не откатывает текущее presence",
+          "estimation_basis": "Несколько источников с разными collected/received times",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C21.03",
+          "name": "Добавить UI/CLI представление",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C21.02"
+          ],
+          "output": "Причины изменений и фильтры freshness/presence",
+          "verification": "Business lifecycle показан отдельно",
+          "estimation_basis": "Карточка, список и журнал evidence",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C21.04",
+          "name": "Проверить массовые сбои источников",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C21.03"
+          ],
+          "output": "Fault cases collector/site down и partial scan",
+          "verification": "Отказ источника не вызывает массовое исчезновение",
+          "estimation_basis": "2 коллектора/области и пропуск одного полного цикла",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C22",
+      "epoch": "E2",
+      "title": "Доказательная топология L2/L3",
+      "depends_on": [
+        "C19",
+        "C20",
+        "C21"
+      ],
+      "spec_sections": "5, 20",
+      "tasks": [
+        {
+          "id": "C22.01",
+          "name": "Спроектировать нормализованные связи",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C19",
+            "C20",
+            "C21"
+          ],
+          "output": "Endpoints, evidence/confidence, VLAN/VRF/LAG и timestamps",
+          "verification": "Предположение FDB отличается от подтверждённого LLDP",
+          "estimation_basis": "L2 и L3 relation types; directional evidence",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C22.02",
+          "name": "Реализовать topology reconciliation",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C22.01"
+          ],
+          "output": "Сведение соседей/интерфейсов, aging и конфликтов",
+          "verification": "Повторные связи не дублируются, ручное подтверждение сохранено",
+          "estimation_basis": "LLDP/CDP fixtures, trunk/aggregation/несколько hops",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C22.03",
+          "name": "Реализовать граф и экспорт",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C22.02"
+          ],
+          "output": "Фильтры, карточка связи, SVG/PNG и scoped выдача",
+          "verification": "Большой граф ограничен и не раскрывает чужой tenant",
+          "estimation_basis": "1 live topology и крупный synthetic graph",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C22.04",
+          "name": "Проверить реальные устройства и неоднозначность",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C22.03"
+          ],
+          "output": "Эталонный граф и объяснимые связи",
+          "verification": "Схема не выдаёт MAC за прямой кабель",
+          "estimation_basis": "Минимум 2 связанных устройства/поддержанных источника",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C23",
+      "epoch": "E2",
+      "title": "Portable-аудит и безопасный offline-пакет",
+      "depends_on": [
+        "C10",
+        "C11",
+        "C17",
+        "C18",
+        "C19"
+      ],
+      "spec_sections": "7–8, 18–19",
+      "tasks": [
+        {
+          "id": "C23.01",
+          "name": "Утвердить portable schema/crypto ADR",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C10",
+            "C11",
+            "C17",
+            "C18",
+            "C19"
+          ],
+          "output": "Формат manifest/records, signature/encryption/key IDs и trust",
+          "verification": "Нет самодельных примитивов и неясных подписываемых байтов",
+          "estimation_basis": "1 audited library/format, major/minor compatibility",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C23.02",
+          "name": "Реализовать разовый portable workflow",
+          "owner": "Разработчик агента/коллектора",
+          "depends_on": [
+            "C23.01"
+          ],
+          "output": "Host/network/mixed collect, preview/progress, cancel и export",
+          "verification": "Не устанавливает службу и не требует live PG/Bao offline",
+          "estimation_basis": "Один выбранный язык/платформы по D-07; общий SDK",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C23.03",
+          "name": "Реализовать resume upload и import пакета",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C23.02"
+          ],
+          "output": "Limits/quarantine/staging/checkpoints/mapping и dedup",
+          "verification": "Path traversal/zip bomb/invalid signature отклонены",
+          "estimation_basis": "File и HTTPS пути, same ID different digest",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C23.04",
+          "name": "Проверить offline parity и отсутствие секретов",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C23.03"
+          ],
+          "output": "Один набор данных через online и file даёт эквивалентный реестр",
+          "verification": "Пароли/bundle не входят в пакет; late observations сохранены",
+          "estimation_basis": "Реальный аудит host и разрешённой network цели",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C24",
+      "epoch": "E2",
+      "title": "Приёмка агентного и безагентного сбора",
+      "depends_on": [
+        "C15",
+        "C16",
+        "C22",
+        "C23"
+      ],
+      "spec_sections": "6, 14–15, 33–34",
+      "tasks": [
+        {
+          "id": "C24.01",
+          "name": "Свести platform/vendor matrix",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C15",
+            "C16",
+            "C22",
+            "C23"
+          ],
+          "output": "Capabilities и тесты Windows/Linux/netdev/portable",
+          "verification": "Unsupported не скрыты за общим claimed parity",
+          "estimation_basis": "Все адаптеры C15–23 и их runtime dependencies",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C24.02",
+          "name": "Проверить один актив разными источниками",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C24.01"
+          ],
+          "output": "Agent+SSH/WinRM+portable+discovery reconciliation tests",
+          "verification": "История/ответственные не теряются, неопределённость видна",
+          "estimation_basis": "Смена IP/hostname, clone VM, source collision",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C24.03",
+          "name": "Проверить длительные циклы и cancellation",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C24.02"
+          ],
+          "output": "Многосуточный/согласованный E2 soak и network failures",
+          "verification": "Нет гонок lease/повторных эффектов и ложного missing",
+          "estimation_basis": "Длительность и workload фиксируются перед запуском",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C24.04",
+          "name": "Подготовить E2 release и документацию",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C24.03"
+          ],
+          "output": "Руководства deploy/credentials/network scopes и limitations",
+          "verification": "Каждый AC E2 имеет evidence или release blocker",
+          "estimation_basis": "Один согласованный набор платформ/устройств",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C25",
+      "epoch": "E3",
+      "title": "Полная reconciliation, merge и split",
+      "depends_on": [
+        "C24"
+      ],
+      "spec_sections": "5, 19",
+      "tasks": [
+        {
+          "id": "C25.01",
+          "name": "Уточнить сильные/слабые идентификаторы",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C24"
+          ],
+          "output": "Namespace/uniqueness/source-trust правила по типам активов",
+          "verification": "IP/MAC/hostname по отдельности не универсальный ключ",
+          "estimation_basis": "Physical/VM/network/cloud examples",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C25.02",
+          "name": "Реализовать conflict resolution",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C25.01"
+          ],
+          "output": "Кандидаты и ручное подтверждение с аудитом",
+          "verification": "Нельзя молча склеить конфликтующие serial/UUID",
+          "estimation_basis": "Несколько источников и overlapping scopes",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C25.03",
+          "name": "Реализовать merge/split и redirects",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C25.02"
+          ],
+          "output": "Canonical UID, aliases, перенос связей и provenance",
+          "verification": "Старые UID разрешаются; split не переиспользует UID",
+          "estimation_basis": "Две карточки merge и разделение ошибочного merge",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C25.04",
+          "name": "Проверить исправимость и конкурентность",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C25.03"
+          ],
+          "output": "Rollback/compensating history и concurrent edits",
+          "verification": "Наблюдения не потеряны, межtenant merge запрещён",
+          "estimation_basis": "Conflict, merge/split, outbox/search replay fixtures",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C26",
+      "epoch": "E3",
+      "title": "AM/CMDB, ПО, компоненты и связи",
+      "depends_on": [
+        "C25"
+      ],
+      "spec_sections": "5, 9, 19, 28",
+      "tasks": [
+        {
+          "id": "C26.01",
+          "name": "Уточнить asset/CI/component/service модель",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C25"
+          ],
+          "output": "ADR CMDB границ и типизированные отношения",
+          "verification": "Рабочая трактовка smdb подтверждена либо явно ограничена",
+          "estimation_basis": "Asset/CI/component/service/software types",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C26.02",
+          "name": "Реализовать типизированные сведения",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C26.01"
+          ],
+          "output": "Software product/installations, components и business fields",
+          "verification": "Сбор не затирает управленческие поля",
+          "estimation_basis": "Основные фильтруемые поля нормализованы, вариативные в JSONB",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C26.03",
+          "name": "Расширить API и карточки",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C26.02"
+          ],
+          "output": "Вкладки/сравнение наблюдений/relations и optimistic concurrency",
+          "verification": "Long/empty/partial данные доступны с provenance",
+          "estimation_basis": "Типы активов и контракты выбранного объёма",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C26.04",
+          "name": "Проверить историю и ownership",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C26.03"
+          ],
+          "output": "Migration/contract/UI tests и архитектурные проверки",
+          "verification": "Модули не пишут в чужие таблицы",
+          "estimation_basis": "Связи, события, cursor pagination и large lists",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C27",
+      "epoch": "E3",
+      "title": "Полная ответственность и оргструктура",
+      "depends_on": [
+        "C26"
+      ],
+      "spec_sections": "3, 21",
+      "tasks": [
+        {
+          "id": "C27.01",
+          "name": "Определить subjects и оргисточники",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C26"
+          ],
+          "output": "Person/team, business owner/technical/custodian и ownership ADR",
+          "verification": "Collector не считается ответственным лицом",
+          "estimation_basis": "1 локальный org source; внешний sync позже C31",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C27.02",
+          "name": "Реализовать назначения и передачу",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C27.01"
+          ],
+          "output": "Atomic assignment, intervals/history, fallback при уходе сотрудника",
+          "verification": "У актива не возникает периода без accountable role",
+          "estimation_basis": "Person→person/team и deactivation cases",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C27.03",
+          "name": "Добавить операторские рабочие списки",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C27.02"
+          ],
+          "output": "На мне/на команде/не распределено и bulk assign по правам",
+          "verification": "Bulk не обходит tenant и optimistic concurrency",
+          "estimation_basis": "Фильтры и поддержанные массовые операции",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C27.04",
+          "name": "Проверить права и конкуренцию передачи",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C27.03"
+          ],
+          "output": "Audit и concurrent assignment tests",
+          "verification": "Не потеряны исторические интервалы и основания",
+          "estimation_basis": "2 оператора, removed user, group owner absent",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C28",
+      "epoch": "E3",
+      "title": "PoC полнотекстового поиска: Tantivy / Bluge",
+      "depends_on": [
+        "C25"
+      ],
+      "spec_sections": "24",
+      "tasks": [
+        {
+          "id": "C28.01",
+          "name": "Определить тестовый корпус и критерии",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C25"
+          ],
+          "output": "RU/EN/IP/FQDN/serial fields, filters/ranking и workload",
+          "verification": "Критерии и веса выбора известны до результатов",
+          "estimation_basis": "Репрезентативный корпус с ACL/tenant и tombstones",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C28.02",
+          "name": "Собрать два изолированных PoC",
+          "owner": "Разработчик поискового контура",
+          "depends_on": [
+            "C28.01"
+          ],
+          "output": "Tantivy и Bluge adapters без замены PG source of truth",
+          "verification": "Одинаковые операции и данные у обоих движков",
+          "estimation_basis": "Два кандидата; build/runtime/license matrix",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C28.03",
+          "name": "Измерить поиск и восстановление",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C28.02"
+          ],
+          "output": "Latency/resources/rebuild/update/delete и ACL leakage tests",
+          "verification": "Отзыв доступа не зависит от устаревшего индекса",
+          "estimation_basis": "Corpus size/железо/нагрузка опубликованы, без маркетинговых SLA",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C28.04",
+          "name": "Выбрать движок и runtime topology",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C28.03"
+          ],
+          "output": "ADR с writer/readers, snapshots и последствиями CGO/Rust",
+          "verification": "Решение опирается на факты, а не только язык backend",
+          "estimation_basis": "1 выбранный engine; оставшиеся риски перечислены",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C29",
+      "epoch": "E3",
+      "title": "Поисковая проекция, API и UI",
+      "depends_on": [
+        "C26",
+        "C28"
+      ],
+      "spec_sections": "23–24",
+      "tasks": [
+        {
+          "id": "C29.01",
+          "name": "Реализовать outbox index consumer",
+          "owner": "Разработчик поискового контура",
+          "depends_on": [
+            "C26",
+            "C28"
+          ],
+          "output": "Idempotent upsert/delete/merge aliases с checkpoint",
+          "verification": "Crash/replay не теряет и не дублирует актуальное состояние",
+          "estimation_basis": "Выбранный engine, aggregate versions и tombstones",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C29.02",
+          "name": "Реализовать rebuild и degradation",
+          "owner": "Разработчик поискового контура",
+          "depends_on": [
+            "C29.01"
+          ],
+          "output": "Snapshot/checkpoint/catch-up, lag и exact-PG fallback policy",
+          "verification": "Fallback не называется эквивалентным FTS",
+          "estimation_basis": "Rebuild на копии данных и отказ индекса",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C29.03",
+          "name": "Добавить search API/UI",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C29.02"
+          ],
+          "output": "Query/filters/facets/snippets с tenant/ACL enforcement",
+          "verification": "Чужие counts/snippets и отозванные данные не раскрываются",
+          "estimation_basis": "Все публичные search surfaces и pagination",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C29.04",
+          "name": "Проверить обновления и доступы",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C29.03"
+          ],
+          "output": "Real PG/outbox/index integration и concurrent changes",
+          "verification": "Rebuild сходится с authoritative PG",
+          "estimation_basis": "Deletion, merge, revoked ACL, burst imports",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C30",
+      "epoch": "E3",
+      "title": "Нагрузка 100 активных пользователей и E3 приёмка",
+      "depends_on": [
+        "C27",
+        "C29"
+      ],
+      "spec_sections": "12, 15, 27, 29",
+      "tasks": [
+        {
+          "id": "C30.01",
+          "name": "Согласовать нагрузочный паспорт",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C27",
+            "C29"
+          ],
+          "output": "Registered/active users, mix, think-time, data size, hardware и SLO",
+          "verification": "100 пользователей определены операционно",
+          "estimation_basis": "100 concurrent active плюс background ingest, warmup/duration",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C30.02",
+          "name": "Реализовать воспроизводимый workload",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C30.01"
+          ],
+          "output": "Карточки/поиск/фильтры/правки/топология/импорт",
+          "verification": "Нет нулевых операций или искусственно пустого корпуса",
+          "estimation_basis": "Одна согласованная смесь с реальными API",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C30.03",
+          "name": "Измерить и устранить узкие места",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C30.02"
+          ],
+          "output": "Профили SQL/pool/worker/search и исправления по данным",
+          "verification": "Публикуются p95/p99/errors/resources/queue lag",
+          "estimation_basis": "Один initial run и адресные повторные измерения",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C30.04",
+          "name": "Закрыть E3 приёмку",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C30.03"
+          ],
+          "output": "Протокол функциональных/контрактных/performance проверок",
+          "verification": "Без протокола нет заявления о ёмкости",
+          "estimation_basis": "AC E3 и эксплуатационные ограничения",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C31",
+      "epoch": "E4",
+      "title": "Интеграции и внешние контракты",
+      "depends_on": [
+        "C30"
+      ],
+      "spec_sections": "11, 22–23, 28",
+      "tasks": [
+        {
+          "id": "C31.01",
+          "name": "Определить первый набор интеграций",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C30"
+          ],
+          "output": "Scope/direction/version/auth и data ownership contracts",
+          "verification": "Нет двусторонней конкурирующей master-записи",
+          "estimation_basis": "Приоритетные org directory и 1 asset/API integration",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C31.02",
+          "name": "Реализовать import/export adapters",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C31.01"
+          ],
+          "output": "Versioned CSV/API mapping и инкрементальная синхронизация",
+          "verification": "Сохраняются source ids/provenance и tenant scope",
+          "estimation_basis": "Два согласованных adapter направления",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C31.03",
+          "name": "Реализовать delivery/retry/audit",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C31.02"
+          ],
+          "output": "Durable outbound delivery или webhook с idempotency и auth",
+          "verification": "Replay не повторяет внешние действия без policy",
+          "estimation_basis": "Подписанные/аутентифицированные endpoints по контракту",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C31.04",
+          "name": "Проверить контракты с реальными системами",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C31.03"
+          ],
+          "output": "Integration evidence и совместимость версий",
+          "verification": "Mock и реальное подключение разделены",
+          "estimation_basis": "Только разрешённые стенды; внешние credentials prerequisite",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C32",
+      "epoch": "E4",
+      "title": "Миграция данных Python v1",
+      "depends_on": [
+        "C30"
+      ],
+      "spec_sections": "13",
+      "tasks": [
+        {
+          "id": "C32.01",
+          "name": "Инвентаризировать реально сохранённые данные v1",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C30"
+          ],
+          "output": "Mapping snapshot/JSON/surv/credentials и gaps",
+          "verification": "Потерянные исходные facts не выдумываются",
+          "estimation_basis": "Поддержанные v1 fixtures, app key и export layouts",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C32.02",
+          "name": "Реализовать миграционный adapter",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C32.01"
+          ],
+          "output": "Idempotent import с tenant/source/status annotations",
+          "verification": "Недостающие поля помечены unknown, UID mappings сохранены",
+          "estimation_basis": "Одна зафиксированная версия v1 и целевая v2 schema",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C32.03",
+          "name": "Разработать процедуру credentials/cutover",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C32.02"
+          ],
+          "output": "Защищённый перенос либо re-enrollment, rollback и shadow plan",
+          "verification": "Секреты не попадают в открытый dump",
+          "estimation_basis": "Доступность старого key — prerequisite, не попытка его угадать",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C32.04",
+          "name": "Сверить миграцию на эталонах",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C32.03"
+          ],
+          "output": "Counts/sections/identity/ownership/history и rollback report",
+          "verification": "Известный дефект apply_role_guess не обходится молча заглушкой",
+          "estimation_basis": "Использовать сохранённые fixtures; исправление v1 — отдельный scope",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C33",
+      "epoch": "E4",
+      "title": "Промышленная поставка и сопровождение",
+      "depends_on": [
+        "C31",
+        "C32"
+      ],
+      "spec_sections": "4, 12, 16",
+      "tasks": [
+        {
+          "id": "C33.01",
+          "name": "Закрепить platform/version support policy",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C31",
+            "C32"
+          ],
+          "output": "Matrix ОС/CPU/Go/PG/Bao и сроки совместимости",
+          "verification": "Непроверенные платформы не названы supported",
+          "estimation_basis": "Поддержанные binary/container и agent installers",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C33.02",
+          "name": "Укрепить supply chain и upgrade path",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C33.01"
+          ],
+          "output": "Pinned dependencies, signatures/SBOM, rollout/canary/revoke",
+          "verification": "Обновление проверяется и имеет план остановки/восстановления",
+          "estimation_basis": "Server/collector/agent/UI/CLI по одной версии релиза",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C33.03",
+          "name": "Оформить monitoring и эксплуатационные runbooks",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C33.02"
+          ],
+          "output": "Install/upgrade/restore/cert rotation/reconnect/disk-full guides",
+          "verification": "Независимый оператор воспроизводит критические процедуры",
+          "estimation_basis": "Все основные состояния контура без секретов в документах",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C33.04",
+          "name": "Проверить чистую поставку и поддержку",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C33.03"
+          ],
+          "output": "Install/upgrade/backup/restore acceptance на заявленной matrix",
+          "verification": "Фактические проверки и ограничения опубликованы",
+          "estimation_basis": "Чистые VM/образы по поддержанным сочетаниям",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C34",
+      "epoch": "E4",
+      "title": "Пилот, внедрение и стабилизация",
+      "depends_on": [
+        "C33"
+      ],
+      "spec_sections": "12, 14–16",
+      "tasks": [
+        {
+          "id": "C34.01",
+          "name": "Подготовить согласованный пилотный scope",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C33"
+          ],
+          "output": "Цели, владельцы, доступы, окна, данные, успех и rollback",
+          "verification": "Активные проверки ограничены разрешёнными диапазонами",
+          "estimation_basis": "Одна пилотная организация/площадка и утверждённые targets",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C34.02",
+          "name": "Развернуть и обучить операторов",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C34.01"
+          ],
+          "output": "Рабочая установка, accounts/roles, agent/collector rollout и обучение",
+          "verification": "Пользователь выполняет типовые задачи без разработчика",
+          "estimation_basis": "Пилотные системы и утверждённые доступы, не автоматический production deploy",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C34.03",
+          "name": "Собрать feedback и стабилизировать",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C34.02"
+          ],
+          "output": "Реестр дефектов/приоритетов и исправления scope пилота",
+          "verification": "Подтверждены сохранность, свежесть и recovery",
+          "estimation_basis": "Согласованный период пилота и реальные сценарии",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C34.04",
+          "name": "Оформить передачу в эксплуатацию",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C34.03"
+          ],
+          "output": "Пилотный отчёт, runbooks, владельцы и SLA/SLO proposal",
+          "verification": "Незакрытые риски не скрыты в слове готово",
+          "estimation_basis": "Acceptance sign-off и план rollout требуют решения заказчика",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C35",
+      "epoch": "E5",
+      "title": "Раздельные API/worker и несколько экземпляров",
+      "depends_on": [
+        "C34"
+      ],
+      "spec_sections": "28, 31",
+      "tasks": [
+        {
+          "id": "C35.01",
+          "name": "Вынести процессы без смены доменной модели",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C34"
+          ],
+          "output": "Роли api/worker/combined с общими контрактами и конфигом",
+          "verification": "API не выполняет длительный scan/import внутри HTTP",
+          "estimation_basis": "Те же данные и domain code, отдельные resource budgets",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C35.02",
+          "name": "Обеспечить конкурентное исполнение",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C35.01"
+          ],
+          "output": "Lease/claim/version/locks без reliance на процессную память",
+          "verification": "Два workers не применяют один эффект дважды",
+          "estimation_basis": "2 API и 2 workers; общий PG и artifacts",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C35.03",
+          "name": "Развернуть согласованную поисковую topology",
+          "owner": "Разработчик поискового контура",
+          "depends_on": [
+            "C35.02"
+          ],
+          "output": "Writer/readers и snapshot access по ADR C28",
+          "verification": "Нет конкурентной записи в общий файловый индекс",
+          "estimation_basis": "Выбранный engine и multi-instance placement",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C35.04",
+          "name": "Проверить equivalence и отказ реплики",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C35.03"
+          ],
+          "output": "Combined vs split, API failover и worker saturation",
+          "verification": "Права/сессии/задачи не теряются, API SLO измерен",
+          "estimation_basis": "AC-41/44/45 с реальным отключением процессов",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C36",
+      "epoch": "E5",
+      "title": "Пул SQL, индексы и эксплуатация PG",
+      "depends_on": [
+        "C35"
+      ],
+      "spec_sections": "9–10, 12",
+      "tasks": [
+        {
+          "id": "C36.01",
+          "name": "Выбрать SQL pool продукт/режим",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C35"
+          ],
+          "output": "ADR PgBouncer/pgBalancer/иной по требуемой функции",
+          "verification": "Pool не подменяет shard routing или HA",
+          "estimation_basis": "Транзакции/prepared statements/миграции/jobs compatibility",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C36.02",
+          "name": "Измерить запросы и соединения",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C36.01"
+          ],
+          "output": "Slow queries, EXPLAIN и pool saturation baseline",
+          "verification": "Оптимизация опирается на фактические запросы",
+          "estimation_basis": "Нагрузка C30 на split deployment",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C36.03",
+          "name": "Настроить retention/partition обслуживание",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C36.02"
+          ],
+          "output": "Policy observations/artifacts/audit/outbox и maintenance",
+          "verification": "Checkpoint/rebuild не теряет нужные события при очистке",
+          "estimation_basis": "Объёмы/сроки из D-08, partitioning только при необходимости",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C36.04",
+          "name": "Проверить отказ пула и обновление",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C36.03"
+          ],
+          "output": "Reconnect/transaction/timeout и migration tests",
+          "verification": "Нет скрытой зависимости от session state",
+          "estimation_basis": "Реальный pool и выбранные PG/driver версии",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C37",
+      "epoch": "E5",
+      "title": "Каталог шардов и перенос tenant",
+      "depends_on": [
+        "C36"
+      ],
+      "spec_sections": "10, 19, 25",
+      "tasks": [
+        {
+          "id": "C37.01",
+          "name": "Уточнить partition key и catalog model",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C36"
+          ],
+          "output": "Tenant→shard/home/DR/residency/epoch ADR",
+          "verification": "Large tenant и межплощадочные связи рассмотрены",
+          "estimation_basis": "Ключ и ограничения межшардовых транзакций",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C37.02",
+          "name": "Реализовать routing и размещение jobs",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C37.01"
+          ],
+          "output": "Доступ к shard по catalog с failure-closed policy",
+          "verification": "Потеря catalog не пишет данные в случайную БД",
+          "estimation_basis": "2 логических shard и одна управляемая catalog authority",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C37.03",
+          "name": "Реализовать tenant migration workflow",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C37.02"
+          ],
+          "output": "Copy/catch-up/fence/cutover/verify/rollback",
+          "verification": "Asset_uid не меняется, competing writer исключён",
+          "estimation_basis": "Tenant A переносится между 2 тестовыми кластерами",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C37.04",
+          "name": "Проверить изоляцию и региональные запросы",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C37.03"
+          ],
+          "output": "Cross-shard aggregation/ACL/UID/duplicates tests",
+          "verification": "Нет глобальных JOIN/FK предположений",
+          "estimation_basis": "2 tenant/shard, partial failure и ограниченный fan-out",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C38",
+      "epoch": "E5",
+      "title": "HA PostgreSQL и георезервирование",
+      "depends_on": [
+        "C37"
+      ],
+      "spec_sections": "10, 25",
+      "tasks": [
+        {
+          "id": "C38.01",
+          "name": "Определить регионы и RPO/RTO",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C37"
+          ],
+          "output": "Residency, RTT, sync/async, failure domains и ownership ADR",
+          "verification": "Async loss и latency tradeoffs названы явно",
+          "estimation_basis": "Одна home/DR пара на тестовый shard",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C38.02",
+          "name": "Подготовить replication и election/fencing",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C38.01"
+          ],
+          "output": "Выбранный HA stack, promote и routing epoch changes",
+          "verification": "Старый writer не принимает запись после promotion",
+          "estimation_basis": "Один writer на shard; подтверждённый механизм fencing",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C38.03",
+          "name": "Реализовать failover/failback runbooks",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C38.02"
+          ],
+          "output": "Endpoints/leases/jobs/search ownership recovery",
+          "verification": "Задания старой epoch не создают повторных эффектов",
+          "estimation_basis": "PG primary loss, region partition и intentional failback",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C38.04",
+          "name": "Измерить fault behaviour",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C38.03"
+          ],
+          "output": "Потеря региона/partition/heal с measured RPO/RTO",
+          "verification": "Не заявлены exactly-once и zero loss без доказательства",
+          "estimation_basis": "Timestamped failure evidence и committed data checks",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C39",
+      "epoch": "E5",
+      "title": "Восстановление всего контура",
+      "depends_on": [
+        "C38"
+      ],
+      "spec_sections": "12, 18, 23–25",
+      "tasks": [
+        {
+          "id": "C39.01",
+          "name": "Составить согласованный DR-набор",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C38"
+          ],
+          "output": "PG/catalog/artifacts/Bao keys/outbox/checkpoints/search state inventory",
+          "verification": "Нет компонента вне restore dependency graph",
+          "estimation_basis": "Backup set и привязки версий/ключей/регионов",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C39.02",
+          "name": "Реализовать Bao/artifact recovery",
+          "owner": "Инженер эксплуатации / сборки",
+          "depends_on": [
+            "C39.01"
+          ],
+          "output": "Unseal/restore/permissions и доступ к подписанным пакетам",
+          "verification": "DR не теряет ключи расшифровки и audit policy",
+          "estimation_basis": "Тестовые secrets/ключи, допустимый residency",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C39.03",
+          "name": "Восстановить jobs/dedup/search",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C39.02"
+          ],
+          "output": "Replay/rebuild с checkpoints и ledger после DR",
+          "verification": "Повтор старого package не дублирует эффект",
+          "estimation_basis": "Один package до/после DR, merge aliases и tombstones",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C39.04",
+          "name": "Провести полный restore drill",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C39.03"
+          ],
+          "output": "Новая чистая среда с восстановленными UI/CLI/collectors",
+          "verification": "Measured restore time и data-loss согласованы с RPO/RTO",
+          "estimation_basis": "Полный согласованный backup set без обращения к старому live primary",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C40",
+      "epoch": "E5",
+      "title": "Enterprise-приёмка и критерии выделения сервисов",
+      "depends_on": [
+        "C39"
+      ],
+      "spec_sections": "14–15, 25, 28–29",
+      "tasks": [
+        {
+          "id": "C40.01",
+          "name": "Повторить нагрузку в распределённом профиле",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C39"
+          ],
+          "output": "Отчёт CPU/RAM/SQL/search/queue и API p95/p99",
+          "verification": "Сравнение с C30 по одинаковым данным и workload",
+          "estimation_basis": "100 active как минимум согласованного профиля, не произвольный capacity claim",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C40.02",
+          "name": "Проверить географические отказы и upgrades",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C40.01"
+          ],
+          "output": "Fault/canary/rollback/cert tests на HA topology",
+          "verification": "Resilience и version skew подтверждены",
+          "estimation_basis": "Home/DR, 2 API/workers и поддержанные collector/agent версии",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C40.03",
+          "name": "Оценить необходимость отдельных сервисов",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C40.02"
+          ],
+          "output": "Измеренный decision record кандидатов extraction",
+          "verification": "Выделение не делается ради количества пользователей",
+          "estimation_basis": "Import/search/reports/integrations; ownership/contracts/backfill plan",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C40.04",
+          "name": "Закрыть первую волну и передать enterprise профиль",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C40.03"
+          ],
+          "output": "Протокол AC-01–55 по целевой matrix, limitations/runbooks",
+          "verification": "Плановые и непроверенные возможности не названы готовыми",
+          "estimation_basis": "Scope первой волны, все релизы/коммиты и данные испытаний",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C41",
+      "epoch": "W2",
+      "title": "Процессы ЖЦ и модель склада",
+      "depends_on": [
+        "C30"
+      ],
+      "spec_sections": "21, 25, 35",
+      "tasks": [
+        {
+          "id": "C41.01",
+          "name": "Согласовать scope второй волны",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C30"
+          ],
+          "output": "Процессы приём/выдача/возврат/ремонт/списание и границы учёта",
+          "verification": "Финансовый/SAM учёт не включён молча",
+          "estimation_basis": "Один утверждаемый минимальный набор бизнес-процессов",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C41.02",
+          "name": "Спроектировать складские сущности",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C41.01"
+          ],
+          "output": "ER serial item/lot/location/bin/reserve/movement и компонент",
+          "verification": "Lot id не выдаётся за asset_uid экземпляра",
+          "estimation_basis": "Серийные и количественные предметы, состояния/единицы",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C41.03",
+          "name": "Определить транзакционные инварианты",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C41.02"
+          ],
+          "output": "Ownership lifecycle/stock и команды/события",
+          "verification": "Нельзя двойную выдачу и отрицательный остаток",
+          "estimation_basis": "Операции movements/reservations и concurrent cases",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C41.04",
+          "name": "Утвердить приёмку волны 2",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C41.03"
+          ],
+          "output": "Новые process AC и traceability, версия спецификации",
+          "verification": "Сценарии и документы актов согласованы до кода",
+          "estimation_basis": "Роли/основания/approval и inventory reconciliation",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C42",
+      "epoch": "W2",
+      "title": "Жизненный цикл и передачи активов",
+      "depends_on": [
+        "C41"
+      ],
+      "spec_sections": "21, 25, INC-08",
+      "tasks": [
+        {
+          "id": "C42.01",
+          "name": "Реализовать lifecycle state machine",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C41"
+          ],
+          "output": "Переходы с guard/roles/revision и историей",
+          "verification": "Missing не вызывает автоматическое списание",
+          "estimation_basis": "Согласованные states и переходы из C41",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C42.02",
+          "name": "Реализовать выдачу/возврат и approvals",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C42.01"
+          ],
+          "output": "Команды передачи, ответственные и основания/акты",
+          "verification": "Технический owner и материально-ответственный не смешаны",
+          "estimation_basis": "Предусмотренные юридически/организационно процедуры",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C42.03",
+          "name": "Добавить UI/CLI процессов",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C42.02"
+          ],
+          "output": "Рабочие списки, документы и доступные переходы",
+          "verification": "Backend проверяет все guards независимо от UI",
+          "estimation_basis": "Оператор/согласующий/получатель по scope",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C42.04",
+          "name": "Проверить transitions и concurrent actions",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C42.03"
+          ],
+          "output": "Process tests возврата/списания/отмены",
+          "verification": "История и ответственность не теряются",
+          "estimation_basis": "Два оператора и частичный сбой процесса",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C43",
+      "epoch": "W2",
+      "title": "Склад, партии, резервы и остатки",
+      "depends_on": [
+        "C41"
+      ],
+      "spec_sections": "25, INC-08",
+      "tasks": [
+        {
+          "id": "C43.01",
+          "name": "Реализовать catalog/locations/items",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C41"
+          ],
+          "output": "Модели серийных экземпляров/партий и мест хранения",
+          "verification": "Один serial не существует как два экземпляра без конфликта",
+          "estimation_basis": "Item/lot/serial/unit/location/bin из C41",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C43.02",
+          "name": "Реализовать stock movement ledger",
+          "owner": "Разработчик БД / DBA",
+          "depends_on": [
+            "C43.01"
+          ],
+          "output": "Atomic receive/issue/return/transfer и derived balance",
+          "verification": "История восстанавливает остаток; отрицательные запрещены",
+          "estimation_basis": "2 склада, serial и количественная партия",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C43.03",
+          "name": "Реализовать reservations и UI",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C43.02"
+          ],
+          "output": "Резервирование/снятие/expiry и состояние available/reserved",
+          "verification": "Резерв не считается фактической выдачей",
+          "estimation_basis": "Роли кладовщик/ответственный и поддержанные операции",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C43.04",
+          "name": "Проверить конкурентный складской учёт",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C43.03"
+          ],
+          "output": "Parallel issue/reserve/cancel и replay tests",
+          "verification": "Один предмет не выдан дважды",
+          "estimation_basis": "Две конкурентные транзакции и повтор команды",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C44",
+      "epoch": "W2",
+      "title": "Запчасти, ремонт и движение компонентов",
+      "depends_on": [
+        "C42",
+        "C43"
+      ],
+      "spec_sections": "19, 25",
+      "tasks": [
+        {
+          "id": "C44.01",
+          "name": "Определить component compatibility policy",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C42",
+            "C43"
+          ],
+          "output": "Проверяемая модель part/installed component и допустимых связей",
+          "verification": "Замена компонента не меняет UID родительского asset",
+          "estimation_basis": "Выбранные категории деталей и serial/lot правила",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C44.02",
+          "name": "Реализовать install/remove/replace workflow",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C44.01"
+          ],
+          "output": "Связанный lifecycle+stock процесс с транзакциями/compensation",
+          "verification": "Предмет не числится одновременно на складе и установленным",
+          "estimation_basis": "Операции замены и возврата неисправной детали",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C44.03",
+          "name": "Добавить repair и movement history UI",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C44.02"
+          ],
+          "output": "Состояние ремонта, маршрут детали и история asset",
+          "verification": "Источник/назначение/основание/ответственные видны",
+          "estimation_basis": "Repair job, stock move и asset relation timeline",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C44.04",
+          "name": "Проверить сквозной ремонт",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C44.03"
+          ],
+          "output": "Приём→выдача→замена→ремонт→возврат/списание",
+          "verification": "Баланс/UID/ownership/events согласованы",
+          "estimation_basis": "Серийная и несерийная деталь, отмена в середине",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C45",
+      "epoch": "W2",
+      "title": "Физическая инвентаризация и приёмка волны 2",
+      "depends_on": [
+        "C44"
+      ],
+      "spec_sections": "25, INC-08",
+      "tasks": [
+        {
+          "id": "C45.01",
+          "name": "Реализовать inventory reconciliation",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C44"
+          ],
+          "output": "Фактическая проверка склада, расхождения и корректировки с основаниями",
+          "verification": "Correction аудируется, ledger не переписывается молча",
+          "estimation_basis": "1 склад, пропажа/излишек/неверное место",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C45.02",
+          "name": "Подготовить документы и process reports",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C45.01"
+          ],
+          "output": "Утверждённые акты/экспорты/история выдачи",
+          "verification": "Чувствительные данные и права сохранены",
+          "estimation_basis": "Шаблоны по согласованным процедурам C41",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C45.03",
+          "name": "Проверить сохранность и конкурентность процессов",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C45.02"
+          ],
+          "output": "Backup/restore/migration/event replay wave2 tests",
+          "verification": "Остатки и назначения восстанавливаются из ledger/history",
+          "estimation_basis": "Сбой на stock/lifecycle границе и concurrent actions",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C45.04",
+          "name": "Провести пилот и приёмку склада/ЖЦ",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C45.03"
+          ],
+          "output": "Process acceptance report, инструкции и ограничения",
+          "verification": "Бизнес-пользователь подтверждает сценарии на стенде",
+          "estimation_basis": "Утверждённые AC второй волны, rollout отдельно разрешается",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C46",
+      "epoch": "W3",
+      "title": "Модель ITSM и каталог услуг",
+      "depends_on": [
+        "C45"
+      ],
+      "spec_sections": "25, INC-08",
+      "tasks": [
+        {
+          "id": "C46.01",
+          "name": "Согласовать минимальный ITSM scope",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C45"
+          ],
+          "output": "Услуги/пользователи/типы обращений/роли и процессы",
+          "verification": "Не обещан полный ITIL suite без объёма",
+          "estimation_basis": "Incident/request/problem/change, SLA и exclusions",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C46.02",
+          "name": "Спроектировать сущности и ownership",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C46.01"
+          ],
+          "output": "ER service/offering/ticket/task/approval и связи CI/asset_uid",
+          "verification": "Нет конкурирующего каталога assets в ITSM",
+          "estimation_basis": "ITSM module boundary и API/event contracts",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C46.03",
+          "name": "Спроектировать state machines и аудит",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C46.02"
+          ],
+          "output": "Переходы/приоритеты/ответственные/очереди/комментарии",
+          "verification": "Tenant/visibility и приватные записи формализованы",
+          "estimation_basis": "Роли сотрудник/оператор/manager, workflow guards",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C46.04",
+          "name": "Утвердить процессные AC ITSM",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C46.03"
+          ],
+          "output": "Приёмка каждой заявки/изменения и связи с ЖЦ",
+          "verification": "Критерии и лицензируемые внешние интеграции названы",
+          "estimation_basis": "Минимальный end-to-end service scenario",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C47",
+      "epoch": "W3",
+      "title": "Инциденты и проблемы",
+      "depends_on": [
+        "C46"
+      ],
+      "spec_sections": "25, INC-08",
+      "tasks": [
+        {
+          "id": "C47.01",
+          "name": "Реализовать incident workflow",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C46"
+          ],
+          "output": "Создание/классификация/назначение/escalation/resolve/reopen",
+          "verification": "Приоритет/ответственность/аудит согласованы",
+          "estimation_basis": "State machine C46, ручные и разрешённые API источники",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C47.02",
+          "name": "Реализовать problem и known-error связи",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C47.01"
+          ],
+          "output": "Problem/root cause/workaround и связанные incidents",
+          "verification": "Проблема не дублирует asset/CI identity",
+          "estimation_basis": "Incident→problem→CI/service relationships",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C47.03",
+          "name": "Добавить рабочее место оператора",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C47.02"
+          ],
+          "output": "Очереди, фильтры, карточка, impact и история",
+          "verification": "Права private/public комментариев соблюдены",
+          "estimation_basis": "Роли и типы обращений выбранного scope",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C47.04",
+          "name": "Проверить полный процесс",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C47.03"
+          ],
+          "output": "Incident+problem+asset linkage и concurrent assignment",
+          "verification": "Повторы внешних notifications не создают дубли",
+          "estimation_basis": "Отказ интеграции, re-open и изменение ответственного",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C48",
+      "epoch": "W3",
+      "title": "Запросы обслуживания и портал",
+      "depends_on": [
+        "C46"
+      ],
+      "spec_sections": "25, INC-08",
+      "tasks": [
+        {
+          "id": "C48.01",
+          "name": "Реализовать service catalog forms",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C46"
+          ],
+          "output": "Услуги/предложения, формы и видимость по роли",
+          "verification": "UI использует версионированные backend schemas",
+          "estimation_basis": "Один каталог и минимальный набор услуг из C46",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C48.02",
+          "name": "Реализовать request/approval/fulfillment",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C48.01"
+          ],
+          "output": "Заявка, согласования, задачи исполнения и отмена",
+          "verification": "Guards/segregation/tenant проверяются backend",
+          "estimation_basis": "Запрос→approval→fulfillment с audit",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C48.03",
+          "name": "Связать запрос со складом/ЖЦ",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C48.02"
+          ],
+          "output": "Команды выдачи/замены с idempotency и ссылками",
+          "verification": "Нет скрытой двойной записи stock и ticket",
+          "estimation_basis": "Один сквозной сценарий выдачи оборудования",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C48.04",
+          "name": "Проверить портал и исполнение",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C48.03"
+          ],
+          "output": "Employee/operator/approver end-to-end checks",
+          "verification": "Sensitive fields и права внешнего requester защищены",
+          "estimation_basis": "Несколько ролей, rejected/cancelled request и повтор команды",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C49",
+      "epoch": "W3",
+      "title": "Изменения и влияние на услуги",
+      "depends_on": [
+        "C47",
+        "C48"
+      ],
+      "spec_sections": "25, INC-08",
+      "tasks": [
+        {
+          "id": "C49.01",
+          "name": "Определить change policy и риски",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C47",
+            "C48"
+          ],
+          "output": "Типы изменений, risk/approval и impact model",
+          "verification": "Автоматическая топология не выдаётся за доказанную бизнес-зависимость",
+          "estimation_basis": "Связи service/CI/asset и confidence",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C49.02",
+          "name": "Реализовать change lifecycle",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C49.01"
+          ],
+          "output": "План, approval, окно, execution, rollback и review",
+          "verification": "Нет выполнения вне полномочий и согласованного окна",
+          "estimation_basis": "State machine и ограничения C46",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C49.03",
+          "name": "Добавить календарь и impact UI",
+          "owner": "Frontend-разработчик",
+          "depends_on": [
+            "C49.02"
+          ],
+          "output": "Конфликты окон и связанные services/assets/incidents",
+          "verification": "Visibility и текущие версии данных проверяются",
+          "estimation_basis": "Timezones, overlapping changes и partial topology",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C49.04",
+          "name": "Проверить change/rollback сценарий",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C49.03"
+          ],
+          "output": "Запланированное изменение, отказ, откат и review",
+          "verification": "История причин/согласований/исполнения сохранена",
+          "estimation_basis": "Один согласованный production-like стенд, без самовольного deploy",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C50",
+      "epoch": "W3",
+      "title": "SLA, интеграции и приёмка ITSM",
+      "depends_on": [
+        "C49"
+      ],
+      "spec_sections": "25, INC-08",
+      "tasks": [
+        {
+          "id": "C50.01",
+          "name": "Реализовать SLA calendars и timers",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C49"
+          ],
+          "output": "Response/resolve, часы/паузы/праздники/escalation",
+          "verification": "Timezone/DST и смена приоритета рассчитаны по policy",
+          "estimation_basis": "Согласованные SLA классы/календари; это не uptime SLA платформы",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C50.02",
+          "name": "Подключить каналы и уведомления",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C50.01"
+          ],
+          "output": "Разрешённые email/API/webhook adapters с delivery ledger",
+          "verification": "Нет повторных писем по replay и утечки tenant data",
+          "estimation_basis": "Только явно разрешённые каналы/адресаты в реализации",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C50.03",
+          "name": "Проверить сквозные бизнес-процессы и нагрузку",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C50.02"
+          ],
+          "output": "Ticket→asset→stock/change→close, rights/audit/recovery tests",
+          "verification": "Новые процессы не ломают inventory и freshness",
+          "estimation_basis": "Полный выбранный scope W3 и согласованный workload",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C50.04",
+          "name": "Оформить эксплуатацию и roadmap следующего релиза",
+          "owner": "Владелец продукта / руководитель проекта",
+          "depends_on": [
+            "C50.03"
+          ],
+          "output": "ITSM acceptance, runbooks, support ownership и backlog",
+          "verification": "Различены implemented, deferred и customer-specific",
+          "estimation_basis": "Утверждённые AC W3; нет обещания всех функций аналогов",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ],
+      "status": "planned",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    }
+  ],
+  "progress": {
+    "done_packages": [
+      "C01",
+      "C02",
+      "C03",
+      "C04"
+    ],
+    "done_tasks": [
+      "C01.01",
+      "C01.02",
+      "C01.03",
+      "C01.04",
+      "C02.01",
+      "C02.02",
+      "C02.03",
+      "C02.04",
+      "C03.01",
+      "C03.02",
+      "C03.03",
+      "C03.04",
+      "C04.01",
+      "C04.02",
+      "C04.03",
+      "C04.04"
+    ],
+    "next_package": "C05",
+    "product_implementation_started": true
+  }
+}

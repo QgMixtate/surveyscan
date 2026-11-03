@@ -1,0 +1,5 @@
+**
+!.dist/
+!.dist/surveyscan-server
+!deploy/
+!deploy/Dockerfile

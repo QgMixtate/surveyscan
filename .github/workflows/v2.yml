@@ -1,0 +1,52 @@
+name: surveyscan-v2
+on:
+  push:
+    paths: ['v2/**', 'docs/plans/surveyscan-v2/contracts/C03/**', '.github/workflows/v2.yml']
+  pull_request:
+    paths: ['v2/**', 'docs/plans/surveyscan-v2/contracts/C03/**', '.github/workflows/v2.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  c04:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: v2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: v2/go.sum
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Contract checker dependencies
+        run: |
+          python -m venv .contract-tools
+          .contract-tools/bin/pip install -r ../docs/plans/surveyscan-v2/contracts/C03/checks/requirements.txt
+      - name: Format, architecture, unit tests, vet and C03 contracts
+        run: make CONTRACT_PYTHON=.contract-tools/bin/python verify
+      - name: Build server, collector and agent
+        run: make build
+      - name: Start local PostgreSQL, OpenBao, backend and proxy
+        run: python scripts/dev.py up
+      - name: Real PostgreSQL integration tests
+        run: make integration
+      - name: HTTP, dependency outage and restart checks
+        run: python scripts/smoke.py
+      - name: Retain sanitized reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c04-reports
+          include-hidden-files: true
+          path: |
+            v2/.local/contracts-validation.json
+            v2/.local/smoke.json
+          if-no-files-found: ignore
+      - name: Stop isolated development stack
+        if: always()
+        run: python scripts/dev.py down

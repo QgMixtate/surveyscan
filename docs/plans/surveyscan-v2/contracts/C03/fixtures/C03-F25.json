@@ -1,0 +1,29 @@
+{
+  "payload": {
+    "schema_version": {
+      "major": 1,
+      "minor": 0
+    },
+    "receipt_id": "00000000-0000-4000-8000-000000000008",
+    "tenant_id": "00000000-0000-4000-8000-000000000001",
+    "delivery_id": "00000000-0000-4000-8000-000000000007",
+    "batch_digest": "0000000000000000000000000000000000000000000000000000000000000000",
+    "committed_at": "2026-11-03T07:00:10Z",
+    "result_revision": "1",
+    "status": "completed",
+    "results": [
+      {
+        "origin_source_id": "00000000-0000-4000-8000-000000000002",
+        "observation_id": "00000000-0000-4000-8000-000000000006",
+        "observation_digest": "5e3cb43614f4f36fec2ce942e84f0bf0627ceb725e20b777e4ebb927f1c8cf04",
+        "disposition": "applied",
+        "asset_uid": "00000000-0000-4000-8000-000000000009",
+        "reason_code": "APPLIED",
+        "spool_action": "remove"
+      }
+    ]
+  },
+  "digest": "579ef7001cb3f5968246a10a0bb99a3f924eb463d575355c29f454c9ece995ab",
+  "key_id": "00000000-0000-4000-8000-000000000015",
+  "signature": "u-aMgbD11Yh3Uzcv_D1E0ZdfBWH4-ym5jIFobn6BdkzSsoYM_KNl-RiaoaFlhqgJ7V55VkxhOfmpj1nOABbgAA"
+}
