@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Live C05 binary/CLI/HTTP checks using one temporary, owned development database."""
+"""Live auth regression for C06 binary/CLI/HTTP checks using one temporary, owned development database."""
 import http.cookiejar,json,os,secrets,socket,subprocess,time,urllib.request,urllib.error,uuid
 from pathlib import Path
 from dev import compose,ROOT,STATE,initialize
@@ -48,7 +48,7 @@ def main():
    proc=None
  try:
   sql('CREATE DATABASE '+db);created=True
-  assert 'applied_migrations=19' in command('migrate')
+  assert 'applied_migrations=25' in command('migrate')
   assert 'applied_migrations=0' in command('migrate');checks.append('binary migrate and repeat')
   base=['--tenant',tenant,'--username','admin','--password-file',str(password_file)]
   command('bootstrap-admin',*base,'--tenant-name','C05 binary smoke')
@@ -57,10 +57,10 @@ def main():
   start();assert request('GET','/api/v1/assets')[0]==401
   assert request('POST','/api/v1/auth/sessions',{'username':'admin','password':password},origin_header='http://untrusted.invalid')[0]==403
   code,body=request('POST','/api/v1/auth/sessions',{'username':'admin','password':password});assert code==201;session=json.loads(body);checks.append('live login and origin policy')
-  assert request('GET','/api/v1/assets')[0]==501
+  assert request('GET','/api/v1/assets')[0]==200
   assert request('POST','/api/v1/jobs',{})[0]==403
   assert request('POST','/api/v1/jobs',{},csrf=session['csrf_token'])[0]==501;checks.append('auth/CSRF gate before future domain handlers')
-  stop();start();assert request('GET','/api/v1/assets')[0]==501;checks.append('session survives real server process restart')
+  stop();start();assert request('GET','/api/v1/assets')[0]==200;checks.append('session survives real server process restart')
   code,body=request('POST','/api/v1/auth/tokens',{'name':'smoke','expires_in_seconds':60,'scopes':['assets:read']},csrf=session['csrf_token']);assert code==201;token=json.loads(body)
   assert request('DELETE','/api/v1/auth/tokens/'+token['token_id'],csrf=session['csrf_token'])[0]==204;checks.append('live token issue/revoke')
   assert request('DELETE','/api/v1/auth/session',csrf=session['csrf_token'])[0]==204
@@ -69,7 +69,7 @@ def main():
   assert request('POST','/api/v1/jobs',{},csrf=viewer['csrf_token'])[0]==403;checks.append('viewer mutation forbidden')
   command('set-user-state','--tenant',tenant,'--username','viewer','--role','viewer','--enabled=false')
   assert request('GET','/api/v1/assets')[0]==401;checks.append('console disable revokes active HTTP session')
-  report={'package':'C05','status':'passed','count':len(checks),'checks':checks,'target':'real compiled Go binary + isolated PG + local Bao; HTTP allowed only with explicit dev flag','private_material':'temporary password removed; no credential in report'}
+  report={'package':'C06','status':'passed','count':len(checks),'checks':checks,'target':'real compiled Go binary + isolated PG + local Bao; HTTP allowed only with explicit dev flag','private_material':'temporary password removed; no credential in report'}
   (STATE/'auth-smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
  finally:
   stop();password_file.unlink(missing_ok=True)

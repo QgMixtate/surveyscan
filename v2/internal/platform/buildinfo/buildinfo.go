@@ -6,13 +6,13 @@ import (
 	"runtime"
 )
 
-var Version = "0.0.0-c05"
+var Version = "0.0.0-c06"
 var Revision = "unknown"
 
 func Print(w io.Writer, component string) error {
 	stage := "C04 scaffold"
 	if component == "server" {
-		stage = "C05 auth"
+		stage = "C06 registry"
 	}
 	return json.NewEncoder(w).Encode(map[string]any{"component": component, "version": Version, "revision": Revision, "go_version": runtime.Version(), "stage": stage, "inventory_implemented": false})
 }

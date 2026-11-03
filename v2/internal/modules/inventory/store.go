@@ -1,0 +1,284 @@
+package inventory
+
+import (
+	"context"
+	"encoding/base64"
+	"encoding/json"
+	"errors"
+	"github.com/QgMixtate/surveyscan/v2/contracts"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/domain"
+	"github.com/jackc/pgx/v5"
+	"strconv"
+	"time"
+)
+
+type Store struct{}
+type Result struct {
+	ObservationID string  `json:"observation_id"`
+	AssetID       *string `json:"asset_uid"`
+	Disposition   string  `json:"disposition"`
+	Reason        string  `json:"reason_code"`
+	Duplicate     bool    `json:"duplicate"`
+}
+
+func (Store) Duplicate(ctx context.Context, tx pgx.Tx, o contracts.Observation, digest string) (Result, bool, error) {
+	var result Result
+	var oldDigest string
+	var disposition, reason *string
+	e := tx.QueryRow(ctx, `SELECT o.observation_id::text,o.digest,r.asset_uid::text,r.disposition,r.reason_code FROM inventory.observations o JOIN assets.source_records s USING(tenant_id,source_record_key) LEFT JOIN inventory.observation_results r USING(tenant_id,observation_id) WHERE o.tenant_id=$1 AND (o.observation_id=$2 OR (o.source_id=$3 AND o.generation_id=$4 AND o.source_sequence=$5 AND s.namespace=$6 AND s.source_local_id=$7)) LIMIT 1`, o.TenantID, o.ID, o.Origin.SourceID, o.Origin.GenerationID, o.Sequence, o.Record.Namespace, o.Record.LocalID).Scan(&result.ObservationID, &oldDigest, &result.AssetID, &disposition, &reason)
+	if errors.Is(e, pgx.ErrNoRows) {
+		return result, false, nil
+	}
+	if e != nil {
+		return result, false, e
+	}
+	if result.ObservationID != o.ID || oldDigest != digest || disposition == nil {
+		return result, true, domain.Conflict
+	}
+	result.Disposition = *disposition
+	result.Reason = *reason
+	result.Duplicate = true
+	return result, true, nil
+}
+func (Store) Record(ctx context.Context, tx pgx.Tx, o contracts.Observation, signed contracts.SignedObservation, canonical, signature []byte, record string, priority int) error {
+	_, e := tx.Exec(ctx, `INSERT INTO inventory.observations(tenant_id,observation_id,source_record_key,source_id,generation_id,source_sequence,collected_at,clock_quality,digest,asserted_asset_uid,payload,origin_key_id,origin_signature,canonical_payload,source_priority) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`, o.TenantID, o.ID, record, o.Origin.SourceID, o.Origin.GenerationID, o.Sequence, o.CollectedAt, o.Clock, signed.Digest, o.Asserted, signed.Payload, signed.KeyID, signature, canonical, priority)
+	if e != nil {
+		return e
+	}
+	for _, section := range o.Sections {
+		facts, e := json.Marshal(section.Records)
+		if e != nil {
+			return e
+		}
+		_, e = tx.Exec(ctx, "INSERT INTO inventory.observation_sections(tenant_id,observation_id,section_name,status,collection_complete,reason_code,record_count,facts,collected_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9)", o.TenantID, o.ID, section.Name, section.Status, section.Complete, section.Reason, section.Count, facts, section.CollectedAt)
+		if e != nil {
+			return e
+		}
+	}
+	return nil
+}
+func (Store) Result(ctx context.Context, tx pgx.Tx, tenant string, result Result) error {
+	_, e := tx.Exec(ctx, "INSERT INTO inventory.observation_results(tenant_id,observation_id,asset_uid,disposition,reason_code) VALUES($1,$2,$3,$4,$5)", tenant, result.ObservationID, result.AssetID, result.Disposition, result.Reason)
+	return e
+}
+
+type rank struct {
+	Source, Generation, Record, Sequence, Clock string
+	Priority                                    int
+	Collected                                   time.Time
+}
+
+func Newer(next, old rank) bool {
+	if next.Source == old.Source {
+		if next.Generation != old.Generation || next.Record != old.Record {
+			return false
+		}
+		a, _ := strconv.ParseUint(next.Sequence, 10, 64)
+		b, _ := strconv.ParseUint(old.Sequence, 10, 64)
+		return a > b
+	}
+	if next.Clock != "trusted" {
+		return false
+	}
+	if old.Clock != "trusted" {
+		return true
+	}
+	if next.Priority != old.Priority {
+		return next.Priority > old.Priority
+	}
+	return next.Collected.After(old.Collected)
+}
+func existingRank(ctx context.Context, tx pgx.Tx, tenant, obs, section string) (rank, error) {
+	var r rank
+	e := tx.QueryRow(ctx, "SELECT o.source_id::text,o.generation_id::text,o.source_record_key::text,o.source_sequence::text,o.clock_quality,o.source_priority,s.collected_at FROM inventory.observations o JOIN inventory.observation_sections s USING(tenant_id,observation_id) WHERE o.tenant_id=$1 AND o.observation_id=$2 AND s.section_name=$3", tenant, obs, section).Scan(&r.Source, &r.Generation, &r.Record, &r.Sequence, &r.Clock, &r.Priority, &r.Collected)
+	return r, e
+}
+func flatten(s contracts.Section) (map[string]string, error) {
+	out := map[string]string{}
+	for _, row := range s.Records {
+		switch s.Name {
+		case "identity":
+			for k, v := range row {
+				out[k] = v.(string)
+			}
+		case "os":
+			for k, v := range row {
+				out[k] = v.(string)
+			}
+		case "network":
+			name := row["name"].(string)
+			key := base64.RawURLEncoding.EncodeToString([]byte(name))
+			if _, exists := out[key+".addresses"]; exists {
+				return nil, domain.Invalid
+			}
+			if mac, ok := row["mac"].(string); ok {
+				out[key+".mac"] = mac
+			}
+			addresses, e := json.Marshal(row["addresses"])
+			if e != nil {
+				return nil, e
+			}
+			out[key+".addresses"] = string(addresses)
+		}
+	}
+	return out, nil
+}
+func (Store) Project(ctx context.Context, tx pgx.Tx, o contracts.Observation, asset, link, record string, priority int) (bool, error) {
+	changed := false
+	for _, section := range o.Sections {
+		next := rank{o.Origin.SourceID, o.Origin.GenerationID, record, o.Sequence, o.Clock, priority, section.CollectedAt}
+		if o.Clock == "skewed" || section.CollectedAt.After(time.Now().Add(5*time.Minute)) {
+			continue
+		}
+		var attempt *string
+		e := tx.QueryRow(ctx, "SELECT last_attempt_id::text FROM inventory.section_state WHERE tenant_id=$1 AND asset_uid=$2 AND section_name=$3", o.TenantID, asset, section.Name).Scan(&attempt)
+		missing := errors.Is(e, pgx.ErrNoRows)
+		if e != nil && !missing {
+			return false, e
+		}
+		uncertain := o.Clock != "trusted"
+		canState := missing || attempt == nil
+		if !canState {
+			old, e := existingRank(ctx, tx, o.TenantID, *attempt, section.Name)
+			if e != nil {
+				return false, e
+			}
+			canState = Newer(next, old)
+			if next.Source == old.Source && next.Generation == old.Generation && next.Collected.Before(old.Collected) {
+				uncertain = true
+			}
+		}
+		if canState {
+			var success *string
+			if section.Status == "ok" && section.Complete {
+				success = &o.ID
+			}
+			_, e = tx.Exec(ctx, `INSERT INTO inventory.section_state(tenant_id,asset_uid,section_name,last_attempt_id,last_success_id,last_status,clock_uncertain) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(tenant_id,asset_uid,section_name) DO UPDATE SET last_attempt_id=excluded.last_attempt_id,last_success_id=COALESCE(excluded.last_success_id,inventory.section_state.last_success_id),last_status=excluded.last_status,clock_uncertain=excluded.clock_uncertain,projection_revision=inventory.section_state.projection_revision+1`, o.TenantID, asset, section.Name, o.ID, success, section.Status, uncertain)
+			if e != nil {
+				return false, e
+			}
+			changed = true
+		}
+		if !canState || section.Status != "ok" && section.Status != "partial" {
+			continue
+		}
+		values, e := flatten(section)
+		if e != nil {
+			return false, e
+		}
+		oldFacts := map[string]string{}
+		rows, e := tx.Query(ctx, "SELECT fact_key,observation_id::text FROM inventory.current_facts WHERE tenant_id=$1 AND asset_uid=$2 AND section_name=$3", o.TenantID, asset, section.Name)
+		if e != nil {
+			return false, e
+		}
+		for rows.Next() {
+			var k, id string
+			if e = rows.Scan(&k, &id); e != nil {
+				rows.Close()
+				return false, e
+			}
+			oldFacts[k] = id
+		}
+		e = rows.Err()
+		rows.Close()
+		if e != nil {
+			return false, e
+		}
+		for key, oldID := range oldFacts {
+			old, e := existingRank(ctx, tx, o.TenantID, oldID, section.Name)
+			if e != nil {
+				return false, e
+			}
+			if !Newer(next, old) {
+				delete(values, key)
+				continue
+			}
+			if _, present := values[key]; !present && section.Status == "ok" && section.Complete && old.Source == next.Source && old.Generation == next.Generation && old.Record == next.Record {
+				_, e = tx.Exec(ctx, "DELETE FROM inventory.current_facts WHERE tenant_id=$1 AND asset_uid=$2 AND section_name=$3 AND fact_key=$4", o.TenantID, asset, section.Name, key)
+				if e != nil {
+					return false, e
+				}
+				changed = true
+			}
+		}
+		for key, value := range values {
+			_, e = tx.Exec(ctx, `INSERT INTO inventory.current_facts(tenant_id,asset_uid,section_name,fact_key,value,observation_id,link_id) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(tenant_id,asset_uid,section_name,fact_key) DO UPDATE SET value=excluded.value,observation_id=excluded.observation_id,link_id=excluded.link_id,projection_revision=inventory.current_facts.projection_revision+1`, o.TenantID, asset, section.Name, key, value, o.ID, link)
+			if e != nil {
+				return false, e
+			}
+			changed = true
+		}
+	}
+	return changed, nil
+}
+func (Store) Enrich(ctx context.Context, tx pgx.Tx, a *contracts.Asset) error {
+	a.Freshness = "unknown"
+	rows, e := tx.Query(ctx, "SELECT section_name,fact_key,value FROM inventory.current_facts WHERE tenant_id=$1 AND asset_uid=$2", a.TenantID, a.UID)
+	if e != nil {
+		return e
+	}
+	osFields := map[string]string{}
+	for rows.Next() {
+		var section, key, value string
+		if e = rows.Scan(&section, &key, &value); e != nil {
+			rows.Close()
+			return e
+		}
+		if section == "identity" && key == "hostname" {
+			v := value
+			a.Hostname = &v
+		}
+		if section == "os" {
+			osFields[key] = value
+		}
+	}
+	e = rows.Err()
+	rows.Close()
+	if e != nil {
+		return e
+	}
+	if name, ok := osFields["name"]; ok {
+		value := name
+		if ver, ok := osFields["version"]; ok {
+			value += " " + ver
+		}
+		runes := []rune(value)
+		if len(runes) > 256 {
+			value = string(runes[:256])
+		}
+		a.OS = &value
+	}
+	rows, e = tx.Query(ctx, "SELECT s.section_name,s.last_status,o.collected_at,o.clock_quality,s.clock_uncertain FROM inventory.section_state s LEFT JOIN inventory.observations o ON o.tenant_id=s.tenant_id AND o.observation_id=s.last_success_id WHERE s.tenant_id=$1 AND s.asset_uid=$2 ORDER BY s.section_name", a.TenantID, a.UID)
+	if e != nil {
+		return e
+	}
+	defer rows.Close()
+	trusted := false
+	uncertainClock := false
+	for rows.Next() {
+		var state contracts.SectionState
+		var at *time.Time
+		var clock *string
+		var uncertain bool
+		if e = rows.Scan(&state.Name, &state.Status, &at, &clock, &uncertain); e != nil {
+			return e
+		}
+		a.Sections = append(a.Sections, state)
+		uncertainClock = uncertainClock || uncertain
+		if at != nil && (a.LastInventory == nil || at.After(*a.LastInventory)) {
+			utc := at.UTC()
+			a.LastInventory = &utc
+			trusted = clock != nil && *clock == "trusted"
+		}
+	}
+	if e = rows.Err(); e != nil {
+		return e
+	}
+	if a.LastInventory != nil && trusted && !uncertainClock && !a.LastInventory.After(time.Now().Add(5*time.Minute)) {
+		a.Freshness = "stale"
+		if time.Since(*a.LastInventory) <= 24*time.Hour {
+			a.Freshness = "fresh"
+		}
+	}
+	return nil
+}

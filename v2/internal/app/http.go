@@ -10,9 +10,13 @@ import (
 )
 
 // NewHTTP связывает реализации auth с fail-closed gates будущих доменных handlers.
-func NewHTTP(auth *access.HTTP, health http.Handler) (http.Handler, error) {
+func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (http.Handler, error) {
 	mux := http.NewServeMux()
 	auth.Register(mux)
+	implementations := map[string]http.Handler{}
+	if len(registry) > 0 && registry[0] != nil {
+		implementations = registry[0].Handlers()
+	}
 	var api struct {
 		Paths map[string]map[string]struct {
 			OperationID string `json:"operationId"`
@@ -40,7 +44,11 @@ func NewHTTP(auth *access.HTTP, health http.Handler) (http.Handler, error) {
 			if !ok {
 				return nil, fmt.Errorf("missing authorization policy: %s", op.OperationID)
 			}
-			mux.Handle(pattern, auth.Wrap(action, false, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { access.APIError(w, 501, "CAPABILITY_NOT_ENABLED") })))
+			handler, implemented := implementations[op.OperationID]
+			if !implemented {
+				handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { access.APIError(w, 501, "CAPABILITY_NOT_ENABLED") })
+			}
+			mux.Handle(pattern, auth.Wrap(action, false, handler))
 		}
 	}
 	mux.Handle("/health/", health)

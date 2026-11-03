@@ -1,6 +1,6 @@
 # Полный WBS surveyscan v2
 
-Версия плана 1.0 по архитектуре 0.5. C01–C05: 20 подзадач done (проектирование/контракты + Go-каркас/auth); остальные 180 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
+Версия плана 1.0 по архитектуре 0.5. C01–C06: 24 подзадачи done; остальные 176 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
 
 
 # C01 — Границы первого релиза и карта решений (E0)
@@ -291,7 +291,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Create/get/list с canonical UID и минимальной reconciliation policy.
 - Проверка: Повтор источника не создаёт дубли; конфликт виден.
 - База оценки: Минимальные поля E1 и source-local mapping.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C06](evidence/C06-runtime.json), [передача](handoffs/C06.md).
 
 ## C06.02 — Сохранить observations/current facts
 
@@ -301,7 +301,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Транзакционный ingest с provenance и приоритетом свежести.
 - Проверка: Partial/late не затирают бизнес-поля и новые факты.
 - База оценки: Поле имя/ОС/IP/MAC, times/statuses из C01.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C06](evidence/C06-runtime.json), [передача](handoffs/C06.md).
 
 ## C06.03 — Добавить ответственность, историю и outbox
 
@@ -311,7 +311,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Fallback team при создании, аудит и событие в той же транзакции.
 - Проверка: Нет бесхозной карточки или commit данных без события.
 - База оценки: 1 accountable role, asset history и минимальный consumer.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C06](evidence/C06-runtime.json), [передача](handoffs/C06.md).
 
 ## C06.04 — Проверить реестр на PostgreSQL
 
@@ -321,7 +321,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Integration tests и fixtures повторов/конкуренции.
 - Проверка: Tenant isolation, rollback и idempotency подтверждены.
 - База оценки: 2 tenant; duplicate/late/conflict/rollback.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C06](evidence/C06-runtime.json), [передача](handoffs/C06.md).
 
 ## Выход пакета
 

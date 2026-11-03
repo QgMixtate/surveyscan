@@ -15,6 +15,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/buildinfo"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/config"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/health"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/messaging"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/migrate"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -108,7 +109,8 @@ func run(args []string) error {
 		fmt.Println("console operation completed; no credentials printed")
 		return nil
 	}
-	auth, err := access.NewHTTP(access.New(pool), os.Getenv("SURVEYSCAN_V2_PUBLIC_ORIGIN"), os.Getenv("SURVEYSCAN_V2_INSECURE_LOCAL_HTTP") == "1")
+	authService := access.New(pool)
+	auth, err := access.NewHTTP(authService, os.Getenv("SURVEYSCAN_V2_PUBLIC_ORIGIN"), os.Getenv("SURVEYSCAN_V2_INSECURE_LOCAL_HTTP") == "1")
 	if err != nil {
 		return err
 	}
@@ -131,14 +133,42 @@ func run(args []string) error {
 		}
 		return migrate.Check(ctx, conn, catalog)
 	}
-	handler, err := app.NewHTTP(auth, health.Handler(dbCheck, health.Bao(bao)))
+	registry, err := app.NewRegistry(pool, authService)
+	if err != nil {
+		return err
+	}
+	handler, err := app.NewHTTP(auth, health.Handler(dbCheck, health.Bao(bao)), registry)
 	if err != nil {
 		return err
 	}
 	server := &http.Server{Addr: addr, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 10 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16384}
+	go func() {
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-ticker.C:
+				task, done := context.WithTimeout(ctx, 5*time.Second)
+				tenants, e := messaging.PendingTenants(task, pool)
+				if e == nil {
+					for _, tenant := range tenants {
+						for range 100 {
+							worked, e := registry.ConsumeOne(task, tenant)
+							if e != nil || !worked {
+								break
+							}
+						}
+					}
+				}
+				done()
+			}
+		}
+	}()
 	finished := make(chan error, 1)
 	go func() { finished <- server.ListenAndServe() }()
-	fmt.Println("surveyscan v2 C05 auth server started; inventory API pending C06-C07")
+	fmt.Println("surveyscan v2 C06 registry server started; machine transport pending C07")
 	select {
 	case err = <-finished:
 		if err != http.ErrServerClosed {

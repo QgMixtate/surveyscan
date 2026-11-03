@@ -1,4 +1,4 @@
-# SurveyScan v2 — C05
+# SurveyScan v2 — C06
 
 Новый Go-каркас рядом с Python v1. Linux/amd64, Go **1.27.3**, Docker Engine + Compose v2,
 Python 3.12+. PostgreSQL **17.11**, OpenBao **2.7.2**, nginx **1.30** закреплены digest в deploy/compose.yaml.
@@ -39,7 +39,7 @@ python3 scripts/dev.py down
 
 Все опубликованные порты привязаны к loopback. Это локальный HTTP-стенд, не production-конфигурация.
 Proxy раздаёт JSON-контракты отдельно от Go; Web UI появится в C09. Продуктовые `/api/...`
-требуют auth; после успешной проверки прав будущий handler отвечает 501. `/` возвращает 404. OpenAPI описывает auth и будущие domain handlers. Agent/collector поддерживают только `version`;
+требуют auth; auth и assets реализованы; прочие будущие handlers после проверки прав отвечают 501. `/` возвращает 404. OpenAPI описывает auth и будущие domain handlers. Agent/collector поддерживают только `version`;
 попытка запуска сбора завершается кодом 2. Сервер поддерживает `serve`, `migrate`, `version`, `healthcheck`.
 Combined composition root собирает модули; worker/API роли появятся вместе с реальными обработчиками.
 
@@ -52,18 +52,18 @@ Bootstrap/unseal материал остаётся в `.local/bao-init.json` (06
 собственной защищённой копии. `down` сохраняет pgdata/baodata. Не выполнять `down -v` для рабочих данных.
 Если изменился пароль в файле, он не меняет автоматически пароль существующей PostgreSQL-роли.
 
-19 forward-only миграций встроены в модули. Apply берёт PG advisory transaction lock, проверяет SHA256,
+25 forward-only миграций встроены в модули. Apply берёт PG advisory transaction lock, проверяет SHA256,
 owner, известность и непрерывный prefix истории; весь pending batch выполняется одной транзакцией.
 Повтор даёт 0; изменённую историю нужно расследовать, а не перезаписывать checksum. Rollback и
-zero-downtime upgrades не заявлены. 24 доменные таблицы C02 + 5 access tables C05 + platform.schema_migrations.
+zero-downtime upgrades не заявлены. 32 domain/access tables + platform.schema_migrations.
 SQL FK/guards читают несколько owner schemas ради C02 транзакционной целостности; записи будущих
 handlers должны идти через владельцев/ports. Ограничения импортов проверяются тестом.
 
 Наблюдение сохраняет canonical_payload, digest, origin key ID и 64 bytes signature по C03.
 SQL проверяет digest и соответствие JSON, но **не** Ed25519, JCS canonicality и доверие ключу:
-это обязанности будущего ingestion. Нулевые synthetic signature в SQL integration tests не являются
-проверкой подписи. Реализован C05 auth; нет RLS/enrollment, inventory handlers, projector, spool, collector runtime,
-production TLS/PKI, backup/HA или готовности к 100 пользователям. C06 — следующий пакет.
+это выполняет Registry.Ingest C06. Нулевые synthetic signature в SQL integration tests не являются
+проверкой подписи. Реализованы C05 auth и C06 registry/projector; нет RLS, публичного machine enrollment/transport, spool, collector runtime,
+production TLS/PKI, backup/HA или готовности к 100 пользователям. C07 — следующий пакет.
 
 CI: `.github/workflows/v2.yml`. Та же последовательность команд выполнена локально; C04 опубликован,
 push-триггер отправлен, состояние GitHub Actions пока не подтверждено из-за запрета GitHub API. Smoke временно останавливает **только этот** dev Bao/PG,
@@ -114,3 +114,13 @@ python3 scripts/auth_smoke.py
 удаляет после прогона. `integration` дополнительно использует HTTPS test server и проверяет
 expiry, revocation, roles, tenant context, concurrent bootstrap/sessions/tokens и commit fencing.
 Hosted CI остаётся неподтверждённым до доступа к GitHub API; публикация ветки не равна CI success.
+
+## C06: реестр и outbox
+
+GET/list/PATCH `/api/v1/assets` реализованы по C03; остальные future handlers остаются fail-closed.
+[Политика](../docs/plans/surveyscan-v2/decisions/C06-registry.md), [передача](../docs/plans/surveyscan-v2/handoffs/C06.md).
+Внутренний Registry.Ingest проверяет source binding и настоящую C03 Ed25519 подпись; публичный machine
+transport/enrollment — C07. IP/MAC сохраняются в current_facts; C03 Asset публично отдаёт hostname/OS/statuses.
+Combined server обрабатывает PG outbox consumer registry-version каждые 2s без внешней шины.
+Новые guards отклоняют asset/fact/business mutation без history/outbox/audit в той же transaction.
+C04/C05 SQL не редактировать, данные не сбрасывать. Default dev compose project name сохранён ради volumes.

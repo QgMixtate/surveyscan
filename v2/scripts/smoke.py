@@ -28,6 +28,6 @@ def main():
  compose('stop','db');wait(58080,'/health/ready',503);wait(58080,'/health/live',200)
  compose('start','db');wait(58080,'/health/ready',200);assert sql(f"SELECT name FROM access.tenants WHERE tenant_id='{tenant}'")=="C04 restart smoke";sql(f"DELETE FROM access.tenants WHERE tenant_id='{tenant}'");checks.append('PostgreSQL stop/restart preserves committed row and migrations')
  compose('restart','backend');wait(58081,'/health/ready',200);checks.append('backend restart through proxy')
- report={'status':'passed','checks':checks,'count':len(checks),'business_handlers':'auth C05; domain handlers pending C06 onward','production':'unrun'}
+ report={'status':'passed','checks':checks,'count':len(checks),'business_handlers':'registry C06; machine transport pending C07','production':'unrun'}
  (ROOT/'.local/smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report,ensure_ascii=False))
 if __name__=='__main__':main()

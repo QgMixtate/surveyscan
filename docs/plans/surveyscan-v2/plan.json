@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C03 design/contracts, C04 Go scaffold and C05 local auth completed; C06-C50 planned",
+  "status": "C01-C06 done; C07-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -526,8 +526,14 @@
           "output": "Create/get/list с canonical UID и минимальной reconciliation policy",
           "verification": "Повтор источника не создаёт дубли; конфликт виден",
           "estimation_basis": "Минимальные поля E1 и source-local mapping",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "../../../v2/internal/modules/assets/store.go",
+            "../../../v2/internal/app/registry_http.go",
+            "evidence/C06-runtime.json"
+          ],
+          "verification_status": "passed local real PG/crypto/HTTPS/binary tests; hosted C06 unrun"
         },
         {
           "id": "C06.02",
@@ -539,8 +545,14 @@
           "output": "Транзакционный ingest с provenance и приоритетом свежести",
           "verification": "Partial/late не затирают бизнес-поля и новые факты",
           "estimation_basis": "Поле имя/ОС/IP/MAC, times/statuses из C01",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/internal/modules/inventory/store.go",
+            "../../../v2/internal/platform/wire/validate.go",
+            "evidence/C06-runtime.json"
+          ],
+          "verification_status": "passed local real PG/crypto/HTTPS/binary tests; hosted C06 unrun"
         },
         {
           "id": "C06.03",
@@ -552,8 +564,15 @@
           "output": "Fallback team при создании, аудит и событие в той же транзакции",
           "verification": "Нет бесхозной карточки или commit данных без события",
           "estimation_basis": "1 accountable role, asset history и минимальный consumer",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/internal/modules/responsibility/assign.go",
+            "../../../v2/internal/platform/messaging/events.go",
+            "../../../v2/internal/modules/assets/schema/0024_commit_guard.sql",
+            "evidence/C06-runtime.json"
+          ],
+          "verification_status": "passed local real PG/crypto/HTTPS/binary tests; hosted C06 unrun"
         },
         {
           "id": "C06.04",
@@ -565,12 +584,32 @@
           "output": "Integration tests и fixtures повторов/конкуренции",
           "verification": "Tenant isolation, rollback и idempotency подтверждены",
           "estimation_basis": "2 tenant; duplicate/late/conflict/rollback",
-          "status": "planned",
-          "work_group": "Проверка и передача"
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "../../../v2/internal/app/registry_integration_test.go",
+            "evidence/C06-runtime.json"
+          ],
+          "verification_status": "passed local real PG/crypto/HTTPS/binary tests; hosted C06 unrun"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "completed_at": "2026-11-04",
+      "evidence": [
+        "handoffs/C06.md",
+        "decisions/C06-registry.md",
+        "evidence/C06-runtime.json",
+        "evidence/C06-validation.json"
+      ],
+      "authorization_note": "R-019: execute sequential stages automatically; no publication or production deployment.",
+      "open_decisions": [
+        "C07 enrollment/mTLS/upload adapters",
+        "C09 versioned public network-facts representation",
+        "C10 delivery leases/recovery/replay operations",
+        "C11 production machine PKI/OpenBao",
+        "C35 throughput/process scaling"
+      ]
     },
     {
       "id": "C07",
@@ -3473,7 +3512,8 @@
       "C02",
       "C03",
       "C04",
-      "C05"
+      "C05",
+      "C06"
     ],
     "done_tasks": [
       "C01.01",
@@ -3495,9 +3535,13 @@
       "C05.01",
       "C05.02",
       "C05.03",
-      "C05.04"
+      "C05.04",
+      "C06.01",
+      "C06.02",
+      "C06.03",
+      "C06.04"
     ],
-    "next_package": "C06",
+    "next_package": "C07",
     "product_implementation_started": true
   }
 }

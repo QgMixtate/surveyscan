@@ -49,7 +49,7 @@ def up():
  compose('build','backend','migrate')
  compose('run','--rm','migrate')
  compose('up','--detach','--wait','backend','edge')
- print('C05 infrastructure ready; auth available; domain handlers pending C06 onward.')
+ print('C06 infrastructure ready; registry/auth available; machine transport pending C07.')
 def testenv():
  initialize();env=dict(ENV)
  env['SURVEYSCAN_TEST_DATABASE_URL']='postgres://surveyscan_v2@127.0.0.1:55432/surveyscan_v2?sslmode=disable'
