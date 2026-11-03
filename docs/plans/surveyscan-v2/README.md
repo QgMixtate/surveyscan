@@ -105,6 +105,6 @@ ITSM начинается после согласования/приёмки W2.
 C01/C02 — scope и ER; C03 — [API/envelopes/ACK и проверенные примеры](handoffs/C03.md).
 20/200 задач done, 180 planned. C04 опубликован в ветке codex/v2-c04-foundation (7407da6).
 [C05](handoffs/C05.md) — local bootstrap, Argon2id, PG sessions, роли, CLI tokens, tenant/CSRF/revocation.
-10 unit/10 PG integration tests, 10 binary auth smoke и 6 infrastructure smoke groups passed локально.
+10 unit/11 PG integration tests, 10 binary auth smoke и 6 infrastructure smoke groups passed локально.
 Hosted CI пока неподтверждён: api.github.com блокируется текущей сетевой политикой, draft сохранён.
 Далее C06 — постоянный реестр, история и outbox.

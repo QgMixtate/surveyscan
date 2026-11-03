@@ -1,17 +1,19 @@
 # Текущее состояние surveyscan
 
-Обновлено: 2026-11-03 (Москва). Основание: git fetch/ls-remote, локальные проверки и история чата; GitHub REST API сейчас заблокирован.
+Обновлено: 2026-11-04 (Москва). Основание: git fetch/ls-remote, локальные проверки и история чата; GitHub REST API сейчас заблокирован.
 
 
-Актуальная задача — R-017. C04 опубликован в `codex/v2-c04-foundation`, commit `7407da6`.
-C05 завершён локально в `codex/v2-c05-auth`: [передача](plans/surveyscan-v2/handoffs/C05.md).
-Bootstrap admin, Argon2id, PG sessions, read-only CLI tokens, роли/tenant/Origin/CSRF и отзыв credentials.
-10 unit + 10 real PG integration tests, 10 live binary auth и 6 infrastructure smoke groups passed;
-58 C03 fixtures сохранены. Всего 19 migrations/29 domain-access tables. Далее C06, 20/200 done.
+Актуальная задача — R-018: финальная передача C05 и проверка PR/Actions.
+C04 опубликован в codex/v2-c04-foundation (7407da6); C05 — codex/v2-c05-auth (07a62f0 + lock-order fix).
+[Передача C05](plans/surveyscan-v2/handoffs/C05.md). Пользователь создал PR #2 и #3.
+На screenshot старого C05 SHA push check success, PR check in progress; это не статус нового fix.
+4 ноября повторены make verify/build и 10 unit + 11 real PG integration tests, exit0.
+C05: bootstrap/Argon2id/PG sessions/roles/CLI tokens/tenant/Origin/CSRF/revoke; 19 migrations/29 tables.
+Прогресс 20/200, далее C06 — реестр/история/outbox; C06 не начат.
 
-GitHub hosted CI не подтверждён: `gh api` получает Forbidden, runtime не разрешает api.github.com.
-Домен и обновлённые install/start instructions сохранены в черновике среды, требуется применить настройки.
-Git push работает. PR/merge/main/production deployment не выполнялись. C05 publication обновляется по факту push.
+GitHub REST API из среды всё ещё Forbidden, runtime revision1 без api.github.com.
+Добавление домена и install/start instructions сохранено в draft; требуется применить настройки среды.
+Git push работает, hosted checks последнего fix пока не подтверждены. Main/merge/production не менялись.
 
 ## Контекст архитектуры и история C01–C04
 

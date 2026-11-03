@@ -199,13 +199,25 @@ api.github.com отсутствует в runtime allowlist. Домен и нов
 в черновике среды; runtime update требует применения настроек через интерфейс среды.
 После публикации C04 выполнен C05.01–04 в codex/v2-c05-auth: bootstrap/private file/Argon2id,
 PG sessions, роли, CLI tokens, expiry/revoke, Origin/CSRF, server-derived tenant, transaction Authorizer port.
-Новая migration 0018, старые SQL не менялись. Local tests: 10 unit, 10 real PG integration,
+Новая migration 0018, старые SQL не менялись. Local tests: 10 unit, 11 real PG integration,
 10 binary/CLI/HTTP auth smoke, 6 infrastructure smoke; C03 58 fixtures — passed, final failures/skips 0.
 Argon2id: 3 iterations ~203ms/op/64MiB на этом runner, не production SLO. Legacy v1/connector сохранены.
 [Передача C05](plans/surveyscan-v2/handoffs/C05.md), evidence/runtime/validation и threat cases сохранены.
-C05 публикация выполняется отдельным commit/push; SHA обновляется после подтверждения remote.
+C05 опубликован commit 07a62f08987b74b237847f173dcea8c23aa04bc2 в codex/v2-c05-auth.
+Последующее исправление lock order и финальная проверка — см. R-018.
 Статус: C01–C05 done, 20/200; 180 planned. Следующий C06; C06 не реализован.
 Незакрытая внешняя часть запроса — проверка Actions после применения api.github.com в настройках среды.
+
+## R-018 — Проверить добавленные PR и закончить исправление C05
+Дата: 2026-11-04 (Москва). Пользователь: «ну я вроде добавил», screenshots PR #2/#3.
+Подтверждено по screenshots: PR #2 C04 и PR #3 C04+C05 созданы; для 07a62f0 push check success,
+pull_request check ещё in progress на момент снимка. Прямой GitHub API всё ещё Forbidden;
+проверка runtime policy подтверждает api.github.com отсутствует, текущая revision1.
+Продолжено авторизованное завершение C05: исправлен воспроизведённый inverse lock order,
+Authorize блокирует user до credential и повторяет проверку после ожидания.
+Make verify/build и полный suite (10 unit + 11 real PG integration) повторены, exit0.
+Исправление направляется в существующую ветку/PR #3. Новые hosted checks не считать прошедшими
+по screenshot старого 07a62f0. Main/merge не меняются. Next package C06 пока не начат.
 
 ## Шаблон новой записи
 - ID и дата:

@@ -421,3 +421,65 @@ func TestC05WorkerTenantAndCommitAuthorizationFence(t *testing.T) {
 		t.Fatal("disabled user accepted", e)
 	}
 }
+
+func TestC05AuthorizationAndCredentialRevocationLockOrder(t *testing.T) {
+	ctx, s, pool := authService(t)
+	bootstrap(t, ctx, s)
+	session, raw, e := s.Login(ctx, "admin", password)
+	if e != nil {
+		t.Fatal(e)
+	}
+	id, e := s.Authenticate(ctx, raw, "session", session.CSRFToken, true)
+	if e != nil {
+		t.Fatal(e)
+	}
+	change, e := pool.Begin(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer change.Rollback(ctx)
+	var locked string
+	if e = change.QueryRow(ctx, "SELECT user_id::text FROM access.users WHERE user_id=$1 FOR UPDATE", id.UserID).Scan(&locked); e != nil {
+		t.Fatal(e)
+	}
+	worker, e := pool.Begin(ctx)
+	if e != nil {
+		t.Fatal(e)
+	}
+	defer worker.Rollback(ctx)
+	var pid int
+	if e = worker.QueryRow(ctx, "SELECT pg_backend_pid()").Scan(&pid); e != nil {
+		t.Fatal(e)
+	}
+	done := make(chan error, 1)
+	go func() { _, e := s.Authorize(ctx, worker, id.CredentialID, tenant, "jobs:write"); done <- e }()
+	waiting := false
+	for range 100 {
+		if e = pool.QueryRow(ctx, "SELECT cardinality(pg_blocking_pids($1))>0", pid).Scan(&waiting); e != nil {
+			t.Fatal(e)
+		}
+		if waiting {
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	if !waiting {
+		t.Fatal("authorization did not wait for user lock")
+	}
+	short, cancel := context.WithTimeout(ctx, 500*time.Millisecond)
+	defer cancel()
+	if _, e = change.Exec(short, "UPDATE access.credentials SET revoked_at=clock_timestamp() WHERE credential_id=$1", id.CredentialID); e != nil {
+		t.Fatal("authorization held credential lock while waiting for user, violating global lock order")
+	}
+	if e = change.Commit(ctx); e != nil {
+		t.Fatal(e)
+	}
+	select {
+	case e = <-done:
+		if !errors.Is(e, access.ErrAuth) {
+			t.Fatal("revoked credential was accepted after lock wait", e)
+		}
+	case <-ctx.Done():
+		t.Fatal("authorization did not finish")
+	}
+}

@@ -6,10 +6,10 @@
   "branch": "codex/v2-c05-auth",
   "go_tests": {
     "unit_top_level": 10,
-    "real_pg_integration_top_level": 10,
+    "real_pg_integration_top_level": 11,
     "integration_also_runs_unit": 10,
     "new_c05_unit": 2,
-    "new_c05_pg_integration": 5,
+    "new_c05_pg_integration": 6,
     "final_failed": 0,
     "skipped": 0
   },
@@ -99,12 +99,21 @@
   },
   "resolved_attempt_failures": [
     "reserved SQL window name -> window_id before successful apply",
-    "test browser clients shared a CookieJar -> independent client jars"
+    "test browser clients shared a CookieJar -> independent client jars",
+    "deterministic regression reproduced inverse user/credential lock order; fixed user-first locking and revalidation; targeted test and full suite passed"
   ],
   "hosted_ci": {
     "status": "unconfirmed_blocked",
     "reason": "api.github.com absent in runtime allowlist; gh api Forbidden",
-    "configuration_draft": "saved; requires user settings apply"
+    "configuration_draft": "saved; requires user settings apply",
+    "user_screenshot": {
+      "date": "2026-11-04",
+      "pr": 3,
+      "head": "07a62f0",
+      "push": "success",
+      "pull_request": "in_progress",
+      "note": "state at screenshot time; not current latest-fix check result"
+    }
   },
   "unrun": [
     "GitHub hosted run observation",
@@ -115,5 +124,19 @@
     "actual registry/jobs/artifact business handlers",
     "backup/restore"
   ],
-  "secrets": "No raw credentials in evidence. Temporary synthetic credentials removed."
+  "secrets": "No raw credentials in evidence. Temporary synthetic credentials removed.",
+  "lock_order_regression": {
+    "before_fix": "failed (expected reproduction)",
+    "after_fix": "passed",
+    "target": "real PG row locks and pg_blocking_pids; no mocked locking"
+  },
+  "latest_verified_at": "2026-11-04 Europe/Moscow",
+  "final_verification": {
+    "date": "2026-11-04",
+    "make_verify_build_exit": 0,
+    "pg_integration_exit": 0,
+    "lock_order": "passed real PG; user before credential; post-wait revalidation",
+    "binary_auth_smoke_exit": 0,
+    "dev_up_exit": 0
+  }
 }

@@ -14,6 +14,7 @@
 | Несколько sessions и concurrent token issuance | real PG locks | две независимые sessions/tokens; logout одной не отзывает другую |
 | Password reset | console service + real PG | старый пароль и старые credentials отвергнуты, новый пароль принят |
 | Disable/role change против transaction | FOR SHARE + concurrent change | change ждёт commit; затем старый credential отвергнут |
+| Authorize ждёт user lock, одновременно revoke credential | real blocking_pids + bounded UPDATE | нет обратного lock order; после ожидания отозванный credential не принимается |
 | Worker с чужим tenant | Authorizer port внутри real transaction | forbidden |
 | Общий rate limit двух экземпляров service | real invalid logins и shared PG | bounded attempts, 429 |
 | Перезапуск Go server | скомпилированный бинарник, настоящий HTTP/PG | session сохраняется после остановки/старта процесса |

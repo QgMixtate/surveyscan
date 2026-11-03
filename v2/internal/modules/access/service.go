@@ -288,6 +288,28 @@ func (s *Service) Authorize(ctx context.Context, tx pgx.Tx, credentialID, tenant
 	if !identifier.Valid(credentialID) || !identifier.Valid(tenantID) {
 		return port.Identity{}, ErrForbidden
 	}
+
+	// Всегда user → credential: logout/revoke сначала блокируют user.
+	// Иначе ожидающий user-lock worker удерживает credential и блокирует отзыв.
+	var owner, credentialTenant string
+	e := tx.QueryRow(ctx, "SELECT user_id::text,tenant_id::text FROM access.credentials WHERE credential_id=$1", credentialID).Scan(&owner, &credentialTenant)
+	if errors.Is(e, pgx.ErrNoRows) {
+		return port.Identity{}, ErrAuth
+	}
+	if e != nil {
+		return port.Identity{}, e
+	}
+	if credentialTenant != tenantID {
+		return port.Identity{}, ErrForbidden
+	}
+	var locked string
+	e = tx.QueryRow(ctx, "SELECT user_id::text FROM access.users WHERE user_id=$1 FOR SHARE", owner).Scan(&locked)
+	if errors.Is(e, pgx.ErrNoRows) {
+		return port.Identity{}, ErrAuth
+	}
+	if e != nil {
+		return port.Identity{}, e
+	}
 	id, _, e := identity(ctx, tx, "c.credential_id=$1 FOR SHARE OF c,u,t", credentialID)
 	if e != nil {
 		return id, e

@@ -67,7 +67,8 @@ Future domain handler после успешной human auth возвращае�
 
 `access/port.Authorizer` — общий контракт API/workers/artifacts. При записи надо повторно вызвать
 Authorize внутри **той же PG transaction** с серверной credential reference и tenant, затем сделать
-доменную запись и commit. FOR SHARE locks credential/user/tenant удерживаются до конца transaction;
+доменную запись и commit. Общий порядок блокировок — user → credential, после ожидания identity проверяется снова.
+FOR SHARE locks credential/user/tenant удерживаются до конца transaction;
 отзыв/смена роли не могут незаметно пересечь проверенную транзакцию. Credential ID сам по себе не
 публичный bearer credential. Его provenance в будущем job context должна происходить от проверенного
 principal, а не произвольного пользовательского body. При долгом выполнении проверять снова перед commit.
