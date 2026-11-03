@@ -1,23 +1,23 @@
 # Текущее состояние surveyscan
 
-Обновлено: 2026-11-03 (Москва). Основание: проверка GitHub API и доступная история текущего чата.
+Обновлено: 2026-11-03 (Москва). Основание: git fetch/ls-remote, локальные проверки и история чата; GitHub REST API сейчас заблокирован.
 
 
-Актуальная задача — R-017: публикация C04 и проверка hosted CI, затем выполнение C05.
-Git read доступен; GitHub API пока блокируется сетевой политикой. Добавление api.github.com
-сохранено в черновике настроек среды, требуется применить настройки через интерфейс среды.
+Актуальная задача — R-017. C04 опубликован в `codex/v2-c04-foundation`, commit `7407da6`.
+C05 завершён локально в `codex/v2-c05-auth`: [передача](plans/surveyscan-v2/handoffs/C05.md).
+Bootstrap admin, Argon2id, PG sessions, read-only CLI tokens, роли/tenant/Origin/CSRF и отзыв credentials.
+10 unit + 10 real PG integration tests, 10 live binary auth и 6 infrastructure smoke groups passed;
+58 C03 fixtures сохранены. Всего 19 migrations/29 domain-access tables. Далее C06, 20/200 done.
 
-C04: локально реализован [Go-каркас и dev-стенд](plans/surveyscan-v2/handoffs/C04.md):
-три бинарника, 18 миграций/24 доменные таблицы, постоянный PostgreSQL, OpenBao Raft, отдельный nginx.
-8 unit и 5 PG integration tests, 6 HTTP/restart smoke groups, 58 C03 fixtures — passed.
-GitHub workflow подготовлен, hosted run unrun; auth/реестр/collector/agent runtime ещё впереди.
-Прогресс 16/200, 184 planned. Результат локальный, production deployment и публикации нет.
+GitHub hosted CI не подтверждён: `gh api` получает Forbidden, runtime не разрешает api.github.com.
+Домен и обновлённые install/start instructions сохранены в черновике среды, требуется применить настройки.
+Git push работает. PR/merge/main/production deployment не выполнялись. C05 publication обновляется по факту push.
 
-## Текущее состояние — архитектура 0.5 и план 50 пакетов
+## Контекст архитектуры и история C01–C04
 
 Локально сохранены спецификация/архитектура 0.5, исследование аналогов, матрица 19 замечаний,
 план из 50 пакетов и 200 подзадач. GitHub main при проверке 2026-11-03 — 73ced7e (документы 0.3).
-Коммит/PR/публикация этих локальных документов не выполнялись.
+Теперь документы опубликованы в C04 feature branch; main остаётся на 0.3.
 Runtime candidates C01: Go 1.27.3, PG 17.x, Bao 2.7.2, bbolt 1.5.0; Web React/TS/Vite.
 В C04 Go/pgx/PG/Bao/nginx проверены сборкой и локальным стендом; остальные candidates не подтверждены. ОС host agent остаётся proposed до C08; серверный dev-стенд Linux/amd64, не блокирует C02–C07.
 Последнее определение R-011: local agent — постоянная служба хоста → постоянный collector;
@@ -44,7 +44,7 @@ receipt vs applied/pending result, heartbeat challenge и jobs/outbox contracts.
 Плановые 24ч soak/нагрузка/пилоты не выполнены. Внешние стенды/credentials/решения — prerequisites.
 Документы исследуют Device42, GLPI/Agent, runZero и Snipe-IT по официальным GitHub-источникам;
 остальные упомянутые аналоги свежими материалами не подтверждены из-за сетевых ограничений.
-Проверки текущего изменения: ID/coverage/DAG/ссылки/структура WBS; код продукта не менялся.
+На этапе планирования проверялись ID/coverage/DAG/ссылки/структура WBS; затем C04/C05 добавили код v2.
 При новом окружении нужен опубликованный документ или переданный архив 0.5/плана;
 не заменять его старым main 0.3. Статусы/артефакты сохранять по шаблону handoff.
 

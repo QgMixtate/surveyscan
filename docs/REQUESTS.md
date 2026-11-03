@@ -191,15 +191,21 @@ CI GitHub hosted, production/TLS/mTLS/auth/ingestion crypto/soak — unrun; work
 Следующий пакет C05 — bootstrap admin, auth, tenant scope и негативные проверки. C05 не начат.
 
 ## R-017 — Опубликовать C04, проверить GitHub Actions и продолжить C05
-Дата: 2026-11-03. Пользователь явно поручил опубликовать подготовленный результат,
-запустить/проверить Actions и после этого следующий этап C05. Публикация разрешена;
-слияние в main и production deployment не поручены.
-В работе: отдельная ветка codex/v2-c04-foundation с архитектурой/спецификацией 0.5,
-планом, C01–C04 и новым v2/. Локальные проверки C04 см. handoffs/C04.md.
-Git fetch/ls-remote работают; gh API получает Forbidden, api.github.com отсутствует в allowlist.
-Добавление api.github.com сохранено в черновике настроек среды; runtime ещё не обновлён.
-Push и hosted CI не считать успешными до фактического подтверждения.
-Следующий шаг: push ветки C04, проверить hosted run, затем C05.
+Дата: 2026-11-03. Пользователь явно поручил публикацию, проверку Actions и следующий этап.
+C04 опубликован: codex/v2-c04-foundation, commit 7407da60ae22b77c37b0d26121a51cba744d3857;
+git push succeeded, ls-remote подтвердил SHA. Main 73ced7e сохранён, PR/merge/production не выполнялись.
+Push workflow trigger отправлен. Hosted run пока не подтверждён: gh api Forbidden,
+api.github.com отсутствует в runtime allowlist. Домен и новые install/start instructions сохранены
+в черновике среды; runtime update требует применения настроек через интерфейс среды.
+После публикации C04 выполнен C05.01–04 в codex/v2-c05-auth: bootstrap/private file/Argon2id,
+PG sessions, роли, CLI tokens, expiry/revoke, Origin/CSRF, server-derived tenant, transaction Authorizer port.
+Новая migration 0018, старые SQL не менялись. Local tests: 10 unit, 10 real PG integration,
+10 binary/CLI/HTTP auth smoke, 6 infrastructure smoke; C03 58 fixtures — passed, final failures/skips 0.
+Argon2id: 3 iterations ~203ms/op/64MiB на этом runner, не production SLO. Legacy v1/connector сохранены.
+[Передача C05](plans/surveyscan-v2/handoffs/C05.md), evidence/runtime/validation и threat cases сохранены.
+C05 публикация выполняется отдельным commit/push; SHA обновляется после подтверждения remote.
+Статус: C01–C05 done, 20/200; 180 planned. Следующий C06; C06 не реализован.
+Незакрытая внешняя часть запроса — проверка Actions после применения api.github.com в настройках среды.
 
 ## Шаблон новой записи
 - ID и дата:

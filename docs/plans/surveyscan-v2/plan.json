@@ -1,9 +1,9 @@
 {
   "project": "QgMixtate/surveyscan",
-  "architecture": "0.5 local draft",
+  "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C03 design/contracts and C04 local runtime scaffold completed; C05-C50 planned",
+  "status": "C01-C03 design/contracts, C04 Go scaffold and C05 local auth completed; C06-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -421,8 +421,14 @@
           "output": "Безопасная процедура первого пользователя и хранилище credential metadata",
           "verification": "Нет общих заводских паролей и секретов в логах",
           "estimation_basis": "1 bootstrap flow; reset/expiry policy по ADR",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "../../../v2/cmd/surveyscan-server/console.go",
+            "../../../v2/internal/modules/access/schema/0018_credentials.sql",
+            "evidence/C05-runtime.json"
+          ],
+          "verification_status": "passed local real PG/TLS/CLI/HTTP; hosted CI unconfirmed (network blocker)"
         },
         {
           "id": "C05.02",
@@ -434,8 +440,14 @@
           "output": "Login/session/token, operator/viewer/admin и tenant context",
           "verification": "Revocation/expiry и отказ неверной роли проверены",
           "estimation_basis": "1 выбранный auth-method; 3 минимальные роли",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/internal/modules/access/service.go",
+            "../../../v2/internal/modules/access/http.go",
+            "evidence/C05-runtime.json"
+          ],
+          "verification_status": "passed local real PG/TLS/CLI/HTTP; hosted CI unconfirmed (network blocker)"
         },
         {
           "id": "C05.03",
@@ -447,8 +459,14 @@
           "output": "Общий authorization contract для handlers/jobs/artifacts",
           "verification": "Подмена UUID или tenant не даёт чужие данные",
           "estimation_basis": "Все минимальные E1 endpoints и job context",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/internal/modules/access/port/authorization.go",
+            "../../../v2/internal/app/http.go",
+            "evidence/C05-runtime.json"
+          ],
+          "verification_status": "passed local real PG/TLS/CLI/HTTP; hosted CI unconfirmed (network blocker)"
         },
         {
           "id": "C05.04",
@@ -460,12 +478,34 @@
           "output": "Негативные интеграционные проверки и краткий threat record",
           "verification": "Session/cookie/CSRF либо token policy соответствует ADR",
           "estimation_basis": "2 tenant, expired/revoked credential, concurrent session",
-          "status": "planned",
-          "work_group": "Проверка и передача"
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "../../../v2/internal/app/auth_integration_test.go",
+            "../../../v2/scripts/auth_smoke.py",
+            "decisions/C05-threat-cases.md",
+            "evidence/C05-runtime.json"
+          ],
+          "verification_status": "passed local real PG/TLS/CLI/HTTP; hosted CI unconfirmed (network blocker)"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "completed_at": "2026-11-03",
+      "evidence": [
+        "handoffs/C05.md",
+        "decisions/C05-auth-policy.md",
+        "evidence/C05-runtime.json",
+        "evidence/C05-validation.json"
+      ],
+      "authorization_note": "R-017 explicitly requested publishing C04 and then executing C05; no main merge or production deployment.",
+      "open_decisions": [
+        "Apply api.github.com network draft and observe hosted GitHub Actions",
+        "C06 real asset/observation/outbox handlers and transaction authorizer wiring",
+        "C07/C10 trusted persisted job/artifact principal and execution-time rechecks",
+        "C11 production TLS/machine PKI and OpenBao machine policies",
+        "C09 browser UI E2E"
+      ]
     },
     {
       "id": "C06",
@@ -3432,7 +3472,8 @@
       "C01",
       "C02",
       "C03",
-      "C04"
+      "C04",
+      "C05"
     ],
     "done_tasks": [
       "C01.01",
@@ -3450,9 +3491,13 @@
       "C04.01",
       "C04.02",
       "C04.03",
-      "C04.04"
+      "C04.04",
+      "C05.01",
+      "C05.02",
+      "C05.03",
+      "C05.04"
     ],
-    "next_package": "C05",
+    "next_package": "C06",
     "product_implementation_started": true
   }
 }

@@ -1,0 +1,11 @@
+{
+  "package": "C04",
+  "status": "published_branch",
+  "remote": "https://github.com/QgMixtate/surveyscan",
+  "branch": "codex/v2-c04-foundation",
+  "commit": "7407da60ae22b77c37b0d26121a51cba744d3857",
+  "verification": "git push succeeded and git ls-remote matched commit",
+  "main": "unchanged 73ced7efbacdd6a60466e16d5e77e61587842e9c",
+  "hosted_actions": "push trigger sent; run status unconfirmed; REST API Forbidden",
+  "merged": false
+}

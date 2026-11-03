@@ -40,6 +40,8 @@ services:
       SURVEYSCAN_V2_DATABASE_PASSWORD_FILE: /run/secrets/pg_password
       SURVEYSCAN_V2_LISTEN: 0.0.0.0:8080
       SURVEYSCAN_V2_BAO_ADDR: http://bao:8200
+      SURVEYSCAN_V2_PUBLIC_ORIGIN: http://127.0.0.1:58081
+      SURVEYSCAN_V2_INSECURE_LOCAL_HTTP: "1"
       NO_PROXY: "${NO_PROXY:-},localhost,127.0.0.1,db,bao,backend"
     secrets: [pg_password]
     depends_on:

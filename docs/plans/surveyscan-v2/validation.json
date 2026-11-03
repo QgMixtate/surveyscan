@@ -5,12 +5,12 @@
   "acceptance_criteria": 55,
   "remarks": 19,
   "dependency_graph": "acyclic",
-  "all_statuses": "C01-C04 done; C01-C03 design/contracts, C04 local runtime scaffold; C05-C50 planned",
-  "scope_validation": "static documentation + live local C04 tests; hosted CI and production unrun",
+  "all_statuses": "C01-C05 done; C06-C50 planned",
+  "scope_validation": "static documentation + local C04/C05 real PG/HTTPS/binary/CLI tests; hosted CI unconfirmed due network policy",
   "progress": {
-    "done_packages": 4,
-    "done_tasks": 16,
-    "planned_tasks": 184
+    "done_packages": 5,
+    "done_tasks": 20,
+    "planned_tasks": 180
   },
-  "latest_evidence": "evidence/C04-validation.json"
+  "latest_evidence": "evidence/C05-validation.json"
 }

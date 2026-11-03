@@ -1,0 +1,119 @@
+{
+  "package": "C05",
+  "date": "2026-11-03",
+  "result": "passed",
+  "source_base": "7407da60ae22b77c37b0d26121a51cba744d3857",
+  "branch": "codex/v2-c05-auth",
+  "go_tests": {
+    "unit_top_level": 10,
+    "real_pg_integration_top_level": 10,
+    "integration_also_runs_unit": 10,
+    "new_c05_unit": 2,
+    "new_c05_pg_integration": 5,
+    "final_failed": 0,
+    "skipped": 0
+  },
+  "commands": [
+    {
+      "command": "make GO=/workspace/.surveyscan-v2-tools/go/bin/go CONTRACT_PYTHON=/workspace/.surveyscan-contract-tools/bin/python verify build",
+      "exit_status": 0
+    },
+    {
+      "command": "GO=/workspace/.surveyscan-v2-tools/go/bin/go python3 scripts/dev.py integration",
+      "exit_status": 0
+    },
+    {
+      "command": "python3 scripts/dev.py up",
+      "exit_status": 0
+    },
+    {
+      "command": "python3 scripts/smoke.py",
+      "exit_status": 0
+    },
+    {
+      "command": "python3 scripts/auth_smoke.py",
+      "exit_status": 0
+    },
+    {
+      "command": "go test -run ^$ -bench BenchmarkArgon2idPolicy -benchtime=3x -benchmem ./internal/modules/access",
+      "exit_status": 0
+    }
+  ],
+  "auth_smoke": {
+    "package": "C05",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "binary migrate and repeat",
+      "CLI bootstrap once; no credential in output",
+      "CLI provision viewer",
+      "live login and origin policy",
+      "auth/CSRF gate before future domain handlers",
+      "session survives real server process restart",
+      "live token issue/revoke",
+      "live logout revokes session",
+      "viewer mutation forbidden",
+      "console disable revokes active HTTP session"
+    ],
+    "target": "real compiled Go binary + isolated PG + local Bao; HTTP allowed only with explicit dev flag",
+    "private_material": "temporary password removed; no credential in report"
+  },
+  "infrastructure_smoke": {
+    "status": "passed",
+    "checks": [
+      "health and unauthenticated API rejected on 58080",
+      "health and unauthenticated API rejected on 58081",
+      "separate proxy serves OpenAPI",
+      "Bao stop/restart/unseal readiness recovery",
+      "PostgreSQL stop/restart preserves committed row and migrations",
+      "backend restart through proxy"
+    ],
+    "count": 6,
+    "business_handlers": "auth C05; domain handlers pending C06 onward",
+    "production": "unrun"
+  },
+  "contracts": {
+    "schema_definitions": 54,
+    "openapi_operations": 26,
+    "contract_cases": 58,
+    "accepted_cases": 19,
+    "negative_cases": 39,
+    "matched_contract_cases": 58,
+    "state_graph_cases": 12,
+    "canonical_vectors": 2,
+    "http_example_shapes": 3
+  },
+  "migrations": {
+    "total": 19,
+    "added": 1,
+    "domain_access_tables": 29,
+    "repeat_applied": 0,
+    "previous_sql_unchanged": true
+  },
+  "argon2id_benchmark": {
+    "iterations": 3,
+    "ns_per_op": 203101667,
+    "bytes_per_op": 67111701,
+    "allocations_per_op": 33,
+    "target": "local Linux/amd64 cloud EPYC; not a production SLO"
+  },
+  "resolved_attempt_failures": [
+    "reserved SQL window name -> window_id before successful apply",
+    "test browser clients shared a CookieJar -> independent client jars"
+  ],
+  "hosted_ci": {
+    "status": "unconfirmed_blocked",
+    "reason": "api.github.com absent in runtime allowlist; gh api Forbidden",
+    "configuration_draft": "saved; requires user settings apply"
+  },
+  "unrun": [
+    "GitHub hosted run observation",
+    "production TLS/PKI and machine auth",
+    "real browser UI E2E",
+    "100-user load",
+    "24-hour soak",
+    "actual registry/jobs/artifact business handlers",
+    "backup/restore"
+  ],
+  "secrets": "No raw credentials in evidence. Temporary synthetic credentials removed."
+}

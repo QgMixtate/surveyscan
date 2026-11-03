@@ -1,6 +1,6 @@
 # Полный WBS surveyscan v2
 
-Версия плана 1.0 по архитектуре 0.5. C01–C04: 16 подзадач done (проектирование/контракты + локальный Go-каркас); остальные 184 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
+Версия плана 1.0 по архитектуре 0.5. C01–C05: 20 подзадач done (проектирование/контракты + Go-каркас/auth); остальные 180 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
 
 
 # C01 — Границы первого релиза и карта решений (E0)
@@ -236,7 +236,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Безопасная процедура первого пользователя и хранилище credential metadata.
 - Проверка: Нет общих заводских паролей и секретов в логах.
 - База оценки: 1 bootstrap flow; reset/expiry policy по ADR.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [передача C05](handoffs/C05.md), [проверки](evidence/C05-runtime.json).
 
 ## C05.02 — Добавить auth и минимальные роли
 
@@ -246,7 +246,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Login/session/token, operator/viewer/admin и tenant context.
 - Проверка: Revocation/expiry и отказ неверной роли проверены.
 - База оценки: 1 выбранный auth-method; 3 минимальные роли.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [передача C05](handoffs/C05.md), [проверки](evidence/C05-runtime.json).
 
 ## C05.03 — Защитить API и фоновые операции
 
@@ -256,7 +256,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Общий authorization contract для handlers/jobs/artifacts.
 - Проверка: Подмена UUID или tenant не даёт чужие данные.
 - База оценки: Все минимальные E1 endpoints и job context.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [передача C05](handoffs/C05.md), [проверки](evidence/C05-runtime.json).
 
 ## C05.04 — Проверить auth threat cases
 
@@ -266,7 +266,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Негативные интеграционные проверки и краткий threat record.
 - Проверка: Session/cookie/CSRF либо token policy соответствует ADR.
 - База оценки: 2 tenant, expired/revoked credential, concurrent session.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [передача C05](handoffs/C05.md), [проверки](evidence/C05-runtime.json).
 
 ## Выход пакета
 

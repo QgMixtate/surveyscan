@@ -29,13 +29,13 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — локальный Go-каркас/dev-стенд; C05–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope; C06–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
-Локальные изменения 0.5/плана не считать опубликованными до фактической записи в GitHub.
+C04/0.5/план опубликованы в codex/v2-c04-foundation (7407da6); C05 — ветка codex/v2-c05-auth. Main не слит. Точные publication refs — в STATUS/evidence; не выдавать local tests за hosted CI.
 Планирование не означает разрешение сразу реализовать все пакеты или выполнить production deployment.
-Следующий пакет — C05; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
+Следующий пакет — C06; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
 Матрица замечаний: docs/specifications/requirements-traceability-v0.5.md;
 исследование аналогов: docs/research/inventory-platform-analogues.md.
 Правила snapshot/dashboard ниже относятся к текущей Python v1, не архитектуре v2.
@@ -50,6 +50,8 @@ C01: см. docs/plans/surveyscan-v2/handoffs/C01.md. Порядок C01→C02→
 
 C02: docs/plans/surveyscan-v2/handoffs/C02.md. Mapping использует origin source, collector relay не меняет UID; observations payload неизменяем, assignments temporal, current facts и ручные business fields разделены. Документы C03 читают эту модель, SQL/продуктовые проверки ещё unrun.
 
-C03: docs/plans/surveyscan-v2/handoffs/C03.md и contracts/C03/. 26 операций/54 схемы, 58 fixtures проверены; HTTP/mTLS/PG runtime unrun. В C04 начать Go-каркас, миграции и CI; сохранить текущие схемы/fixture corpus и не объявлять handlers готовыми по reference checker.
+C03: docs/plans/surveyscan-v2/handoffs/C03.md и contracts/C03/. 26 операций/54 схемы, 58 fixtures проверены; HTTP/mTLS/PG runtime unrun. C04 реализовал Go-каркас, миграции и CI; сохранить текущие схемы/fixture corpus и не объявлять handlers готовыми по reference checker.
 
-C04: docs/plans/surveyscan-v2/handoffs/C04.md. Новый v2/ с 18 embedded PG migrations, отдельным Bao Raft/backend/nginx; make verify/build/integration и scripts/smoke.py проверены локально. GitHub Actions unrun, секреты только в игнорируемом v2/.local/. Не редактировать применённые SQL; C05 добавляет auth/access migrations. Legacy v1/connector сохранены.
+C04: docs/plans/surveyscan-v2/handoffs/C04.md. Новый v2/ с 18 embedded PG migrations, отдельным Bao Raft/backend/nginx; make verify/build/integration и scripts/smoke.py проверены локально. GitHub Actions не подтверждён (REST network blocker), секреты только в игнорируемом v2/.local/. Не редактировать применённые SQL; C05 добавляет auth/access migrations. Legacy v1/connector сохранены.
+
+C05: docs/plans/surveyscan-v2/handoffs/C05.md. Argon2id и PG-backed sessions/CLI tokens, Origin/CSRF, роли и server-derived tenant, access/port.Authorizer для повторной проверки в write transaction. Human domain gates пока 501, machine API 401 до PKI. Новая migration 0018, всего 19; applied SQL не менять. 10 unit/10 PG integration tests и binary/restart smoke passed локально. api.github.com требуется применить в настройках среды для проверки hosted CI.

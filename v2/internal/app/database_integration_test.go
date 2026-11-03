@@ -75,7 +75,7 @@ func database(t *testing.T) (context.Context, *pgx.Conn, []migrate.Migration) {
 func apply(t *testing.T, ctx context.Context, c *pgx.Conn, ms []migrate.Migration) {
 	t.Helper()
 	n, e := migrate.Apply(ctx, c, ms)
-	if e != nil || n != 18 {
+	if e != nil || n != len(ms) {
 		t.Fatalf("initial migration: %d %v", n, e)
 	}
 }
@@ -129,7 +129,7 @@ func TestMigrationRepeatPersistenceAndDrift(t *testing.T) {
 	if e = migrate.Check(ctx, other, ms); e != nil {
 		t.Fatal(e)
 	}
-	if e = c.QueryRow(ctx, "SELECT count(*) FROM information_schema.tables WHERE table_schema IN ('access','responsibility','scope','sources','assets','inventory','imports','audit','messaging') AND table_type='BASE TABLE'").Scan(&count); e != nil || count != 24 {
+	if e = c.QueryRow(ctx, "SELECT count(*) FROM information_schema.tables WHERE table_schema IN ('access','responsibility','scope','sources','assets','inventory','imports','audit','messaging') AND table_type='BASE TABLE'").Scan(&count); e != nil || count != 29 {
 		t.Fatal(count, e)
 	}
 	exec(t, ctx, c, "UPDATE platform.schema_migrations SET sha256=repeat('0',64) WHERE id=(SELECT min(id) FROM platform.schema_migrations)")
@@ -176,7 +176,7 @@ func TestConcurrentMigration(t *testing.T) {
 			t.Fatal(e)
 		}
 	}
-	if sum != 18 {
+	if sum != len(ms) {
 		t.Fatal(sum)
 	}
 }

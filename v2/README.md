@@ -1,4 +1,4 @@
-# SurveyScan v2 — C04
+# SurveyScan v2 — C05
 
 Новый Go-каркас рядом с Python v1. Linux/amd64, Go **1.27.3**, Docker Engine + Compose v2,
 Python 3.12+. PostgreSQL **17.11**, OpenBao **2.7.2**, nginx **1.30** закреплены digest в deploy/compose.yaml.
@@ -38,8 +38,8 @@ python3 scripts/dev.py down
 | OpenBao | 127.0.0.1:58200 |
 
 Все опубликованные порты привязаны к loopback. Это локальный HTTP-стенд, не production-конфигурация.
-Proxy раздаёт JSON-контракты отдельно от Go; Web UI появится в C09. `/` и продуктовые `/api/...` пока
-возвращают 404. OpenAPI описывает будущие handlers. Agent/collector поддерживают только `version`;
+Proxy раздаёт JSON-контракты отдельно от Go; Web UI появится в C09. Продуктовые `/api/...`
+требуют auth; после успешной проверки прав будущий handler отвечает 501. `/` возвращает 404. OpenAPI описывает auth и будущие domain handlers. Agent/collector поддерживают только `version`;
 попытка запуска сбора завершается кодом 2. Сервер поддерживает `serve`, `migrate`, `version`, `healthcheck`.
 Combined composition root собирает модули; worker/API роли появятся вместе с реальными обработчиками.
 
@@ -52,19 +52,65 @@ Bootstrap/unseal материал остаётся в `.local/bao-init.json` (06
 собственной защищённой копии. `down` сохраняет pgdata/baodata. Не выполнять `down -v` для рабочих данных.
 Если изменился пароль в файле, он не меняет автоматически пароль существующей PostgreSQL-роли.
 
-18 forward-only миграций встроены в модули. Apply берёт PG advisory transaction lock, проверяет SHA256,
+19 forward-only миграций встроены в модули. Apply берёт PG advisory transaction lock, проверяет SHA256,
 owner, известность и непрерывный prefix истории; весь pending batch выполняется одной транзакцией.
 Повтор даёт 0; изменённую историю нужно расследовать, а не перезаписывать checksum. Rollback и
-zero-downtime upgrades не заявлены. 24 доменные таблицы C02 + platform.schema_migrations.
+zero-downtime upgrades не заявлены. 24 доменные таблицы C02 + 5 access tables C05 + platform.schema_migrations.
 SQL FK/guards читают несколько owner schemas ради C02 транзакционной целостности; записи будущих
 handlers должны идти через владельцев/ports. Ограничения импортов проверяются тестом.
 
 Наблюдение сохраняет canonical_payload, digest, origin key ID и 64 bytes signature по C03.
 SQL проверяет digest и соответствие JSON, но **не** Ed25519, JCS canonicality и доверие ключу:
 это обязанности будущего ingestion. Нулевые synthetic signature в SQL integration tests не являются
-проверкой подписи. Нет RLS/auth/enrollment, inventory handlers, projector, spool, collector runtime,
-production TLS/PKI, backup/HA или готовности к 100 пользователям. C05 — следующий пакет.
+проверкой подписи. Реализован C05 auth; нет RLS/enrollment, inventory handlers, projector, spool, collector runtime,
+production TLS/PKI, backup/HA или готовности к 100 пользователям. C06 — следующий пакет.
 
-CI: `.github/workflows/v2.yml`. Та же последовательность команд выполнена локально; GitHub Actions
-появится после публикации и пока не запускался. Smoke временно останавливает **только этот** dev Bao/PG,
+CI: `.github/workflows/v2.yml`. Та же последовательность команд выполнена локально; C04 опубликован,
+push-триггер отправлен, состояние GitHub Actions пока не подтверждено из-за запрета GitHub API. Smoke временно останавливает **только этот** dev Bao/PG,
 проверяет live=200, ready=503, восстановление после старта/unseal и перезапуска backend.
+
+## C05: пользователи и доступ
+
+[Политика](../docs/plans/surveyscan-v2/decisions/C05-auth-policy.md),
+[threat cases](../docs/plans/surveyscan-v2/decisions/C05-threat-cases.md).
+Внутри compose уже задан origin `http://127.0.0.1:58081` и явный local HTTP opt-in.
+Для обычной установки задать `SURVEYSCAN_V2_PUBLIC_ORIGIN=https://inventory.example`, без dev opt-in;
+TLS завершается доверенным reverse proxy. Нельзя считать локальный HTTP production TLS.
+
+Первого администратора создаёт **локальная консоль**; это требует привилегированного OS/DB доступа.
+Подготовить свой password file 0600 (16–1024 bytes), не помещать пароль в argv или env.
+Ниже путь `/secure/admin-password` — ваш существующий private file, UUID — ваш tenant ID:
+
+```bash
+# В shell задать DATABASE_URL и DATABASE_PASSWORD_FILE для нужной БД, как в deploy/compose.yaml.
+.dist/surveyscan-server migrate
+.dist/surveyscan-server bootstrap-admin --tenant YOUR-TENANT-UUID --tenant-name 'Организация' --username admin --password-file /secure/admin-password
+.dist/surveyscan-server create-user --tenant YOUR-TENANT-UUID --username viewer --role viewer --password-file /secure/viewer-password
+.dist/surveyscan-server set-user-state --tenant YOUR-TENANT-UUID --username viewer --role viewer --enabled=false
+.dist/surveyscan-server reset-password --tenant YOUR-TENANT-UUID --username admin --password-file /secure/new-password
+```
+
+В текущем cloud dev shell для доступа к отдельному кластеру:
+
+```bash
+export SURVEYSCAN_V2_DATABASE_URL='postgres://surveyscan_v2@127.0.0.1:55432/surveyscan_v2?sslmode=disable'
+export SURVEYSCAN_V2_DATABASE_PASSWORD_FILE="$PWD/.local/pg_password"
+```
+
+POST `/api/v1/auth/sessions` принимает C03 LoginRequest и точный Origin; возвращает Session и cookie.
+DELETE `/api/v1/auth/session` требует cookie/Origin/X-CSRF-Token и отзывает session.
+POST `/api/v1/auth/tokens` выдаёт read-only scoped token по cookie/CSRF;
+DELETE `/api/v1/auth/tokens/{token_id}` отзывает свой token. Bearer token не заменяет cookie при выдаче.
+Username уникален глобально; один user принадлежит одному tenant. Правила ролей/expiry/reset — в policy.
+Production cookie Secure/HttpOnly/SameSite=Strict. Все session/token secrets в БД хешированы;
+raw token и CSRF из ответов надо защищать на клиенте, не копировать в отчёты/логи.
+
+```bash
+# После make build и dev.py up: новая временная БД, настоящий CLI/HTTP и restart процесса.
+python3 scripts/auth_smoke.py
+```
+
+Скрипт не создаёт постоянного пользователя в рабочей dev-БД; временный пароль и собственную test DB
+удаляет после прогона. `integration` дополнительно использует HTTPS test server и проверяет
+expiry, revocation, roles, tenant context, concurrent bootstrap/sessions/tokens и commit fencing.
+Hosted CI остаётся неподтверждённым до доступа к GitHub API; публикация ветки не равна CI success.

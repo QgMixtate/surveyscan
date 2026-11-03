@@ -1,0 +1,3451 @@
+{
+  "package": "C05",
+  "result": "passed",
+  "checks": [
+    {
+      "check": "C01-C04 package records preserved",
+      "status": "passed"
+    },
+    {
+      "check": "C06-C50 package records preserved",
+      "status": "passed"
+    },
+    {
+      "check": "50 packages / 200 tasks",
+      "status": "passed"
+    },
+    {
+      "check": "20 done / 180 planned",
+      "status": "passed"
+    },
+    {
+      "check": "next C06",
+      "status": "passed"
+    },
+    {
+      "check": "CSV agrees",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence ../../../v2/cmd/surveyscan-server/console.go",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence ../../../v2/internal/modules/access/schema/0018_credentials.sql",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence ../../../v2/internal/modules/access/service.go",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence ../../../v2/internal/modules/access/http.go",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence ../../../v2/internal/modules/access/port/authorization.go",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence ../../../v2/internal/app/http.go",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence ../../../v2/internal/app/auth_integration_test.go",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence ../../../v2/scripts/auth_smoke.py",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence decisions/C05-threat-cases.md",
+      "status": "passed"
+    },
+    {
+      "check": "C05 evidence evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/README.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/checks/reference_checks.py",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/checks/requirements.txt",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/checks/validate_contracts.py",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/compatibility.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F01.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F02.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F03.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F04.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F05.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F06.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F07.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F08.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F09.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F10.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F11.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F12.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F13.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F14.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F15.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F16.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F17.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F18.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F19.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F20.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F21.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F22.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F23.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F24.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F25.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F26.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F27.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F28.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F29.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F30.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F31.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F32.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F33.raw",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F34.raw",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F35.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F36.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F37.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F38.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F39.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F40.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F41.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F42.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F43.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F44.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F45.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F46.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F47.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F48.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F49.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F50.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F51.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F52.raw",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F53.raw",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F54.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F55.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F56.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F57.raw",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/C03-F58.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/canonical-vectors.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/http-examples.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/fixtures/manifest.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/openapi.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/schemas/wire.schema.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/contracts/C03/state-machines.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C01-baseline.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C02-counterexamples.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C02-counterexamples.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C02-identity-model.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C02-model.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C02-observations.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C02-ownership.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C03-envelope.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C03-fixtures.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C03-jobs-events.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/decisions/C03-protocol.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/evidence/C01-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/evidence/C02-inputs.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/evidence/C02-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/evidence/C03-contract-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/evidence/C03-inputs.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/evidence/C03-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/evidence/C04-inputs.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/evidence/C04-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/handoffs/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/handoffs/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/handoffs/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved docs/plans/surveyscan-v2/handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/access/schema/0001_access.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/assets/schema/0005_assets.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/assets/schema/0007_links.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/assets/schema/0013_identity.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/audit/schema/0011_audit.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/imports/schema/0009_imports.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/inventory/schema/0006_observations.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/inventory/schema/0008_projections.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/inventory/schema/0016_evidence.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/responsibility/schema/0002_subjects.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/responsibility/schema/0010_assignments.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/responsibility/schema/0014_accountable.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/responsibility/schema/0017_subject_eligibility.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/scope/schema/0003_scope.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/scope/schema/0015_fallback.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/modules/sources/schema/0004_sources.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/platform/foundation/schema/0000_types.sql",
+      "status": "passed"
+    },
+    {
+      "check": "prior baseline preserved v2/internal/platform/messaging/schema/0012_messaging.sql",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/HANDOFF_TEMPLATE.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/README.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/requirements-traceability-v0.5.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../research/inventory-platform-analogues.md",
+      "status": "passed"
+    },
+    {
+      "check": "link TASK_INDEX.md",
+      "status": "passed"
+    },
+    {
+      "check": "link HANDOFF_TEMPLATE.md",
+      "status": "passed"
+    },
+    {
+      "check": "link WBS.md",
+      "status": "passed"
+    },
+    {
+      "check": "link TASK_INDEX.md",
+      "status": "passed"
+    },
+    {
+      "check": "link COVERAGE.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plan.json",
+      "status": "passed"
+    },
+    {
+      "check": "link tasks.csv",
+      "status": "passed"
+    },
+    {
+      "check": "link HANDOFF_TEMPLATE.md",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/WBS.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C01-baseline.json",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C02-identity-model.md",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C02-model.json",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C02-observations.md",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C02-ownership.md",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C02-counterexamples.md",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C02-counterexamples.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C03-envelope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link contracts/C03/schemas/wire.schema.json",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C03-protocol.md",
+      "status": "passed"
+    },
+    {
+      "check": "link contracts/C03/openapi.json",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C03-jobs-events.md",
+      "status": "passed"
+    },
+    {
+      "check": "link contracts/C03/state-machines.json",
+      "status": "passed"
+    },
+    {
+      "check": "link decisions/C03-fixtures.md",
+      "status": "passed"
+    },
+    {
+      "check": "link contracts/C03/fixtures/manifest.json",
+      "status": "passed"
+    },
+    {
+      "check": "link evidence/C03-contract-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/TASK_INDEX.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C06.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C06.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C07.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C07.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C08.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C08.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C09.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C09.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C10.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C10.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C11.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C11.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C12.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C12.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C13.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C13.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C14.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C14.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C15.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C15.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C16.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C16.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C17.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C17.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C18.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C18.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C19.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C19.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C20.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C20.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C21.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C21.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C22.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C22.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C23.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C23.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C24.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C24.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C25.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C25.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C26.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C26.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C27.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C27.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C28.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C28.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C29.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C29.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C30.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C30.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C31.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C31.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C32.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C32.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C33.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C33.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C34.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C34.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C35.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C35.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C36.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C36.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C37.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C37.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C38.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C38.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C39.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C39.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C40.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C40.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C41.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C41.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C42.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C42.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C43.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C43.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C44.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C44.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C45.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C45.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C46.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C46.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C47.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C47.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C48.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C48.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C49.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C49.md",
+      "status": "passed"
+    },
+    {
+      "check": "link packages/C50.md",
+      "status": "passed"
+    },
+    {
+      "check": "link prompts/C50.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/COVERAGE.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C45.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C26.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C34.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C30.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C47.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C15.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C16.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C28.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C14.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C07.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C20.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C36.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C46.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C25.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C23.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C12.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C19.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C41.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C27.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C32.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C38.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C40.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C49.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C11.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C35.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C09.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C08.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C29.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C10.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C31.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C06.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C22.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C21.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C33.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C42.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C13.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C48.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C37.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C17.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C50.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C39.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C43.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C44.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C24.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/prompts/C18.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/handoffs/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C01-baseline.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C01-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../packages/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../prompts/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C04-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../../v2/README.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../../.github/workflows/v2.yml",
+      "status": "passed"
+    },
+    {
+      "check": "link ../packages/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C05-auth-policy.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C05-threat-cases.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C05-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../../v2/internal/modules/access/",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../../v2/internal/app/http.go",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../../v2/cmd/surveyscan-server/console.go",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../../v2/README.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../packages/C06.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/handoffs/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-identity-model.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-model.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-observations.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-ownership.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-counterexamples.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-counterexamples.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C02-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C02-inputs.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../packages/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../prompts/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/handoffs/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C03-envelope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/schemas/wire.schema.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C03-protocol.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/openapi.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C03-jobs-events.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/state-machines.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/fixtures/manifest.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/compatibility.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/checks/validate_contracts.py",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C03-contract-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C03-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../packages/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../prompts/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C05-threat-cases.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C02-counterexamples.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-counterexamples.json",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-ownership.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-model.json",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C03-envelope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/schemas/wire.schema.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/compatibility.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/fixtures/manifest.json",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C03-protocol.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/openapi.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/compatibility.json",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C03-fixtures.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/fixtures/manifest.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/openapi.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/schemas/wire.schema.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/compatibility.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/state-machines.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/checks/requirements.txt",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C01-baseline.json",
+      "status": "passed"
+    },
+    {
+      "check": "link C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C02-identity-model.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-model.json",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C02-observations.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-model.json",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-identity-model.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C03-jobs-events.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/state-machines.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/schemas/wire.schema.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/openapi.json",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C05-auth-policy.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/decisions/C02-ownership.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-model.json",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-identity-model.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-observations.md",
+      "status": "passed"
+    },
+    {
+      "check": "link C02-counterexamples.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C01-baseline.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C01-smb-scope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C01-decisions.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C01-acceptance.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C01-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C45.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C26.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C34.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C04-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C30.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C47.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C15.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C16.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C05-runtime.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C28.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C14.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C07.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-identity-model.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-model.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-observations.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-ownership.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-counterexamples.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C02-counterexamples.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C02-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C20.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C36.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C46.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C25.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C23.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C12.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C19.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C41.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C27.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C32.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C38.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C03-envelope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/schemas/wire.schema.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C03-protocol.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/openapi.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C03-jobs-events.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/state-machines.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../decisions/C03-fixtures.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../contracts/C03/fixtures/manifest.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C03-contract-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "link ../handoffs/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../evidence/C03-contract-validation.json",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C40.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C49.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C11.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C35.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C09.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C08.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C29.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C10.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C31.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C06.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C22.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C21.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C33.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C42.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C13.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C48.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C37.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C17.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C50.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C39.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C43.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C44.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C24.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/packages/C18.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../../architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/plans/surveyscan-v2/contracts/C03/README.md",
+      "status": "passed"
+    },
+    {
+      "check": "link openapi.json",
+      "status": "passed"
+    },
+    {
+      "check": "link schemas/wire.schema.json",
+      "status": "passed"
+    },
+    {
+      "check": "link compatibility.json",
+      "status": "passed"
+    },
+    {
+      "check": "link state-machines.json",
+      "status": "passed"
+    },
+    {
+      "check": "link fixtures/manifest.json",
+      "status": "passed"
+    },
+    {
+      "check": "link fixtures/http-examples.json",
+      "status": "passed"
+    },
+    {
+      "check": "link fixtures/canonical-vectors.json",
+      "status": "passed"
+    },
+    {
+      "check": "link checks/validate_contracts.py",
+      "status": "passed"
+    },
+    {
+      "check": "link checks/reference_checks.py",
+      "status": "passed"
+    },
+    {
+      "check": "link checks/requirements.txt",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../decisions/C03-envelope.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../decisions/C03-protocol.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../decisions/C03-jobs-events.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../../decisions/C03-fixtures.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences AGENTS.md",
+      "status": "passed"
+    },
+    {
+      "check": "link docs/specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link docs/plans/surveyscan-v2/README.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/STATUS.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plans/surveyscan-v2/handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plans/surveyscan-v2/handoffs/C01.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plans/surveyscan-v2/handoffs/C02.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plans/surveyscan-v2/handoffs/C03.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plans/surveyscan-v2/TASK_INDEX.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plans/surveyscan-v2/packages/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plans/surveyscan-v2/prompts/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link REQUESTS.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../AGENTS.md",
+      "status": "passed"
+    },
+    {
+      "check": "link specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link REQUESTS.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../CLAUDE.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../INSTALL.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../README.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences docs/REQUESTS.md",
+      "status": "passed"
+    },
+    {
+      "check": "link architecture/go-asset-management-discussion.md",
+      "status": "passed"
+    },
+    {
+      "check": "link architecture/go-target-architecture.md",
+      "status": "passed"
+    },
+    {
+      "check": "link specifications/go-asset-management-v2.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plans/surveyscan-v2/handoffs/C04.md",
+      "status": "passed"
+    },
+    {
+      "check": "link plans/surveyscan-v2/handoffs/C05.md",
+      "status": "passed"
+    },
+    {
+      "check": "fences v2/README.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../docs/plans/surveyscan-v2/decisions/C05-auth-policy.md",
+      "status": "passed"
+    },
+    {
+      "check": "link ../docs/plans/surveyscan-v2/decisions/C05-threat-cases.md",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/go.sum",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/.dockerignore",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/Makefile",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/README.md",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/go.mod",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/.gitignore",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/deploy/nginx.conf",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/deploy/bao.hcl",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/deploy/compose.yaml",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/deploy/Dockerfile",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/scripts/auth_smoke.py",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/scripts/smoke.py",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/scripts/dev.py",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/contracts/compatibility.json",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/contracts/openapi.json",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/contracts/embed.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/contracts/state-machines.json",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/contracts/wire.schema.json",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/web/public/.gitkeep",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/cmd/surveyscan-collector/main.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/cmd/surveyscan-agent/main.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/cmd/surveyscan-server/main.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/cmd/surveyscan-server/console.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/app/auth_integration_test.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/app/database_integration_test.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/app/catalog.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/app/http.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/architecture/boundaries_test.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/audit/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/inventory/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/imports/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/scope/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/assets/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/responsibility/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/access/service.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/access/policy_test.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/access/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/access/http.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/sources/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/audit/schema/0011_audit.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/inventory/schema/0008_projections.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/inventory/schema/0016_evidence.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/inventory/schema/0006_observations.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/imports/schema/0009_imports.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/scope/schema/0003_scope.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/scope/schema/0015_fallback.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/assets/schema/0005_assets.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/assets/schema/0013_identity.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/assets/schema/0007_links.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/responsibility/schema/0002_subjects.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/responsibility/schema/0017_subject_eligibility.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/responsibility/schema/0010_assignments.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/responsibility/schema/0014_accountable.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/access/port/authorization.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/access/schema/0001_access.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/access/schema/0018_credentials.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/modules/sources/schema/0004_sources.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/config/config_test.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/config/config.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/migrate/migrate.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/migrate/migrate_test.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/buildinfo/buildinfo.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/health/health.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/health/health_test.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/messaging/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/identifier/uuid.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/foundation/schema.go",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/messaging/schema/0012_messaging.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key v2/internal/platform/foundation/schema/0000_types.sql",
+      "status": "passed"
+    },
+    {
+      "check": "no private key .github/workflows/v2.yml",
+      "status": "passed"
+    },
+    {
+      "check": "no accidental nested checkout",
+      "status": "passed"
+    },
+    {
+      "check": "authorized scope",
+      "status": "passed"
+    },
+    {
+      "check": "git diff --check",
+      "status": "passed"
+    },
+    {
+      "check": "CI parsed and includes real auth smoke",
+      "status": "passed"
+    },
+    {
+      "check": "real binary smoke 10 passed",
+      "status": "passed"
+    },
+    {
+      "check": "infrastructure smoke 6 passed",
+      "status": "passed"
+    },
+    {
+      "check": "hosted CI accurately unconfirmed",
+      "status": "passed"
+    }
+  ],
+  "summary": {
+    "done_packages": 5,
+    "done_tasks": 20,
+    "planned_tasks": 180,
+    "links_checked": 503,
+    "source_files": 70,
+    "prior_package_records": "preserved",
+    "hosted_ci": "blocked; not asserted passed"
+  },
+  "source_sha256": {
+    "v2/go.sum": "6f611cc88a802ff2e6e61f4d35df3eb4e6b2ad534ee8d7eb07eb89c96df8d705",
+    "v2/.dockerignore": "f6bedabdaae9835d44cb7dd7e26cff4208b8fbf065cb5f147bb5c267a5bb8519",
+    "v2/Makefile": "c821a9cb9b90c16b95d5314c948a941408760f946359039ffe8ce6d73deb7bb0",
+    "v2/README.md": "4bb1b51fc8476393f5452eabe265b5b9cbce6ea19edfb717d72e8290b4e9d8ed",
+    "v2/go.mod": "023a4c62fa6b1b37e486fdbd72b04a1cfa6abd2084805664032075d0067e43b9",
+    "v2/.gitignore": "3a6a151c6f520119d0a4bd9ba2304f6b343941da22774260aba3303743bf3da1",
+    "v2/deploy/nginx.conf": "5233cdb29c9025f7a59764c6e83649ca69e7341cdcb99aebc2cfb4c8dafaa511",
+    "v2/deploy/bao.hcl": "395402c9d41db20b01f10ea41d04767862c9c7450c2f69a25d42ccf1d47095b3",
+    "v2/deploy/compose.yaml": "fa9c109884fb10e9bc804f506544de87495e8db1ec00a7419ad4c9301d272450",
+    "v2/deploy/Dockerfile": "5997cde4c86229444e46ff5a46ba05777027939c4c494a2429d7428ca0587f52",
+    "v2/scripts/auth_smoke.py": "c690b214af16578c4c03fa56c509ac27a65c0aa6ccba13d54a751926a07e8499",
+    "v2/scripts/smoke.py": "62e8c96f81e0b7b36583e185b7d2a929befd71ccc218e48f0df9ea4e5948c90f",
+    "v2/scripts/dev.py": "353587450c40e069260774fe9d56cfcb485a9dbc589173fc2a2ef597d7e55fe7",
+    "v2/contracts/compatibility.json": "1c964cd38d966c61bfb03771b616ba9e6c3ecd0a1fee442cc404dccfde8bf81c",
+    "v2/contracts/openapi.json": "d59b26ccbd6c9ec54135f082143f31ae820e2b57ff396ac886ceec04b4d11147",
+    "v2/contracts/embed.go": "337c59a56bc0043eaff567b5c68747d8f325a74910a2c4e89b11098945edb2db",
+    "v2/contracts/state-machines.json": "e75dd9f32e6d612afca14b0447317bf87deb37654c609d0651e50345ee69bd67",
+    "v2/contracts/wire.schema.json": "6e103e2928444116d16d0edcc9234287d8686b9d7dde1aca444a22ed010acf3d",
+    "v2/web/public/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "v2/cmd/surveyscan-collector/main.go": "0060ed2e19bea9f67d19313bb84a3a5901b64b12441209a1e9846b24780e5d8f",
+    "v2/cmd/surveyscan-agent/main.go": "9ee3cfbac7b656cde164dc8ebd948d90ed3e91a2cfef80c9a14d3518bd166cc7",
+    "v2/cmd/surveyscan-server/main.go": "e9dd13e5b96b631180af6e1d3a0acb4c1c01d7cb397f91f3f03de650e04dd816",
+    "v2/cmd/surveyscan-server/console.go": "7602b1b98b2711c722ba2eaa2401f1dbe632b2cc4e277ab4620d0b6d53daa268",
+    "v2/internal/app/auth_integration_test.go": "905f506f0da9016781e129240d6eebb9f73cdf2e50528a26902e4ca14945312b",
+    "v2/internal/app/database_integration_test.go": "625d071b12de7e8e4270b7cac2d5cf75bdb465e002531c7875c0ee57e0ff5d87",
+    "v2/internal/app/catalog.go": "52f7d0c87919510fdad0001ad6862290cc3954a6e5ed52a6f3e76b0e2f4228d5",
+    "v2/internal/app/http.go": "13d1b33ab3f870832c95187a2db473bb827d32729aefa89ef5e207a6426dc857",
+    "v2/internal/architecture/boundaries_test.go": "691286a5590715c75a594ea2ede24b9f2bbe59de8dc98bd74642d3494c815fed",
+    "v2/internal/modules/audit/schema.go": "59b64d2705eb970f76a8625340e9d54d8941760f643c369005a884e3353e0cc5",
+    "v2/internal/modules/inventory/schema.go": "d6b5a229f009f68cfb6171ab733b0ba04ec427e9cd3765dd1070774f5ed034fc",
+    "v2/internal/modules/imports/schema.go": "d110339e6107d14545e10187d3549792969f8944b729035b2595e9cdf976f18e",
+    "v2/internal/modules/scope/schema.go": "1f9607d68900ace217650aa2f619a587d7f7232c779bb146941b9778b36f14b8",
+    "v2/internal/modules/assets/schema.go": "ec649a1068d99b9e3c06df433e2a9de3a13d7704ffb2d9846690d29534c7d285",
+    "v2/internal/modules/responsibility/schema.go": "b107ff3bb7f25d2df0b72a0b0afef06d5830fb8bb4ac65f5b0cea336902c5e1c",
+    "v2/internal/modules/access/service.go": "a8b6137b8fbf4de4c104a23bf4a6267d8e76598d3940ad54f50399d17f5da83c",
+    "v2/internal/modules/access/policy_test.go": "f29b0aa4a366edb6df35e4c5d0db0d21d74a4fcf8e7232eaa3456866f1f24207",
+    "v2/internal/modules/access/schema.go": "7cb634c367b26847ad9eed01245fa7b599c4b38ebc285f04a9981f94d3c1981d",
+    "v2/internal/modules/access/http.go": "113ca315a9ad0070aed378be79940b92afe8b1ed33b989a2cf6e06015e053f6a",
+    "v2/internal/modules/sources/schema.go": "1790886a5fa3dd9a68a29fb4e9ea7a697aa79e94b15aa0f08fba93473a45db22",
+    "v2/internal/modules/audit/schema/0011_audit.sql": "c3d39e7064aeccda5891ac2c4a9a303f5a23309889a6784f0b42f89c2262c55e",
+    "v2/internal/modules/inventory/schema/0008_projections.sql": "281500fbdb09fb250ebddf325168eba7a1d7cb0e20c0c62c3f75fd0499074a53",
+    "v2/internal/modules/inventory/schema/0016_evidence.sql": "cc1e4d52771ca8a66f38a378a9ed9e10830f8e74ef55f43f57e4aa1b390c7507",
+    "v2/internal/modules/inventory/schema/0006_observations.sql": "caf211f1a45243561869f3bcb042dad7ec6615588ac57e6e840593771c85049e",
+    "v2/internal/modules/imports/schema/0009_imports.sql": "e94b40970999aaa6cd5d762ecde8786c377d212dbe4ed3a9f01e16590e8306b4",
+    "v2/internal/modules/scope/schema/0003_scope.sql": "ebb1f4dc1e593906b8ad2ae7d0646ff7d2b571fc68fa27d884d61310a10efdba",
+    "v2/internal/modules/scope/schema/0015_fallback.sql": "63efcb7be27884943e5213c1a808f2728a5ae77d59194f70eaeddfdb3b87017f",
+    "v2/internal/modules/assets/schema/0005_assets.sql": "7a366c18ce770e206a8adc146837f83f74f87b901d117ab87b44e642f6a6f650",
+    "v2/internal/modules/assets/schema/0013_identity.sql": "b6971b59dd2bb7c2b68bd9c5c746e3e0ae18cd31d67a5250dd423607fff38749",
+    "v2/internal/modules/assets/schema/0007_links.sql": "12ae491f847c37997ed45fffe6c31a190baa13998e52c35a9dbc5f4561b228fc",
+    "v2/internal/modules/responsibility/schema/0002_subjects.sql": "180f6a9bf040b6dc43f6151d5259ac191e487dbf71b5951e949b985628a6dc76",
+    "v2/internal/modules/responsibility/schema/0017_subject_eligibility.sql": "8d9ddeece393ad1efea1ea4db67e03cafa1f32ed54c4568c359ced9e3e1fd581",
+    "v2/internal/modules/responsibility/schema/0010_assignments.sql": "bb37fbd4084644bcfaad4f67eed8d5f8fee1db26c651a1638003150b2ec55d0e",
+    "v2/internal/modules/responsibility/schema/0014_accountable.sql": "0bfa08ea28413cd267565630ff278d563b9b58694e255cc48a98fac705c6f56f",
+    "v2/internal/modules/access/port/authorization.go": "d368db3eab80df118a1691052ec5d01a306d204fb273989562fd8da301a56635",
+    "v2/internal/modules/access/schema/0001_access.sql": "9faf928a45e099f3f55711c0b153468690f17ff53e041d18245ccbb256c3b4e1",
+    "v2/internal/modules/access/schema/0018_credentials.sql": "f63b0e73cf0068308fd445697dd7b9b261e32db190d6b1709576a61aa48e89f1",
+    "v2/internal/modules/sources/schema/0004_sources.sql": "e4e5c0ab6d70be8ec4fa662652d31ba08826a76fb343f380a62c213b8ad77cc9",
+    "v2/internal/platform/config/config_test.go": "5a5951666216a3d7473c51cfeb77722706d7c50ed5fafe4a4376913fbee2d56e",
+    "v2/internal/platform/config/config.go": "9764d915e5f9c5316b5e050c050d58970b6e143dc427252987eff7c8e50fab83",
+    "v2/internal/platform/migrate/migrate.go": "9679facd1a06c08a33c6b1dfef730b77f4199c846b2d7fc31d832cf895a9a789",
+    "v2/internal/platform/migrate/migrate_test.go": "304e12557f138a32e4d543e411cb2d8d2acd899e88ecb3d98b9363351b0ce50e",
+    "v2/internal/platform/buildinfo/buildinfo.go": "aa80c0914a94d09de690add517ef90b66cc01a0e60456d7d211c318f2a64d0d3",
+    "v2/internal/platform/health/health.go": "81a6901a910b4f9f8632ae3847afd7118156fddaad328458b00a58c4fb625ce4",
+    "v2/internal/platform/health/health_test.go": "8bf598c6c4d7aceee23628a498f275481ed5e8028433e3930fb394af766b8893",
+    "v2/internal/platform/messaging/schema.go": "1483e20e596c0e78f22c37db02ffa5f23b32c33506418d43fc0e4c6766bdd6ce",
+    "v2/internal/platform/identifier/uuid.go": "a85b4017f7b382aa5480022e50660ada71f4cf461e7e1525931313941dc5ce43",
+    "v2/internal/platform/foundation/schema.go": "230766acee931105d253947d42cd13c9baa02d09a9d3328fba12eb73e93087a2",
+    "v2/internal/platform/messaging/schema/0012_messaging.sql": "649be1e28dad92ece1219d330413dd3f3314aae39400aa0edfd1e42bddb196a8",
+    "v2/internal/platform/foundation/schema/0000_types.sql": "a8285e784368ccb6a3dec1e4aa56565f5082e9f7a4160b1284cd70f78cc2b058",
+    ".github/workflows/v2.yml": "5faa0abf062e0723431a2f56dd5c3bc4f00f8a5a5762eaf8359d34f29ff635b2"
+  }
+}
