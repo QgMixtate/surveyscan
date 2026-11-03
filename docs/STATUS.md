@@ -4,7 +4,7 @@
 
 
 Актуальная задача — R-018: финальная передача C05 и проверка PR/Actions.
-C04 опубликован в codex/v2-c04-foundation (7407da6); C05 — codex/v2-c05-auth (07a62f0 + lock-order fix).
+C04 опубликован в codex/v2-c04-foundation (7407da6); C05 — codex/v2-c05-auth, fix commit 28e0e714badcad8eef71e7e5e316799a9ba20c88.
 [Передача C05](plans/surveyscan-v2/handoffs/C05.md). Пользователь создал PR #2 и #3.
 На screenshot старого C05 SHA push check success, PR check in progress; это не статус нового fix.
 4 ноября повторены make verify/build и 10 unit + 11 real PG integration tests, exit0.
@@ -13,7 +13,7 @@ C05: bootstrap/Argon2id/PG sessions/roles/CLI tokens/tenant/Origin/CSRF/revoke; 
 
 GitHub REST API из среды всё ещё Forbidden, runtime revision1 без api.github.com.
 Добавление домена и install/start instructions сохранено в draft; требуется применить настройки среды.
-Git push работает, hosted checks последнего fix пока не подтверждены. Main/merge/production не менялись.
+Fix 28e0e71 опубликован в PR #3, git push succeeded. Hosted checks этого SHA пока не подтверждены. Main/merge/production не менялись.
 
 ## Контекст архитектуры и история C01–C04
 

@@ -216,7 +216,8 @@ pull_request check ещё in progress на момент снимка. Прямо
 Продолжено авторизованное завершение C05: исправлен воспроизведённый inverse lock order,
 Authorize блокирует user до credential и повторяет проверку после ожидания.
 Make verify/build и полный suite (10 unit + 11 real PG integration) повторены, exit0.
-Исправление направляется в существующую ветку/PR #3. Новые hosted checks не считать прошедшими
+Исправление опубликовано в существующий PR #3: 28e0e714badcad8eef71e7e5e316799a9ba20c88; git push succeeded.
+Готовый binary/CLI/HTTP smoke также повторён, exit0. Новые hosted checks не считать прошедшими
 по screenshot старого 07a62f0. Main/merge не меняются. Next package C06 пока не начат.
 
 ## Шаблон новой записи

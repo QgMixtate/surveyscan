@@ -1,0 +1,17 @@
+{
+  "package": "C05",
+  "date": "2026-11-04 Europe/Moscow",
+  "status": "published_branch",
+  "branch": "codex/v2-c05-auth",
+  "initial_commit": "07a62f08987b74b237847f173dcea8c23aa04bc2",
+  "verified_fix_commit": "28e0e714badcad8eef71e7e5e316799a9ba20c88",
+  "verification": "git push succeeded: 07a62f0..28e0e71",
+  "pull_request": {
+    "number": 3,
+    "url": "https://github.com/QgMixtate/surveyscan/pull/3",
+    "existence_evidence": "user screenshot"
+  },
+  "hosted_checks_for_fix": "unconfirmed; api.github.com remains denied by runtime network policy",
+  "main_modified": false,
+  "merged": false
+}

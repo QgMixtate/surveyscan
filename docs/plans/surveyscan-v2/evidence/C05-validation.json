@@ -1847,6 +1847,10 @@
       "status": "passed"
     },
     {
+      "check": "link ../evidence/C05-publication.json",
+      "status": "passed"
+    },
+    {
       "check": "fences docs/plans/surveyscan-v2/handoffs/C02.md",
       "status": "passed"
     },
@@ -3371,7 +3375,7 @@
     "done_packages": 5,
     "done_tasks": 20,
     "planned_tasks": 180,
-    "links_checked": 503,
+    "links_checked": 504,
     "source_files": 70,
     "prior_package_records": "preserved",
     "hosted_ci": "blocked; not asserted passed"
