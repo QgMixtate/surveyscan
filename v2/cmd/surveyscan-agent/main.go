@@ -14,6 +14,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/agent"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/buildinfo"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/privatefile"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/telemetry"
 )
 
 func run() error {
@@ -77,7 +78,7 @@ func run() error {
 		fmt.Println("agent_certificate_renewed")
 		return nil
 	case "run":
-		return agent.Run(ctx, c, func(state string) { fmt.Fprintln(os.Stdout, state) })
+		return agent.Run(ctx, c, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
 	default:
 		return fmt.Errorf("неизвестная команда агента")
 	}

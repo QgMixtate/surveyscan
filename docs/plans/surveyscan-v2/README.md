@@ -102,16 +102,10 @@ ITSM начинается после согласования/приёмки W2.
 
 ## Текущая передача
 
-45/200 задач done,155planned. C01–C11 завершены локально в указанном scope;
-C04/C05 hosted CI success, C06–C11 не опубликованы. Main не слит.
-C11: scoped Bao, server/agent/collector renewal, atomic TLS credentials, queues/ACK loss,
-local host-binding/legacy adoption, expiry/revoke/secret checks.
-30unit/46PG/58fixtures,17Bao pipeline,10agent/10collector,8recovery/14browser passed.
-Collector hot reload — race detector + injected scheduler clock, не24h soak.
-31migrations/42tables, prior SQL/C03/C09 bytes unchanged.
-[Передача C11](handoffs/C11.md), [границы приёмки](evidence/C11-lifecycle-matrix.json).
-Далее C12 CLI/profiles/observability. Production/24h/DR и hardware clone identity unrun/unsupported.
-No push/merge/deploy/env publication.
-
-C12.01 CLI готов: surveyscanctl,33unit/58fixtures/16live API/PG checks.
-Далее C12.02central profiles, затем metrics/операторский сценарий. [Передача](handoffs/C12.md).
+48/200done,152planned. C01–C12 завершены локально в явно указанном scope.
+C12: CLI/profile administration и source runtime, signed config/telemetry, tenant metrics/alerts,
+sourceprofileUI и actual scheduled interval change.39unit/50PG/58fixtures/13operator/17CLI/16browser passed.
+8recovery/10agent/10collector race regression passed.33migrations/45tables.
+[Передача C12](handoffs/C12.md), [runtime](evidence/C12-runtime.json).
+Далее C13 services/install/release/backup/restore; production/24h/DR пока не приняты.
+C04/C05 hosted success; C06–C12 не опубликованы, main не слит. No push/merge/deploy/env publication.

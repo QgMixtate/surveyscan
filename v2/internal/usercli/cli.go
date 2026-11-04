@@ -18,10 +18,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/QgMixtate/surveyscan/v2/contracts"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/diskspool"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/machinecred"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/privatefile"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
 )
 
 type profile struct {
@@ -195,7 +197,7 @@ func read(path string) (profile, error) {
 }
 func execute(ctx context.Context, args []string, out io.Writer) error {
 	if len(args) == 1 && (args[0] == "help" || args[0] == "--help") {
-		return emit(out, map[string]any{"commands": []string{"login --server URL --username USER --password-file PRIVATE --context-file PRIVATE [--ca-file CA]", "context show --context-file PRIVATE", "assets list --context-file PRIVATE [--limit 1..200 --cursor CURSOR]", "assets get --context-file PRIVATE --id UUID", "sources list|get|status --context-file PRIVATE [--id UUID]", "profiles get --context-file PRIVATE --id UUID", "profiles set --context-file PRIVATE --id UUID --revision REV --profile-file JSON", "status --context-file PRIVATE", "logout --context-file PRIVATE", "version"}, "output": "JSON", "exit_codes": map[string]int{"success": 0, "arguments_or_private_context": 2, "authentication_or_policy": 3, "not_found": 4, "network_tls_timeout_or_dependency": 5, "other_api_failure": 6}})
+		return emit(out, map[string]any{"commands": []string{"login --server URL --username USER --password-file PRIVATE --context-file PRIVATE [--ca-file CA]", "context show --context-file PRIVATE", "assets list --context-file PRIVATE [--limit 1..200 --cursor CURSOR]", "assets get --context-file PRIVATE --id UUID", "sources list|get|status --context-file PRIVATE [--id UUID]", "profiles get --context-file PRIVATE --id UUID", "profiles set --context-file PRIVATE --id UUID --revision REV --profile-file JSON", "diagnostics --context-file PRIVATE", "local-status --diagnostics-file PRIVATE", "status --context-file PRIVATE", "logout --context-file PRIVATE", "version"}, "output": "JSON by default; --output table for resource commands", "exit_codes": map[string]int{"success": 0, "arguments_or_private_context": 2, "authentication_or_policy": 3, "not_found": 4, "network_tls_timeout_or_dependency": 5, "other_api_failure": 6}})
 	}
 	if len(args) == 0 {
 		return fail(2, "COMMAND_REQUIRED")
@@ -212,6 +214,7 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 	f := flag.NewFlagSet(operation, flag.ContinueOnError)
 	f.SetOutput(io.Discard)
 	contextFile := f.String("context-file", "", "")
+	diagnosticsFile := f.String("diagnostics-file", "", "")
 	server := f.String("server", "", "")
 	username := f.String("username", "", "")
 	password := f.String("password-file", "", "")
@@ -222,8 +225,28 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 	cursor := f.String("cursor", "", "")
 	optionsFile := f.String("profile-file", "", "")
 	revision := f.String("revision", "", "")
-	if f.Parse(args) != nil || f.NArg() != 0 || *contextFile == "" {
+	format := f.String("output", "json", "")
+	if f.Parse(args) != nil || f.NArg() != 0 || (*contextFile == "" && operation != "local-status") {
 		return fail(2, "INVALID_ARGUMENTS")
+	}
+	if *format != "json" && *format != "table" {
+		return fail(2, "INVALID_OUTPUT_FORMAT")
+	}
+	if *format == "table" && (operation == "login" || operation == "logout" || operation == "context show" || operation == "local-status") {
+		return fail(2, "TABLE_OUTPUT_NOT_SUPPORTED_FOR_COMMAND")
+	}
+	if operation == "local-status" {
+		var d contracts.RuntimeDiagnostics
+		exists, e := machinecred.ReadOptional(*diagnosticsFile, &d)
+		if e != nil || !exists || d.Collected.IsZero() || d.CertificateExpires.IsZero() {
+			return fail(2, "INVALID_DIAGNOSTICS_FILE")
+		}
+		raw, _ := json.Marshal(d)
+		v, e := wire.New()
+		if e != nil || v.Validate("RuntimeDiagnostics", raw) != nil {
+			return fail(2, "INVALID_DIAGNOSTICS_FILE")
+		}
+		return emit(out, d)
 	}
 	if operation != "login" && (*server != "" || *username != "" || *password != "" || *ca != "" || *devHTTP) {
 		return fail(2, "LOGIN_FLAGS_NOT_ALLOWED")
@@ -329,7 +352,7 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 		if e != nil {
 			return e
 		}
-		if _, e = fmt.Fprintln(out, string(raw)); e != nil {
+		if e = render(out, raw, operation, *format); e != nil {
 			return fail(5, "OUTPUT_UNAVAILABLE")
 		}
 		return nil
@@ -350,6 +373,8 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 			return fail(2, "INVALID_RESOURCE_ID")
 		}
 		path = "/api/v1/" + strings.Fields(operation)[0] + "/" + *id
+	case "diagnostics":
+		path = "/api/v1/diagnostics"
 	case "status":
 		path = "/health/ready"
 	default:
@@ -359,7 +384,7 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 	if e != nil {
 		return e
 	}
-	if _, e = fmt.Fprintln(out, string(raw)); e != nil {
+	if e = render(out, raw, operation, *format); e != nil {
 		return fail(5, "OUTPUT_UNAVAILABLE")
 	}
 	return nil

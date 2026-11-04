@@ -138,7 +138,7 @@ func (s *MachineService) PollProfile(ctx context.Context, fp string, frame contr
 	}
 	var req contracts.ProfileRequestPayload
 	_ = json.Unmarshal(frame.Payload, &req)
-	if req.Version.Major != 1 || req.Version.Minor != 0 {
+	if req.Version.Major != 1 || req.Version.Minor > 1 {
 		return out, domain.Invalid
 	}
 	tx, e := s.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead})
@@ -190,6 +190,15 @@ func (s *MachineService) PollProfile(ctx context.Context, fp string, frame contr
 	_, e = tx.Exec(ctx, `INSERT INTO sources.profile_progress(tenant_id,source_id,generation_id,applied_revision) VALUES($1,$2,$3,$4) ON CONFLICT(tenant_id,source_id,generation_id) DO UPDATE SET applied_revision=GREATEST(sources.profile_progress.applied_revision,excluded.applied_revision),last_config_contact_at=clock_timestamp()`, req.Tenant, req.Origin.SourceID, req.Origin.GenerationID, req.Applied)
 	if e != nil {
 		return out, e
+	}
+	if d := req.Diagnostics; d != nil {
+		if req.Version.Minor < 1 || d.Collected.After(now.Add(30*time.Second)) || now.Sub(d.Collected) > 2*time.Minute {
+			return out, domain.Invalid
+		}
+		_, e = tx.Exec(ctx, `INSERT INTO sources.runtime_diagnostics(tenant_id,source_id,generation_id,collected_at,pending_files,pending_bytes,oldest_pending_at,disk_available_bytes,certificate_expires_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9) ON CONFLICT(tenant_id,source_id,generation_id) DO UPDATE SET collected_at=excluded.collected_at,received_at=clock_timestamp(),pending_files=excluded.pending_files,pending_bytes=excluded.pending_bytes,oldest_pending_at=excluded.oldest_pending_at,disk_available_bytes=excluded.disk_available_bytes,certificate_expires_at=excluded.certificate_expires_at WHERE excluded.collected_at>=sources.runtime_diagnostics.collected_at`, req.Tenant, req.Origin.SourceID, req.Origin.GenerationID, d.Collected, d.PendingFiles, d.PendingBytes, d.OldestPending, d.DiskAvailable, d.CertificateExpires)
+		if e != nil {
+			return out, e
+		}
 	}
 	out = contracts.ProfilePayload{Version: contracts.Version{Major: 1}, Tenant: req.Tenant, Origin: req.Origin, Nonce: req.Nonce, Issued: now, Expires: now.Add(2 * time.Minute), Managed: managed, Config: config}
 	return out, tx.Commit(ctx)

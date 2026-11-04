@@ -1,14 +1,14 @@
 {
   "package": "C12",
-  "status": "partial-validated",
-  "done_total": 45,
+  "status": "passed-local",
+  "done_total": 48,
   "checks": [
-    "50packages/200tasks",
-    "CSV agrees",
-    "prior SQL/C03/C09 byte-identical",
-    "existing backend auth/tenant policy unchanged",
-    "CLI only HTTP; no private material staged",
-    "local only"
+    "50packages/200tasks;CSV agrees",
+    "prior SQL0000-0030/C03/C09 byte-identical",
+    "new append0031-0032;33migrations45tables",
+    "legacyv1 untouched",
+    "no private/runtime/build artifacts staged",
+    "C12hostedunrun/localonly"
   ],
-  "preserved_artifacts": 106
+  "preserved_artifacts": 104
 }

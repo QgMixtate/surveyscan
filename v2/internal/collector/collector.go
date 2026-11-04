@@ -12,7 +12,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/QgMixtate/surveyscan/v2/contracts"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/diskspool"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
@@ -21,6 +20,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/privatefile"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/retry"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/sourceprofile"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/telemetry"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
 	"io"
 	"net"
@@ -658,7 +658,7 @@ func (c *Collector) Run(ctx context.Context) error {
 					err := c.pollProfile(task)
 					cancel()
 					if err != nil && ctx.Err() == nil {
-						fmt.Fprintln(os.Stderr, "collector profile unavailable; cached or local configuration retained")
+						telemetry.Log(os.Stderr, "collector", "profile_unavailable_cached_or_local")
 					}
 					profileAt = time.Now().Add(20 * time.Second)
 				}
@@ -667,7 +667,7 @@ func (c *Collector) Run(ctx context.Context) error {
 					err := c.heartbeat(task)
 					cancel()
 					if err != nil && ctx.Err() == nil {
-						fmt.Fprintln(os.Stderr, "collector heartbeat not accepted")
+						telemetry.Log(os.Stderr, "collector", "heartbeat_failed")
 					}
 					interval := 60
 					if c.profile != nil && c.profile.Managed {
@@ -681,7 +681,7 @@ func (c *Collector) Run(ctx context.Context) error {
 				err := c.renew(task)
 				cancel()
 				if err != nil && ctx.Err() == nil {
-					fmt.Fprintln(os.Stderr, "collector certificate renewal pending; previous identity and spool retained")
+					telemetry.Log(os.Stderr, "collector", "renewal_pending")
 				}
 				renewalAt = time.Now().Add(time.Minute)
 			}
@@ -689,7 +689,7 @@ func (c *Collector) Run(ctx context.Context) error {
 			e := c.Pump(task)
 			cancel()
 			if e != nil && ctx.Err() == nil {
-				fmt.Fprintln(os.Stderr, "collector spool operation failed; pending data retained")
+				telemetry.Log(os.Stderr, "collector", "spool_operation_failed")
 			}
 		}
 	}

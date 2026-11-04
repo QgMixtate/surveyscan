@@ -292,3 +292,9 @@ No push/merge/deploy/env publication. handoffs/C12.md хранит следую�
 C12.02 готов локально: managed versioned profiles, signed origin/center delivery/ACK, CLIupdate,
 agent runtime/cache и collectorheartbeat.36unit/49PG/58fixtures/10livechecks passed.32migrations/44tables,
 46/200done. C12.03diagnostics вработе,04operator pending. No push/merge/deploy/env publication.
+
+C12 целиком готов локально:39unit/50PG/58fixtures,13operator/17CLI/16browser,8recovery,
+10agent/10collector renewal (race) passed. Signed centralprofiles/ACK+offlinecache,tenant diagnostics/
+metrics/alerts,CLIJSON/table/localstatus и readonlyUIprofiles. Реальный120→60cadence/UID/revoke verified.
+33migrations/45tables;48/200done. Далее C13 service/install/versions/backup/restore, handoffs/C12.md.
+No push/merge/deploy/env publication; no production/24h/DR/hardwareidentity claim.

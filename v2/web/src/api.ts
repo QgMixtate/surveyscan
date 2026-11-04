@@ -7,6 +7,7 @@ export type Asset=components['schemas']['Asset'];
 export type AssetPage=components['schemas']['AssetPage'];
 export type Source=components['schemas']['Source'];
 export type SourcePage=components['schemas']['SourcePage'];
+export type SourceProfile={tenant_id:string;source_id:string;source_state:string;managed:boolean;config:{profile_revision:string;heartbeat_seconds:number;inventory_seconds:number;spool_limit_bytes:number};applied_revision:string|null;last_config_contact_at:string|null;last_contact_at:string|null;last_successful_inventory_at:string|null};
 export type Session=components['schemas']['Session'];
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
@@ -28,6 +29,7 @@ export const api={
  assets:(cursor:string|null=null)=>call<AssetPage>('/api/v1/assets?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'AssetPage'),
  asset:(uid:string)=>call<Asset>('/api/v1/assets/'+encodeURIComponent(uid),'Asset'),
  inventory:(uid:string)=>call<InventoryDetail>('/api/v1/assets/'+encodeURIComponent(uid)+'/inventory','InventoryDetail'),
+ profile:(source:string)=>call<SourceProfile>('/api/v1/sources/'+encodeURIComponent(source)+'/profile','SourceProfile'),
  sources:(cursor:string|null=null)=>call<SourcePage>('/api/v1/sources?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SourcePage')
 };
 export async function checkCompatibility(){

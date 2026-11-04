@@ -61,7 +61,7 @@ func New() (*Validator, error) {
 	if e = c.AddResource(id12, doc12); e != nil {
 		return nil, e
 	}
-	for _, n := range []string{"SourceProfileUpdate", "SourceProfile", "ProfileRequest", "SignedProfile"} {
+	for _, n := range []string{"RuntimeDiagnostics", "SourceProfileUpdate", "SourceProfile", "ProfileRequest", "SignedProfile"} {
 		compiled, e := c.Compile(id12 + "#/$defs/" + n)
 		if e != nil {
 			return nil, e

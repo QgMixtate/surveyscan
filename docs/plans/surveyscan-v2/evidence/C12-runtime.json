@@ -1,0 +1,200 @@
+{
+  "package": "C12",
+  "date": "2026-11-04 Europe/Moscow",
+  "status": "passed-bounded-E1",
+  "branch": "codex/v2-c12-cli",
+  "base": "2b1870f",
+  "done_total": 48,
+  "unit_tests": 39,
+  "pg_tests": 50,
+  "fixtures": 58,
+  "migrations": 33,
+  "domain_access_tables": 45,
+  "failed_final_runs": 0,
+  "skipped": 0,
+  "publication": "local only",
+  "hosted_ci": "unrun C12",
+  "limits": [
+    "table resource output only; bearer CLI context/OS keychain absent",
+    "UI profile read-only, editing CLI/API",
+    "collector autonomous network inventory C16; collector inventory period fixed900",
+    "33/45 schema includes source telemetry; no new identity/generation on profile update",
+    "backup age unknown without actual operator marker; no backup/restore claim",
+    "no100users/24h/systemd/DR/hardwareclone proof"
+  ],
+  "cli": {
+    "package": "C12",
+    "task": "C12.01",
+    "status": "passed",
+    "count": 17,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "synthetic agent enrollment traverses collector",
+      "durable collector transport receipt retains source data",
+      "center commit receipt verifies with pinned key and exact bindings",
+      "committed PG registry card visible through real authenticated API",
+      "collector trims only after verified center acknowledgement",
+      "exactly one durable observation in isolated PostgreSQL",
+      "compiled CLI logs in via existing HTTPS/session API and writes private0600 context without printing credentials",
+      "public context omits secrets and existing tenant/session context cannot be overwritten by login",
+      "assets list/get and sources list/status use real backend data; readiness is a separate endpoint",
+      "pagination cursor works and invalid bounds/unknown resource/tenant override have stable exit codes",
+      "explicit table output and default JSON expose the same real asset UID",
+      "second real tenant session cannot list or read first tenant known asset UUID",
+      "viewer reads follow existing role policy and logout revokes its session through Origin/CSRF API",
+      "CLI logout revokes remote sessions and removes local credentials",
+      "all captured CLI outputs exclude password/session cookie/CSRF; no secrets in argv"
+    ],
+    "target": "compiled surveyscanctl+compiled server/collector+real HTTPS/auth/CSRF/PG; synthetic inventory source; two real tenants and viewer; no mocked CLI/API/auth",
+    "authentication": "private session context using existing C03 login/logout API; session token never printed; password read from0600 file",
+    "unrun": [
+      "interactive OS keychain",
+      "bearer-token client context",
+      "production/24h soak"
+    ]
+  },
+  "operator": {
+    "package": "C12",
+    "task": "C12.02-C12.04",
+    "status": "passed",
+    "count": 13,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "unpublished revision1 is explicit local-config mode; central profile read does not fabricate source contact",
+      "admin CLI publishes revision2 and stale If-Match receives412 instead of overwriting",
+      "real agent validates signed nonce-bound relay profile, caches it and reports applied revision; config contact is separate from heartbeat and inventory freshness",
+      "signed origin runtime telemetry exposes disk/spool/certificate diagnostics through CLI/local snapshot and authenticated metrics; absent backup remains unknown with alert",
+      "running agent applies new interval revision without restarting source/generation/signing key/counters",
+      "operator changes cadence120→60 via CLI; real scheduled inventory follows after55–80s with one UID and no injected clock",
+      "center outage/restart retains verified last managed profile and unacknowledged source data",
+      "reconnect applies offline original and next inventory exactly once to one UID with profile intact",
+      "real viewer cannot publish; another tenant admin cannot read or update known source profile",
+      "all three accepted profile updates have one durable audit and outbox event each",
+      "operator revoke stops future authorized access without deleting assets or fabricating missing observations"
+    ],
+    "target": "compiled agent/collector/server/CLI +real HTTPS/PG; signed config relay and origin proof; real clock/outage/restart; no mocked configuration/auth",
+    "unrun": [
+      "UI interval editing (CLI/API only)",
+      "24h soak",
+      "collector autonomous network inventory (C16)"
+    ],
+    "source_health": "profile last_config_contact/applied_revision remain separate from heartbeat and inventory freshness"
+  },
+  "browser": {
+    "package": "C09",
+    "scope": "C09 full browser acceptance: UI/API1.0+C09/1.0",
+    "status": "passed",
+    "count": 16,
+    "checks": [
+      "production static bundle renders with strict CSP and no Node/CDN",
+      "invalid credentials rejected by real backend",
+      "real authenticated tenant asset list from PostgreSQL",
+      "explicit page filter and cursor boundaries",
+      "real asset detail and keyboard close/focus path",
+      "1440 and 800 responsive layouts render without document overflow",
+      "explicit mocked C03 partial/stale/unknown fixture matrix rendered distinctly",
+      "source registration and missing contact displayed separately",
+      "source profile shows unmanaged/applied revision and separates configuration contact from successful inventory",
+      "real published central profile revision is visible in source UI without changing inventory freshness",
+      "no tokens or credentials in web storage",
+      "real expired session clears old card and tenant workspace cache",
+      "real logout revokes browser session",
+      "new UI rejects old API deployment without C09 extension",
+      "version mismatch blocks login before API usage",
+      "zero runtime errors or external requests"
+    ],
+    "target": "Chromium + C09 detail API + production bundle + real compiled server/collector + synthetic signed source + PostgreSQL; strict CSP; no mocked auth/assets",
+    "unrun": [
+      "production/100-user load/24h soak"
+    ]
+  },
+  "recovery": {
+    "package": "C10",
+    "status": "passed",
+    "count": 8,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "collector single writer enforced across different listen ports",
+      "center offline leaves durable pending packet at source and collector without applied data",
+      "SIGKILL of both daemons preserves unacknowledged source bytes",
+      "exclusive lock released by crash; source identity/sequence resumes without discarding old pending",
+      "reconnect applies two original observations once to one UID then verified ACK drains both queues",
+      "center SIGKILL/restart preserves cached receipt after payload GC; replay adds no effects or false inventory freshness"
+    ],
+    "target": "real compiled agent/collector/server; real TLS/mTLS/PG; explicit center outage and SIGKILL of both daemons; no mocked network or storage",
+    "unrun": [
+      "large reconnect storm/production scale",
+      "physical reboot/power loss",
+      "production/24h soak"
+    ]
+  },
+  "collector_rotation": {
+    "package": "C11",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "separate credential writer lock rejects a second collector using another spool/listen address",
+      "center outage leaves original unacknowledged batch durable at source and collector before rotation",
+      "real TLS disconnect after collector certificate commit preserves pending key/CSR; fresh CLI process replays one original result",
+      "collector atomically rotates matching TLS key/cert without changing origin signing key or either pending queue",
+      "restart uses rotated inbound/outbound TLS credentials; queued originals and next live inventory apply once to one UID",
+      "real collector Run auto-renews under injected scheduler clock, hot-reloads listener TLS and authenticates new outbound identity; race detector; real center/PG/Bao, no restart",
+      "source revoke prevents further renewal of all collector certificates",
+      "actual masked Bao audit excludes application/root tokens and KV canary; own binary logs also scanned"
+    ],
+    "target": "compiled Linux agent+collector+server, real host inventory/PG/scoped Bao; real TLS ACK loss; automatic loop tested via Go collector runtime with scheduler clock advanced only",
+    "unrun": [
+      "real24h auto-renewal soak",
+      "physical power loss",
+      "production custody/DR",
+      "second-VM clone matrix/hardware identity; automatic expired-credential reissue unsupported"
+    ]
+  },
+  "agent_rotation": {
+    "package": "C11",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "live agent commits host inventory and daemon lock blocks simultaneous renewal writer",
+      "unbound legacy identity cannot start; explicit one-time bind-host adoption preserves identity/counters and is idempotent on original host",
+      "copied-state mismatched host-binding fixture refuses startup before contact/inventory/sequence use; actual separate-host clone is not emulated",
+      "actual TLS disconnect after committed renewal retains pending CSR/private key; separate CLI retry returns same certificate without duplicate issuance",
+      "compiled agent rotates TLS key using scoped Bao issuer; atomic private bundle commits matching cert/key and leaves origin signing key/generation/counters unchanged",
+      "restart loads atomic rotated credentials and resumes real inventory/ACK with one UID and monotonic sequence",
+      "source revoke prevents renewed credentials from obtaining another certificate",
+      "actual audit and own binary logs have no raw operator/application tokens or canary"
+    ],
+    "target": "compiled Linux/amd64 agent+collector+server, real host inventory/PG/TLS/scoped OpenBao Transit CA, no mocked APIs",
+    "unrun": [
+      "physical power-loss rotation windows",
+      "expired certificate administrative recovery",
+      "second-VM clone matrix/hardware identity",
+      "production key custody/DR"
+    ]
+  },
+  "logs": [
+    "c12-accept-verify.log",
+    "c12-diagnostics-full-pg.log",
+    "c12-operator-accept.log",
+    "c12-ui-accept.log",
+    "c12-final-recovery.log",
+    "c12-regression-collector-race.log",
+    "c12-regression-agent-renewal.log",
+    "c12-accept-cli.log",
+    "c12-accept-dev-up.log"
+  ],
+  "test_scope_notes": [
+    "C12 focused4PG groups include signed runtime/queue/tenant/GC assertions",
+    "real scheduled cadence120→60s,observed55–80s afterapply; no injected clock",
+    "C11 collector hot reload regression uses only injected scheduling clock and-race; actual TLS/Bao/PG",
+    "browser partial/stale/unknown matrix explicitly mocked; auth/assets/profiles real",
+    "earlier fixture failures (missing command helper/PATCH proxy) resolved; pre-minor1.1 schema failed then fixed additively without changing C03"
+  ]
+}

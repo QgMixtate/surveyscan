@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C11 and C12.01-C12.02 done locally; C12.03-C12.04 pending",
+  "status": "C01-C12 done locally; C13-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1116,9 +1116,11 @@
           "work_group": "Подготовка и проектирование",
           "evidence": [
             "handoffs/C12.md",
-            "evidence/C12-progress.json"
+            "evidence/C12-runtime.json",
+            "decisions/C12-profiles.md",
+            "decisions/C12-diagnostics.md"
           ],
-          "verification_status": "33unit/58fixtures +16 compiled CLI real HTTPS/PG checks passed; two tenants and viewer; remaining C12 unrun"
+          "verification_status": "passed local bounded E1:39unit/50PG/58fixtures,13operator/17CLI/16browser,8recovery+10agent+10collector race"
         },
         {
           "id": "C12.02",
@@ -1133,11 +1135,12 @@
           "status": "done",
           "work_group": "Реализация",
           "evidence": [
-            "decisions/C12-profiles.md",
             "handoffs/C12.md",
-            "evidence/C12-profiles.json"
+            "evidence/C12-runtime.json",
+            "decisions/C12-profiles.md",
+            "decisions/C12-diagnostics.md"
           ],
-          "verification_status": "36unit/49realPG/58fixtures +10real compiled profile checks; source-profile schema additive"
+          "verification_status": "passed local bounded E1:39unit/50PG/58fixtures,13operator/17CLI/16browser,8recovery+10agent+10collector race"
         },
         {
           "id": "C12.03",
@@ -1149,8 +1152,15 @@
           "output": "Queue age, import/outbox lag, spool/disk, cert/backup age",
           "verification": "Недоступность/перегрузка обнаруживается по метрикам",
           "estimation_basis": "1 минимальный набор exporters/alerts и structured logs",
-          "status": "in_progress",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "handoffs/C12.md",
+            "evidence/C12-runtime.json",
+            "decisions/C12-profiles.md",
+            "decisions/C12-diagnostics.md"
+          ],
+          "verification_status": "passed local bounded E1:39unit/50PG/58fixtures,13operator/17CLI/16browser,8recovery+10agent+10collector race"
         },
         {
           "id": "C12.04",
@@ -1162,11 +1172,18 @@
           "output": "Оператор меняет интервал и видит регулярный результат в UI/CLI",
           "verification": "Изменения аудируются; отключённый источник не делает массовый missing",
           "estimation_basis": "1 человек, 1 агент, 1 collector, 2 tenant негативный тест",
-          "status": "planned",
-          "work_group": "Проверка и передача"
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "handoffs/C12.md",
+            "evidence/C12-runtime.json",
+            "decisions/C12-profiles.md",
+            "decisions/C12-diagnostics.md"
+          ],
+          "verification_status": "passed local bounded E1:39unit/50PG/58fixtures,13operator/17CLI/16browser,8recovery+10agent+10collector race"
         }
       ],
-      "status": "in_progress",
+      "status": "done",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
     },
     {

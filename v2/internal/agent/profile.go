@@ -5,6 +5,8 @@ import (
 	"errors"
 	"github.com/QgMixtate/surveyscan/v2/contracts"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/sourceprofile"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/telemetry"
+	"net/http"
 	"os"
 	"path/filepath"
 )
@@ -47,9 +49,21 @@ func (c *Client) PollProfile(ctx context.Context) (bool, error) {
 	if e := verifyHostBinding(c.cfg, c.claims.Source, c.key); e != nil {
 		return false, e
 	}
+	pair := c.http.Transport.(*http.Transport).TLSClientConfig.Certificates[0]
+	expires, e := telemetry.CertificateExpiry(pair.Certificate[0])
+	if e != nil {
+		return false, e
+	}
+	diagnostics, e := telemetry.Snapshot(filepath.Join(c.cfg.State, "spool"), expires)
+	if e != nil {
+		return false, e
+	}
+	if e = telemetry.Write(c.cfg.State, diagnostics); e != nil {
+		return false, e
+	}
 	raw, next, e := sourceprofile.Poll(ctx, c.wire, c.claims, c.key, c.profile, func(ctx context.Context, path string, raw []byte) (int, []byte, error) {
 		return request(ctx, c.http, c.cfg.CollectorURL, "POST", path, raw, "")
-	})
+	}, diagnostics)
 	if e != nil {
 		return false, e
 	}

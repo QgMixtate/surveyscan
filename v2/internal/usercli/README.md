@@ -30,7 +30,8 @@ Exit0 — success;2 — flags/private file/config;3 — auth/policy;4 — missin
 503/429;6 — прочие API ошибки. Logout отзывает server session с CSRF и удаляет context; при401 удаляет
 уже недействующий context, при403/network error сохраняет его для повторной попытки.
 Context не должен публиковаться/попадать в backup общего доступа. На shared host защищать каталог
-и UID пользователя. Table output/OS keychain не реализованы в первом срезе.
+и UID пользователя. Table output поддержан для resource commands (--output table), JSON остаётсяdefault. OS keychain/bearer-token contexts не реализованы.
 
 scripts/cli_smoke.py: compiled CLI/real HTTPS/PG/auth/CSRF, two tenants/viewer, pagination и logout.
-C12.02profiles/C12.03metrics/C12.04operator cadence ещё впереди. JSONC03/C09 остаётся неизменным.
+C12.02–04 добавили profiles get/set --id UUID --revision REV --profile-file JSON, diagnostics,
+local-status --diagnostics-file PRIVATE; source profile panel виден в отдельном UI. JSONC03/C09 остаётся неизменным.

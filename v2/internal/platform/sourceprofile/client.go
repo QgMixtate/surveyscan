@@ -18,7 +18,7 @@ import (
 
 type Post func(context.Context, string, []byte) (int, []byte, error)
 
-func Poll(ctx context.Context, v *wire.Validator, claims pki.Claims, key ed25519.PrivateKey, current *contracts.ProfilePayload, post Post) ([]byte, contracts.ProfilePayload, error) {
+func Poll(ctx context.Context, v *wire.Validator, claims pki.Claims, key ed25519.PrivateKey, current *contracts.ProfilePayload, post Post, diagnostics ...contracts.RuntimeDiagnostics) ([]byte, contracts.ProfilePayload, error) {
 	var applied *string
 	if current != nil && current.Managed {
 		applied = &current.Config.Revision
@@ -28,7 +28,10 @@ func Poll(ctx context.Context, v *wire.Validator, claims pki.Claims, key ed25519
 		return nil, contracts.ProfilePayload{}, e
 	}
 	nonce := base64.RawURLEncoding.EncodeToString(random)
-	req := contracts.ProfileRequestPayload{Version: contracts.Version{Major: 1}, Tenant: claims.Tenant, Origin: contracts.Origin{SourceID: claims.Source, SourceKind: claims.Kind, GenerationID: claims.Generation}, Nonce: nonce, Sent: time.Now().UTC(), Applied: applied}
+	req := contracts.ProfileRequestPayload{Version: contracts.Version{Major: 1, Minor: 1}, Tenant: claims.Tenant, Origin: contracts.Origin{SourceID: claims.Source, SourceKind: claims.Kind, GenerationID: claims.Generation}, Nonce: nonce, Sent: time.Now().UTC(), Applied: applied}
+	if len(diagnostics) > 0 {
+		req.Diagnostics = &diagnostics[0]
+	}
 	frame, e := SignRequest(req, claims.KeyID, key)
 	if e != nil {
 		return nil, contracts.ProfilePayload{}, e

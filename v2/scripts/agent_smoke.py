@@ -30,7 +30,7 @@ def live_agent(**s):
  assert sql('SELECT count(DISTINCT asset_uid) FROM assets.observation_links')=='1'
  assert sql('SELECT count(DISTINCT source_sequence) FROM inventory.observations')=='3'
  uid=sql('SELECT asset_uid::text FROM assets.assets');status,card,_=request(s['tls_port'],s['plain'],'GET','/api/v1/assets/'+uid,headers={'Cookie':s['cookie']});assert status==200 and card['observed_hostname']==socket.gethostname() and card['observed_os'] and card['accountable_subject_id']==s['subject'];checks.append('three scheduled live Linux host inventories update one stable asset UID through real API')
- assert int(sql('SELECT count(*) FROM sources.heartbeat_receipts'))>=3;assert sql('SELECT count(*) FROM sources.heartbeat_state WHERE last_contact_at IS NOT NULL')=='1';checks.append('independent challenge-bound heartbeats accepted while inventory has separate sequence')
+ assert int(sql("SELECT count(*) FROM sources.heartbeat_receipts WHERE source_id='"+prep['source_id']+"'"))>=3;assert sql("SELECT count(*) FROM sources.heartbeat_state WHERE last_contact_at IS NOT NULL AND source_id='"+prep['source_id']+"'")=='1';checks.append('independent challenge-bound heartbeats accepted while inventory has separate sequence')
  end=time.monotonic()+8
  while list((Path(cfg['state_directory'])/'spool').glob('*.pending')) and time.monotonic()<end:time.sleep(.2)
  assert not list((Path(cfg['state_directory'])/'spool').glob('*.pending'));assert len(list((Path(cfg['state_directory'])/'spool').glob('*.receipt')))==3;checks.append('agent spool trims only after verified signed center receipts')

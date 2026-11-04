@@ -140,3 +140,14 @@ func TestOriginValidationAndTimeout(t *testing.T) {
 		t.Fatal("timeout ignored")
 	}
 }
+
+func TestTableOutputWhitelistsFieldsAndRemovesTerminalControls(t *testing.T) {
+	var out bytes.Buffer
+	raw := []byte(`{"items":[{"asset_uid":"test-id","observed_hostname":"host\u001b[31m\nname","freshness":"fresh","cookie":"must-not-print"}],"next_cursor":null}`)
+	if e := render(&out, raw, "assets list", "table"); e != nil {
+		t.Fatal(e)
+	}
+	if strings.Contains(out.String(), "\x1b") || strings.Contains(out.String(), "must-not-print") || !strings.Contains(out.String(), "ASSET_UID") {
+		t.Fatal("table leaked extra fields or terminal controls", out.String())
+	}
+}

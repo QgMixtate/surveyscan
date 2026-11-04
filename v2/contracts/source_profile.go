@@ -22,13 +22,22 @@ type SourceProfile struct {
 	LastContact       *time.Time    `json:"last_contact_at"`
 	LastInventory     *time.Time    `json:"last_successful_inventory_at"`
 }
+type RuntimeDiagnostics struct {
+	Collected          time.Time  `json:"collected_at"`
+	PendingFiles       int        `json:"pending_files"`
+	PendingBytes       int64      `json:"pending_bytes"`
+	OldestPending      *time.Time `json:"oldest_pending_at"`
+	DiskAvailable      *int64     `json:"disk_available_bytes"`
+	CertificateExpires time.Time  `json:"certificate_expires_at"`
+}
 type ProfileRequestPayload struct {
-	Version Version   `json:"schema_version"`
-	Tenant  string    `json:"tenant_id"`
-	Origin  Origin    `json:"origin"`
-	Nonce   string    `json:"nonce"`
-	Sent    time.Time `json:"sent_at"`
-	Applied *string   `json:"applied_revision"`
+	Diagnostics *RuntimeDiagnostics `json:"diagnostics,omitempty"`
+	Version     Version             `json:"schema_version"`
+	Tenant      string              `json:"tenant_id"`
+	Origin      Origin              `json:"origin"`
+	Nonce       string              `json:"nonce"`
+	Sent        time.Time           `json:"sent_at"`
+	Applied     *string             `json:"applied_revision"`
 }
 type ProfilePayload struct {
 	Version Version       `json:"schema_version"`

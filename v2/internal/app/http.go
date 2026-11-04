@@ -30,6 +30,8 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 			mux.Handle("GET /api/v1/sources/{source_id}/profile", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.humanProfile)))
 			mux.Handle("PATCH /api/v1/sources/{source_id}/profile", auth.Wrap("sources:admin", true, http.HandlerFunc(registry[0].Machine.humanProfile)))
 			mux.HandleFunc("POST /api/v1/machine/profile", registry[0].Machine.machineProfile)
+			mux.Handle("GET /api/v1/diagnostics", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.diagnostics)))
+			mux.Handle("GET /api/v1/metrics", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.diagnostics)))
 		}
 		mux.Handle("GET /api/v1/assets/{asset_uid}/inventory", auth.Wrap("assets:read", false, registry[0].inventoryHandler()))
 		if registry[0].Machine != nil {

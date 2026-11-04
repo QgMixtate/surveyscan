@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "SurveyScan C12 source profiles",
-    "version": "1.0.0"
+    "version": "1.1.0"
   },
   "paths": {
     "/api/v1/sources/{source_id}/profile": {
@@ -93,6 +93,9 @@
         "security": [
           {
             "SessionCookie": []
+          },
+          {
+            "CLIReadToken": []
           }
         ],
         "parameters": [
@@ -344,6 +347,55 @@
           }
         ]
       }
+    },
+    "/api/v1/diagnostics": {
+      "get": {
+        "operationId": "getTenantDiagnostics",
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "CLIReadToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tenant-scoped queue/source diagnostics and explicit alerts, absent backup age is null"
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
+    },
+    "/api/v1/metrics": {
+      "get": {
+        "operationId": "getTenantMetrics",
+        "security": [
+          {
+            "SessionCookie": []
+          },
+          {
+            "CLIReadToken": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated tenant-scoped Prometheus exposition",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -355,6 +407,10 @@
       },
       "MachineTLS": {
         "type": "mutualTLS"
+      },
+      "CLIReadToken": {
+        "type": "http",
+        "scheme": "bearer"
       }
     }
   }

@@ -631,7 +631,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Versioned profile, intervals и source health API.
 - Проверка: Heartbeat/freshness/completeness не смешиваются.
 - База оценки: Agent+collector profiles и last-success/last-contact.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; handoffs/C12.md, evidence/C12-runtime.json.
 
 ## C12.03 — Добавить метрики и аудит
 
@@ -641,7 +641,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Queue age, import/outbox lag, spool/disk, cert/backup age.
 - Проверка: Недоступность/перегрузка обнаруживается по метрикам.
 - База оценки: 1 минимальный набор exporters/alerts и structured logs.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; handoffs/C12.md, evidence/C12-runtime.json.
 
 ## C12.04 — Проверить операторский сценарий
 
@@ -651,7 +651,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Оператор меняет интервал и видит регулярный результат в UI/CLI.
 - Проверка: Изменения аудируются; отключённый источник не делает массовый missing.
 - База оценки: 1 человек, 1 агент, 1 collector, 2 tenant негативный тест.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; handoffs/C12.md, evidence/C12-runtime.json.
 
 ## Выход пакета
 

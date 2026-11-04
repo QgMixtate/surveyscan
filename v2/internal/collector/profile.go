@@ -10,6 +10,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/machinecred"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/sourceprofile"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/telemetry"
 	"math"
 	"os"
 	"path/filepath"
@@ -37,9 +38,18 @@ func (c *Collector) loadProfile() error {
 	return nil
 }
 func (c *Collector) pollProfile(ctx context.Context) error {
+	c.mu.Lock()
+	diagnostics, e := telemetry.Snapshot(c.Config.Spool, c.certificate.Load().Leaf.NotAfter)
+	c.mu.Unlock()
+	if e != nil {
+		return e
+	}
+	if e = telemetry.Write(c.Config.CredentialState, diagnostics); e != nil {
+		return e
+	}
 	raw, next, e := sourceprofile.Poll(ctx, c.wire, c.Claims, c.signing, c.profile, func(ctx context.Context, path string, raw []byte) (int, []byte, error) {
 		return c.post(ctx, path, raw, "")
-	})
+	}, diagnostics)
 	if e != nil {
 		return e
 	}

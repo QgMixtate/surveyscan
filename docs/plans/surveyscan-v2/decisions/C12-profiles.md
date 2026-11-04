@@ -62,3 +62,7 @@ Profile polling не означает successful inventory/freshness; source dis
 Далее C12.03: tenant-scoped server/import/outbox diagnostics, source spool/disk/cert telemetry,
 backup age неизвестен без настоящего backup marker; не подставлять0/"healthy" вместо unknown.
 C12.04 — оператор меняет interval, наблюдает реальный цикл и опубликованный/applied revision.
+
+Итог C12.03/04: runtime telemetry добавлен в optional diagnostics requestminor1.1,baseline1.0
+безtelemetryпринимается. Read-only SourceProfile UI и docs доступны; metric/alert детали — C12-diagnostics.md.
+Три real admin CLIpublish1→2→3→4,120→60 cadence после55–80s,offline/restart иrevoke прошли.
