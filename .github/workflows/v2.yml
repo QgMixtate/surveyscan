@@ -86,6 +86,8 @@ jobs:
         run: .contract-tools/bin/python scripts/checkpoint_smoke.py
       - name: Previous C11 server data upgraded with current binary
         run: .contract-tools/bin/python scripts/upgrade_smoke.py
+      - name: Verified release update, startup rollback and updater SIGKILL recovery
+        run: GO=go .contract-tools/bin/python scripts/update_smoke.py
       - name: Retain sanitized reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -112,6 +114,7 @@ jobs:
             v2/.local/c13-bao-restore-smoke.json
             v2/.local/c13-checkpoint-smoke.json
             v2/.local/c13-upgrade-smoke.json
+            v2/.local/c13-update-smoke.json
           if-no-files-found: ignore
       - name: Stop isolated development stack
         if: always()

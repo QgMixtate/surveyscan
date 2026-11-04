@@ -1,5 +1,9 @@
 # Текущее состояние surveyscan
 
+Продолжение C13: локальный checked updater18 passed (actual process/PG/TLS, rollback, SIGKILL/fence/recovery).
+Новые schema-catalog/schema-check и signed schema metadata, config/state preserved. Systemd update/boot
+и schema-changing updater ещё unrun. [Procedure](../v2/deploy/UPDATE.md); новый код пока не pushed.
+
 R-020, 2026-11-05: пользователь поручил продолжить и опубликовать всё сделанное в GitHub.
 Опубликовано: codex/v2-c13-operations@f1ea70f (вся история C04–C13), draft PR #4: https://github.com/QgMixtate/surveyscan/pull/4.
 Hosted Actions SUCCESS на коде215f10c: [v2](https://github.com/QgMixtate/surveyscan/actions/runs/41924907145), [Web/Chromium](https://github.com/QgMixtate/surveyscan/actions/runs/41924907471).

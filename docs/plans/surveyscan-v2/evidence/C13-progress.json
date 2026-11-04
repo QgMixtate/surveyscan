@@ -46,10 +46,11 @@
   "host_pid1": "tail",
   "host_uid": 1000,
   "unrun": [
-    "systemd actualboot/reboot/autostart",
-    "manual live service update",
+    "actual systemd boot/reboot",
+    "systemd update controller",
+    "schema-changing update through updater",
     "two clean OS systems",
-    "production HTTPS/KMS/split custody/DR"
+    "physical power loss/production DR"
   ],
   "publication": {
     "state": "published to feature branch; not merged",
@@ -61,7 +62,8 @@
     "hosted_result": "success on validated code 215f10cebe314fc767a6c9dc7f90ebf4c2dfb39b",
     "latest_v2_run": "https://github.com/QgMixtate/surveyscan/actions/runs/41924907145",
     "latest_web_run": "https://github.com/QgMixtate/surveyscan/actions/runs/41924907471",
-    "hosted_evidence": "C13-hosted.json"
+    "hosted_evidence": "C13-hosted.json",
+    "latest_local_work": "updater18 local passed; not yet pushed"
   },
   "release": {
     "package": "C13",
@@ -309,6 +311,39 @@
       "systemd boot/reboot",
       "two clean OS systems",
       "production/DR"
+    ]
+  },
+  "manual_update": {
+    "package": "C13",
+    "task": "C13.02",
+    "status": "passed",
+    "count": 18,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "synthetic agent enrollment traverses collector",
+      "durable collector transport receipt retains source data",
+      "center commit receipt verifies with pinned key and exact bindings",
+      "committed PG registry card visible through real authenticated API",
+      "collector trims only after verified center acknowledgement",
+      "exactly one durable observation in isolated PostgreSQL",
+      "installed signed baseline server actually serves existing PG registry with exact compiled schema",
+      "candidate signature/hashes/catalog verified and staged without switching current or stopping server",
+      "actual stop/migrate0/atomic switch/restart reaches readiness; new version, old credentials and same UID visible",
+      "all selected operator configs/private TLS keys and private artifact bytes preserved across update",
+      "implicit version downgrade refused",
+      "real candidate startup failure safely returns to previous ready server only after exact DB/schema check",
+      "actual updater SIGKILL after committed migrate leaves durable fence/journal; retry/recovery inspects DB and reaches ready candidate",
+      "actual DB ledger drift leaves persistent fence and no running server; incompatible old binary never auto-started",
+      "explicit recovery after fixing own drift fixture restores matching current release without deleting state or identities",
+      "installation-wide writer lock refuses a concurrent updater"
+    ],
+    "target": "actual signed ELF releases/server processes, PostgreSQL, TLS/login/registry, original UID; explicit bad listen startup and ledger drift fixtures",
+    "unrun": [
+      "production systemd controller",
+      "actual schema-changing update via updater",
+      "physical power loss",
+      "boot/reboot/two clean OS/production DR"
     ]
   }
 }

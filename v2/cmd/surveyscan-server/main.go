@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
@@ -37,6 +38,17 @@ func run(args []string) error {
 	if command == "version" || command == "--version" {
 		return buildinfo.Print(os.Stdout, "server")
 	}
+	if command == "schema-catalog" {
+		ms, err := app.Migrations()
+		if err != nil {
+			return err
+		}
+		catalog, err := migrate.Catalog(ms)
+		if err != nil {
+			return err
+		}
+		return json.NewEncoder(os.Stdout).Encode(map[string]any{"format": "surveyscan-schema-v1", "migrations": catalog})
+	}
 	if command == "healthcheck" {
 		addr, e := config.ListenAddress()
 		if e != nil {
@@ -57,8 +69,8 @@ func run(args []string) error {
 		}
 		return nil
 	}
-	if command != "serve" && command != "migrate" && !isConsole {
-		return fmt.Errorf("supported commands: serve, migrate, version, bootstrap-admin, create-user, set-user-state, reset-password")
+	if command != "serve" && command != "migrate" && command != "schema-check" && !isConsole {
+		return fmt.Errorf("supported commands: serve, migrate, schema-catalog, schema-check, version, bootstrap-admin, create-user, set-user-state, reset-password")
 	}
 	db, err := config.Database()
 	if err != nil {
@@ -70,6 +82,18 @@ func run(args []string) error {
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
+	if command == "schema-check" {
+		conn, err := pgx.ConnectConfig(ctx, db)
+		if err != nil {
+			return fmt.Errorf("database connection failed")
+		}
+		defer conn.Close(context.Background())
+		if err = migrate.Check(ctx, conn, catalog); err != nil {
+			return fmt.Errorf("schema incompatible with this binary")
+		}
+		fmt.Println("schema_compatible")
+		return nil
+	}
 	if command == "migrate" {
 		conn, err := pgx.ConnectConfig(ctx, db)
 		if err != nil {

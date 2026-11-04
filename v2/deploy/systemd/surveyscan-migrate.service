@@ -1,5 +1,6 @@
 [Unit]
 Description=SurveyScan PostgreSQL schema migration (before server)
+ConditionPathExists=!/opt/surveyscan/update.fence
 Wants=network-online.target
 Requires=postgresql.service
 After=network-online.target postgresql.service

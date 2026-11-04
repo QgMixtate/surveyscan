@@ -1,5 +1,6 @@
 [Unit]
 Description=SurveyScan server (Linux E1)
+ConditionPathExists=!/opt/surveyscan/update.fence
 Wants=network-online.target
 After=network-online.target
 Requires=surveyscan-migrate.service

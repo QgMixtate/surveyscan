@@ -1229,7 +1229,7 @@
             "handoffs/C13.md",
             "evidence/C13-progress.json"
           ],
-          "verification_status": "14 real signed-bundle/verified-staging checks passed; boot/live checked update pending"
+          "verification_status": "release14 and actual process/PG update18 (rollback+SIGKILL) passed; systemd controller/boot and schema-changing update pending"
         },
         {
           "id": "C13.03",

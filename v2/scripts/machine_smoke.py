@@ -114,7 +114,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
      for process in reversed(processes):
       if process.poll() is None:
        process.terminate();assert process.wait(timeout=8)==0,'fixture service did not stop cleanly'
-    web_scenario(sql=lambda query:sql(query,db),command=command,directory=directory,origin=browser_origin,center_port=tls_port,ca_file=ca_file,username='admin',password=password,asset=signed['results'][0]['asset_uid'],tenant=tenant,checks=checks,quiesce=quiesce,server_environment=dict(env))
+    web_scenario(sql=lambda query:sql(query,db),command=command,directory=directory,origin=browser_origin,center_port=tls_port,ca_file=ca_file,username='admin',password=password,asset=signed['results'][0]['asset_uid'],tenant=tenant,checks=checks,quiesce=quiesce,server_environment=dict(env),center_process=center_process,collector_process=collector_process)
     return
    report={'package':'C07','status':'passed','checks':checks,'count':len(checks),'target':'compiled server + compiled collector + real TLS/mTLS + synthetic Python Ed25519 source + PostgreSQL','keys':'temporary private files removed after run; no credential in report'};(STATE/'machine-smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
   finally:

@@ -109,9 +109,15 @@ def verify(bundle, public_key):
     require(signature.is_file() and not signature.is_symlink() and signature.stat().st_size == 64,
             'Ed25519 detached signature required')
     manifest = read_json(bundle / 'manifest.json')
+    return verify_payload(manifest, bundle / 'manifest.json', signature, bundle / 'payload', public_key)
+
+
+def verify_payload(manifest, manifest_path, signature, payload, public_key, installed=False):
+    require(signature.is_file() and not signature.is_symlink() and signature.stat().st_size == 64,
+            'Ed25519 detached signature required')
     require_ed25519(openssl('pkey', '-pubin', '-in', public_key, '-outform', 'DER'))
     openssl('pkeyutl', '-verify', '-pubin', '-rawin', '-inkey', public_key,
-            '-in', bundle / 'manifest.json', '-sigfile', signature)
+            '-in', manifest_path, '-sigfile', signature)
     require(manifest.get('format') == 'surveyscan-release-v1', 'unsupported manifest')
     require(VERSION.fullmatch(manifest.get('version', '')) is not None, 'invalid release version')
     require(manifest.get('platform') == 'linux/amd64', 'unsupported platform')
@@ -121,7 +127,13 @@ def verify(bundle, public_key):
         path = PurePosixPath(name)
         require(not path.is_absolute() and '..' not in path.parts and str(path) == name,
                 'unsafe manifest path')
-    actual = inventory(bundle / 'payload')
+    actual = inventory(payload)
+    reserved = {'release-manifest.json', 'release-manifest.sig'}
+    require(not reserved.intersection(expected), 'reserved installed metadata paths in payload')
+    if installed:
+        for name in reserved:
+            require(name in actual, 'missing installed signature metadata')
+            actual.pop(name)
     require(actual == expected, 'artifact set, digest, size or mode mismatch')
     for name in BINARIES:
         require(actual.get('bin/' + name, {}).get('mode') == 0o755, 'missing executable component')
@@ -129,7 +141,7 @@ def verify(bundle, public_key):
             'missing Web UI or release metadata')
     sums = ''.join(f'{data["sha256"]}  {name}\n' for name, data in actual.items()
                    if name != 'CHECKSUMS.sha256')
-    require((bundle / 'payload/CHECKSUMS.sha256').read_text() == sums, 'checksum index mismatch')
+    require((payload / 'CHECKSUMS.sha256').read_text() == sums, 'checksum index mismatch')
     # Verification never invokes any executable delivered in the bundle.
     return manifest
 
@@ -233,6 +245,9 @@ def build(output, version, distribution, web, go):
         for path in payload.rglob('*'):
             path.chmod(0o755 if path.is_dir() or path.parent.name == 'bin' else 0o644)
         payload.chmod(0o755)
+        schema = json.loads(subprocess.check_output([str(payload / 'bin/surveyscan-server'), 'schema-catalog'], timeout=10))
+        require(schema.get('format') == 'surveyscan-schema-v1', 'compiled schema metadata required')
+        write_json(payload / 'schema.json', schema)
         write_json(payload / 'sbom.spdx.json', sbom(payload, versions, go))
         files = inventory(payload)
         sums = payload / 'CHECKSUMS.sha256'
@@ -269,6 +284,9 @@ def install(bundle, public_key, target):
         release = root / 'opt/surveyscan/releases' / manifest['version']
         release.parent.mkdir(parents=True)
         shutil.copytree(snapshot / 'payload', release)
+        for name in ('manifest.json', 'manifest.sig'):
+            shutil.copyfile(snapshot / name, release / ('release-' + name))
+            (release / ('release-' + name)).chmod(0o644)
         os.symlink('releases/' + manifest['version'], root / 'opt/surveyscan/current')
         units = root / 'usr/lib/systemd/system'
         units.mkdir(parents=True)

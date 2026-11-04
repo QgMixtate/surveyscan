@@ -15,6 +15,25 @@ import (
 
 type Migration struct{ ID, Owner, SQL string }
 
+// Entry describes the exact compiled schema without exposing SQL or requiring a database.
+type Entry struct {
+	ID     string `json:"id"`
+	Owner  string `json:"owner"`
+	SHA256 string `json:"sha256"`
+}
+
+func Catalog(ms []Migration) ([]Entry, error) {
+	ordered, err := ordered(ms)
+	if err != nil {
+		return nil, err
+	}
+	entries := make([]Entry, 0, len(ordered))
+	for _, m := range ordered {
+		entries = append(entries, Entry{ID: m.ID, Owner: m.Owner, SHA256: checksum(m)})
+	}
+	return entries, nil
+}
+
 var ErrDrift = errors.New("migration history differs from this binary")
 
 func FromFS(owner string, files fs.FS) ([]Migration, error) {

@@ -360,3 +360,9 @@ agent11/auth10/machine8/recovery8/ENOSPC1/scopedBao4/BaoPipeline17/renewal10/col
 Evidence: plans/surveyscan-v2/evidence/C13-hosted.json (reportdigests и URLs).
 Последующий [skip ci] commit меняет только журнал/evidence; application/workflow source совпадает с215f10c.
 Всё опубликовано в PR4 featurebranch; main не слит. C13.01–03IP/04planned,48/200; boot/liveupdate/twoOS pending.
+
+R-019/R-020, далее2026-11-05: пользователь просит автоматически переходить к следующему этапу до лимита.
+Checked updater18 local passed: signed/schema-aware prepare, actual server stop/migrate0/switch/ready,
+privateconfigs/TLSkeys/artifact/UID preserved, failed-start exact-schema rollback, actual SIGKILL+durable
+fence/journal/recovery, drift fixture refuses old writers. New CLI schema-catalog/schema-check, signed
+metadata, systemd gate. SQL/C03/C09 unchanged. New hosted CI pending; next actual systemd stand.
