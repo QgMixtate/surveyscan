@@ -1247,7 +1247,7 @@
             "handoffs/C13.md",
             "evidence/C13-progress.json"
           ],
-          "verification_status": "17 real pipeline+PG component restore checks passed,46 table fingerprints/TLS login/card; whole-system restore and previous-schema upgrade pending"
+          "verification_status": "18 real pipeline+PG restore checks (46tables,TLS login/card/write),9 real isolated Bao Raft/Transit/restart checks passed; full filesystem/checkpoint/previous-schema upgrade pending"
         },
         {
           "id": "C13.04",

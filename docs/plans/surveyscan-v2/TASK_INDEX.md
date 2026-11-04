@@ -18,7 +18,7 @@
 | [C10](packages/C10.md) | E1 | Долговечная доставка и восстановление | C08 | [Запрос](prompts/C10.md) | done (локально) |
 | [C11](packages/C11.md) | E1 | OpenBao и жизненный цикл машинных доступов | C10 | [Запрос](prompts/C11.md) | done (bounded E1) |
 | [C12](packages/C12.md) | E1 | CLI, управление циклом и наблюдаемость | C09, C11 | [Запрос](prompts/C12.md) | done (local E1) |
-| [C13](packages/C13.md) | E1 | Установка, сервисы, обновление и backup | C12 | [Запрос](prompts/C13.md) | in_progress (01 staged; 02 signed bundle; 03 PG restore) |
+| [C13](packages/C13.md) | E1 | Установка, сервисы, обновление и backup | C12 | [Запрос](prompts/C13.md) | in_progress (01 staged; 02 signed bundle; 03 PG/Bao component restore) |
 | [C14](packages/C14.md) | E1 | Приёмка и выпуск первого рабочего SMB | C13 | [Запрос](prompts/C14.md) | planned |
 | [C15](packages/C15.md) | E2 | Постоянный Windows-агент | C14 | [Запрос](prompts/C15.md) | planned |
 | [C16](packages/C16.md) | E2 | Постоянный Linux-агент и platform parity | C14 | [Запрос](prompts/C16.md) | planned |

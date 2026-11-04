@@ -95,7 +95,7 @@ def scenario(**s):
                 connection.request(method, path, body=body, headers=h)
                 response = connection.getresponse()
                 raw = response.read()
-                return response.status, json.loads(raw) if raw else None, response.getheader('Set-Cookie')
+                return response.status, json.loads(raw) if raw else None, response.getheader('Set-Cookie') or response.getheader('ETag')
             finally:
                 connection.close()
         for _ in range(100):
@@ -110,9 +110,17 @@ def scenario(**s):
         status, session, cookie = request('POST', '/api/v1/auth/sessions',
             {'username': s['username'], 'password': s['password']}, {'Origin': s['origin']})
         assert status == 201 and session['tenant_id'] == s['tenant'] and cookie
-        status, card, _ = request('GET', '/api/v1/assets/' + s['asset'], headers={'Cookie': cookie.split(';', 1)[0]})
+        status, card, etag = request('GET', '/api/v1/assets/' + s['asset'], headers={'Cookie': cookie.split(';', 1)[0]})
         assert status == 200 and card['asset_uid'] == s['asset'] and card['observed_hostname'] == 'pipeline-host'
         checks.append('restored real server authenticates previous admin credentials and serves same UID/card through TLS API')
+        events = int(client.sql(destination, 'SELECT count(*) FROM messaging.outbox_events'))
+        audits = int(client.sql(destination, 'SELECT count(*) FROM audit.audit_events'))
+        status, changed, _ = request('PATCH', '/api/v1/assets/' + s['asset'], {'display_name': 'restored operator write'},
+            {'Cookie': cookie.split(';', 1)[0], 'Origin': s['origin'], 'X-CSRF-Token': session['csrf_token'], 'If-Match': etag})
+        assert status == 200 and changed['asset_uid'] == s['asset'] and changed['business']['display_name'] == 'restored operator write'
+        assert int(client.sql(destination, 'SELECT count(*) FROM messaging.outbox_events')) == events + 1
+        assert int(client.sql(destination, 'SELECT count(*) FROM audit.audit_events')) == audits + 1
+        checks.append('restored server accepts authorized CSRF/If-Match mutation with same UID and one new audit/outbox transaction')
         refused(lambda: restore(client, directory, destination))
         checks.append('second restore onto running/nonempty registry refused')
         report = {'package': 'C13', 'task': 'C13.03 PG component preparation', 'status': 'passed',

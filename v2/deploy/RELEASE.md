@@ -21,8 +21,10 @@ systemd/sysusers templates, `CHECKSUMS.sha256` и `sbom.spdx.json`.
 Ни конфиги `.local`, ни identities/spools/пароли/ключи в поставку не входят.
 PostgreSQL, OpenBao, systemd, TLS edge — внешние prerequisites, не часть bundle.
 
-Сборка требует совпадения версии и revision всех пяти компонентов и current source HEAD,
-а также совпадения hashes C03/C09/C12 API с Web manifest. Dirty tree не маскируется:
+Четыре Go binaries данного E1 bundle имеют общие version/revision и current source HEAD.
+Web поставляется отдельно и может иметь собственные version/revision; проверяются его provenance
+и совпадение hashes C03/C09/C12 API с Web manifest. Пример выше задаёт общую версию только
+для удобства coordinated candidate; независимая версия UI поддерживается. Dirty tree не маскируется:
 каждый компонент и release manifest сохраняют этот признак. Такой кандидат не объявляется
 чистым reproducible release. `version`/`--version` работают у всех binaries без доступа к БД;
 Web metadata — `/version.json`, формат C09 compatibility check сохранён.

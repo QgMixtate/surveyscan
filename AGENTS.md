@@ -114,3 +114,11 @@ Stagedsystemdunits/installer(privatecredentials/data paths) и5stagingchecks,rea
 systemd-analyze staticverifyexit0вnetworklesscontainer. Actualboot/reboot/services не проверены:
 managedhostPID1tail/UID1000. No host service install/start. handoffs/C13.md содержитточнуюграницу.
 C13.02–04release/backup/restore ещёplanned; no push/merge/deploy/env publication.
+
+C13 продолжение2026-11-05:01–03 in_progress,04planned;48/200done. Release checkpointcc242c5,
+PG checkpointb874302. Signed Ed25519 bundle/SHA256-size-mode/SPDX/verified staging14checks,
+PG17dump→newemptyDB18checks(46table fingerprints+actualTLSlogin/card/write),отдельныйBaoRaftrestore9checks
+(scopedKV/двеnonexportableTransit signatures/restart-unseal) passed. makeverify39unit/58fixtures.
+HostPID1tail/QEMU-KVM-nspawn absent/cgroupdriver none: boot unrun. FullPG-Bao-filesystemcheckpoint,
+liveupdate/previousschema upgrade/twoOS ещёunrun. Читатьhandoffs/C13.md; не закрыватьC13/не начинатьC14.
+No push/merge/deploy/envpublication; privatebackup/custody неstageвgit. PG-only неsystembackupmarker.

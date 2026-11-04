@@ -7,7 +7,8 @@ Windows service — C15. PostgreSQL17 и OpenBao2.7.2 executable — внешн�
 `python scripts/stage_install.py --root /absolute/empty/staging`
 копирует только четыре `.dist` бинарника, public contracts, отдельный `web/dist`, unit/sysusers files.
 Root должен быть пустым; `/` запрещён. Existing data/configs не заменяются. Результат development/unsigned,
-не release: C13.02 ещё должен добавить versioned manifest/checksums/SBOM/signature и checked update.
+не release. Для versioned manifest/checksums/SBOM/signature и verified staging добавлен
+[release tool](../RELEASE.md); live checked update C13.02 остаётся открытым.
 Program/unit dirs0755/0644; binaries0755; state0700. Sysusers/root ownership и StateDirectory chown
 применяются только при настоящей установке на целевой машине, stage их на host не выполняет.
 

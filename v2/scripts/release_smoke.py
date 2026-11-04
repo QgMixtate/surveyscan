@@ -36,8 +36,9 @@ def main():
         release.sign(bundle, key)
         manifest = release.verify(bundle, public)
         checks.append('real Ed25519 signature and complete file/mode/size/hash inventory verified')
-        assert all(v['version'] == version and v['revision'] != 'unknown' for v in manifest['components'].values())
-        checks.append('four compiled binaries and separate Web UI identify the same version/revision')
+        assert all(manifest['components'][name]['version'] == version and manifest['components'][name]['revision'] != 'unknown' for name in release.BINARIES)
+        assert release.VERSION.fullmatch(manifest['components']['web']['version'])
+        checks.append('four compiled binaries identify bundle version/revision; independent Web version records provenance and matches API contract hashes')
         bom = release.read_json(bundle / 'payload/sbom.spdx.json')
         ids = {p['SPDXID'] for p in bom['packages']} | {'SPDXRef-DOCUMENT'}
         assert len(ids) == len(bom['packages']) + 1

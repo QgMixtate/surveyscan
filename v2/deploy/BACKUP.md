@@ -1,6 +1,6 @@
 # C13 — backup/restore по компонентам (в работе)
 
-Проверен **PostgreSQL component round-trip**. Полная согласованная копия PostgreSQL,
+Проверены **PostgreSQL component round-trip и отдельный OpenBao Raft restore**. Полная согласованная копия PostgreSQL,
 OpenBao и файлового состояния пока не реализована/не принята. `pg_backup.py` не обновляет
 общий backup-age marker и явно возвращает `complete_system_backup=false`.
 Нет утверждённых RPO/RTO, geo DR или доказанного reboot recovery.
@@ -48,15 +48,34 @@ Backup manifest защищает от случайной порчи, но сам
 затем эти процессы останавливаются. Отдельно вставляется явно обозначенный SQL retry
 checkpoint fixture. Restore идёт в новую БД, рабочая dev БД/volume не заменяется.
 
-17 checks passed (8 pipeline + 9 backup/restore): fingerprints всех46 таблиц совпали,
+18 checks passed (8 pipeline + 10 backup/restore): fingerprints всех46 таблиц совпали,
 включая 45 domain/access tables и migration ledger. Сохранены UID, пользователи/права,
 история, observations/receipts, outbox/retry. Текущий binary подтвердил все33 миграции,
 `applied_migrations=0`; это не тест перехода со старой версии схемы.
 После restore реальный server принял прежние admin credentials и вернул ту же карточку
-через TLS API. Порча archive и nonempty target отвергнуты, sentinel table сохранена.
+через TLS API. Реальный PATCH с Origin/CSRF/If-Match сохранил UID и создал ровно один новый audit/outbox. Порча archive и nonempty target отвергнуты, sentinel table сохранена.
 Временные БД, private archive и fixtures удаляются. Reports не содержат table contents/passwords.
 
 ## Оставшийся системный recovery
+
+`scripts/bao_restore_smoke.py` проверяет настоящий Raft snapshot OpenBao2.7.2 на отдельном
+изначально пустом узле с private temporary state. Исходный узел не восстанавливается,
+не seal/reset и не теряет volume/keys. Dev fixture получает собственные Transit/KV/policy/token;
+bootstrap custody используется только для snapshot и восстановления временного узла.
+HTTP допустим здесь только на literal loopback development endpoints; production HTTPS не проверен.
+
+9 checks passed: snapshot, separate initialization, force restore в **собственный clean target**,
+unseal source custody, сохранённые cluster ID/KV/scoped policy, отказ чужому initial root token
+и forbidden signing, оба non-exportable Transit CA/receipt keys реально подписывают проверяемые
+Ed25519 challenges. После настоящего Docker restart узел sealed; source custody возвращает
+готовность, подпись снова работает. Это не systemd reboot или auto-unseal.
+Исходный узел остался active, audit не содержит raw test secrets. Target container останавливается
+до удаления private bind-state; temporary snapshot/custody/keys и own source fixtures удаляются.
+
+Snapshot содержит реальное development secret state и не сохраняется как публичный evidence.
+В evidence только статусы/проверки. Этот rehearsal не предоставляет CLI для overwrite
+произвольного Bao и не заменяет production restore runbook. Полный application restore с
+CA leaf issuance, receipt replay, одновременно восстановленными PG и source files ещё unrun.
 
 Для полной копии требуется согласованный checkpoint после остановки writers:
 agent/collector state с origin keys/identity/counters/profile cache/очередями, server configs
@@ -65,7 +84,7 @@ agent/collector state с origin keys/identity/counters/profile cache/очере�
 не доказывает работоспособность Transit CA/receipt signing после потери узла.
 Нельзя хранить root/unseal материал у application UID или в service unit/image.
 
-На изолированном clean stand предстоит проверить Bao restore и scoped key operations,
+На изолированном clean stand предстоит объединить проверенные PG/Bao component restores,
 возврат тех же source/asset IDs, replay pending/receipts без дублей и безопасную миграцию
 со старого release. До переключения writers нужны проверки tenant/access/history/outbox,
 подтверждённый единственный writer и проверенный путь возврата к целой копии.

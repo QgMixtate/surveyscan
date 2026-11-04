@@ -320,3 +320,17 @@ checksum/size verification, restore только в другую пустую Б
 Fixture processes quiesced, retrycheckpoint явно SQLfixture; own backup/DBs cleaned. Runbook v2/deploy/BACKUP.md.
 PG-only не complete-system backup: Bao/filesystem/custody/previous-schema upgrade/boot ещёpending.
 C13.01–03 in_progress,04planned,done48/200; cc242c5 release checkpoint. No push/merge/deploy/env publication.
+
+R-019, далее2026-11-05: PG checkpoint b874302. Добавлен настоящий OpenBao Raft restore в отдельный
+initially empty disposable node; исходный volume не reset/restore/seal.9 checks passed: cluster ID/KV/
+scoped policy, оба non-exportable Transit CA/receipt keys реально подписывают; forbidden/foreign token
+denied; target restart→sealed→source-custody unseal→sign. Source active/audit masked, private snapshot,
+fixtures и target state удаляются. Это не full PG/Bao/filesystem checkpoint или clean OS/production DR.
+Подробности/evidence вhandoffs/C13.md; C13.01–03 всё ещёin_progress,48/200. No push/merge/deploy/env publication.
+
+C13 final continuation checks: PG18 (добавлен actual post-restore CSRF/If-Match PATCH,
+тотжеUID и ровноодин audit/outbox), Bao9 finalcleanup, release14 independent Webversion/APIhashes,
+Chromium16 passed.39unit/58fixtures makeverify ранее в этом продолжении passed.
+Separate Web release сохранён; source provenance latest tested b874302+dirty, не clean current release.
+Полныеevidence и nextstep вhandoffs/C13.md. Fullcheckpoint/liveupdate/previousschema/boot/twoOS pending;
+done48/200, C13.01–03 IP/C13.04 planned; no push/merge/deploy/env publication.

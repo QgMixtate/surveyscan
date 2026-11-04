@@ -179,7 +179,8 @@ def sbom(payload, versions, go):
                      'licenseDeclared': 'NOASSERTION', 'copyrightText': 'NOASSERTION'})
     relationships.append({'spdxElementId': 'SPDXRef-DOCUMENT', 'relationshipType': 'DESCRIBES',
                           'relatedSpdxElement': 'SPDXRef-web'})
-    namespace = hashlib.sha256(json.dumps(versions, sort_keys=True).encode()).hexdigest()
+    namespace = hashlib.sha256(json.dumps({'components': versions, 'packages': packages,
+                                          'relationships': relationships}, sort_keys=True).encode()).hexdigest()
     epoch = subprocess.check_output(['git', 'show', '-s', '--format=%ct', 'HEAD'], cwd=ROOT, text=True).strip()
     created = datetime.fromtimestamp(int(epoch), timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
     return {'spdxVersion': 'SPDX-2.3', 'dataLicense': 'CC0-1.0', 'SPDXID': 'SPDXRef-DOCUMENT',
@@ -212,12 +213,14 @@ def build(output, version, distribution, web, go):
             require(versions[name]['component'] == component and versions[name]['version'] == version,
                     'build all four binaries with requested VERSION first')
         versions['web'] = read_json(web / 'version.json')
-        require(versions['web']['version'] == version, 'build Web UI with requested SURVEYSCAN_VERSION first')
-        revisions = {v['revision'] for v in versions.values()}
+        require(VERSION.fullmatch(versions['web']['version']) is not None
+                and re.fullmatch('[0-9a-f]{40}', versions['web']['revision']), 'versioned Web provenance required')
+        revisions = {versions[name]['revision'] for name in BINARIES}
         require(len(revisions) == 1 and re.fullmatch('[0-9a-f]{40}', revisions.pop()), 'component revision mismatch')
         require(all(v.get('source_dirty') in ('true', 'false') for v in versions.values()), 'source provenance required')
         source_revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-        require(all(v['revision'] == source_revision for v in versions.values()), 'rebuild components after changing source revision')
+        require(all(versions[name]['revision'] == source_revision for name in BINARIES),
+                'rebuild Go components after changing source revision')
         for field, name in [('openapi_sha256', 'openapi.json'), ('c09_sha256', 'c09.openapi.json'),
                             ('c12_sha256', 'c12.openapi.json')]:
             require(versions['web'].get(field) == digest(distribution / 'contracts' / name),

@@ -9,10 +9,14 @@ SHA256/size/mode manifest, SPDX2.3 dependency inventory, verified atomic filesys
 Actual systemd boot/reboot и live checked update/backup/restore остаются открытыми:
 host PID1 tail, нет QEMU/KVM/nspawn, Docker cgroup driver none. 48/200 done без изменения.
 Продолжение: [handoff C13](plans/surveyscan-v2/handoffs/C13.md), [release procedure](../v2/deploy/RELEASE.md).
-PG component backup/restore:17 actual pipeline+restore checks passed,46 table fingerprints identical,
+PG component backup/restore:18 actual pipeline+restore checks passed,46 table fingerprints identical,
 33 migrations verified without reapply, прежний admin login и UID/card доступны на восстановленном
-реальном TLS server. Bao/filesystem/full checkpoint/previous-schema upgrade ещё не проверены;
+реальном TLS server; authorized PATCH создаёт ровно один audit/outbox и сохраняет UID. Full checkpoint/filesystem/previous-schema upgrade ещё не проверены;
 PG-only component не обновляет общий backup marker. [Runbook](../v2/deploy/BACKUP.md).
+Отдельный Bao Raft restore:9 checks passed на initially empty disposable node; cluster ID,
+KV/scoped policy сохранены, оба non-exportable Transit ключа подписывают проверяемые challenges,
+после actual Docker restart/unseal подпись работает. Source volume не восстанавливался/reset.
+Это component dev rehearsal, не единый PG/Bao/filesystem restore, production HTTPS/KMS или boot.
 
 
 Актуальная задача R-019 — выполнять этапы последовательно до лимита.

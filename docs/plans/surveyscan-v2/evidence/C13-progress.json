@@ -46,12 +46,12 @@
   "host_pid1": "tail",
   "host_uid": 1000,
   "unrun": [
-    "systemd realboot/reboot/autostart",
-    "PG/Bao/edge/config provisioning",
+    "systemd actualboot/reboot/autostart",
     "live checked update",
-    "Bao Raft and filesystem/full restore",
+    "full PG/Bao/filesystem consistent checkpoint and restore",
     "previous-release schema upgrade",
-    "two clean systems"
+    "two clean OS systems",
+    "production HTTPS/KMS/split custody/DR"
   ],
   "publication": "local only",
   "release": {
@@ -62,7 +62,7 @@
     "checks": [
       "unsigned candidate refused before staging",
       "real Ed25519 signature and complete file/mode/size/hash inventory verified",
-      "four compiled binaries and separate Web UI identify the same version/revision",
+      "four compiled binaries identify bundle version/revision; independent Web version records provenance and matches API contract hashes",
       "SPDX2.3 inventory contains actual Go module metadata and npm lock/build graph with valid references",
       "foreign trust anchor refused without creating installation root",
       "tampered executable refused before target mutation",
@@ -95,13 +95,41 @@
   "validation": {
     "make_verify": "passed;39 unit +58 C03 fixtures, local httptest ports require escalation",
     "web_build": "passed; initial sandbox Node spawnSync denied, repeated with escalation",
-    "source": "local only; GitHub refs rechecked unchanged via fetch; no push"
+    "source": "local only; GitHub refs rechecked unchanged via fetch; no push",
+    "browser_regression": {
+      "package": "C09",
+      "scope": "C09 full browser acceptance: UI/API1.0+C09/1.0",
+      "status": "passed",
+      "count": 16,
+      "checks": [
+        "production static bundle renders with strict CSP and no Node/CDN",
+        "invalid credentials rejected by real backend",
+        "real authenticated tenant asset list from PostgreSQL",
+        "explicit page filter and cursor boundaries",
+        "real asset detail and keyboard close/focus path",
+        "1440 and 800 responsive layouts render without document overflow",
+        "explicit mocked C03 partial/stale/unknown fixture matrix rendered distinctly",
+        "source registration and missing contact displayed separately",
+        "source profile shows unmanaged/applied revision and separates configuration contact from successful inventory",
+        "real published central profile revision is visible in source UI without changing inventory freshness",
+        "no tokens or credentials in web storage",
+        "real expired session clears old card and tenant workspace cache",
+        "real logout revokes browser session",
+        "new UI rejects old API deployment without C09 extension",
+        "version mismatch blocks login before API usage",
+        "zero runtime errors or external requests"
+      ],
+      "target": "Chromium + C09 detail API + production bundle + real compiled server/collector + synthetic signed source + PostgreSQL; strict CSP; no mocked auth/assets",
+      "unrun": [
+        "production/100-user load/24h soak"
+      ]
+    }
   },
   "pg_component_restore": {
     "package": "C13",
     "task": "C13.03 PG component preparation",
     "status": "passed",
-    "count": 17,
+    "count": 18,
     "checks": [
       "compiled center starts with explicit private loopback PKI",
       "compiled collector enrolls and starts HTTPS daemon",
@@ -119,6 +147,7 @@
       "all46 table fingerprints identical: UID, access/session/hash, history, observations, receipt, retry queue/outbox and migration ledger",
       "current binary verifies restored33 migration hashes and applies zero duplicate migrations",
       "restored real server authenticates previous admin credentials and serves same UID/card through TLS API",
+      "restored server accepts authorized CSRF/If-Match mutation with same UID and one new audit/outbox transaction",
       "second restore onto running/nonempty registry refused"
     ],
     "table_count": 46,
@@ -131,5 +160,86 @@
       "clean OS/systemd boot/reboot",
       "production/DR/RPO/RTO"
     ]
+  },
+  "bao_component_restore": {
+    "package": "C13",
+    "task": "C13.03 Bao component preparation",
+    "status": "passed",
+    "count": 9,
+    "checks": [
+      "real source Bao2.7.2 Raft snapshot stored only in temporary private file",
+      "separate initially empty Raft node initialized/unsealed with temporary independent custody",
+      "snapshot restored only into isolated target; source custody unseals restored barrier",
+      "restored node becomes active and unrelated fresh-node token cannot authenticate",
+      "restored scoped server policy/token retrieves identical KV value without root app token",
+      "both non-exportable Transit CA/receipt keys retain public IDs and actually sign verifiable challenges",
+      "restored scoped policy still refuses forbidden signing key",
+      "actual restored-container restart seals normally; source custody unseals and Transit still signs",
+      "original source remains active/unmodified by restore; original audit retains masked secrets"
+    ],
+    "cluster_id_matches_source_before_restart": true,
+    "cluster_id_matches_source_after_restart": true,
+    "target": "real OpenBao2.7.2 Raft snapshot and separate initially empty node; actual Transit cryptographic proof and restart",
+    "unrun": [
+      "complete PG/Bao/filesystem checkpoint",
+      "production HTTPS/KMS/split custody",
+      "CA leaf issuance plus application replay after full restore",
+      "systemd/clean OS boot",
+      "DR/RPO/RTO"
+    ]
+  },
+  "tested_components": {
+    "surveyscan-server": {
+      "component": "server",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "b8743028d870fbfbcebc5a77f53416fef09049a5",
+      "source_dirty": "true",
+      "stage": "C12 scoped OpenBao, machine lifecycle and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscan-collector": {
+      "component": "collector",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "b8743028d870fbfbcebc5a77f53416fef09049a5",
+      "source_dirty": "true",
+      "stage": "C12 durable HTTPS relay with profiles and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscan-agent": {
+      "component": "agent",
+      "go_version": "go1.27.3",
+      "inventory_implemented": true,
+      "revision": "b8743028d870fbfbcebc5a77f53416fef09049a5",
+      "source_dirty": "true",
+      "stage": "C12 Linux agent with profiles and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscanctl": {
+      "component": "cli",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "b8743028d870fbfbcebc5a77f53416fef09049a5",
+      "source_dirty": "true",
+      "stage": "C12 human API client",
+      "version": "0.0.0-c13"
+    },
+    "web": {
+      "component": "surveyscan-web",
+      "version": "0.1.0-c13-web",
+      "revision": "b8743028d870fbfbcebc5a77f53416fef09049a5",
+      "source_dirty": "true",
+      "api_contract": "C03+C09+C12",
+      "c12_sha256": "35fd764ec9f8282f4a75d97887d6318165a2835ebefe31dea5d0dc29a6ffde7f",
+      "c09_version": "1.0",
+      "c09_sha256": "620c32285a9cdb4aed9594908bd88d0323b62680a137bf77dbddb0c7b9e5d910",
+      "wire": {
+        "major": 1,
+        "minor": 0
+      },
+      "openapi_sha256": "d59b26ccbd6c9ec54135f082143f31ae820e2b57ff396ac886ceec04b4d11147",
+      "runtime": "static; no Node or CDN"
+    }
   }
 }
