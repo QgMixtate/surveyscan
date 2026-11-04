@@ -102,30 +102,13 @@ ITSM начинается после согласования/приёмки W2.
 
 ## Текущая передача
 
-C01/C02 — scope и ER; C03 — [API/envelopes/ACK и проверенные примеры](handoffs/C03.md).
-42/200 задач done,2 in_progress,156 planned. [C08](handoffs/C08.md) — настоящий Linux host agent,
-три автоматических inventory цикла с тем же UID, четвёртый после restart, независимый heartbeat.
-18 unit/34 PG integration,58 fixtures,11 live-agent,8 collector,10 auth,6 infrastructure checks passed локально.
-C04/C05 hosted CI success; C06–C08 локальны. Далее автоматически C09 по R-019.
+42/200 задач done,2in_progress,156planned. C01–C03 проект/контракты; C04–C10 реализованы
+и проверены локально. C04/C05 hosted CI success; C06–C11 не опубликованы, main не слит.
+C11.01/02 done,03/04 in_progress: scoped Bao и server/Linux-agent renewal готовы;
+collector self-renewal и full lifecycle acceptance продолжаются.
+[Передача C11](handoffs/C11.md), [решение](decisions/C11-openbao.md), [evidence](evidence/C11-runtime.json).
 
-C09: отдельная frontend сборка и card/IP/MAC/provenance/source summary готовы локально.
-18 unit/37 PG integration/58 C03 fixtures/14 Chromium checks passed. [Передача](handoffs/C09.md).
-Далее автоматически C10.
-
-C10.01/02: file spool/quota/retention/verified cached ACK recovery и bounded retries готовы локально;
-real SIGKILL/reconnect и real ENOSPC passed. Далее C10.03 central claims/admission; whole C10 не done.
-
-C10 целиком завершён локально: row lease/fencing/admission/GC/deadletter и bounded fault matrix passed.
-22 unit/42 PG/58 fixtures/8 crash-recovery/1 real ENOSPC/14 Chromium checks. Далее C11 OpenBao/PKI.
-
-C11 в работе локально: 01/02 done,03/04 in_progress (42/200 done). Scoped OpenBao KV/Transit,
-non-exportable CA/receipt keys, private token/policy, declarative masked audit, no private-key fallback.
-4 live scoped checks +15 compiled pipeline checks passed: actual seal/unseal, readonly sealed restart,
-staging retained→automatic ACK/no duplicates. make verify/build и43PG passed.
-Renewal/rotation/clone matrix ещё не готова; продолжать C11.03, не переходить к C12.
-Передача plans/surveyscan-v2/handoffs/C11.md; production HTTPS/custody/restore rehearsal unrun.
-Без push/merge/deploy/повторной публикации среды.
-
-Актуально C11: scoped key ops и server/agent renewal готовы локально; C11.03/04 продолжаются.
-24unit/46PG/58fixtures,8live rotation/ACK-loss,8recovery/14browser regression passed;
-31migrations/42tables. [Передача C11](handoffs/C11.md). Далее collector self-renewal/clone/expiry.
+24unit/46PG/58fixtures,17Bao pipeline/8live TLS rotation+ACK-loss/8SIGKILL recovery/14browser checks passed;
+auth10/infra6 regression passed.31migrations/42tables; prior SQL/C03/C09 byte-identical.
+100users/24h/production HTTPS/custody/DR restore unrun. C12 до завершения C11 не начинать.
+No push/merge/deploy/env publication. Предыдущие handoffs сохраняют историю каждого пакета.

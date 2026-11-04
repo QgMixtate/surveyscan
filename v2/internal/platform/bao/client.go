@@ -49,8 +49,9 @@ type Config struct {
 	Secrets         map[string]SecretRef `json:"secrets"`
 }
 type Client struct {
-	cfg  Config
-	http *http.Client
+	secure bool
+	cfg    Config
+	http   *http.Client
 }
 
 func Load(path string) (*Client, error) {
@@ -113,7 +114,7 @@ func New(cfg Config) (*Client, error) {
 		}
 		transport.TLSClientConfig.RootCAs = roots
 	}
-	return &Client{cfg: cfg, http: &http.Client{Transport: transport, Timeout: 3 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
+	return &Client{cfg: cfg, secure: u.Scheme == "https", http: &http.Client{Transport: transport, Timeout: 3 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}}, nil
 }
 func validPath(path string) bool {
 	if len(path) > 512 {
@@ -202,7 +203,7 @@ func (c *Client) token(ctx context.Context) (string, error) {
 	}
 	return token, nil
 }
-func (c *Client) Secure() bool { return !strings.HasPrefix(c.cfg.Address, "http://") }
+func (c *Client) Secure() bool { return c.secure }
 
 func (c *Client) Check(ctx context.Context) error { _, e := c.token(ctx); return e }
 func (c *Client) Public(alias string) (ed25519.PublicKey, error) {

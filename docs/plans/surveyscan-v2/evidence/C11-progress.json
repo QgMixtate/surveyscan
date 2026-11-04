@@ -150,13 +150,52 @@
     ]
   },
   "commands": {
-    "verify_build": "make verify build: exit0 (24 unit tests,58 fixtures)",
+    "verify_build": "make verify build: exit0,24unit/58fixtures; c11-transport-final-verify.log",
     "pg": "scripts/dev.py integration: exit0,46groups",
-    "bao": "scripts/bao_smoke.py: exit0,4checks/2live Go tests",
+    "bao": "bao_smoke.py exit0; c11-transport-bao-live.log",
     "pipeline": "scripts/bao_pipeline.py: exit0,17checks",
     "rotation": "scripts/renewal_smoke.py: exit0,8checks",
     "recovery": "scripts/recovery_smoke.py: exit0,8checks",
     "browser": "scripts/web_smoke.py: exit0,14checks",
     "dev_up": "scripts/dev.py up: exit0,applied0030 without volume reset"
-  }
+  },
+  "checkpoint": "8754e1c",
+  "auth_regression": {
+    "package": "C06",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "binary migrate and repeat",
+      "CLI bootstrap once; no credential in output",
+      "CLI provision viewer",
+      "live login and origin policy",
+      "auth/CSRF gate before future domain handlers",
+      "session survives real server process restart",
+      "live token issue/revoke",
+      "live logout revokes session",
+      "viewer mutation forbidden",
+      "console disable revokes active HTTP session"
+    ],
+    "target": "real compiled Go binary + isolated PG + local Bao; HTTP allowed only with explicit dev flag",
+    "private_material": "temporary password removed; no credential in report"
+  },
+  "infrastructure_regression": {
+    "status": "passed",
+    "checks": [
+      "health and unauthenticated API rejected on 58080",
+      "health and unauthenticated API rejected on 58081",
+      "separate proxy serves OpenAPI",
+      "Bao stop/restart/unseal readiness recovery",
+      "PostgreSQL stop/restart preserves committed row and migrations",
+      "backend restart through proxy"
+    ],
+    "count": 6,
+    "business_handlers": "registry C06; machine TLS tested separately by machine_smoke.py",
+    "production": "unrun"
+  },
+  "verification_notes": [
+    "auth initially failed because infrastructure test stopped shared PG; sequential retry passed; exact owned leaked DB removed",
+    "final scheme guard change: make verify/build and live Bao rerun; other runtime suites passed before that isolated change",
+    "full C11 remains partial; collector renewal and expiry/clone acceptance pending"
+  ]
 }

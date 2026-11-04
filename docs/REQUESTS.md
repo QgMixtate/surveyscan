@@ -271,3 +271,7 @@ Live test: actual disconnect после certificate commit, next process retries
 8live rotation,8SIGKILL recovery,14Chromium regression passed.31migrations/42tables,42/200done.
 Далее collector self-renewal и оставшаяся lifecycle/clone/expiry acceptance; wholeC11 не done.
 No push/merge/deploy/env publication. Подробности handoffs/C11.md.
+
+C11 checkpoint8754e1c: server/agent renewal и ACK-loss recovery сохранены. Дополнительно auth10/infra6
+passed; initial auth run конфликтовал с infrastructure stopPG, повторён последовательно; own leaked DB удалена.
+Transport guard hardened: parsed URL scheme (mixed-case HTTP), verify/build+liveBao passed. Далее collector self-renew.

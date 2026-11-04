@@ -12,6 +12,17 @@ func TestPinnedPublicMetadataOfflineAndReferenceBounds(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
+	if c.Secure() {
+		t.Fatal("HTTP profile declared secure")
+	}
+	cfg.Address = "HTTP://127.0.0.1:1"
+	if upper, e := New(cfg); e == nil && upper.Secure() {
+		t.Fatal("mixed-case HTTP bypassed transport guard")
+	}
+	cfg.Address = "https://example.invalid"
+	if secure, e := New(cfg); e != nil || !secure.Secure() {
+		t.Fatal("HTTPS transport rejected", e)
+	}
 	if _, e = c.Public("center"); e != nil {
 		t.Fatal("public metadata unexpectedly requires online secrets", e)
 	}
