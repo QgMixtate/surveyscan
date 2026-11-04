@@ -41,7 +41,7 @@ HTTPS проверяет system/custom CA, TLS>=1.2, redirects запрещен�
 создаёт только public ca.pem/server.pem и local TLS server.key0600 (24h loopback leaf).
 CA/receipt private keys не экспортирует; existing files не перезаписывает. Это dev bootstrap,
 не production DNS/certificate rotation. Machine config: openbao_config_file и UUID
-center_signing_key_id; ca_private_key_file/center_result_private_key_file обязаны отсутствовать.
+center_signing_key_id; ca_private_key_file/center_signing_key_file обязаны отсутствовать.
 Закреплённые public CA/center pins проверяются; CA и receipt keys различаются.
 
 ## Отказ и аудит
@@ -50,8 +50,8 @@ center_signing_key_id; ca_private_key_file/center_result_private_key_file обя
 получает ошибку; valid inventory может commit/checkpoint, но очередь удерживает raw batch
 до signed durable ACK. Dependency retry30s не расходует budget deadletter5 для ошибок данных.
 Readonly API и restart работают по public metadata без доступа к token/Bao.
-Readiness показывает sealed dependency. Readiness scoped token policy пока не проверяет:
-неверный token выявляется при key op/background check; это ограничение текущего среза.
+Readiness проверяет scoped token lookup/renew по фактическому profile endpoint: sealed/unreachable/
+revoked/неверная policy дают503. Readonly API при этом доступен; startup не требует online Bao.
 
 Bao2.7 audit управляется декларативно: audit "file" "surveyscan" в deploy/bao.hcl,
 /openbao/file/surveyscan-audit.jsonl, log_raw=false, стандартный HMAC tokens/secret fields.
@@ -82,6 +82,40 @@ audit, token revocation/renewal и health. До сверки не направл
 ## Приёмка текущего среза
 
 bao_smoke.py:4 live checks scoped KV/Transit/root rejection/actual403/audit/issuer bootstrap.
-bao_pipeline.py:15 live checks compiled center+collector+PG, synthetic signed agent,
+bao_pipeline.py:17 live checks compiled center+collector+PG, synthetic signed agent,
 actual seal/unseal, readonly sealed restart, retained staging и automatic signed ACK без дублей.
 C11.03 renewal/rotation/clone ещё не принят; весь C11 не done. JSON C03/C09 и прежний SQL сохранены.
+
+## Renewal — реализованная часть C11.03
+
+C03 JSON неизменен. Новая append-only0030: renewal_challenges (отдельно от heartbeat),
+renewal_receipts (tenant/renewal UUID+digest/source/generation/key+public result).
+Подпись origin signing key в домене SURVEYSCAN-RENEWAL-V1 привязывает CSR, source/generation,
+nonce и tenant. Collector relay проверяет CA-attested agent scope/signature; backend ещё раз
+проверяет active source/generation/assignment/current courier и signing binding.
+Source lock сериализует issuance/revoke; receipt+challenge consume+new TLS identity коммитятся
+в одной PG transaction. Точный retry возвращает прежний сертификат до проверки истечения
+challenge; другой digest под тем же ID→409. Expired peer/revoked source не получают renewal.
+Ключи подписи origin/center при обычном TLS renewal не меняются; старые pending signatures
+продолжают проверяться. Collector сам ещё не обновляет свой TLS credential (следующий шаг).
+
+Agent renew --config использует тот же process lock, что daemon; новый Ed25519 TLS private key,
+CSR и signed request сохраняются в renewal.pending.json0600 до HTTP. После trusted CA/key/
+source/generation/collector/center attestation checks сертификат и matching private key
+коммитятся одним atomic tls-identity.json0600 (fsync/rename/dirsync), затем pending удаляется.
+Исходные tls.key/identity.json остаются для upgrade history, новый bundle имеет приоритет;
+повреждённый/public bundle запрещает startup, fallback к старому не выполняется.
+Daemon проверяет renewal за1h до expiry и повторяет pending каждую минуту. Lifecycle lead window
+проверен unit-тестом; реальный24h timer/soak не запускался. CLI force renew проверен на реальном agent.
+Запрос с expired challenge после409 получает новый nonce в следующей попытке; committed result
+находится до этой проверки. Потеря ACK после commit проверена реальным TLS socket shutdown.
+
+Старый TLS certificate сохраняет исходный validity window; немедленная блокировка всех old/new
+credentials происходит через source revoke в центре. Offline collector не обещает мгновенный
+отзыв уже известного CA cert; receipt/heartbeat/renewal backend gates его проверяют при связи.
+Нельзя считать копию всех private keys отличимым новым хостом: до hardware-backed key/local
+identity continuity gate это не реализовано. Не включать state/keys в golden images;
+cloned/reinstalled host подготавливает новый source и проходит новый grant/resolution.
+Смена generation/ключей подписи и автоматическое сопоставление после переустановки здесь не реализованы.
+При TLS expiry после длительного offline автоматическое renewal не обходит mTLS expiry;
+нужна отдельная административная recovery procedure (ещё не принята). Старый spool не удалять.

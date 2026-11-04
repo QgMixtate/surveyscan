@@ -97,13 +97,13 @@ ITSM начинается после согласования/приёмки W2.
 - [Покрытие требований и AC](COVERAGE.md).
 - [Реестр JSON](plan.json) и [таблица CSV](tasks.csv).
 - По одному подробному файлу в packages/ и короткому стартовому запросу в prompts/.
-- [Шаблон передачи](HANDOFF_TEMPLATE.md). C01–C03 завершены документально/контрактно, C04 реализован и опубликован в ветке, C05 auth реализован локально, C06 реестр/outbox готов локально, C07 collector/upload готов локально, C08 live Linux agent/heartbeat готов локально, C09 Web UI/detail готов локально; C10–C50 planned; сообщения предыдущих чатов о тестах
+- [Шаблон передачи](HANDOFF_TEMPLATE.md). C01–C03 завершены документально/контрактно, C04 реализован и опубликован в ветке, C05 auth реализован локально, C06 реестр/outbox готов локально, C07 collector/upload готов локально, C08 live Linux agent/heartbeat готов локально, C09 Web UI/detail готов локально; C10 done, C11 in_progress, C12–C50 planned; сообщения предыдущих чатов о тестах
   не засчитываются как приёмка новой Go-архитектуры.
 
 ## Текущая передача
 
 C01/C02 — scope и ER; C03 — [API/envelopes/ACK и проверенные примеры](handoffs/C03.md).
-40/200 задач done,160 planned. [C08](handoffs/C08.md) — настоящий Linux host agent,
+42/200 задач done,2 in_progress,156 planned. [C08](handoffs/C08.md) — настоящий Linux host agent,
 три автоматических inventory цикла с тем же UID, четвёртый после restart, независимый heartbeat.
 18 unit/34 PG integration,58 fixtures,11 live-agent,8 collector,10 auth,6 infrastructure checks passed локально.
 C04/C05 hosted CI success; C06–C08 локальны. Далее автоматически C09 по R-019.
@@ -125,3 +125,7 @@ staging retained→automatic ACK/no duplicates. make verify/build и43PG passed.
 Renewal/rotation/clone matrix ещё не готова; продолжать C11.03, не переходить к C12.
 Передача plans/surveyscan-v2/handoffs/C11.md; production HTTPS/custody/restore rehearsal unrun.
 Без push/merge/deploy/повторной публикации среды.
+
+Актуально C11: scoped key ops и server/agent renewal готовы локально; C11.03/04 продолжаются.
+24unit/46PG/58fixtures,8live rotation/ACK-loss,8recovery/14browser regression passed;
+31migrations/42tables. [Передача C11](handoffs/C11.md). Далее collector self-renewal/clone/expiry.

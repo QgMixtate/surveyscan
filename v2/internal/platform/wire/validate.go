@@ -49,7 +49,7 @@ func New() (*Validator, error) {
 	}
 	v.schemas["InventoryDetail"] = detail
 
-	for _, n := range []string{"ChallengeRequest", "ChallengeResponse", "SignedHeartbeat", "HeartbeatResult", "Observation", "SignedObservation", "BusinessPatch", "Asset", "AssetPage", "OutboxEvent", "EnrollmentGrantRequest", "EnrollmentGrant", "EnrollmentRequest", "EnrollmentResult", "MachineConfig", "RevocationRequest", "Batch", "RecordResult", "SignedCenterResult", "TransportReceipt", "Source", "SourcePage"} {
+	for _, n := range []string{"RenewRequest", "ChallengeRequest", "ChallengeResponse", "SignedHeartbeat", "HeartbeatResult", "Observation", "SignedObservation", "BusinessPatch", "Asset", "AssetPage", "OutboxEvent", "EnrollmentGrantRequest", "EnrollmentGrant", "EnrollmentRequest", "EnrollmentResult", "MachineConfig", "RevocationRequest", "Batch", "RecordResult", "SignedCenterResult", "TransportReceipt", "Source", "SourcePage"} {
 		s, e := c.Compile(id + "#/$defs/" + n)
 		if e != nil {
 			return nil, e

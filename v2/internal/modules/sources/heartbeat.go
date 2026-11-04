@@ -34,7 +34,7 @@ func (s *MachineService) Challenges(ctx context.Context, fp string, req contract
 	if e := s.Wire.Validate("ChallengeRequest", raw); e != nil {
 		return out, e
 	}
-	if req.Purpose != "heartbeat" {
+	if req.Purpose != "heartbeat" && req.Purpose != "cert_renew" {
 		return out, domain.Invalid
 	}
 	if e := s.rate(ctx, "challenge:"+fp, 60); e != nil {
@@ -58,6 +58,14 @@ func (s *MachineService) Challenges(ctx context.Context, fp string, req contract
 		o, e := s.heartbeatOrigin(ctx, tx, fp, actor.Tenant, id)
 		if e != nil {
 			return out, e
+		}
+		if req.Purpose == "cert_renew" {
+			c, e := s.renewalChallenge(ctx, tx, o)
+			if e != nil {
+				return out, e
+			}
+			out.Challenges = append(out.Challenges, c)
+			continue
 		}
 		var now time.Time
 		if e = tx.QueryRow(ctx, "SELECT clock_timestamp()").Scan(&now); e != nil {

@@ -29,7 +29,7 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10 recovery done; C11–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10 recovery done; C11 in_progress (01/02 done), C12–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
@@ -81,3 +81,9 @@ staging retained→automatic ACK/no duplicates. make verify/build и43PG passed.
 Renewal/rotation/clone matrix ещё не готова; продолжать C11.03, не переходить к C12.
 Передача plans/surveyscan-v2/handoffs/C11.md; production HTTPS/custody/restore rehearsal unrun.
 Без push/merge/deploy/повторной публикации среды.
+
+C11 checkpoint10a3f93: scoped OpenBao + no local private fallback. Продолжение: cert_renew
+challenge/ledger, server/collector relay и Linux agent atomic TLS key rotation реализованы;
+24unit/46PG/58fixtures +8live rotation/ACK-loss +8recovery/14browser regression passed.
+31migrations/42tables (0030 appended),42/200 done. C11.03/04 ещё in_progress: collector self-renew,
+expiry/clone matrix и final acceptance. Читать handoffs/C11.md. Не объявлять весь C11 done/C12 ready.

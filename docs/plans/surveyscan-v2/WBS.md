@@ -566,7 +566,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Bootstrap/unseal/runbook, scoped policies и backup key procedure.
 - Проверка: Приложение не использует root token и открытые пароли в PG.
 - База оценки: 1 выбранная версия Bao; KV/Transit только по назначению.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; handoffs/C11.md, decisions/C11-openbao.md.
 
 ## C11.02 — Подключить server secret references
 
@@ -576,7 +576,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Получение ограниченных secrets/ключевых операций по ADR.
 - Проверка: Недоступность Bao даёт объявленную деградацию.
 - База оценки: Server identity и разрешённые E1 операции без remote target secrets.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; handoffs/C11.md, decisions/C11-openbao.md.
 
 ## C11.03 — Завершить enrollment/renew/revoke
 
@@ -586,7 +586,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Ротация agent/collector identities и защищённое хранение на ОС.
 - Проверка: Revoked identity не принимает новые задания/данные по политике.
 - База оценки: Agent, collector, server; expiry/renewal и clone case.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress; handoffs/C11.md, decisions/C11-openbao.md.
 
 ## C11.04 — Проверить секреты и доверие
 
@@ -596,7 +596,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Проверки logs/artifacts/errors и отказов Bao/cert.
 - Проверка: Тестовые секреты отсутствуют в выдаче и отчётах.
 - База оценки: Позитивные и негативные auth/TLS/Bao сценарии.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress; handoffs/C11.md, decisions/C11-openbao.md.
 
 ## Выход пакета
 

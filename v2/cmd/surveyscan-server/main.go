@@ -152,7 +152,11 @@ func run(args []string) error {
 	if registry.Machine != nil && registry.Machine.Maintain != nil {
 		go registry.Machine.Maintain(ctx)
 	}
-	handler, err := app.NewHTTP(auth, health.Handler(dbCheck, health.Bao(bao)), registry)
+	checks := []health.Check{dbCheck, health.Bao(bao)}
+	if registry.Machine != nil && registry.Machine.Ready != nil {
+		checks[1] = registry.Machine.Ready
+	}
+	handler, err := app.NewHTTP(auth, health.Handler(checks...), registry)
 	if err != nil {
 		return err
 	}

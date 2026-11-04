@@ -47,6 +47,12 @@ jobs:
         run: .contract-tools/bin/python scripts/recovery_smoke.py
       - name: Real ENOSPC in disposable tmpfs
         run: GO=go python scripts/diskfault.py
+      - name: Scoped OpenBao KV, Transit, token renewal and masked audit
+        run: .contract-tools/bin/python scripts/bao_smoke.py
+      - name: OpenBao seal, restart, durable ACK and renewal relay
+        run: .contract-tools/bin/python scripts/bao_pipeline.py
+      - name: Live agent TLS key rotation and committed ACK loss
+        run: .contract-tools/bin/python scripts/renewal_smoke.py
       - name: Retain sanitized reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -61,6 +67,9 @@ jobs:
             v2/.local/agent-smoke.json
             v2/.local/recovery-smoke.json
             v2/.local/diskfault-smoke.json
+            v2/.local/bao-smoke.json
+            v2/.local/bao-pipeline.json
+            v2/.local/renewal-smoke.json
           if-no-files-found: ignore
       - name: Stop isolated development stack
         if: always()

@@ -47,6 +47,22 @@ def main():
      time.sleep(.4)
     else:raise RuntimeError('key operations failed to recover after unseal')
     s['center_key'].public_key().verify(base64.urlsafe_b64decode(result['signature']+'=='),b'SURVEYSCAN-CENTER-RESULT-V1\n'+rfc8785.dumps(result['payload']));assert result['payload']['results'][0]['disposition']=='applied' and sql('SELECT count(*) FROM inventory.observations')=='2' and sql('SELECT count(*) FROM assets.assets')=='1';checks.append('unseal resumes persisted retry and signs durable ACK without duplicate observation or manual requeue')
+    # Existing agent signing key proves a fresh TLS CSR through its assigned collector.
+    status,challenges,_=request(s['collector_port'],s['client'],'POST','/api/v1/machine/heartbeat-challenges',{'source_ids':[s['agent_source']],'purpose':'cert_renew'},sni=s['collector_name']);assert status==200
+    challenge=challenges['challenges'][0];tls_key,_,csr=s['enroll_material']()
+    renewal={'schema_version':{'major':1,'minor':0},'renewal_id':str(uuid.uuid4()),'tenant_id':s['tenant'],'origin':s['payload']['origin'],'challenge_id':challenge['challenge_id'],'nonce':challenge['nonce'],'csr_pem':csr.public_bytes(serialization.Encoding.PEM).decode(),'sent_at':datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='microseconds').replace('+00:00','Z')}
+    canonical=rfc8785.dumps(renewal);proof={'payload':renewal,'digest':hashlib.sha256(canonical).hexdigest(),'key_id':s['agent_result']['signing_key_id'],'signature':b64(s['agent_sign'].sign(b'SURVEYSCAN-RENEWAL-V1\n'+canonical))}
+    status,renewed,_=request(s['collector_port'],s['client'],'POST','/api/v1/machine/renewals',proof,sni=s['collector_name']);assert status==200
+    status,replayed,_=request(s['collector_port'],s['client'],'POST','/api/v1/machine/renewals',proof,sni=s['collector_name']);assert status==200 and replayed==renewed
+    assert renewed['generation_id']==s['agent_result']['generation_id'] and renewed['signing_key_id']==s['agent_result']['signing_key_id']
+    cert_file=s['directory']/'renewed.pem';cert_file.write_text(renewed['certificate_chain_pem']);key_file=s['directory']/'renewed.key';fd=os.open(key_file,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
+    with os.fdopen(fd,'wb') as stream:stream.write(tls_key.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()))
+    renewed_context=s['context'](cert_file,key_file)
+    status,_,_=request(s['collector_port'],renewed_context,'POST','/api/v1/machine/heartbeat-challenges',{'source_ids':[s['agent_source']],'purpose':'heartbeat'},sni=s['collector_name']);assert status==200
+    checks.append('real agent cert_renew proof through assigned collector returns one durable replay result; new TLS key/certificate works with unchanged generation/signing identity')
+    f['call']('POST','auth/token/revoke',{'token':f['token']})
+    status,_,_=request(s['tls_port'],s['plain'],'GET','/health/ready');assert status==503
+    status,_,_=request(s['tls_port'],s['plain'],'GET','/api/v1/assets/'+s['asset'],headers={'Cookie':s['cookie']});assert status==200;checks.append('revoked application token declares readiness degraded while inventory reads stay available')
     assert f['audit_check']();checks.append('audit log contains no raw application/root tokens or canary secret')
     report={'package':'C11','status':'passed','scope':'C11 scoped key/secret operations + real machine path; lifecycle renewal remains pending','count':len(checks),'checks':checks,'target':'real OpenBao2.7.2 Raft + scoped periodic token + non-exportable Transit Ed25519 CA/receipt keys + compiled server/collector + synthetic signed agent + PostgreSQL; actual seal/unseal and server restart','unrun':['machine renewal/rotation/clone matrix','production bootstrap custody/HTTPS certificate deployment','backup restore rehearsal'],'private_material':'no root token in app config, no CA/receipt private keys outside Bao, all own keys/tokens/policy/test DB cleaned'};(STATE/'bao-pipeline.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
    settings={'config':f['config'],'ca_certificate':str(output/'ca.pem'),'server_certificate':str(output/'server.pem'),'server_private':str(output/'server.key'),'center_id':str(uuid.uuid4()),'center_public':f['profile']['keys']['center']['public_key'],'hook':scenario}

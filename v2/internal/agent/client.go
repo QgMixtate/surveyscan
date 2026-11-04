@@ -335,8 +335,16 @@ func Open(c Config) (*Client, error) {
 		return nil, e
 	}
 	var result contracts.EnrollmentResult
+	var rotated tlsIdentity
+	hasRotated, rotatedErr := loadOptionalJSON(filepath.Join(c.State, "tls-identity.json"), &rotated)
+	if rotatedErr != nil {
+		return nil, rotatedErr
+	}
 	if e = loadJSON(filepath.Join(c.State, "identity.json"), &result); e != nil {
 		return nil, e
+	}
+	if hasRotated {
+		result = rotated.Result
 	}
 	roots, e := rootsFor(c)
 	if e != nil {
@@ -349,6 +357,9 @@ func Open(c Config) (*Client, error) {
 	keyPEM, e := privatefile.Read(filepath.Join(c.State, "tls.key"), 16384)
 	if e != nil {
 		return nil, e
+	}
+	if hasRotated {
+		keyPEM = []byte(rotated.Private)
 	}
 	pair, e := tls.X509KeyPair([]byte(result.Chain), keyPEM)
 	if e != nil {
@@ -593,16 +604,24 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 	if e != nil {
 		return e
 	}
-	defer client.http.CloseIdleConnections()
+	defer func() { client.http.CloseIdleConnections() }()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	inventoryAt, heartbeatAt := time.Time{}, time.Time{}
+	inventoryAt, heartbeatAt, renewalAt := time.Time{}, time.Time{}, time.Time{}
 	var delivery retry.Backoff
 	for {
 		if e = ctx.Err(); e != nil {
 			return nil
 		}
 		now := time.Now()
+		if !now.Before(renewalAt) && client.renewalDue(now) {
+			if e = client.Renew(ctx); e != nil {
+				report("renewal_pending")
+			} else {
+				report("renewal_checked")
+			}
+			renewalAt = time.Now().Add(time.Minute)
+		}
 		if !now.Before(heartbeatAt) {
 			if e = client.Heartbeat(ctx); e != nil {
 				report("heartbeat_failed")

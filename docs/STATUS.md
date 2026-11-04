@@ -4,12 +4,16 @@
 
 
 Актуальная задача R-019 — последовательно выполнять этапы до лимита.
-C06–C10 завершены локально, main/merge/production не менялись.
-[C10 передача](plans/surveyscan-v2/handoffs/C10.md): bounded spool/ACK recovery, row lease/fencing,
-admission, payload GC после signed receipt, retry/deadletter и recovery после revoke/crash.
-22 unit/42 PG/58 fixtures/8 real process-recovery/1 real ENOSPC/14 browser checks passed.
-30 migrations/40 domain tables; C03/C09 contract bytes сохранены. Прогресс40/200, далее C11 OpenBao/PKI.
-C04/C05 hosted success; C06–C10 не опубликованы. Настройки среды не публиковались повторно.
+C01–C10 done. C11.01/02 done, C11.03/04 in_progress:42/200 done.
+[C11 передача](plans/surveyscan-v2/handoffs/C11.md): scoped OpenBao KV/Transit, non-exportable
+CA/receipt keys, declarative masked audit, no private-key fallback, degraded readiness/readonly API.
+Server cert_renew proof/ledger и Linux agent TLS key rotation с atomic credential bundle реализованы.
+24 unit/46 real PG/58 C03 fixtures passed; scoped Bao token renew/revoke/atomic replacement,
+8 live agent rotation checks (actual TLS ACK loss), recovery8 и Chromium14 regression passed.
+Новая migration0030:31migrations/42tables; SQL0000–0029 и C03/C09 JSON bytes сохранены.
+C11 ещё не принят целиком: далее collector self-renewal, lifecycle/clone/expiry matrix.
+C04/C05 hosted success; C06–C11 локальны, C11 checkpoint10a3f93 + текущая работа.
+Без push/merge/deploy/повторной публикации среды. Main не менялся.
 
 ## Контекст архитектуры и история C01–C04
 

@@ -22,6 +22,7 @@ import (
 )
 
 type MachineAPI struct {
+	Ready    func(context.Context) error
 	Maintain func(context.Context)
 	Sources  *sources.MachineService
 	Uploads  *imports.UploadService
@@ -201,6 +202,20 @@ func (m *MachineAPI) machine(operation string) http.Handler {
 				return
 			}
 			result, e := m.Sources.Challenges(ctx, fingerprint, req)
+			if e != nil {
+				m.fail(w, e)
+				return
+			}
+			registryJSON(w, result)
+			return
+		}
+		if operation == "renewMachineCertificate" {
+			var req contracts.RenewRequest
+			if !m.decode(w, r, "RenewRequest", &req) {
+				return
+			}
+			raw, _ := json.Marshal(req)
+			result, e := m.Sources.Renew(ctx, fingerprint, raw)
 			if e != nil {
 				m.fail(w, e)
 				return

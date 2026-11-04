@@ -72,7 +72,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
    raise RuntimeError('machine/collector binary did not start')
   try:
    sql('CREATE DATABASE '+db);created=True
-   assert 'applied_migrations=30' in command('migrate')
+   assert 'applied_migrations=31' in command('migrate')
    password=secrets.token_urlsafe(32);password_file=save('password',password+'\n');command('bootstrap-admin','--tenant',tenant,'--tenant-name','C07 synthetic','--username','admin','--password-file',password_file)
    sql(f"INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES('{tenant}','{subject}','team','fallback','synthetic@example.invalid'); INSERT INTO scope.sites(tenant_id,site_id,name,fallback_subject_id) VALUES('{tenant}','{site}','synthetic','{subject}'); INSERT INTO scope.network_scopes(tenant_id,scope_id,site_id,namespace) VALUES('{tenant}','{scope}','{site}','default');",db)
    center_process=start('center',[str(ROOT/'.dist/surveyscan-server'),'serve']);plain=context();ready(tls_port,plain);checks.append('compiled center starts with explicit private loopback PKI')
@@ -106,7 +106,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
    assert not (directory/'spool'/(batch['delivery_id']+'.pending')).exists();checks.append('collector trims only after verified center acknowledgement')
    assert sql('SELECT count(*) FROM inventory.observations',db)=='1';checks.append('exactly one durable observation in isolated PostgreSQL')
    if bao_settings is not None:
-    bao_settings['hook'](checks=checks,request=request,sql=lambda query:sql(query,db),start=start,center_process=center_process,tls_port=tls_port,collector_port=collector_port,collector_name=collector_name,client=client,plain=plain,cookie=cookie,session=session,origin=browser_origin,grant=grant,enroll_material=enroll_material,payload=payload,agent_sign=agent_sign,agent_result=agent_result,center_key=center_key,center_id=center_id,asset=signed['results'][0]['asset_uid'],site=site,tenant=tenant,collector_id=collector_id,agent_source=agent_source)
+    bao_settings['hook'](directory=directory,context=context,checks=checks,request=request,sql=lambda query:sql(query,db),start=start,center_process=center_process,tls_port=tls_port,collector_port=collector_port,collector_name=collector_name,client=client,plain=plain,cookie=cookie,session=session,origin=browser_origin,grant=grant,enroll_material=enroll_material,payload=payload,agent_sign=agent_sign,agent_result=agent_result,center_key=center_key,center_id=center_id,asset=signed['results'][0]['asset_uid'],site=site,tenant=tenant,collector_id=collector_id,agent_source=agent_source)
     return
    if web_scenario is not None:
     web_scenario(directory=directory,origin=browser_origin,center_port=tls_port,ca_file=ca_file,username='admin',password=password,asset=signed['results'][0]['asset_uid'],tenant=tenant,checks=checks)

@@ -220,7 +220,7 @@ func (c *Collector) Handler() http.Handler {
 		}
 		var req contracts.ChallengeRequest
 		_ = json.Unmarshal(raw, &req)
-		if req.Purpose != "heartbeat" || len(req.Sources) != 1 || req.Sources[0] != claims.Source {
+		if (req.Purpose != "heartbeat" && req.Purpose != "cert_renew") || len(req.Sources) != 1 || req.Sources[0] != claims.Source {
 			failure(w, 403, "FORBIDDEN")
 			return
 		}
@@ -270,6 +270,47 @@ func (c *Collector) Handler() http.Handler {
 			return
 		}
 		if status == 200 && c.wire.Validate("HeartbeatResult", b) != nil {
+			failure(w, 503, "INVALID_CENTER_RESPONSE")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.WriteHeader(status)
+		_, _ = w.Write(b)
+	})
+
+	mux.HandleFunc("POST /api/v1/machine/renewals", func(w http.ResponseWriter, r *http.Request) {
+		claims, e := c.peer(r)
+		if e != nil {
+			failure(w, 401, "AUTHENTICATION_REQUIRED")
+			return
+		}
+		raw, e := io.ReadAll(http.MaxBytesReader(w, r.Body, 65536))
+		if e != nil || c.wire.Validate("RenewRequest", raw) != nil {
+			failure(w, 422, "SCHEMA_INVALID")
+			return
+		}
+		var signed contracts.RenewRequest
+		_ = json.Unmarshal(raw, &signed)
+		var h contracts.Renewal
+		_ = json.Unmarshal(signed.Payload, &h)
+		if h.Tenant != claims.Tenant || h.Origin.SourceID != claims.Source || h.Origin.GenerationID != claims.Generation || h.Origin.SourceKind != claims.Kind || signed.KeyID != claims.KeyID {
+			failure(w, 403, "FORBIDDEN")
+			return
+		}
+		canonical, e := wire.Canonical(signed.Payload)
+		sum := sha256.Sum256(canonical)
+		sig, decode := base64.RawURLEncoding.Strict().DecodeString(signed.Signature)
+		if e != nil || decode != nil || hex.EncodeToString(sum[:]) != signed.Digest || !ed25519.Verify(claims.SigningPublic, append([]byte("SURVEYSCAN-RENEWAL-V1\n"), canonical...), sig) {
+			failure(w, 422, "SIGNATURE_INVALID")
+			return
+		}
+		status, b, e := c.post(r.Context(), "/api/v1/machine/renewals", raw, "")
+		if e != nil {
+			failure(w, 503, "CENTER_UNAVAILABLE")
+			return
+		}
+		if status == 200 && c.wire.Validate("EnrollmentResult", b) != nil {
 			failure(w, 503, "INVALID_CENTER_RESPONSE")
 			return
 		}

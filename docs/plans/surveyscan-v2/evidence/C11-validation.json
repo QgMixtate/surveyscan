@@ -1,0 +1,12 @@
+{
+  "package": "C11",
+  "status": "partial-validated",
+  "checks": [
+    "50packages/200tasks/42done",
+    "CSV agrees",
+    "prior SQL/C03/C09 byte-identical",
+    "local only/no hosted CI claim",
+    "no private material in tracked outputs"
+  ],
+  "preserved_artifacts": 105
+}

@@ -192,6 +192,7 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 	r.Machine = &MachineAPI{Sources: machine, Uploads: uploads}
 	if remote != nil {
 		r.Machine.Maintain = remote.Maintain
+		r.Machine.Ready = remote.Check
 	}
 	return cfg.Listen, &tls.Config{MinVersion: tls.VersionTLS12, Certificates: []tls.Certificate{pair}, ClientCAs: roots, ClientAuth: tls.VerifyClientCertIfGiven}, nil
 }

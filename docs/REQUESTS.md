@@ -260,3 +260,14 @@ staging retained→automatic ACK/no duplicates. make verify/build и43PG passed.
 Renewal/rotation/clone matrix ещё не готова; продолжать C11.03, не переходить к C12.
 Передача plans/surveyscan-v2/handoffs/C11.md; production HTTPS/custody/restore rehearsal unrun.
 Без push/merge/deploy/повторной публикации среды.
+
+R-019, 2026-11-04 (Москва), продолжение «делай все этапы пока не упрешься в лимит»:
+C11.01/02 завершены локально (checkpoint10a3f93),03/04 продолжаются. Реальный scoped Bao:
+KV refs/Transit CA+receipt non-exportable, policy/root rejection, token renew/revoke/replacement,
+declarative audit masked; sealed restart/readonly и retained staging→ACK послеunseal.
+Добавлены C03 cert_renew сервер/relay, immutable result replay и Linux agent atomic TLS rotation.
+Live test: actual disconnect после certificate commit, next process retries same pending и получает
+один прежний cert; restart→inventory seq2/тотжеUID; revoke закрывает renewal.24unit/46PG/58fixtures,
+8live rotation,8SIGKILL recovery,14Chromium regression passed.31migrations/42tables,42/200done.
+Далее collector self-renewal и оставшаяся lifecycle/clone/expiry acceptance; wholeC11 не done.
+No push/merge/deploy/env publication. Подробности handoffs/C11.md.

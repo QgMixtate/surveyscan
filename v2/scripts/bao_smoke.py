@@ -10,7 +10,7 @@ def main():
  with tempfile.TemporaryDirectory(prefix='c11-scoped-',dir=STATE) as temp:
   directory=Path(temp)
   with fixture(directory) as f:
-   env=dict(os.environ,SURVEYSCAN_TEST_BAO_CONFIG=f['config'],SURVEYSCAN_TEST_BAO_ROOT_CONFIG=f['root_config'])
+   env=dict(os.environ,SURVEYSCAN_TEST_BAO_CONFIG=f['config'],SURVEYSCAN_TEST_BAO_SHORT_CONFIG=f['short_config'],SURVEYSCAN_TEST_BAO_REVOKED_TOKEN=f['revoked_token_file'],SURVEYSCAN_TEST_BAO_ROOT_CONFIG=f['root_config'])
    subprocess.run([os.environ.get('GO','go'),'test','-mod=readonly','-tags=bao','-count=1','-v','./internal/platform/bao'],cwd=ROOT,env=env,check=True);checks.append('real scoped token/KV ref/Transit signature and root-token rejection pass Go live test')
    for path in [f['transit']+'/keys/forbidden',f['transit']+'/export/signing-key/ca',f['kv']+'/data/other', 'sys/mounts']:
     try:f['call']('GET',path,credential=f['token']);raise AssertionError('scoped token accessed forbidden path')
