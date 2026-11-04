@@ -2,7 +2,9 @@
 
 R-020, 2026-11-05: пользователь поручил продолжить и опубликовать всё сделанное в GitHub.
 Опубликовано: codex/v2-c13-operations@f1ea70f (вся история C04–C13), draft PR #4: https://github.com/QgMixtate/surveyscan/pull/4.
-Hosted Actions реально стартовал: https://github.com/QgMixtate/surveyscan/actions/runs/41924693360; результат ещё in_progress.
+Hosted Actions SUCCESS на коде215f10c: [v2](https://github.com/QgMixtate/surveyscan/actions/runs/41924907145), [Web/Chromium](https://github.com/QgMixtate/surveyscan/actions/runs/41924907471).
+[Точные hosted reports](plans/surveyscan-v2/evidence/C13-hosted.json): release14/staticverify0/PG18/Bao9/common10/upgrade13/Web16 плюс полная E1 regression.
+Финальная фиксация evidence меняет только документацию; [skip ci] не повторяет те же продуктовые тесты.
 Push успешен, PR создан; прежние no-push ограничения ниже исторические.
 Main не сливать, production deployment и перепубликация среды не поручены.
 Новые проверки C13: общий stopped-writer PG/Bao/files checkpoint10 и actual C11schema31→33 upgrade13 passed.
@@ -10,10 +12,10 @@ Restore на других FS paths, original host/issuer fenced, pending replay 
 оба spool drained, прежняя session и новый leaf certificate через restored Transit CA.
 После upgrade все previous domain rows и31 applied hashes сохранены; migrate2→0, login/card/write/profile1 работают.
 Перед публикацией make verify39unit/58C03 и50 realPG integration passed. Workflow дополнен Node/Web build,
-release/static units/PG/Bao/common checkpoint/previous-version upgrade; hosted run ещё не подтверждён.
+release/static units/PG/Bao/common checkpoint/previous-version upgrade; hosted success подтверждён выше.
 48/200 done: C13.01–03 in_progress до systemd/live-update/two-clean-OS gates; C14 не начат.
 
-Обновлено: 2026-11-05 (Москва). GitHub refs повторно проверены fetch/ls-remote; main73ced7e, PR refs1–3 без изменений. Новые этапы локальны.
+Обновлено: 2026-11-05 (Москва). GitHub refs повторно проверены fetch/ls-remote; main73ced7e, PR refs1–3 без изменений. Новые этапы опубликованы в PR4 по R-020, main не слит.
 
 C13.01–03 в работе: staged systemd units и подписанный Ed25519 directory bundle,
 SHA256/size/mode manifest, SPDX2.3 dependency inventory, verified atomic filesystem staging.
@@ -42,7 +44,7 @@ private offline snapshots и read-only Web profile panel. CLI/APIadmin меня�
 33migrations/45tables, prior SQL/C03/C09 bytes неизменны. Backup ageunknown безactualmarker,
 production/systemd/24h/DR/hardwareclone/100users не проверены. C11 identity limitations сохранены.
 Далее C13 установка/services/release artifacts/backup/restore; сначала проверить доступностьsystemd/cleanboot.
-C04/C05 hosted success, C06–C12 локальны; no push/merge/deploy/env publication.
+C04–C13 опубликованы в PR4 по R-020, hosted regression success215f10c; no merge/deploy/env publication.
 
 ## Контекст архитектуры и история C01–C04
 

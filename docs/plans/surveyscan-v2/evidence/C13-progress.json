@@ -58,7 +58,10 @@
     "pr": "https://github.com/QgMixtate/surveyscan/pull/4",
     "first_v2_run": "https://github.com/QgMixtate/surveyscan/actions/runs/41924693360",
     "first_web_run": "https://github.com/QgMixtate/surveyscan/actions/runs/41924693362",
-    "hosted_result": "in_progress; not claimed passed"
+    "hosted_result": "success on validated code 215f10cebe314fc767a6c9dc7f90ebf4c2dfb39b",
+    "latest_v2_run": "https://github.com/QgMixtate/surveyscan/actions/runs/41924907145",
+    "latest_web_run": "https://github.com/QgMixtate/surveyscan/actions/runs/41924907471",
+    "hosted_evidence": "C13-hosted.json"
   },
   "release": {
     "package": "C13",

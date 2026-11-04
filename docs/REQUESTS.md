@@ -353,3 +353,10 @@ R-020 publication: git push успешен, GitHub branch codex/v2-c13-operation
 draft PR4 https://github.com/QgMixtate/surveyscan/pull/4. C04–C13 опубликованы одной последовательной веткой,
 main/PR1–3 не слиты/не изменялись. Actual hosted v2 run41924693360 и Web41924693362 стартовали;
 результат покаin_progress. После metadata sync проверить latest PR head и конечные Actions results.
+
+R-020 завершение публикации: hosted v2 run41924907145 и Web run41924907471 SUCCESS на215f10c.
+Actual downloaded artifacts подтверждают release14/static0/PG18/Bao9/common10/upgrade13/Web16,
+agent11/auth10/machine8/recovery8/ENOSPC1/scopedBao4/BaoPipeline17/renewal10/collector10/CLI17/profiles13/infra6.
+Evidence: plans/surveyscan-v2/evidence/C13-hosted.json (reportdigests и URLs).
+Последующий [skip ci] commit меняет только журнал/evidence; application/workflow source совпадает с215f10c.
+Всё опубликовано в PR4 featurebranch; main не слит. C13.01–03IP/04planned,48/200; boot/liveupdate/twoOS pending.

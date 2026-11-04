@@ -128,3 +128,7 @@ Main merge/production deploy/env publication не поручены. Common PG/Ba
 C11schema31→33 upgrade13 passed;39unit/58fixtures/50PG passed. C13.01–03IP/04planned,48/200done:
 systemd boot/livecheckedupdate/two clean OS остаются gates. Handoff C13 содержит публикацию/точныеrefs.
 Не загружать privatebackup/custody вgit илиActions artifacts (только явный sanitizedreport allowlist).
+
+R-020 опубликован: draftPR4/codex/v2-c13-operations, hosted v2+Web SUCCESS на215f10c.
+Точный evidence plans/surveyscan-v2/evidence/C13-hosted.json; финальный docs-only [skip ci] не меняет source.
+C13boot/liveupdate/twoOS pending,48/200done; C14не начинать доC13acceptance. Mainне слит/deployне выполнялся.
