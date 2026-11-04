@@ -47,13 +47,11 @@
   "host_uid": 1000,
   "unrun": [
     "systemd actualboot/reboot/autostart",
-    "live checked update",
-    "full PG/Bao/filesystem consistent checkpoint and restore",
-    "previous-release schema upgrade",
+    "manual live service update",
     "two clean OS systems",
     "production HTTPS/KMS/split custody/DR"
   ],
-  "publication": "local only",
+  "publication": "authorized by R-020; pending push/PR/hosted CI",
   "release": {
     "package": "C13",
     "task": "C13.02 preparation",
@@ -123,7 +121,8 @@
       "unrun": [
         "production/100-user load/24h soak"
       ]
-    }
+    },
+    "publish_verify": "make verify39unit/58C03 and make integration50 realPG passed"
   },
   "pg_component_restore": {
     "package": "C13",
@@ -241,5 +240,64 @@
       "openapi_sha256": "d59b26ccbd6c9ec54135f082143f31ae820e2b57ff396ac886ceec04b4d11147",
       "runtime": "static; no Node or CDN"
     }
+  },
+  "common_checkpoint": {
+    "package": "C13",
+    "task": "C13.03",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "actual Bao-issued continuous agent commits first inventory and leaves second durable on both hops; all application writers stopped",
+      "one private checkpoint contains stopped-agent/collector identity/counters/queues, server TLS/config, PG and Raft; operator recovery custody excluded",
+      "extraction preserves every selected byte and refuses unlisted corruption before target publication",
+      "PG restored into different initially empty DB with same asset UID and committed first observation",
+      "restored center is ready against restored Bao/PG and accepts pre-backup session; original host and issuer directories absent",
+      "restored relay applies exact saved second observation once and restored non-exportable center key signs ACK for original UID",
+      "relocated real agent retains source generation/signing identity, retransmits old packet without duplicates and continues sequence3; both queues drain",
+      "real agent certificate renewal succeeds through restored collector/PG and non-exportable Transit CA"
+    ],
+    "target": "common stopped-writer checkpoint; actual Linux agent/collector/server, PG17, restored Bao2.7.2 Raft, TLS/mTLS, separate filesystem paths, pending replay/receipt and leaf renewal",
+    "unrun": [
+      "previous-release schema upgrade",
+      "systemd boot/reboot",
+      "two clean OS systems",
+      "production HTTPS/KMS/custody/DR/RPO/RTO"
+    ],
+    "backup_marker_updated": false
+  },
+  "previous_schema_upgrade": {
+    "package": "C13",
+    "task": "C13.03",
+    "status": "passed",
+    "count": 13,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "synthetic agent enrollment traverses collector",
+      "durable collector transport receipt retains source data",
+      "center commit receipt verifies with pinned key and exact bindings",
+      "committed PG registry card visible through real authenticated API",
+      "collector trims only after verified center acknowledgement",
+      "exactly one durable observation in isolated PostgreSQL",
+      "actual previous C11 server/collector populate schema31 with inventory, UID, auth, history and outbox; previous writers stopped",
+      "current binary appends exactly2 migrations; every previous data table and all31 applied hashes preserved",
+      "second current migrate is a verified no-op; no edited SQL or duplicate upgrade effects",
+      "upgraded real TLS server authenticates previous admin and serves same previous asset UID/card",
+      "authorized write works after upgrade; newly introduced profiles expose unmanaged revision1 for existing source"
+    ],
+    "previous_ref": "b22efa2",
+    "previous_migrations": 31,
+    "current_migrations": 33,
+    "target": "archived actual C11 source compiled into previous server/collector; real PG, TLS and signed synthetic inventory; current migration and API",
+    "fixture_adapter": "only old test callback extended to expose SQL helper/processes/environment; previous application code/SQL not modified",
+    "unrun": [
+      "live service update/rollback",
+      "schema downgrade",
+      "systemd boot/reboot",
+      "two clean OS systems",
+      "production/DR"
+    ]
   }
 }

@@ -1,5 +1,16 @@
 # Текущее состояние surveyscan
 
+R-020, 2026-11-05: пользователь поручил продолжить и опубликовать всё сделанное в GitHub.
+Публикация текущей ветки/PR/Actions подготавливается; прежние no-push ограничения ниже исторические.
+Main не сливать, production deployment и перепубликация среды не поручены.
+Новые проверки C13: общий stopped-writer PG/Bao/files checkpoint10 и actual C11schema31→33 upgrade13 passed.
+Restore на других FS paths, original host/issuer fenced, pending replay exactly once/UID/sequence3,
+оба spool drained, прежняя session и новый leaf certificate через restored Transit CA.
+После upgrade все previous domain rows и31 applied hashes сохранены; migrate2→0, login/card/write/profile1 работают.
+Перед публикацией make verify39unit/58C03 и50 realPG integration passed. Workflow дополнен Node/Web build,
+release/static units/PG/Bao/common checkpoint/previous-version upgrade; hosted run ещё не подтверждён.
+48/200 done: C13.01–03 in_progress до systemd/live-update/two-clean-OS gates; C14 не начат.
+
 Обновлено: 2026-11-05 (Москва). GitHub refs повторно проверены fetch/ls-remote; main73ced7e, PR refs1–3 без изменений. Новые этапы локальны.
 
 C13.01–03 в работе: staged systemd units и подписанный Ed25519 directory bundle,

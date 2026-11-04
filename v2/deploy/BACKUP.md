@@ -1,7 +1,8 @@
 # C13 — backup/restore по компонентам (в работе)
 
 Проверены **PostgreSQL component round-trip и отдельный OpenBao Raft restore**. Полная согласованная копия PostgreSQL,
-OpenBao и файлового состояния пока не реализована/не принята. `pg_backup.py` не обновляет
+OpenBao и файлового состояния проверена отдельным bounded development rehearsal ниже;
+её production/systemd-приёмка остаётся открытой. `pg_backup.py` не обновляет
 общий backup-age marker и явно возвращает `complete_system_backup=false`.
 Нет утверждённых RPO/RTO, geo DR или доказанного reboot recovery.
 
@@ -56,7 +57,51 @@ checkpoint fixture. Restore идёт в новую БД, рабочая dev БД
 через TLS API. Реальный PATCH с Origin/CSRF/If-Match сохранил UID и создал ровно один новый audit/outbox. Порча archive и nonempty target отвергнуты, sentinel table сохранена.
 Временные БД, private archive и fixtures удаляются. Reports не содержат table contents/passwords.
 
-## Оставшийся системный recovery
+## Единый остановленный checkpoint
+
+`scripts/checkpoint.py` объединяет заранее снятые PG custom archive, Bao Raft snapshot и
+именованные директории state/configs. Оператор предварительно останавливает/изолирует все
+application writers и сохраняет их остановленными до завершения копирования. Флаг
+`--writers-quiesced` — подтверждение этого предусловия, не автоматическая остановка служб.
+
+```sh
+python3 scripts/checkpoint.py pack --output /private/new-checkpoint \
+  --postgres /private/pg-component --bao-snapshot /private/raft.snapshot \
+  --state host=/private/stopped-host-state --state issuer=/private/server-tls \
+  --writers-quiesced
+python3 scripts/checkpoint.py verify --checkpoint /private/new-checkpoint
+python3 scripts/checkpoint.py extract --checkpoint /private/new-checkpoint --target /private/new-restore
+```
+
+Нужен полный состав конкретной установки: operator configs, TLS/CA public trust, source
+identity/origin key, generation/counters/profile cache, collector credentials и обе очереди,
+PG/artifacts и Bao. Recovery/unseal/root custody хранится отдельно, не у приложения.
+Tool проверяет SHA256/size/set, отказывает symlinks/special files и existing destination,
+повторно проверяет private copied snapshot перед atomic extraction. Все backup dirs0700/files0600.
+Ограничения:20k files/2GiB payload; protected input/custody обязательны, manifest не подписан.
+Tool не запускает writers, не overwrite DB/Bao, не утверждает полноту выбранных директорий
+и не обновляет monitoring marker автоматически.
+
+`scripts/checkpoint_smoke.py`:10 real checks passed. Реальный agent с Bao-issued сертификатом
+передал первый inventory; второй остался durable у agent и collector при недоступном центре.
+Все application processes stopped, затем PG/Bao/files сняты в один checkpoint. Restore идёт
+в другую пустую БД, отдельный initially empty Bao и другие filesystem paths. Старые host/issuer
+каталоги переименованы и недоступны восстановленным процессам. Меняются только operator config
+paths/endpoints; signed identities/payloads/queues остаются исходными bytes.
+Прежняя session работает, second observation применяется один раз к прежнему UID, original pending
+replay не создаёт дубль, агент продолжает sequence3 и обе очереди очищаются по signed ACK.
+Затем настоящий leaf renewal выдаёт другой сертификат с прежними source/generation через restored
+Transit CA. Исходная БД остаётся на одном observation. Custody/snapshot/private files удаляются.
+Это общий development checkpoint, не две чистые ОС/systemd reboot или production DR.
+
+`scripts/upgrade_smoke.py`:13 checks проверяют настоящий переход из C11 `b22efa2`.
+Previous application binaries собираются из git archive; test callback расширен только для
+управления процессами/SQL helper. Старый server/collector создают данные на31 миграции,
+затем current binary применяет ровно2 новые. Все previous domain rows/31 migration hashes
+сохраняются; повторный migrate0, прежние login/UID и новая business write работают.
+Existing source получает unmanaged profile revision1. Это не schema downgrade/live service rollback.
+
+## Отдельный OpenBao restore и оставшаяся системная приёмка
 
 `scripts/bao_restore_smoke.py` проверяет настоящий Raft snapshot OpenBao2.7.2 на отдельном
 изначально пустом узле с private temporary state. Исходный узел не восстанавливается,
@@ -74,8 +119,8 @@ Ed25519 challenges. После настоящего Docker restart узел seal
 
 Snapshot содержит реальное development secret state и не сохраняется как публичный evidence.
 В evidence только статусы/проверки. Этот rehearsal не предоставляет CLI для overwrite
-произвольного Bao и не заменяет production restore runbook. Полный application restore с
-CA leaf issuance, receipt replay, одновременно восстановленными PG и source files ещё unrun.
+произвольного Bao и не заменяет production restore runbook. Общий application restore с
+CA leaf renewal/receipt replay проверен выше в bounded development stand.
 
 Для полной копии требуется согласованный checkpoint после остановки writers:
 agent/collector state с origin keys/identity/counters/profile cache/очередями, server configs
@@ -84,7 +129,7 @@ agent/collector state с origin keys/identity/counters/profile cache/очере�
 не доказывает работоспособность Transit CA/receipt signing после потери узла.
 Нельзя хранить root/unseal материал у application UID или в service unit/image.
 
-На изолированном clean stand предстоит объединить проверенные PG/Bao component restores,
+Для выбранной systemd установки и двух чистых ОС предстоит повторить общий checkpoint,
 возврат тех же source/asset IDs, replay pending/receipts без дублей и безопасную миграцию
 со старого release. До переключения writers нужны проверки tenant/access/history/outbox,
 подтверждённый единственный writer и проверенный путь возврата к целой копии.

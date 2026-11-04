@@ -7,15 +7,20 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: surveyscan-v2-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
 jobs:
   c04:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: v2
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-go@v5
         with:
           go-version: '1.27.3'
@@ -23,14 +28,28 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: v2/web/package-lock.json
       - name: Contract checker dependencies
         run: |
           python -m venv .contract-tools
           .contract-tools/bin/pip install -r ../docs/plans/surveyscan-v2/contracts/C03/checks/requirements.txt
       - name: Format, architecture, unit tests, vet and C03 contracts
         run: make CONTRACT_PYTHON=.contract-tools/bin/python verify
-      - name: Build server, collector and agent
+      - name: Build server, collector, agent and CLI
         run: make build
+      - name: Build separate Web UI
+        working-directory: v2/web
+        run: |
+          npm ci
+          npm run build
+      - name: Signed release bundle, independent Web version and verified staging
+        run: GO=go python scripts/release_smoke.py
+      - name: Static systemd unit verification (not boot acceptance)
+        run: python scripts/unit_check.py
       - name: Start local PostgreSQL, OpenBao, backend and proxy
         run: python scripts/dev.py up
       - name: Real PostgreSQL integration tests
@@ -59,11 +78,19 @@ jobs:
         run: .contract-tools/bin/python scripts/cli_smoke.py
       - name: Central profiles, signed source diagnostics and tenant policy
         run: .contract-tools/bin/python scripts/profiles_smoke.py
+      - name: PostgreSQL backup, clean DB restore and authenticated write
+        run: .contract-tools/bin/python scripts/backup_smoke.py
+      - name: Isolated OpenBao Raft restore, non-exportable keys and restart
+        run: .contract-tools/bin/python scripts/bao_restore_smoke.py
+      - name: Common PG, Bao and filesystem checkpoint with pending replay
+        run: .contract-tools/bin/python scripts/checkpoint_smoke.py
+      - name: Previous C11 server data upgraded with current binary
+        run: .contract-tools/bin/python scripts/upgrade_smoke.py
       - name: Retain sanitized reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: c04-reports
+          name: e1-reports
           include-hidden-files: true
           path: |
             v2/.local/contracts-validation.json
@@ -79,6 +106,12 @@ jobs:
             v2/.local/collector-renewal-smoke.json
             v2/.local/cli-smoke.json
             v2/.local/profiles-smoke.json
+            v2/.local/c13-release-smoke.json
+            v2/.local/c13-unit-check.json
+            v2/.local/c13-pg-restore-smoke.json
+            v2/.local/c13-bao-restore-smoke.json
+            v2/.local/c13-checkpoint-smoke.json
+            v2/.local/c13-upgrade-smoke.json
           if-no-files-found: ignore
       - name: Stop isolated development stack
         if: always()

@@ -122,3 +122,9 @@ PG17dump→newemptyDB18checks(46table fingerprints+actualTLSlogin/card/write),о
 HostPID1tail/QEMU-KVM-nspawn absent/cgroupdriver none: boot unrun. FullPG-Bao-filesystemcheckpoint,
 liveupdate/previousschema upgrade/twoOS ещёunrun. Читатьhandoffs/C13.md; не закрыватьC13/не начинатьC14.
 No push/merge/deploy/envpublication; privatebackup/custody неstageвgit. PG-only неsystembackupmarker.
+
+R-020(2026-11-05) разрешает push накопленной работы текущей ветки, PR и hostedCI; prior no-push исторический.
+Main merge/production deploy/env publication не поручены. Common PG/Bao/files checkpoint10 и actual
+C11schema31→33 upgrade13 passed;39unit/58fixtures/50PG passed. C13.01–03IP/04planned,48/200done:
+systemd boot/livecheckedupdate/two clean OS остаются gates. Handoff C13 содержит публикацию/точныеrefs.
+Не загружать privatebackup/custody вgit илиActions artifacts (только явный sanitizedreport allowlist).

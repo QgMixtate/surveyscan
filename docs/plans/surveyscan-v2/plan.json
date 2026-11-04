@@ -1247,7 +1247,7 @@
             "handoffs/C13.md",
             "evidence/C13-progress.json"
           ],
-          "verification_status": "18 real pipeline+PG restore checks (46tables,TLS login/card/write),9 real isolated Bao Raft/Transit/restart checks passed; full filesystem/checkpoint/previous-schema upgrade pending"
+          "verification_status": "PG18/Bao9/common checkpoint10/previous C11schema31→33 upgrade13 passed; package gates systemd boot/live update/two clean OS pending"
         },
         {
           "id": "C13.04",

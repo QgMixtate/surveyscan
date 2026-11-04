@@ -334,3 +334,17 @@ Chromium16 passed.39unit/58fixtures makeverify ранее в этом продо
 Separate Web release сохранён; source provenance latest tested b874302+dirty, не clean current release.
 Полныеevidence и nextstep вhandoffs/C13.md. Fullcheckpoint/liveupdate/previousschema/boot/twoOS pending;
 done48/200, C13.01–03 IP/C13.04 planned; no push/merge/deploy/env publication.
+
+## R-020 — Продолжить C13 и опубликовать накопленные изменения
+
+Дата: 2026-11-05 (Москва). Запрос: «Дальше и на гит потом все опубликуй то что сделал».
+Разрешены push всей текущей ветки, PR и GitHub Actions; прежний no-push снят этим поручением.
+Merge/main/production deployment/перепубликация среды не поручены.
+Common checkpoint10 passed: остановленные реальные agent/collector/server, PG+Raft+private files,
+restore в новую DB/отдельный Bao/другие FS paths при недоступных original host/issuer directories.
+UID/session/pending bytes сохранены, replay exactly once, sequence3/queues drain, новый leaf через restored CA.
+Actual old C11 source b22efa2 compiled: schema31 data→current33, ровно2 migrations, repeat0,
+old rows/hashes/UID/access/history/outbox сохранены, new login/write/default profile1 работают —13checks.
+39unit/58C03/50PG passed перед публикацией. Workflow расширен всеми C13 checks и separate Web build.
+Публикация pending; точные remote refs/PR/hosted CI записать только после фактической записи GitHub.
+C13.01–03 IP/C13.04planned,48/200; следующие gates systemd boot/live update/two clean OS.
