@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C10 done; C11-C50 planned",
+  "status": "C01-C10 done; C11.01-C11.02 done; C11.03-C11.04 in progress; C12-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1017,8 +1017,14 @@
           "output": "Bootstrap/unseal/runbook, scoped policies и backup key procedure",
           "verification": "Приложение не использует root token и открытые пароли в PG",
           "estimation_basis": "1 выбранная версия Bao; KV/Transit только по назначению",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "decisions/C11-openbao.md",
+            "handoffs/C11.md",
+            "evidence/C11-progress.json"
+          ],
+          "verification_status": "local live Bao/PG passed; full lifecycle unrun"
         },
         {
           "id": "C11.02",
@@ -1030,8 +1036,14 @@
           "output": "Получение ограниченных secrets/ключевых операций по ADR",
           "verification": "Недоступность Bao даёт объявленную деградацию",
           "estimation_basis": "Server identity и разрешённые E1 операции без remote target secrets",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "decisions/C11-openbao.md",
+            "handoffs/C11.md",
+            "evidence/C11-progress.json"
+          ],
+          "verification_status": "local live Bao/PG passed; full lifecycle unrun"
         },
         {
           "id": "C11.03",
@@ -1043,8 +1055,14 @@
           "output": "Ротация agent/collector identities и защищённое хранение на ОС",
           "verification": "Revoked identity не принимает новые задания/данные по политике",
           "estimation_basis": "Agent, collector, server; expiry/renewal и clone case",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "in_progress",
+          "work_group": "Реализация",
+          "evidence": [
+            "decisions/C11-openbao.md",
+            "handoffs/C11.md",
+            "evidence/C11-progress.json"
+          ],
+          "verification_status": "local live Bao/PG passed; full lifecycle unrun"
         },
         {
           "id": "C11.04",
@@ -1056,11 +1074,17 @@
           "output": "Проверки logs/artifacts/errors и отказов Bao/cert",
           "verification": "Тестовые секреты отсутствуют в выдаче и отчётах",
           "estimation_basis": "Позитивные и негативные auth/TLS/Bao сценарии",
-          "status": "planned",
-          "work_group": "Проверка и передача"
+          "status": "in_progress",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "decisions/C11-openbao.md",
+            "handoffs/C11.md",
+            "evidence/C11-progress.json"
+          ],
+          "verification_status": "local live Bao/PG passed; full lifecycle unrun"
         }
       ],
-      "status": "planned",
+      "status": "in_progress",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
     },
     {

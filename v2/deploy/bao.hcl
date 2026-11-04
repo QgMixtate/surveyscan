@@ -12,3 +12,12 @@ listener "tcp" {
   address = "0.0.0.0:8200"
   tls_disable = true
 }
+
+# C11: private persistent audit; tokens and secret fields retain default HMAC masking.
+audit "file" "surveyscan" {
+  description = "SurveyScan local development audit"
+  options {
+    file_path = "/openbao/file/surveyscan-audit.jsonl"
+    log_raw = "false"
+  }
+}

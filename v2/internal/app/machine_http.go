@@ -22,8 +22,9 @@ import (
 )
 
 type MachineAPI struct {
-	Sources *sources.MachineService
-	Uploads *imports.UploadService
+	Maintain func(context.Context)
+	Sources  *sources.MachineService
+	Uploads  *imports.UploadService
 }
 
 func (m *MachineAPI) decode(w http.ResponseWriter, r *http.Request, name string, out any) bool {

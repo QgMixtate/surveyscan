@@ -14,7 +14,7 @@ def b64(b):return base64.urlsafe_b64encode(b).rstrip(b'=').decode()
 def rawpublic(key):return key.public_key().public_bytes(serialization.Encoding.Raw,serialization.PublicFormat.Raw)
 def freeport():
  with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
-def main(agent_scenario=None,web_scenario=None,browser_origin=None):
+def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=None):
  initialize();db='ssv2machine_'+uuid.uuid4().hex;tenant,site,scope,subject=uid(),uid(),uid(),uid();processes=[];checks=[];created=False
  def sql(query,database='surveyscan_v2'):
   return compose('exec','-T','db','psql','-U','surveyscan_v2','-d',database,'-v','ON_ERROR_STOP=1','-Atc',query,capture=True).strip()
@@ -25,13 +25,22 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None):
    with os.fdopen(fd,'wb') as f:f.write(data if isinstance(data,bytes) else data.encode())
    return str(p)
   def private(key):return key.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption())
-  ca_key=ed25519.Ed25519PrivateKey.generate();now=datetime.datetime.now(datetime.timezone.utc)
-  ca_name=x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'C07 synthetic dev CA')])
-  ca=x509.CertificateBuilder().subject_name(ca_name).issuer_name(ca_name).public_key(ca_key.public_key()).serial_number(x509.random_serial_number()).not_valid_before(now-datetime.timedelta(minutes=1)).not_valid_after(now+datetime.timedelta(days=2)).add_extension(x509.BasicConstraints(ca=True,path_length=0),critical=True).add_extension(x509.KeyUsage(False,False,False,False,False,True,True,False,False),critical=True).sign(ca_key,None)
-  ca_file=save('ca.pem',ca.public_bytes(serialization.Encoding.PEM));ca_private=save('ca.key',private(ca_key))
-  server_key=ed25519.Ed25519PrivateKey.generate();server=x509.CertificateBuilder().subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'C07 center')])).issuer_name(ca_name).public_key(server_key.public_key()).serial_number(x509.random_serial_number()).not_valid_before(now-datetime.timedelta(minutes=1)).not_valid_after(now+datetime.timedelta(hours=12)).add_extension(x509.SubjectAlternativeName([x509.IPAddress(ipaddress.ip_address('127.0.0.1'))]),False).add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]),False).sign(ca_key,None)
-  server_file=save('server.pem',server.public_bytes(serialization.Encoding.PEM));server_private=save('server.key',private(server_key));center_key=ed25519.Ed25519PrivateKey.generate();center_id=uid();center_private=save('center.json',json.dumps({'key_id':center_id,'private_key':b64(center_key.private_bytes(serialization.Encoding.Raw,serialization.PrivateFormat.Raw,serialization.NoEncryption())+rawpublic(center_key))}))
+  if bao_settings is None:
+   ca_key=ed25519.Ed25519PrivateKey.generate();now=datetime.datetime.now(datetime.timezone.utc)
+   ca_name=x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'C07 synthetic dev CA')])
+   ca=x509.CertificateBuilder().subject_name(ca_name).issuer_name(ca_name).public_key(ca_key.public_key()).serial_number(x509.random_serial_number()).not_valid_before(now-datetime.timedelta(minutes=1)).not_valid_after(now+datetime.timedelta(days=2)).add_extension(x509.BasicConstraints(ca=True,path_length=0),critical=True).add_extension(x509.KeyUsage(False,False,False,False,False,True,True,False,False),critical=True).sign(ca_key,None)
+   ca_file=save('ca.pem',ca.public_bytes(serialization.Encoding.PEM));ca_private=save('ca.key',private(ca_key))
+   server_key=ed25519.Ed25519PrivateKey.generate();server=x509.CertificateBuilder().subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'C07 center')])).issuer_name(ca_name).public_key(server_key.public_key()).serial_number(x509.random_serial_number()).not_valid_before(now-datetime.timedelta(minutes=1)).not_valid_after(now+datetime.timedelta(hours=12)).add_extension(x509.SubjectAlternativeName([x509.IPAddress(ipaddress.ip_address('127.0.0.1'))]),False).add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]),False).sign(ca_key,None)
+   server_file=save('server.pem',server.public_bytes(serialization.Encoding.PEM));server_private=save('server.key',private(server_key));center_key=ed25519.Ed25519PrivateKey.generate();center_id=uid();center_private=save('center.json',json.dumps({'key_id':center_id,'private_key':b64(center_key.private_bytes(serialization.Encoding.Raw,serialization.PrivateFormat.Raw,serialization.NoEncryption())+rawpublic(center_key))}))
+  else:
+   ca_file=save('ca.pem',Path(bao_settings['ca_certificate']).read_bytes());ca_private=''
+   server_file=save('server.pem',Path(bao_settings['server_certificate']).read_bytes());server_private=save('server.key',Path(bao_settings['server_private']).read_bytes());center_id=bao_settings['center_id'];center_private=''
+   class PublicOnly:
+    def public_key(self):return ed25519.Ed25519PublicKey.from_public_bytes(base64.urlsafe_b64decode(bao_settings['center_public']+'=='))
+   center_key=PublicOnly()
   tls_port,http_port,collector_port=freeport(),freeport(),freeport();machine_file=save('machine.json',json.dumps({'dev_mode':True,'listen':f'127.0.0.1:{tls_port}','ca_certificate_file':ca_file,'ca_private_key_file':ca_private,'server_certificate_file':server_file,'server_private_key_file':server_private,'center_signing_key_file':center_private}))
+  if bao_settings is not None:
+   cfg=json.loads(Path(machine_file).read_text());cfg['openbao_config_file']=bao_settings['config'];cfg['center_signing_key_id']=center_id;Path(machine_file).write_text(json.dumps(cfg))
   origin=f'https://127.0.0.1:{tls_port}';browser_origin=browser_origin or origin;env=dict(os.environ,SURVEYSCAN_V2_DATABASE_URL=f'postgres://surveyscan_v2@127.0.0.1:55432/{db}?sslmode=disable',SURVEYSCAN_V2_DATABASE_PASSWORD_FILE=str(STATE/'pg_password'),SURVEYSCAN_V2_PUBLIC_ORIGIN=browser_origin,SURVEYSCAN_V2_LISTEN=f'127.0.0.1:{http_port}',SURVEYSCAN_V2_BAO_ADDR='http://127.0.0.1:58200',SURVEYSCAN_V2_MACHINE_CONFIG=machine_file)
   env.pop('SURVEYSCAN_V2_INSECURE_LOCAL_HTTP',None)
   if browser_origin.startswith('http://127.0.0.1:'):env['SURVEYSCAN_V2_INSECURE_LOCAL_HTTP']='1'
@@ -96,6 +105,9 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None):
    status,card,_=request(tls_port,plain,'GET','/api/v1/assets/'+signed['results'][0]['asset_uid'],headers={'Cookie':cookie});assert status==200 and card['observed_hostname']=='pipeline-host' and card['accountable_subject_id']==subject;checks.append('committed PG registry card visible through real authenticated API')
    assert not (directory/'spool'/(batch['delivery_id']+'.pending')).exists();checks.append('collector trims only after verified center acknowledgement')
    assert sql('SELECT count(*) FROM inventory.observations',db)=='1';checks.append('exactly one durable observation in isolated PostgreSQL')
+   if bao_settings is not None:
+    bao_settings['hook'](checks=checks,request=request,sql=lambda query:sql(query,db),start=start,center_process=center_process,tls_port=tls_port,collector_port=collector_port,collector_name=collector_name,client=client,plain=plain,cookie=cookie,session=session,origin=browser_origin,grant=grant,enroll_material=enroll_material,payload=payload,agent_sign=agent_sign,agent_result=agent_result,center_key=center_key,center_id=center_id,asset=signed['results'][0]['asset_uid'],site=site,tenant=tenant,collector_id=collector_id,agent_source=agent_source)
+    return
    if web_scenario is not None:
     web_scenario(directory=directory,origin=browser_origin,center_port=tls_port,ca_file=ca_file,username='admin',password=password,asset=signed['results'][0]['asset_uid'],tenant=tenant,checks=checks)
     return

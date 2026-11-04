@@ -19,7 +19,11 @@ import (
 	"time"
 )
 
+type ResultSigner interface {
+	Sign(context.Context, []byte) ([]byte, error)
+}
 type UploadService struct {
+	Signer   ResultSigner
 	Limits   Limits
 	Pool     *pgxpool.Pool
 	Auth     sourceport.MachineAuthorizer
@@ -163,7 +167,7 @@ func (s *UploadService) Status(ctx context.Context, fingerprint, id string) ([]b
 	return json.Marshal(contracts.TransportReceipt{Type: "transport", TenantID: d.Batch.TenantID, DeliveryID: d.Batch.DeliveryID, Digest: d.Digest, Stage: "processing", SpoolAction: "retain", RequestID: identifier.New()})
 }
 func (s *UploadService) Process(ctx context.Context, fingerprint, id string) (response []byte, failure error) {
-	if len(s.Key) != ed25519.PrivateKeySize || !identifier.Valid(s.KeyID) || !identifier.Valid(id) {
+	if (s.Signer == nil && len(s.Key) != ed25519.PrivateKeySize) || !identifier.Valid(s.KeyID) || !identifier.Valid(id) {
 		return nil, domain.Invalid
 	}
 	var d loadedDelivery
@@ -199,7 +203,7 @@ func (s *UploadService) Process(ctx context.Context, fingerprint, id string) (re
 	}
 	defer func() {
 		if failure != nil {
-			s.failClaim(d.Batch.TenantID, id, owner)
+			s.failClaim(d.Batch.TenantID, id, owner, failure)
 		}
 	}()
 	return s.process(ctx, fingerprint, id, owner, d)
@@ -311,7 +315,17 @@ func (s *UploadService) process(ctx context.Context, fingerprint, id, owner stri
 		return nil, e
 	}
 	hash := sha256.Sum256(canonical)
-	receipt := contracts.SignedCenterResult{Payload: payload, Digest: hex.EncodeToString(hash[:]), KeyID: s.KeyID, Signature: base64.RawURLEncoding.EncodeToString(ed25519.Sign(s.Key, append([]byte("SURVEYSCAN-CENTER-RESULT-V1\n"), canonical...)))}
+	var signature []byte
+	message := append([]byte("SURVEYSCAN-CENTER-RESULT-V1\n"), canonical...)
+	if s.Signer != nil {
+		signature, e = s.Signer.Sign(ctx, message)
+		if e != nil {
+			return nil, e
+		}
+	} else {
+		signature = ed25519.Sign(s.Key, message)
+	}
+	receipt := contracts.SignedCenterResult{Payload: payload, Digest: hex.EncodeToString(hash[:]), KeyID: s.KeyID, Signature: base64.RawURLEncoding.EncodeToString(signature)}
 	response, e := json.Marshal(receipt)
 	if e != nil {
 		return nil, e

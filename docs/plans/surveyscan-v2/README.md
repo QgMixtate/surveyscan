@@ -117,3 +117,11 @@ real SIGKILL/reconnect и real ENOSPC passed. Далее C10.03 central claims/a
 
 C10 целиком завершён локально: row lease/fencing/admission/GC/deadletter и bounded fault matrix passed.
 22 unit/42 PG/58 fixtures/8 crash-recovery/1 real ENOSPC/14 Chromium checks. Далее C11 OpenBao/PKI.
+
+C11 в работе локально: 01/02 done,03/04 in_progress (42/200 done). Scoped OpenBao KV/Transit,
+non-exportable CA/receipt keys, private token/policy, declarative masked audit, no private-key fallback.
+4 live scoped checks +15 compiled pipeline checks passed: actual seal/unseal, readonly sealed restart,
+staging retained→automatic ACK/no duplicates. make verify/build и43PG passed.
+Renewal/rotation/clone matrix ещё не готова; продолжать C11.03, не переходить к C12.
+Передача plans/surveyscan-v2/handoffs/C11.md; production HTTPS/custody/restore rehearsal unrun.
+Без push/merge/deploy/повторной публикации среды.

@@ -73,3 +73,11 @@ C10 done локально: handoffs/C10.md. Leased/fenced import processing, bou
 22 unit/42 PG/58 fixtures/8 real process-recovery/1 real ENOSPC/14 browser checks passed.
 40/200 done. Jobs runtime/API C12; C10 import/outbox foundation. Следующий C11 OpenBao/PKI.
 C06–C10 не опубликованы; no merge/deploy/env publication.
+
+C11 в работе локально: 01/02 done,03/04 in_progress (42/200 done). Scoped OpenBao KV/Transit,
+non-exportable CA/receipt keys, private token/policy, declarative masked audit, no private-key fallback.
+4 live scoped checks +15 compiled pipeline checks passed: actual seal/unseal, readonly sealed restart,
+staging retained→automatic ACK/no duplicates. make verify/build и43PG passed.
+Renewal/rotation/clone matrix ещё не готова; продолжать C11.03, не переходить к C12.
+Передача plans/surveyscan-v2/handoffs/C11.md; production HTTPS/custody/restore rehearsal unrun.
+Без push/merge/deploy/повторной публикации среды.

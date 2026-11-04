@@ -27,6 +27,9 @@ func run(args []string) error {
 	if len(args) > 0 {
 		command = args[0]
 	}
+	if command == "bootstrap-issuer" {
+		return bootstrapIssuer(args[1:])
+	}
 	isConsole := command == "bootstrap-admin" || command == "create-user" || command == "set-user-state" || command == "reset-password"
 	if len(args) > 1 && !isConsole {
 		return fmt.Errorf("unexpected arguments")
@@ -145,6 +148,9 @@ func run(args []string) error {
 		if err != nil {
 			return err
 		}
+	}
+	if registry.Machine != nil && registry.Machine.Maintain != nil {
+		go registry.Machine.Maintain(ctx)
 	}
 	handler, err := app.NewHTTP(auth, health.Handler(dbCheck, health.Bao(bao)), registry)
 	if err != nil {

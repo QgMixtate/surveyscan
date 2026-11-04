@@ -1,6 +1,6 @@
 # Индекс чатов surveyscan v2
 
-Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07 — локальный collector/upload; C08 — live Linux host agent/heartbeat; C09 — отдельный Web UI/detail API; C10 recovery готов локально; C11–C50 planned.
+Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07 — локальный collector/upload; C08 — live Linux host agent/heartbeat; C09 — отдельный Web UI/detail API; C10 recovery готов локально; C11 в работе, C12–C50 planned.
 Один пакет ≈ один чат с возможным продолжением .a/.b. Вход — указанные зависимости с evidence.
 Не читать все 50 подробных файлов: выберите текущий ID и его spec sections.
 
@@ -16,7 +16,7 @@
 | [C08](packages/C08.md) | E1 | Минимальный host agent и первый живой цикл | C07 | [Запрос](prompts/C08.md) | done (локально) |
 | [C09](packages/C09.md) | E1 | Отдельный Web UI и базовая карточка | C06 | [Запрос](prompts/C09.md) | done (локально) |
 | [C10](packages/C10.md) | E1 | Долговечная доставка и восстановление | C08 | [Запрос](prompts/C10.md) | done (локально) |
-| [C11](packages/C11.md) | E1 | OpenBao и жизненный цикл машинных доступов | C10 | [Запрос](prompts/C11.md) | planned |
+| [C11](packages/C11.md) | E1 | OpenBao и жизненный цикл машинных доступов | C10 | [Запрос](prompts/C11.md) | in_progress (01/02 done) |
 | [C12](packages/C12.md) | E1 | CLI, управление циклом и наблюдаемость | C09, C11 | [Запрос](prompts/C12.md) | planned |
 | [C13](packages/C13.md) | E1 | Установка, сервисы, обновление и backup | C12 | [Запрос](prompts/C13.md) | planned |
 | [C14](packages/C14.md) | E1 | Приёмка и выпуск первого рабочего SMB | C13 | [Запрос](prompts/C14.md) | planned |

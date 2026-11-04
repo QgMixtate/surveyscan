@@ -6,6 +6,7 @@ import (
 	"math/rand/v2"
 	"time"
 
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/domain"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/jackc/pgx/v5"
 )
@@ -122,9 +123,13 @@ func (s *UploadService) renew(ctx context.Context, tenant, id, owner string) err
 	}
 	return tx.Commit(ctx)
 }
-func (s *UploadService) failClaim(tenant, id, owner string) {
+func (s *UploadService) failClaim(tenant, id, owner string, cause error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
+	if errors.Is(cause, domain.DependencyUnavailable) {
+		_, _ = s.Pool.Exec(ctx, "UPDATE imports.processing_claims SET state='retry',retry_at=clock_timestamp()+interval '30 seconds',failure_code='DEPENDENCY_UNAVAILABLE',owner=NULL,lease_until=NULL WHERE tenant_id=$1 AND delivery_id=$2 AND owner=$3", tenant, id, owner)
+		return
+	}
 	// Ошибка в журнале фиксированная: никакой raw payload/SQL/credential error text.
 	_, _ = s.Pool.Exec(ctx, `UPDATE imports.processing_claims SET failures=failures+1,state=CASE WHEN failures+1>=5 THEN 'dead_letter' ELSE 'retry' END,retry_at=clock_timestamp()+LEAST(4.0,0.25*power(2,LEAST(failures,4)))*$4*interval '1 second',failure_code='PROCESSING_FAILED',owner=NULL,lease_until=NULL WHERE tenant_id=$1 AND delivery_id=$2 AND owner=$3`, tenant, id, owner, (.75 + rand.Float64()*.5))
 }

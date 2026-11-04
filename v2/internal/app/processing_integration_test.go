@@ -286,3 +286,46 @@ func TestC10CommittedOriginRevocationDoesNotCorruptOriginalResult(t *testing.T) 
 }
 
 func canonicalText(raw []byte) string { v, _ := wire.Canonical(raw); return string(v) }
+
+type unavailableKey struct{}
+
+func (unavailableKey) Sign(context.Context, []byte) ([]byte, error) {
+	return nil, domain.DependencyUnavailable
+}
+func TestC11KeyDependencyOutageRetainsDataWithoutDeadLetter(t *testing.T) {
+	u := uploadSetup(t)
+	u.service.Signer = unavailableKey{}
+	batch, raw := u.batch(t, u.observation("1"))
+	if _, e := u.service.Stage(u.f.ctx, u.fingerprint, raw); e != nil {
+		t.Fatal(e)
+	}
+	for range 6 {
+		if _, e := u.f.pool.Exec(u.f.ctx, "UPDATE imports.processing_claims SET retry_at=NULL"); e != nil {
+			t.Fatal(e)
+		}
+		if _, e := u.service.Process(u.f.ctx, u.fingerprint, batch.DeliveryID); !errors.Is(e, domain.DependencyUnavailable) {
+			t.Fatal("dependency failure lost classification", e)
+		}
+	}
+	var state string
+	var failures int
+	if e := u.f.pool.QueryRow(u.f.ctx, "SELECT state,failures FROM imports.processing_claims").Scan(&state, &failures); e != nil || state != "retry" || failures != 0 {
+		t.Fatal("dependency outage dead-lettered valid data", state, failures, e)
+	}
+	count(t, u.f, "inventory.observations", 1)
+	count(t, u.f, "imports.import_checkpoints", 1)
+	var held bool
+	if e := u.f.pool.QueryRow(u.f.ctx, "SELECT payload IS NOT NULL AND receipt IS NULL FROM imports.delivery_payloads").Scan(&held); e != nil || !held {
+		t.Fatal("key outage discarded source data", e)
+	}
+	u.service.Signer = nil
+	if _, e := u.f.pool.Exec(u.f.ctx, "UPDATE imports.processing_claims SET retry_at=NULL"); e != nil {
+		t.Fatal(e)
+	}
+	receipt, e := u.service.Process(u.f.ctx, u.fingerprint, batch.DeliveryID)
+	if e != nil {
+		t.Fatal(e)
+	}
+	u.verifyReceipt(t, receipt, batch)
+	count(t, u.f, "inventory.observations", 1)
+}

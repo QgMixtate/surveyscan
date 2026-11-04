@@ -14,6 +14,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/audit"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/imports"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/sources"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/bao"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/pki"
 	"io"
@@ -22,6 +23,8 @@ import (
 )
 
 type MachineConfig struct {
+	BaoConfig         string `json:"openbao_config_file"`
+	CenterKeyID       string `json:"center_signing_key_id"`
 	DevMode           bool   `json:"dev_mode"`
 	Listen            string `json:"listen"`
 	CACertificate     string `json:"ca_certificate_file"`
@@ -67,7 +70,7 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 		return "", nil, errors.New("invalid machine configuration")
 	}
 	host, _, e := net.SplitHostPort(cfg.Listen)
-	if e != nil || !cfg.DevMode || (host != "127.0.0.1" && host != "localhost" && host != "::1") {
+	if e != nil || (cfg.BaoConfig == "" && (!cfg.DevMode || (host != "127.0.0.1" && host != "localhost" && host != "::1"))) {
 		return "", nil, errors.New("file-backed machine issuer requires explicit loopback dev mode; production issuer is C11")
 	}
 	caPEM, e := os.ReadFile(cfg.CACertificate)
@@ -82,26 +85,49 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 	if e != nil || !ca.IsCA {
 		return "", nil, errors.New("invalid CA certificate")
 	}
-	private, e := ReadPrivate(cfg.CAKey, 16384)
-	if e != nil {
-		return "", nil, e
-	}
-	block, rest = pem.Decode(private)
-	if block == nil || block.Type != "PRIVATE KEY" || len(bytes.TrimSpace(rest)) != 0 {
-		return "", nil, errors.New("PKCS8 CA key required")
-	}
-	key, e := x509.ParsePKCS8PrivateKey(block.Bytes)
-	if e != nil {
-		return "", nil, errors.New("invalid CA key")
-	}
-	signer, ok := key.(crypto.Signer)
-	if !ok {
-		return "", nil, errors.New("CA signing key required")
-	}
-	expected, _ := x509.MarshalPKIXPublicKey(ca.PublicKey)
-	actual, _ := x509.MarshalPKIXPublicKey(signer.Public())
-	if !bytes.Equal(expected, actual) {
-		return "", nil, errors.New("CA certificate/key mismatch")
+	var issuer pki.Issuer
+	var remote *bao.Client
+	if cfg.BaoConfig != "" {
+		if cfg.CAKey != "" || cfg.CenterKey != "" || !identifier.Valid(cfg.CenterKeyID) {
+			return "", nil, errors.New("OpenBao mode cannot use local private signing keys")
+		}
+		remote, e = bao.Load(cfg.BaoConfig)
+		if e != nil || (!cfg.DevMode && !remote.Secure()) {
+			return "", nil, errors.New("invalid scoped OpenBao configuration")
+		}
+		caPublic, e := remote.Public("ca")
+		if e != nil {
+			return "", nil, e
+		}
+		expected, _ := x509.MarshalPKIXPublicKey(ca.PublicKey)
+		actual, _ := x509.MarshalPKIXPublicKey(caPublic)
+		if !bytes.Equal(expected, actual) {
+			return "", nil, errors.New("CA public metadata mismatch")
+		}
+		issuer = bao.Issuer{Client: remote, Certificate: ca, Chain: caPEM}
+	} else {
+		private, e := ReadPrivate(cfg.CAKey, 16384)
+		if e != nil {
+			return "", nil, e
+		}
+		block, rest = pem.Decode(private)
+		if block == nil || block.Type != "PRIVATE KEY" || len(bytes.TrimSpace(rest)) != 0 {
+			return "", nil, errors.New("PKCS8 CA key required")
+		}
+		key, e := x509.ParsePKCS8PrivateKey(block.Bytes)
+		if e != nil {
+			return "", nil, errors.New("invalid CA key")
+		}
+		signer, ok := key.(crypto.Signer)
+		if !ok {
+			return "", nil, errors.New("CA signing key required")
+		}
+		expected, _ := x509.MarshalPKIXPublicKey(ca.PublicKey)
+		actual, _ := x509.MarshalPKIXPublicKey(signer.Public())
+		if !bytes.Equal(expected, actual) {
+			return "", nil, errors.New("CA certificate/key mismatch")
+		}
+		issuer = &pki.Authority{Certificate: ca, Key: signer, Chain: caPEM}
 	}
 	serverPEM, e := os.ReadFile(cfg.ServerCertificate)
 	if e != nil || len(serverPEM) > 65536 {
@@ -124,24 +150,48 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 	if _, e = leaf.Verify(x509.VerifyOptions{Roots: roots, KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}}); e != nil {
 		return "", nil, errors.New("server certificate not trusted by configured CA")
 	}
-	b, e = ReadPrivate(cfg.CenterKey, 4096)
-	if e != nil {
-		return "", nil, e
+	var centerID string
+	var public ed25519.PublicKey
+	var privateKey ed25519.PrivateKey
+	if remote != nil {
+		centerID = cfg.CenterKeyID
+		public, e = remote.Public("center")
+		if e != nil {
+			return "", nil, e
+		}
+		caPublic, _ := remote.Public("ca")
+		if bytes.Equal(public, caPublic) {
+			return "", nil, errors.New("CA and receipt keys must differ")
+		}
+	} else {
+		b, e = ReadPrivate(cfg.CenterKey, 4096)
+		if e != nil {
+			return "", nil, e
+		}
+		var center CenterKeyFile
+		if e = json.Unmarshal(b, &center); e != nil {
+			return "", nil, errors.New("invalid center signing configuration")
+		}
+		raw, e := base64.RawURLEncoding.Strict().DecodeString(center.Private)
+		if e != nil || len(raw) != ed25519.PrivateKeySize || !identifier.Valid(center.ID) {
+			return "", nil, errors.New("invalid center signing configuration")
+		}
+		privateKey = ed25519.PrivateKey(raw)
+		if !bytes.Equal(privateKey, ed25519.NewKeyFromSeed(privateKey.Seed())) {
+			return "", nil, errors.New("inconsistent center signing key")
+		}
+
+		centerID = center.ID
+		public = privateKey.Public().(ed25519.PublicKey)
 	}
-	var center CenterKeyFile
-	if e = json.Unmarshal(b, &center); e != nil {
-		return "", nil, errors.New("invalid center signing configuration")
+	machine := &sources.MachineService{Pool: r.Pool, Auth: auth, Audit: audit.Store{}, Issuer: issuer, Wire: r.Wire, CenterKeyID: centerID, CenterPublicKey: base64.RawURLEncoding.EncodeToString(public)}
+	uploads := &imports.UploadService{Pool: r.Pool, Auth: machine, Registry: MachineRegistry{Registry: r, Auth: machine}, Wire: r.Wire, KeyID: centerID, Key: privateKey}
+	if remote != nil {
+		uploads.Signer = bao.Operation{Client: remote, Alias: "center"}
 	}
-	raw, e := base64.RawURLEncoding.Strict().DecodeString(center.Private)
-	if e != nil || len(raw) != ed25519.PrivateKeySize || !identifier.Valid(center.ID) {
-		return "", nil, errors.New("invalid center signing configuration")
-	}
-	privateKey := ed25519.PrivateKey(raw)
-	if !bytes.Equal(privateKey, ed25519.NewKeyFromSeed(privateKey.Seed())) {
-		return "", nil, errors.New("inconsistent center signing key")
-	}
-	machine := &sources.MachineService{Pool: r.Pool, Auth: auth, Audit: audit.Store{}, Issuer: &pki.Authority{Certificate: ca, Key: signer, Chain: caPEM}, Wire: r.Wire, CenterKeyID: center.ID, CenterPublicKey: base64.RawURLEncoding.EncodeToString(privateKey.Public().(ed25519.PublicKey))}
-	uploads := &imports.UploadService{Pool: r.Pool, Auth: machine, Registry: MachineRegistry{Registry: r, Auth: machine}, Wire: r.Wire, KeyID: center.ID, Key: privateKey}
 	r.Machine = &MachineAPI{Sources: machine, Uploads: uploads}
+	if remote != nil {
+		r.Machine.Maintain = remote.Maintain
+	}
 	return cfg.Listen, &tls.Config{MinVersion: tls.VersionTLS12, Certificates: []tls.Certificate{pair}, ClientCAs: roots, ClientAuth: tls.VerifyClientCertIfGiven}, nil
 }

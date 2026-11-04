@@ -252,3 +252,11 @@ R-019 продолжение: пользователь «дальше, дела�
 C10 завершён локально: handoffs/C10.md,30 migrations/40 tables,22unit/42PG/58fixtures,8process recovery,
 1 real ENOSPC/14 browser checks passed.40/200done. Далее автоматически C11 OpenBao/PKI.
 Никаких push/merge/deploy или повторной публикации среды.
+
+C11 в работе локально: 01/02 done,03/04 in_progress (42/200 done). Scoped OpenBao KV/Transit,
+non-exportable CA/receipt keys, private token/policy, declarative masked audit, no private-key fallback.
+4 live scoped checks +15 compiled pipeline checks passed: actual seal/unseal, readonly sealed restart,
+staging retained→automatic ACK/no duplicates. make verify/build и43PG passed.
+Renewal/rotation/clone matrix ещё не готова; продолжать C11.03, не переходить к C12.
+Передача plans/surveyscan-v2/handoffs/C11.md; production HTTPS/custody/restore rehearsal unrun.
+Без push/merge/deploy/повторной публикации среды.
