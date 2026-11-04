@@ -29,13 +29,13 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
 C04/0.5/план опубликованы в codex/v2-c04-foundation (7407da6); C05 — ветка codex/v2-c05-auth. Main не слит. Точные publication refs — в STATUS/evidence; не выдавать local tests за hosted CI.
 Планирование не означает разрешение сразу реализовать все пакеты или выполнить production deployment.
-Следующий пакет — C07; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
+Следующий пакет — C08; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
 Матрица замечаний: docs/specifications/requirements-traceability-v0.5.md;
 исследование аналогов: docs/research/inventory-platform-analogues.md.
 Правила snapshot/dashboard ниже относятся к текущей Python v1, не архитектуре v2.
@@ -57,3 +57,5 @@ C04: docs/plans/surveyscan-v2/handoffs/C04.md. Новый v2/ с 18 embedded PG 
 C05: docs/plans/surveyscan-v2/handoffs/C05.md. Argon2id и PG-backed sessions/CLI tokens, Origin/CSRF, роли и server-derived tenant, access/port.Authorizer для повторной проверки в write transaction. Human domain gates пока 501, machine API 401 до PKI. Новая migration 0018, всего 19; applied SQL не менять. 10 unit/11 PG integration tests и binary/restart smoke passed локально. api.github.com требуется применить в настройках среды для проверки hosted CI.
 
 C06: docs/plans/surveyscan-v2/handoffs/C06.md. Registry.Ingest внутренний, проверяет C03 JCS/SHA256/Ed25519 и source bindings; GET/list/PATCH assets реальны. Новые migrations0019–0024, всего25; SQL commit guards требуют history/event/audit. Network IP/MAC хранятся, публичный shape C09. Consumer registry-version атомарен и monotonic. 14 unit/20 real PG tests passed. C04/C05 hosted CI уже подтверждён через GitHub API; прежние network-blocker записи исторические. R-019 требует автоматически переходить к следующему проверенному этапу до лимита, сохраняя handoff.
+
+C07: handoffs/C07.md. Enrollment/CA-attested identities/center-key trust, mTLS collector daemon и durable staging/receipts готовы локально. 27 migrations/36 tables, 14 unit/31 PG integration + compiled server/collector E2E passed. Machine TLS включается только явным private dev config; production OpenBao issuer C11. Agent/heartbeat — C08, hardening recovery/quota C10. C06/C07 не опубликованы.

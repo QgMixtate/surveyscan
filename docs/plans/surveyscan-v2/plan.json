@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C06 done; C07-C50 planned",
+  "status": "C01-C07 done; C08-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -630,8 +630,14 @@
           "output": "Machine identity и привязка site/tenant с ограниченными правами",
           "verification": "Незарегистрированный/отозванный collector отклоняется",
           "estimation_basis": "1 enrollment flow и identity lifecycle базового ADR",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "../../../v2/internal/modules/sources/enrollment.go",
+            "../../../v2/internal/platform/pki/issuer.go",
+            "evidence/C07-runtime.json"
+          ],
+          "verification_status": "passed local real PG/x509/mTLS and compiled server/collector; synthetic source; hosted C07 unrun"
         },
         {
           "id": "C07.02",
@@ -643,8 +649,13 @@
           "output": "Staging/validation/checkpoints и передача в реестр",
           "verification": "Размер, схема, digest и tenant проверяются до применения",
           "estimation_basis": "E1 JSON/stream envelope; крупный portable archive позже C23",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/internal/modules/imports/upload.go",
+            "evidence/C07-runtime.json"
+          ],
+          "verification_status": "passed local real PG/x509/mTLS and compiled server/collector; synthetic source; hosted C07 unrun"
         },
         {
           "id": "C07.03",
@@ -656,8 +667,13 @@
           "output": "HTTPS endpoint приёма наблюдений и outbound доставка в центр",
           "verification": "Источник и provenance не подменяются collector metadata",
           "estimation_basis": "1 collector; agent ingress и center egress",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/internal/collector/collector.go",
+            "evidence/C07-runtime.json"
+          ],
+          "verification_status": "passed local real PG/x509/mTLS and compiled server/collector; synthetic source; hosted C07 unrun"
         },
         {
           "id": "C07.04",
@@ -669,12 +685,26 @@
           "output": "Прогон контрактного источника через collector в PG",
           "verification": "Результат виден в API со статусом applied и mapping UID",
           "estimation_basis": "Синтетические fixtures C03; это ещё не проверка реального host agent",
-          "status": "planned",
-          "work_group": "Проверка и передача"
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "../../../v2/internal/app/collector_integration_test.go",
+            "../../../v2/scripts/machine_smoke.py",
+            "evidence/C07-runtime.json"
+          ],
+          "verification_status": "passed local real PG/x509/mTLS and compiled server/collector; synthetic source; hosted C07 unrun"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "authorization_note": "R-019: automatically continue after verified C06; local changes only.",
+      "completed_at": "2026-11-04",
+      "evidence": [
+        "handoffs/C07.md",
+        "decisions/C07-collector.md",
+        "evidence/C07-runtime.json",
+        "evidence/C07-validation.json"
+      ]
     },
     {
       "id": "C08",
@@ -3513,7 +3543,8 @@
       "C03",
       "C04",
       "C05",
-      "C06"
+      "C06",
+      "C07"
     ],
     "done_tasks": [
       "C01.01",
@@ -3539,9 +3570,13 @@
       "C06.01",
       "C06.02",
       "C06.03",
-      "C06.04"
+      "C06.04",
+      "C07.01",
+      "C07.02",
+      "C07.03",
+      "C07.04"
     ],
-    "next_package": "C07",
+    "next_package": "C08",
     "product_implementation_started": true
   }
 }

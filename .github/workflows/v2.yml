@@ -39,6 +39,8 @@ jobs:
         run: python scripts/smoke.py
       - name: Real binary auth, console bootstrap and restart checks
         run: python scripts/auth_smoke.py
+      - name: Compiled collector, mTLS and signed center result
+        run: .contract-tools/bin/python scripts/machine_smoke.py
       - name: Retain sanitized reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -49,6 +51,7 @@ jobs:
             v2/.local/contracts-validation.json
             v2/.local/smoke.json
             v2/.local/auth-smoke.json
+            v2/.local/machine-smoke.json
           if-no-files-found: ignore
       - name: Stop isolated development stack
         if: always()

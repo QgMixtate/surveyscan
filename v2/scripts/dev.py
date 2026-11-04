@@ -49,7 +49,7 @@ def up():
  compose('build','backend','migrate')
  compose('run','--rm','migrate')
  compose('up','--detach','--wait','backend','edge')
- print('C06 infrastructure ready; registry/auth available; machine transport pending C07.')
+ print('Development infrastructure ready; machine TLS requires explicit private configuration (scripts/machine_smoke.py).')
 def testenv():
  initialize();env=dict(ENV)
  env['SURVEYSCAN_TEST_DATABASE_URL']='postgres://surveyscan_v2@127.0.0.1:55432/surveyscan_v2?sslmode=disable'

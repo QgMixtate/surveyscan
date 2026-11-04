@@ -31,7 +31,7 @@ func New() (*Validator, error) {
 		return nil, e
 	}
 	v := &Validator{schemas: map[string]*jsonschema.Schema{}}
-	for _, n := range []string{"SignedObservation", "BusinessPatch", "Asset", "AssetPage", "OutboxEvent"} {
+	for _, n := range []string{"SignedObservation", "BusinessPatch", "Asset", "AssetPage", "OutboxEvent", "EnrollmentGrantRequest", "EnrollmentGrant", "EnrollmentRequest", "EnrollmentResult", "MachineConfig", "RevocationRequest", "Batch", "RecordResult", "SignedCenterResult", "TransportReceipt", "Source", "SourcePage"} {
 		s, e := c.Compile(id + "#/$defs/" + n)
 		if e != nil {
 			return nil, e
@@ -49,6 +49,17 @@ func bounded(v any, depth int) bool {
 		return !strings.ContainsRune(x, 0)
 	case map[string]any:
 		for k, a := range x {
+			switch k {
+			case "source_sequence", "heartbeat_sequence", "aggregate_version", "lease_version", "revision", "business_revision", "profile_revision", "result_revision":
+				str, ok := a.(string)
+				if !ok {
+					return false
+				}
+				n, e := strconv.ParseUint(str, 10, 64)
+				if e != nil || n == 0 {
+					return false
+				}
+			}
 			if strings.ContainsRune(k, 0) || !bounded(a, depth+1) {
 				return false
 			}

@@ -16,6 +16,11 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 	implementations := map[string]http.Handler{}
 	if len(registry) > 0 && registry[0] != nil {
 		implementations = registry[0].Handlers()
+		if registry[0].Machine != nil {
+			for operation, handler := range registry[0].Machine.human() {
+				implementations[operation] = handler
+			}
+		}
 	}
 	var api struct {
 		Paths map[string]map[string]struct {
@@ -37,7 +42,11 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 			}
 			pattern := strings.ToUpper(method) + " " + path
 			if strings.HasPrefix(path, "/api/v1/machine/") {
-				mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) { access.APIError(w, 401, "AUTHENTICATION_REQUIRED") })
+				if len(registry) > 0 && registry[0] != nil && registry[0].Machine != nil {
+					mux.Handle(pattern, registry[0].Machine.machine(op.OperationID))
+				} else {
+					mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) { access.APIError(w, 401, "AUTHENTICATION_REQUIRED") })
+				}
 				continue
 			}
 			action, ok := policies[op.OperationID]

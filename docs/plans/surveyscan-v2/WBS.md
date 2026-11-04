@@ -1,6 +1,6 @@
 # Полный WBS surveyscan v2
 
-Версия плана 1.0 по архитектуре 0.5. C01–C06: 24 подзадачи done; остальные 176 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
+Версия плана 1.0 по архитектуре 0.5. C01–C07: 28 подзадач done; остальные 172 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
 
 
 # C01 — Границы первого релиза и карта решений (E0)
@@ -346,7 +346,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Machine identity и привязка site/tenant с ограниченными правами.
 - Проверка: Незарегистрированный/отозванный collector отклоняется.
 - База оценки: 1 enrollment flow и identity lifecycle базового ADR.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C07](evidence/C07-runtime.json), [передача](handoffs/C07.md).
 
 ## C07.02 — Реализовать центральный upload/status pipeline
 
@@ -356,7 +356,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Staging/validation/checkpoints и передача в реестр.
 - Проверка: Размер, схема, digest и tenant проверяются до применения.
 - База оценки: E1 JSON/stream envelope; крупный portable archive позже C23.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C07](evidence/C07-runtime.json), [передача](handoffs/C07.md).
 
 ## C07.03 — Реализовать collector ingress для агента
 
@@ -366,7 +366,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: HTTPS endpoint приёма наблюдений и outbound доставка в центр.
 - Проверка: Источник и provenance не подменяются collector metadata.
 - База оценки: 1 collector; agent ingress и center egress.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C07](evidence/C07-runtime.json), [передача](handoffs/C07.md).
 
 ## C07.04 — Проверить минимальный сквозной путь
 
@@ -376,7 +376,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Прогон контрактного источника через collector в PG.
 - Проверка: Результат виден в API со статусом applied и mapping UID.
 - База оценки: Синтетические fixtures C03; это ещё не проверка реального host agent.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C07](evidence/C07-runtime.json), [передача](handoffs/C07.md).
 
 ## Выход пакета
 

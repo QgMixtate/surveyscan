@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"net/http"
@@ -137,6 +138,14 @@ func run(args []string) error {
 	if err != nil {
 		return err
 	}
+	machineListen := ""
+	var machineTLS *tls.Config
+	if path := os.Getenv("SURVEYSCAN_V2_MACHINE_CONFIG"); path != "" {
+		machineListen, machineTLS, err = app.ConfigureMachine(path, registry, authService)
+		if err != nil {
+			return err
+		}
+	}
 	handler, err := app.NewHTTP(auth, health.Handler(dbCheck, health.Bao(bao)), registry)
 	if err != nil {
 		return err
@@ -166,7 +175,14 @@ func run(args []string) error {
 			}
 		}
 	}()
-	finished := make(chan error, 1)
+	finished := make(chan error, 2)
+	var machineServer *http.Server
+	if machineTLS != nil {
+		machineServer = &http.Server{Addr: machineListen, Handler: handler, TLSConfig: machineTLS, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16384}
+		defer machineServer.Close()
+		go func() { finished <- machineServer.ListenAndServeTLS("", "") }()
+	}
+	defer server.Close()
 	go func() { finished <- server.ListenAndServe() }()
 	fmt.Println("surveyscan v2 C06 registry server started; machine transport pending C07")
 	select {
@@ -178,6 +194,9 @@ func run(args []string) error {
 	case <-ctx.Done():
 		shutdown, done := context.WithTimeout(context.Background(), 5*time.Second)
 		defer done()
+		if machineServer != nil {
+			_ = machineServer.Shutdown(shutdown)
+		}
 		return server.Shutdown(shutdown)
 	}
 }

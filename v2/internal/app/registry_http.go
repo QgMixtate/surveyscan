@@ -21,6 +21,10 @@ func registryError(w http.ResponseWriter, e error) {
 	switch {
 	case errors.Is(e, domain.NotFound):
 		status, code = 404, "NOT_FOUND"
+	case errors.Is(e, domain.Unauthorized):
+		status, code = 401, "AUTHENTICATION_REQUIRED"
+	case errors.Is(e, domain.Conflict):
+		status, code = 409, "CONFLICT"
 	case errors.Is(e, domain.Revision):
 		status, code = 412, "REVISION_MISMATCH"
 	case errors.Is(e, domain.Invalid):

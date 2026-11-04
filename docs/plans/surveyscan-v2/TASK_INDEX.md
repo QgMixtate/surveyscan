@@ -1,6 +1,6 @@
 # Индекс чатов surveyscan v2
 
-Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07–C50 planned.
+Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07 — локальный collector/upload; C08–C50 planned.
 Один пакет ≈ один чат с возможным продолжением .a/.b. Вход — указанные зависимости с evidence.
 Не читать все 50 подробных файлов: выберите текущий ID и его spec sections.
 
@@ -12,7 +12,7 @@
 | [C04](packages/C04.md) | E1 | Go-каркас и воспроизводимый dev-стенд | C03 | [Запрос](prompts/C04.md) | done (локально) |
 | [C05](packages/C05.md) | E1 | Пользователи, tenant scope и базовая авторизация | C04 | [Запрос](prompts/C05.md) | done (локально) |
 | [C06](packages/C06.md) | E1 | Постоянный реестр, история и outbox | C05 | [Запрос](prompts/C06.md) | done (локально) |
-| [C07](packages/C07.md) | E1 | Площадочный collector и приём результатов | C06 | [Запрос](prompts/C07.md) | planned |
+| [C07](packages/C07.md) | E1 | Площадочный collector и приём результатов | C06 | [Запрос](prompts/C07.md) | done (локально) |
 | [C08](packages/C08.md) | E1 | Минимальный host agent и первый живой цикл | C07 | [Запрос](prompts/C08.md) | planned |
 | [C09](packages/C09.md) | E1 | Отдельный Web UI и базовая карточка | C06 | [Запрос](prompts/C09.md) | planned |
 | [C10](packages/C10.md) | E1 | Долговечная доставка и восстановление | C08 | [Запрос](prompts/C10.md) | planned |

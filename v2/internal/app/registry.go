@@ -26,6 +26,7 @@ type EventSink interface {
 	Emit(context.Context, pgx.Tx, messaging.Event) error
 }
 type Registry struct {
+	Machine   *MachineAPI
 	Pool      *pgxpool.Pool
 	Auth      access.Authorizer
 	Sources   sourceport.Reader
@@ -65,6 +66,9 @@ func (r *Registry) assetEvent(ctx context.Context, tx pgx.Tx, tenant, uid, versi
 // Ingest вызывается доверенным transport adapter после проверки его tenant/source principal.
 // Origin key, generation, namespace и scope повторно проверяются внутри transaction.
 func (r *Registry) Ingest(ctx context.Context, tenant, source string, raw []byte) (inventory.Result, error) {
+	return r.IngestAuthorized(ctx, tenant, source, raw, nil)
+}
+func (r *Registry) IngestAuthorized(ctx context.Context, tenant, source string, raw []byte, authorize func(context.Context, pgx.Tx, contracts.Observation) error) (inventory.Result, error) {
 	signed, o, canonical, e := r.Wire.Observation(raw)
 	if e != nil {
 		return inventory.Result{}, e
@@ -79,6 +83,11 @@ func (r *Registry) Ingest(ctx context.Context, tenant, source string, raw []byte
 	defer tx.Rollback(ctx)
 	if e = lockRegistry(ctx, tx, tenant); e != nil {
 		return inventory.Result{}, e
+	}
+	if authorize != nil {
+		if e = authorize(ctx, tx, o); e != nil {
+			return inventory.Result{}, e
+		}
 	}
 	trust, e := r.Sources.Trust(ctx, tx, o, signed.KeyID)
 	if e != nil {

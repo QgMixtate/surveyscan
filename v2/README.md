@@ -124,3 +124,15 @@ transport/enrollment — C07. IP/MAC сохраняются в current_facts; C0
 Combined server обрабатывает PG outbox consumer registry-version каждые 2s без внешней шины.
 Новые guards отклоняют asset/fact/business mutation без history/outbox/audit в той же transaction.
 C04/C05 SQL не редактировать, данные не сбрасывать. Default dev compose project name сохранён ради volumes.
+
+## C07: collector и machine transport
+
+27 forward-only migrations, 36 domain/access tables. [Передача](../docs/plans/surveyscan-v2/handoffs/C07.md),
+[политика TLS/ACK](../docs/plans/surveyscan-v2/decisions/C07-collector.md).
+`surveyscan-collector run --config /secure/collector.json` запускает HTTPS relay и durable spool.
+Центр включает machine TLS только через `SURVEYSCAN_V2_MACHINE_CONFIG=/secure/machine.json` (dev loopback).
+Формат private configs и полный воспроизводимый запуск — `scripts/machine_smoke.py`:
+запускать Python из contract venv после make build/dev.py up. Скрипт создаёт временную БД/PKI и удаляет их.
+Заранее доверенный CA проверяется всегда; ключ подписания ACK аттестован CA в identity certificate.
+Частные ключи/конфиги 0600, spool0700; не включать в Git или CI artifacts. Production Bao issuer — C11.
+Heartbeat, live host agent и automatic enrollment client — C08; production recovery/quota hardening — C10.

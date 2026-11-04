@@ -1,15 +1,16 @@
 # Текущее состояние surveyscan
 
-Обновлено: 2026-11-04 (Москва). Основание: git fetch/ls-remote, локальные проверки и история чата; GitHub REST API сейчас заблокирован.
+Обновлено: 2026-11-04 (Москва). Основание: git fetch/ls-remote, локальные проверки и история чата; GitHub REST API доступен; C04/C05 PR остаются открыты.
 
 
 Актуальная задача R-019 — последовательно выполнять этапы до лимита.
-C06 завершён локально: [передача](plans/surveyscan-v2/handoffs/C06.md). 25 migrations/32 tables,
-реестр/подписанный ingest/current facts, fallback ответственность, history/audit/outbox и consumer.
-14 unit + 20 PG integration tests, C03 corpus, binary auth и outage/restart smoke passed.
-C04/C05 hosted CI success подтверждён; GitHub API работает после публикации среды пользователем.
-C06 не опубликован, main/merge/production не менялись. Далее C07 (collector/enrollment/upload).
-Прогресс 24/200; user требует автоматически переходить к следующему этапу после проверок.
+C06 и C07 завершены локально, main/merge/production не менялись.
+[C07 передача](plans/surveyscan-v2/handoffs/C07.md): enrollment/mTLS, collector daemon,
+staging/checkpoints, подписанные center ACK; 27 migrations/36 tables.
+14 unit + 31 PG integration, C03 58 fixtures, 8 compiled E2E, 10 auth и 6 infrastructure checks passed.
+Источник в C07 синтетический; реальный host agent и heartbeat — C08.
+C04/C05 hosted CI success; C06/C07 не опубликованы. Прогресс 28/200, следующий C08.
+Настройки среды повторно не применяются и не публикуются.
 
 ## Контекст архитектуры и история C01–C04
 

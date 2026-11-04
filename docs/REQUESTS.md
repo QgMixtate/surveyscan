@@ -225,7 +225,10 @@ Make verify/build и полный suite (10 unit + 11 real PG integration) по�
 C06 завершён локально в codex/v2-c06-registry от C05 f64cb89. C04/C05 hosted CI теперь подтверждён success через API.
 Предыдущие настройки среды повторно не применяются. Публикация/merge в текущем продолжении не выполняются.
 C06: 25 migrations, 14 unit/20 real PG tests, C03 и live smoke passed; 24/200 done.
-Передача handoffs/C06.md. Далее автоматически начать C07 и фиксировать фактический progress.
+Передача handoffs/C06.md. C06 checkpoint 2a217b9.
+C07 также завершён локально: handoffs/C07.md, 27 migrations/36 tables, 14 unit/31 PG tests,
+8 compiled server/collector TLS E2E + regression checks passed. Источник C07 синтетический.
+Прогресс 28/200; далее автоматически C08: реальный host agent/регулярный цикл/heartbeat.
 
 ## Шаблон новой записи
 - ID и дата:

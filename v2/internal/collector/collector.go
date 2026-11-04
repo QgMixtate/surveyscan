@@ -1,0 +1,482 @@
+// Package collector реализует ограниченный HTTPS relay с durable spool.
+package collector
+
+import (
+	"bytes"
+	"context"
+	"crypto/ed25519"
+	"crypto/sha256"
+	"crypto/tls"
+	"crypto/x509"
+	"encoding/base64"
+	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/QgMixtate/surveyscan/v2/contracts"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/pki"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/privatefile"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
+	"io"
+	"net"
+	"net/http"
+	"net/url"
+	"os"
+	"path/filepath"
+	"strings"
+	"sync"
+	"time"
+)
+
+type Config struct {
+	Listen      string `json:"listen"`
+	CenterURL   string `json:"center_url"`
+	Certificate string `json:"certificate_file"`
+	PrivateKey  string `json:"private_key_file"`
+	CA          string `json:"ca_certificate_file"`
+	Spool       string `json:"spool_directory"`
+	Limit       int64  `json:"spool_limit_bytes"`
+}
+type packet struct {
+	Tenant  string          `json:"tenant"`
+	Source  string          `json:"source"`
+	ID      string          `json:"delivery_id"`
+	Digest  string          `json:"batch_digest"`
+	Batch   json.RawMessage `json:"batch,omitempty"`
+	Receipt json.RawMessage `json:"receipt,omitempty"`
+}
+type Collector struct {
+	Config Config
+	Claims pki.Claims
+	TLS    *tls.Config
+	client *http.Client
+	wire   *wire.Validator
+	mu     sync.Mutex
+}
+
+func Load(path string) (*Collector, error) {
+	raw, e := privatefile.Read(path, 65536)
+	if e != nil {
+		return nil, e
+	}
+	var cfg Config
+	d := json.NewDecoder(bytes.NewReader(raw))
+	d.DisallowUnknownFields()
+	if e = d.Decode(&cfg); e != nil {
+		return nil, errors.New("invalid collector configuration")
+	}
+	var extra any
+	if d.Decode(&extra) != io.EOF {
+		return nil, errors.New("invalid collector configuration")
+	}
+	return New(cfg)
+}
+func New(cfg Config) (*Collector, error) {
+	if cfg.Listen == "" {
+		return nil, errors.New("explicit collector listen address required")
+	}
+	if _, _, e := net.SplitHostPort(cfg.Listen); e != nil {
+		return nil, errors.New("invalid collector listen address")
+	}
+	u, e := url.Parse(cfg.CenterURL)
+	if e != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") {
+		return nil, errors.New("HTTPS center origin required")
+	}
+	cfg.CenterURL = strings.TrimRight(cfg.CenterURL, "/")
+	if cfg.Limit == 0 {
+		cfg.Limit = 64 * 1024 * 1024
+	}
+	if cfg.Limit < 524288 || cfg.Limit > 1073741824 || cfg.Spool == "" {
+		return nil, errors.New("bounded private spool required")
+	}
+	certificate, e := os.ReadFile(cfg.Certificate)
+	if e != nil || len(certificate) > 65536 {
+		return nil, errors.New("collector certificate unavailable")
+	}
+	key, e := privatefile.Read(cfg.PrivateKey, 16384)
+	if e != nil {
+		return nil, e
+	}
+	pair, e := tls.X509KeyPair(certificate, key)
+	if e != nil {
+		return nil, errors.New("invalid collector certificate/key")
+	}
+	leaf, e := x509.ParseCertificate(pair.Certificate[0])
+	if e != nil {
+		return nil, e
+	}
+	ca, e := os.ReadFile(cfg.CA)
+	if e != nil || len(ca) > 65536 {
+		return nil, errors.New("collector CA unavailable")
+	}
+	roots := x509.NewCertPool()
+	if !roots.AppendCertsFromPEM(ca) {
+		return nil, errors.New("invalid collector CA")
+	}
+	if _, e = leaf.Verify(x509.VerifyOptions{Roots: roots, KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth}}); e != nil {
+		return nil, errors.New("collector certificate not trusted")
+	}
+	claims, e := pki.ClaimsFromCertificate(leaf)
+	if e != nil || claims.Kind != "collector" || claims.Collector == "" || claims.CenterKeyID == "" || len(claims.CenterPublic) != 32 {
+		return nil, errors.New("collector requires CA-attested identity and center verification key")
+	}
+	if e = os.MkdirAll(cfg.Spool, 0700); e != nil {
+		return nil, e
+	}
+	if e = os.Chmod(cfg.Spool, 0700); e != nil {
+		return nil, e
+	}
+	v, e := wire.New()
+	if e != nil {
+		return nil, e
+	}
+	client := &http.Client{Timeout: 12 * time.Second, Transport: &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: roots, Certificates: []tls.Certificate{pair}}}, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
+	return &Collector{Config: cfg, Claims: claims, TLS: &tls.Config{MinVersion: tls.VersionTLS12, Certificates: []tls.Certificate{pair}, ClientCAs: roots, ClientAuth: tls.VerifyClientCertIfGiven}, client: client, wire: v}, nil
+}
+func atomicWrite(path string, raw []byte) error {
+	f, e := os.CreateTemp(filepath.Dir(path), ".spool-*")
+	if e != nil {
+		return e
+	}
+	name := f.Name()
+	defer os.Remove(name)
+	if _, e = f.Write(raw); e != nil {
+		f.Close()
+		return e
+	}
+	if e = f.Sync(); e != nil {
+		f.Close()
+		return e
+	}
+	if e = f.Close(); e != nil {
+		return e
+	}
+	if e = os.Rename(name, path); e != nil {
+		return e
+	}
+	dir, e := os.Open(filepath.Dir(path))
+	if e != nil {
+		return e
+	}
+	defer dir.Close()
+	return dir.Sync()
+}
+func (c *Collector) path(id, suffix string) string {
+	return filepath.Join(c.Config.Spool, strings.ToLower(id)+suffix)
+}
+func readPacket(path string) (packet, error) {
+	var p packet
+	raw, e := privatefile.Read(path, 2*1048576)
+	if e != nil {
+		return p, e
+	}
+	e = json.Unmarshal(raw, &p)
+	if e == nil && (!identifier.Valid(p.ID) || !identifier.Valid(p.Tenant) || !identifier.Valid(p.Source)) {
+		return p, errors.New("invalid spool identity")
+	}
+	if e == nil && len(p.Batch) > 0 {
+		canonical, err := wire.Canonical(p.Batch)
+		if err != nil {
+			return p, errors.New("invalid spool payload")
+		}
+		sum := sha256.Sum256(canonical)
+		if hex.EncodeToString(sum[:]) != p.Digest {
+			return p, errors.New("spool digest mismatch")
+		}
+	}
+	return p, e
+}
+func (c *Collector) peer(r *http.Request) (pki.Claims, error) {
+	if r.TLS == nil || len(r.TLS.VerifiedChains) == 0 || len(r.TLS.PeerCertificates) == 0 {
+		return pki.Claims{}, errors.New("client authentication required")
+	}
+	claims, e := pki.ClaimsFromCertificate(r.TLS.PeerCertificates[0])
+	if e != nil || claims.Kind != "agent" || claims.Tenant != c.Claims.Tenant || claims.Collector != c.Claims.Collector {
+		return claims, errors.New("agent scope mismatch")
+	}
+	return claims, nil
+}
+func reply(w http.ResponseWriter, status int, value any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "no-store")
+	w.Header().Set("X-Content-Type-Options", "nosniff")
+	w.WriteHeader(status)
+	_ = json.NewEncoder(w).Encode(value)
+}
+func failure(w http.ResponseWriter, status int, code string) {
+	reply(w, status, map[string]any{"code": code, "message": "Запрос не выполнен", "request_id": identifier.New(), "details": []any{}})
+}
+func (c *Collector) post(ctx context.Context, path string, raw []byte, token string) (int, []byte, error) {
+	req, e := http.NewRequestWithContext(ctx, "POST", c.Config.CenterURL+path, bytes.NewReader(raw))
+	if e != nil {
+		return 0, nil, e
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	response, e := c.client.Do(req)
+	if e != nil {
+		return 0, nil, e
+	}
+	defer response.Body.Close()
+	b, e := io.ReadAll(io.LimitReader(response.Body, 2*1048576+1))
+	if e != nil || len(b) > 2*1048576 {
+		return response.StatusCode, nil, errors.New("center response too large")
+	}
+	return response.StatusCode, b, nil
+}
+func (c *Collector) Handler() http.Handler {
+	mux := http.NewServeMux()
+	mux.HandleFunc("POST /api/v1/machine/enroll", func(w http.ResponseWriter, r *http.Request) {
+		if r.TLS == nil {
+			failure(w, 401, "AUTHENTICATION_REQUIRED")
+			return
+		}
+		headers := r.Header.Values("Authorization")
+		if len(headers) != 1 {
+			failure(w, 401, "AUTHENTICATION_REQUIRED")
+			return
+		}
+		parts := strings.Fields(headers[0])
+		if len(parts) != 2 || !strings.EqualFold(parts[0], "Bearer") || len(parts[1]) != 43 {
+			failure(w, 401, "AUTHENTICATION_REQUIRED")
+			return
+		}
+		raw, e := io.ReadAll(http.MaxBytesReader(w, r.Body, 65536))
+		if e != nil {
+			failure(w, 413, "PAYLOAD_TOO_LARGE")
+			return
+		}
+		if e = c.wire.Validate("EnrollmentRequest", raw); e != nil {
+			failure(w, 422, "SCHEMA_INVALID")
+			return
+		}
+		status, b, e := c.post(r.Context(), "/api/v1/machine/enroll", raw, parts[1])
+		if e != nil {
+			failure(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
+		if status != 201 {
+			failure(w, status, "ENROLLMENT_REJECTED")
+			return
+		}
+		if e = c.wire.Validate("EnrollmentResult", b); e != nil {
+			failure(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.WriteHeader(201)
+		_, _ = w.Write(b)
+	})
+	mux.HandleFunc("POST /api/v1/machine/observations", func(w http.ResponseWriter, r *http.Request) {
+		claims, e := c.peer(r)
+		if e != nil {
+			failure(w, 401, "AUTHENTICATION_REQUIRED")
+			return
+		}
+		raw, e := io.ReadAll(http.MaxBytesReader(w, r.Body, 1048576))
+		if e != nil {
+			failure(w, 413, "PAYLOAD_TOO_LARGE")
+			return
+		}
+		if e = c.wire.Validate("Batch", raw); e != nil {
+			failure(w, 422, "SCHEMA_INVALID")
+			return
+		}
+		var batch contracts.Batch
+		_ = json.Unmarshal(raw, &batch)
+		if batch.TenantID != claims.Tenant {
+			failure(w, 403, "FORBIDDEN")
+			return
+		}
+		seen := map[string]bool{}
+		for _, record := range batch.Records {
+			signed, o, canonical, e := c.wire.Observation(record)
+			if e != nil || o.TenantID != claims.Tenant || o.Origin.SourceID != claims.Source || o.Origin.GenerationID != claims.Generation || o.Origin.SourceKind != "agent" || signed.KeyID != claims.KeyID || seen[o.ID] {
+				failure(w, 422, "SCHEMA_INVALID")
+				return
+			}
+			sum := sha256.Sum256(canonical)
+			sig, e := base64.RawURLEncoding.Strict().DecodeString(signed.Signature)
+			if e != nil || signed.Digest != hex.EncodeToString(sum[:]) || !ed25519.Verify(claims.SigningPublic, append([]byte("SURVEYSCAN-OBSERVATION-V1\n"), canonical...), sig) {
+				failure(w, 422, "SIGNATURE_INVALID")
+				return
+			}
+			seen[o.ID] = true
+		}
+		canonical, e := wire.Canonical(raw)
+		if e != nil {
+			failure(w, 422, "SCHEMA_INVALID")
+			return
+		}
+		sum := sha256.Sum256(canonical)
+		p := packet{Tenant: claims.Tenant, Source: claims.Source, ID: batch.DeliveryID, Digest: hex.EncodeToString(sum[:]), Batch: canonical}
+		c.mu.Lock()
+		defer c.mu.Unlock()
+		for _, suffix := range []string{".pending", ".receipt"} {
+			if old, e := readPacket(c.path(p.ID, suffix)); e == nil {
+				if old.Tenant != p.Tenant || old.Source != p.Source || old.Digest != p.Digest {
+					failure(w, 409, "CONFLICT")
+					return
+				}
+				reply(w, 202, contracts.TransportReceipt{Type: "transport", TenantID: p.Tenant, DeliveryID: p.ID, Digest: p.Digest, Stage: "collector_received", SpoolAction: "retain", RequestID: identifier.New()})
+				return
+			}
+		}
+		entries, e := os.ReadDir(c.Config.Spool)
+		if e != nil {
+			failure(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
+		var used int64
+		for _, entry := range entries {
+			if strings.HasSuffix(entry.Name(), ".pending") {
+				info, e := entry.Info()
+				if e != nil {
+					failure(w, 503, "TEMPORARILY_UNAVAILABLE")
+					return
+				}
+				used += info.Size()
+			}
+		}
+		body, _ := json.Marshal(p)
+		if used+int64(len(body)) > c.Config.Limit {
+			w.Header().Set("Retry-After", "30")
+			failure(w, 429, "SPOOL_FULL")
+			return
+		}
+		if e = atomicWrite(c.path(p.ID, ".pending"), body); e != nil {
+			failure(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
+		reply(w, 202, contracts.TransportReceipt{Type: "transport", TenantID: p.Tenant, DeliveryID: p.ID, Digest: p.Digest, Stage: "collector_received", SpoolAction: "retain", RequestID: identifier.New()})
+	})
+	mux.HandleFunc("GET /api/v1/machine/deliveries/{delivery_id}", func(w http.ResponseWriter, r *http.Request) {
+		claims, e := c.peer(r)
+		if e != nil {
+			failure(w, 401, "AUTHENTICATION_REQUIRED")
+			return
+		}
+		id := r.PathValue("delivery_id")
+		if !identifier.Valid(id) {
+			failure(w, 404, "NOT_FOUND")
+			return
+		}
+		c.mu.Lock()
+		defer c.mu.Unlock()
+		for _, suffix := range []string{".receipt", ".pending"} {
+			p, e := readPacket(c.path(id, suffix))
+			if e != nil {
+				continue
+			}
+			if p.Tenant != claims.Tenant || p.Source != claims.Source {
+				failure(w, 404, "NOT_FOUND")
+				return
+			}
+			if len(p.Receipt) > 0 {
+				w.Header().Set("Content-Type", "application/json")
+				w.Header().Set("Cache-Control", "no-store")
+				_, _ = w.Write(p.Receipt)
+				return
+			}
+			reply(w, 200, contracts.TransportReceipt{Type: "transport", TenantID: p.Tenant, DeliveryID: p.ID, Digest: p.Digest, Stage: "collector_received", SpoolAction: "retain", RequestID: identifier.New()})
+			return
+		}
+		failure(w, 404, "NOT_FOUND")
+	})
+	mux.HandleFunc("GET /health/live", func(w http.ResponseWriter, r *http.Request) { reply(w, 200, map[string]string{"status": "ok"}) })
+	return mux
+}
+func (c *Collector) verify(p packet, raw []byte) (bool, error) {
+	_, remove, e := c.wire.VerifyCenterResult(raw, p.Batch, c.Claims.CenterKeyID, c.Claims.CenterPublic)
+	return remove, e
+}
+func (c *Collector) Pump(ctx context.Context) error {
+	c.mu.Lock()
+	entries, e := os.ReadDir(c.Config.Spool)
+	c.mu.Unlock()
+	if e != nil {
+		return e
+	}
+	for _, entry := range entries {
+		if !strings.HasSuffix(entry.Name(), ".pending") {
+			continue
+		}
+		if ctx.Err() != nil {
+			return ctx.Err()
+		}
+		path := filepath.Join(c.Config.Spool, entry.Name())
+		c.mu.Lock()
+		p, e := readPacket(path)
+		if e != nil {
+			c.mu.Unlock()
+			return errors.New("spool record unreadable")
+		}
+		if _, e = os.Stat(c.path(p.ID, ".receipt")); e == nil {
+			c.mu.Unlock()
+			continue
+		}
+		c.mu.Unlock()
+		_, raw, e := c.post(ctx, "/api/v1/machine/observations", p.Batch, "")
+		if e != nil {
+			continue
+		}
+		remove, e := c.verify(p, raw)
+		if e != nil {
+			continue
+		}
+		cached := p
+		cached.Batch = nil
+		cached.Receipt = raw
+		body, _ := json.Marshal(cached)
+		c.mu.Lock()
+		e = atomicWrite(c.path(p.ID, ".receipt"), body)
+		if e == nil && remove {
+			e = os.Remove(path)
+			if e == nil {
+				var dir *os.File
+				dir, e = os.Open(c.Config.Spool)
+				if e == nil {
+					e = dir.Sync()
+					dir.Close()
+				}
+			}
+		}
+		c.mu.Unlock()
+		if e != nil {
+			return e
+		}
+	}
+	return nil
+}
+func (c *Collector) Run(ctx context.Context) error {
+	server := &http.Server{Addr: c.Config.Listen, Handler: c.Handler(), TLSConfig: c.TLS, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16384}
+	defer server.Close()
+	finished := make(chan error, 1)
+	go func() { finished <- server.ListenAndServeTLS("", "") }()
+	ticker := time.NewTicker(time.Second)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			shutdown, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			return server.Shutdown(shutdown)
+		case e := <-finished:
+			if e == http.ErrServerClosed {
+				return nil
+			}
+			return errors.New("collector HTTPS listener failed")
+		case <-ticker.C:
+			task, cancel := context.WithTimeout(ctx, 15*time.Second)
+			e := c.Pump(task)
+			cancel()
+			if e != nil && ctx.Err() == nil {
+				fmt.Fprintln(os.Stderr, "collector spool operation failed; pending data retained")
+			}
+		}
+	}
+}

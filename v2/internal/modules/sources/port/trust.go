@@ -13,3 +13,12 @@ type Trust struct {
 type Reader interface {
 	Trust(context.Context, pgx.Tx, contracts.Observation, string) (Trust, error)
 }
+
+type Actor struct {
+	Tenant, Source, Generation, Site, Kind, Fingerprint string
+	Collector                                           *string
+}
+type MachineAuthorizer interface {
+	PeerFingerprint(context.Context, pgx.Tx, string) (Actor, error)
+	AllowOrigin(context.Context, pgx.Tx, string, contracts.Observation) error
+}

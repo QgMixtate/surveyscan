@@ -5,12 +5,12 @@
   "acceptance_criteria": 55,
   "remarks": 19,
   "dependency_graph": "acyclic",
-  "all_statuses": "C01-C06 done; C07-C50 planned",
-  "scope_validation": "static documentation + local C04/C05 real PG/HTTPS/binary/CLI tests; hosted CI unconfirmed due network policy",
+  "all_statuses": "C01-C07 done; C08-C50 planned",
+  "scope_validation": "local C07 real PG/mTLS/compiled collector + server; synthetic source; hosted C04/C05 confirmed success; C06/C07 not published",
   "progress": {
-    "done_packages": 6,
-    "done_tasks": 24,
-    "planned_tasks": 176
+    "done_packages": 7,
+    "done_tasks": 28,
+    "planned_tasks": 172
   },
-  "latest_evidence": "evidence/C06-validation.json"
+  "latest_evidence": "evidence/C07-validation.json"
 }
