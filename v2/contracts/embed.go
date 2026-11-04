@@ -3,5 +3,5 @@ package contracts
 
 import "embed"
 
-//go:embed openapi.json wire.schema.json compatibility.json state-machines.json
+//go:embed openapi.json wire.schema.json compatibility.json state-machines.json c09.schema.json c09.openapi.json
 var Files embed.FS

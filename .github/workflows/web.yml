@@ -31,3 +31,53 @@ jobs:
           name: surveyscan-web
           path: v2/web/dist
           if-no-files-found: error
+  live-api:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: ${{ github.workspace }}/.cache/playwright
+    defaults:
+      run:
+        working-directory: v2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: v2/go.sum
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.22.1'
+          cache: npm
+          cache-dependency-path: v2/web/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Browser and signed source checker dependencies
+        run: |
+          python -m venv .contract-tools
+          .contract-tools/bin/pip install -r ../docs/plans/surveyscan-v2/contracts/C03/checks/requirements.txt
+          npm --prefix web ci --ignore-scripts --no-audit --no-fund
+          cd web
+          npx playwright install --with-deps chromium
+      - uses: actions/download-artifact@v4
+        with:
+          name: surveyscan-web
+          path: v2/web/dist
+      - run: make build
+      - run: python scripts/dev.py up
+      - name: Real API, PG, TLS source and Chromium acceptance
+        run: .contract-tools/bin/python scripts/web_smoke.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: surveyscan-web-checks
+          include-hidden-files: true
+          path: |
+            v2/.local/web-smoke.json
+            v2/.local/c09-web-*.png
+            v2/.local/c09-card-*.png
+      - name: Stop isolated development stack
+        if: always()
+        run: python scripts/dev.py down

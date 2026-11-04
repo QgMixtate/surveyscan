@@ -232,7 +232,9 @@ C07 checkpoint8cd353c. C08 завершён локально: handoffs/C08.md, 2
 18 unit/34 PG tests,58 fixtures,11 live-agent checks; три scheduled цикла и четвёртый после restart, один UID.
 C08 checkpoint c5a3eef. C09 начат:01/02 done,03/04 in progress. Separate build и13 Chromium
 checks с real API/PG/strict CSP passed; IP/provenance/full acceptance pending, handoffs/C09.md.
-Прогресс34/200; C06–C09 локальны, без push/merge.
+C09 завершён локально после продолжения: handoffs/C09.md; 29 migrations/39 tables,
+18 unit/37 PG/58 fixtures/14 Chromium checks passed. Card/IP/MAC/provenance/source summaries реализованы.
+Прогресс36/200; следующий C10. C06–C09 локальны, без push/merge.
 
 ## Шаблон новой записи
 - ID и дата:

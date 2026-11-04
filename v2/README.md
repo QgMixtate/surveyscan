@@ -147,10 +147,12 @@ heartbeat. Pending spool удаляется только после провер
 три compiled binaries, настоящий хост и временный PG). Отчёт не содержит host facts или keys.
 Systemd template deploy/surveyscan-agent.service подготовлен; установка/24h/production ещё не проверены.
 
-## C09 в работе: отдельный Web UI
+## C09: отдельный Web UI
 
-[Сборка](web/README.md), [точка продолжения](../docs/plans/surveyscan-v2/handoffs/C09.md).
+[Сборка](web/README.md), [передача](../docs/plans/surveyscan-v2/handoffs/C09.md).
 `cd web && npm ci --ignore-scripts --no-audit --no-fund && npm run generate && npm run build`.
-После этого dev edge58081 отдаёт отдельный production bundle с strict CSP; Node/CDN в runtime не нужны.
-Login/list/card/sources и13 Chromium checks с real API/PG прошли. IP/provenance API и полная приёмка
-C09 ещё не завершены. Типы/standalone validators генерируются из C03; никаких secret в web storage.
+Dev edge58081 отдаёт независимый production bundle со strict CSP; Node/CDN в runtime не нужны.
+Новый GET /api/v1/assets/{asset_uid}/inventory (C09/1.0) читает card/IP/MAC/provenance/ответственность/
+section times/source summary в одном RR snapshot. UI проверяет C03+C09 contract hashes; C03 неизменён.
+29 migrations/39 domain/access tables.14 Chromium/37 PG integration checks passed локально;
+hosted CI unrun. Следующий C10 — durability/quota/recovery hardening.

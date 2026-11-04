@@ -7,7 +7,7 @@
     "node": ">=24 <25"
   },
   "scripts": {
-    "generate": "openapi-typescript ../contracts/openapi.json -o src/generated/c03.ts && node scripts/validators.mjs",
+    "generate": "openapi-typescript ../contracts/openapi.json -o src/generated/c03.ts && openapi-typescript ../contracts/c09.openapi.json -o src/generated/c09.ts && node scripts/validators.mjs",
     "check": "tsc --noEmit",
     "build": "npm run check && vite build && node scripts/manifest.mjs",
     "dev": "vite --host 127.0.0.1",

@@ -4,16 +4,12 @@
 
 
 Актуальная задача R-019 — последовательно выполнять этапы до лимита.
-C06–C08 завершены локально, main/merge/production не менялись.
-[C08 передача](plans/surveyscan-v2/handoffs/C08.md): Linux/amd64 host agent prepare/enroll/run,
-постоянный inventory60s/heartbeat30s в live приёмке, durable sender spool/counters и verified center ACK.
-Три автоматических цикла обновляют один UID; restart даёт четвёртый с sequence4.
-18 unit/34 PG integration,58 C03 fixtures,11 live-agent +8 collector +10 auth +6 infrastructure checks passed.
-28 migrations/38 domain/access tables. Source inventory summary ещё baseline-null; asset summary работает.
-C04/C05 hosted CI success; C06–C08 не опубликованы. C08 checkpoint c5a3eef. C09 in progress:01/02 done,03/04 частично; прогресс34/200.
-[Передача C09](plans/surveyscan-v2/handoffs/C09.md): отдельный React/TS/Vite build, login/list/card/sources,
-13 Chromium checks с настоящими API/PG и strict CSP passed. Partial/stale/unknown fixtures проверены отдельно; IP/provenance и финальная приёмка C09 ещё pending.
-Локальная ветка codex/v2-c09-web, не опубликована.
+C06–C09 завершены локально; main/merge/production не менялись.
+[C09 передача](plans/surveyscan-v2/handoffs/C09.md): отдельный Web UI, атомарная card/detail API,
+IP/MAC/provenance, friendly responsibility, раздельные section/source времена и generation.
+18 unit/37 PG integration/58 fixtures/14 Chromium checks, auth/collector/outage regression passed.
+29 migrations/39 domain/access tables. C03 сохранён, новое API — отдельное расширение C09/1.0.
+Прогресс36/200, далее автоматически C10. C04/C05 hosted success; C06–C09 не опубликованы.
 Настройки среды повторно не применяются и не публикуются.
 
 ## Контекст архитектуры и история C01–C04

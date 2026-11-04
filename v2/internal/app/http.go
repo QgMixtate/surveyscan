@@ -16,6 +16,7 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 	implementations := map[string]http.Handler{}
 	if len(registry) > 0 && registry[0] != nil {
 		implementations = registry[0].Handlers()
+		mux.Handle("GET /api/v1/assets/{asset_uid}/inventory", auth.Wrap("assets:read", false, registry[0].inventoryHandler()))
 		if registry[0].Machine != nil {
 			for operation, handler := range registry[0].Machine.human() {
 				implementations[operation] = handler

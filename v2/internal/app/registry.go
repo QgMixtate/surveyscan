@@ -147,6 +147,9 @@ func (r *Registry) IngestAuthorized(ctx context.Context, tenant, source string, 
 			}
 		}
 	}
+	if e = r.Sources.RecordSuccess(ctx, tx, o); e != nil {
+		return result, e
+	}
 	if e = r.Inventory.Result(ctx, tx, tenant, result); e != nil {
 		return result, e
 	}

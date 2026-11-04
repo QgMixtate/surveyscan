@@ -12,6 +12,8 @@ type Trust struct {
 }
 type Reader interface {
 	Trust(context.Context, pgx.Tx, contracts.Observation, string) (Trust, error)
+	RecordSuccess(context.Context, pgx.Tx, contracts.Observation) error
+	Summaries(context.Context, pgx.Tx, string, []string) ([]contracts.SourceSummary, error)
 }
 
 type Actor struct {

@@ -1,0 +1,13 @@
+{
+  "package": "C09",
+  "result": "passed",
+  "checks": [
+    "50 packages/200 tasks",
+    "36 done;CSV agrees",
+    "prior C01-C08/future package records preserved",
+    "prior SQL and C03 unchanged",
+    "legacy v1 untouched",
+    "no runtime/private/build files in checkpoint"
+  ],
+  "preserved_artifacts": 101
+}

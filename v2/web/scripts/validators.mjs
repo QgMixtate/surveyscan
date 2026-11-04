@@ -4,6 +4,8 @@ const require=createRequire(import.meta.url);
 const Ajv=require('ajv/dist/2020').default,addFormats=require('ajv-formats').default,standalone=require('ajv/dist/standalone').default;
 const schema=JSON.parse(readFileSync(new URL('../../contracts/wire.schema.json',import.meta.url)));
 const ajv=new Ajv({strict:false,allowUnionTypes:true,code:{source:true}});addFormats(ajv);ajv.addSchema(schema);
+const extension=JSON.parse(readFileSync(new URL('../../contracts/c09.schema.json',import.meta.url)));ajv.addSchema(extension);
 const names=['Session','Asset','AssetPage','SourcePage'];
 const exports=Object.fromEntries(names.map(name=>[name,schema.$id+'#/$defs/'+name]));
+exports.InventoryDetail=extension.$id+'#/$defs/InventoryDetail';
 writeFileSync(new URL('../src/generated/wire.cjs',import.meta.url),standalone(ajv,exports));

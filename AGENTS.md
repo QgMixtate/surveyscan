@@ -29,13 +29,13 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 in progress (01/02 done); C10–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
 C04/0.5/план опубликованы в codex/v2-c04-foundation (7407da6); C05 — ветка codex/v2-c05-auth. Main не слит. Точные publication refs — в STATUS/evidence; не выдавать local tests за hosted CI.
 Планирование не означает разрешение сразу реализовать все пакеты или выполнить production deployment.
-Следующий пакет — C09; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
+Следующий пакет — C10; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
 Матрица замечаний: docs/specifications/requirements-traceability-v0.5.md;
 исследование аналогов: docs/research/inventory-platform-analogues.md.
 Правила snapshot/dashboard ниже относятся к текущей Python v1, не архитектуре v2.
@@ -62,4 +62,8 @@ C07: handoffs/C07.md. Enrollment/CA-attested identities/center-key trust, mTLS c
 
 C08: handoffs/C08.md. Linux/amd64 read-only host adapter и prepare/enroll/run daemon, durable sender spool/counters, independent challenge heartbeat готовы локально. 28 migrations/38 tables; 18 unit/34 PG tests, три живых scheduled цикла + четвёртый после restart passed. Source inventory summary пока baseline-null; asset inventory summary работает. Systemd template не устанавливался (C14), Windows C15; production PKI C11, recovery/quota/GC C10. Следующий C09, отдельный React/TS/Vite UI.
 
-C09 in progress:01/02 done,03/04 partial; handoffs/C09.md. Separate React19.3.1/TS5.9.3/Vite8.3.5 build и13 Chromium checks passed (real API/PG; partial fixtures explicitly mocked). TS7 candidate заменён из-за peer compatibility generator. IP/MAC/provenance extension и friendly responsibility/source summary ещё pending. Прогресс34/200. Следующий шаг — C09.03, не начинать C10 до завершения C09. Full stage не считать done по browser skeleton.
+C09 завершён локально: handoffs/C09.md. Отдельные React/TS/Vite UI и C09/1.0 API детализации,
+IP/MAC/provenance/section attempt-success/friendly responsibility/source generation/contact. Source inventory
+summary обновляется через source-owned port (29 migrations/39 tables), heartbeat его не меняет.
+18 unit/37 PG/58 C03 fixtures/14 browser checks passed; C03 unchanged. 36/200 done.
+C06–C09 не опубликованы. Следующий C10 по R-019; не сливать main/не менять настройки среды.

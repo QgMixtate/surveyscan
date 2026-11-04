@@ -384,7 +384,7 @@ func (s *MachineService) Revoke(ctx context.Context, actor access.Identity, sour
 
 func (s *MachineService) viewTx(ctx context.Context, tx pgx.Tx, tenant, id string) (contracts.Source, error) {
 	var out contracts.Source
-	e := tx.QueryRow(ctx, "SELECT tenant_id::text,source_id::text,source_kind,site_id::text,state,GREATEST(last_contact_at,(SELECT max(h.last_contact_at) FROM sources.heartbeat_state h WHERE h.tenant_id=sources.sources.tenant_id AND h.source_id=sources.sources.source_id AND h.generation_id=sources.sources.generation_id)),last_successful_inventory_at FROM sources.sources WHERE tenant_id=$1 AND source_id=$2", tenant, id).Scan(&out.TenantID, &out.SourceID, &out.Kind, &out.SiteID, &out.State, &out.LastContact, &out.LastInventory)
+	e := tx.QueryRow(ctx, "SELECT tenant_id::text,source_id::text,source_kind,site_id::text,state,GREATEST(last_contact_at,(SELECT max(h.last_contact_at) FROM sources.heartbeat_state h WHERE h.tenant_id=sources.sources.tenant_id AND h.source_id=sources.sources.source_id AND h.generation_id=sources.sources.generation_id)),GREATEST(last_successful_inventory_at,(SELECT p.last_successful_inventory_at FROM sources.inventory_progress p WHERE p.tenant_id=sources.sources.tenant_id AND p.source_id=sources.sources.source_id AND p.generation_id=sources.sources.generation_id)) FROM sources.sources WHERE tenant_id=$1 AND source_id=$2", tenant, id).Scan(&out.TenantID, &out.SourceID, &out.Kind, &out.SiteID, &out.State, &out.LastContact, &out.LastInventory)
 	if e == pgx.ErrNoRows {
 		e = domain.NotFound
 	}

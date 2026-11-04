@@ -1,4 +1,6 @@
 import validators from './generated/wire.cjs';
+import type {components as DetailComponents} from './generated/c09';
+export type InventoryDetail=DetailComponents['schemas']['InventoryDetail'];
 import type { components } from './generated/c03';
 
 export type Asset=components['schemas']['Asset'];
@@ -25,14 +27,15 @@ export const api={
  logout:(csrf:string)=>call<void>('/api/v1/auth/session',undefined,{method:'DELETE',headers:{'X-CSRF-Token':csrf}}),
  assets:(cursor:string|null=null)=>call<AssetPage>('/api/v1/assets?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'AssetPage'),
  asset:(uid:string)=>call<Asset>('/api/v1/assets/'+encodeURIComponent(uid),'Asset'),
+ inventory:(uid:string)=>call<InventoryDetail>('/api/v1/assets/'+encodeURIComponent(uid)+'/inventory','InventoryDetail'),
  sources:(cursor:string|null=null)=>call<SourcePage>('/api/v1/sources?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SourcePage')
 };
 export async function checkCompatibility(){
  try{
- const [manifest,contract]=await Promise.all([fetch('/version.json',{cache:'no-store'}),fetch('/contracts/openapi.json',{cache:'no-store'})]);
- if(!manifest.ok||!contract.ok)throw new Error();
- const version=await manifest.json() as {wire?:{major:number;minor:number};openapi_sha256?:string};const bytes=await contract.arrayBuffer();if(bytes.byteLength>1048576)throw new Error();
- const digest=await crypto.subtle.digest('SHA-256',bytes);const hash=Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('');
- if(version.wire?.major!==1||version.wire?.minor!==0||version.openapi_sha256!==hash)throw new Error();
+ const [manifest,contract,extension]=await Promise.all([fetch('/version.json',{cache:'no-store'}),fetch('/contracts/openapi.json',{cache:'no-store'}),fetch('/contracts/c09.openapi.json',{cache:'no-store'})]);
+ if(!manifest.ok||!contract.ok||!extension.ok)throw new Error();
+ const version=await manifest.json() as {wire?:{major:number;minor:number};openapi_sha256?:string;c09_version?:string;c09_sha256?:string};
+ async function digest(response:Response){const bytes=await response.arrayBuffer();if(bytes.byteLength>1048576)throw new Error();return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),n=>n.toString(16).padStart(2,'0')).join('')}
+ if(version.wire?.major!==1||version.wire?.minor!==0||version.c09_version!=='1.0'||version.openapi_sha256!==await digest(contract)||version.c09_sha256!==await digest(extension))throw new Error();
  }catch{throw new ApiError(0,'CONTRACT_MISMATCH')}
 }

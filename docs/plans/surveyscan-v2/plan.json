@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C08 done; C09 in_progress (01/02 done); C10-C50 planned",
+  "status": "C01-C09 done; C10-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -825,9 +825,10 @@
           "work_group": "Подготовка и проектирование",
           "evidence": [
             "handoffs/C09.md",
-            "evidence/C09-progress.json"
+            "decisions/C09-web.md",
+            "evidence/C09-runtime.json"
           ],
-          "verification_status": "C09.01/02 local build + real Chromium/API/PG passed; card IP and complete matrix pending"
+          "verification_status": "passed local real static UI + Chromium/TLS/PG; generated contracts/build; hosted unrun"
         },
         {
           "id": "C09.02",
@@ -843,9 +844,10 @@
           "work_group": "Реализация",
           "evidence": [
             "handoffs/C09.md",
-            "evidence/C09-progress.json"
+            "decisions/C09-web.md",
+            "evidence/C09-runtime.json"
           ],
-          "verification_status": "C09.01/02 local build + real Chromium/API/PG passed; card IP and complete matrix pending"
+          "verification_status": "passed local real static UI + Chromium/TLS/PG; generated contracts/build; hosted unrun"
         },
         {
           "id": "C09.03",
@@ -857,13 +859,14 @@
           "output": "Имя/ОС/IP/ответственная команда, section status и времена",
           "verification": "Unknown/partial/stale/source health различаются",
           "estimation_basis": "1 карточка; 3 fixtures: полный, partial, нет контакта",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Реализация",
           "evidence": [
             "handoffs/C09.md",
-            "evidence/C09-progress.json"
+            "decisions/C09-web.md",
+            "evidence/C09-runtime.json"
           ],
-          "verification_status": "C09.01/02 local build + real Chromium/API/PG passed; card IP and complete matrix pending"
+          "verification_status": "passed local real static UI + Chromium/TLS/PG; generated contracts/build; hosted unrun"
         },
         {
           "id": "C09.04",
@@ -875,21 +878,25 @@
           "output": "Contract/E2E на реальном API и static hosting",
           "verification": "UI и backend обновляются независимо в согласованной паре",
           "estimation_basis": "2 ширины 800/1440, keyboard path, version mismatch",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Проверка и передача",
           "evidence": [
             "handoffs/C09.md",
-            "evidence/C09-progress.json"
+            "decisions/C09-web.md",
+            "evidence/C09-runtime.json"
           ],
-          "verification_status": "C09.01/02 local build + real Chromium/API/PG passed; card IP and complete matrix pending"
+          "verification_status": "passed local real static UI + Chromium/TLS/PG; generated contracts/build; hosted unrun"
         }
       ],
-      "status": "in_progress",
+      "status": "done",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
       "evidence": [
         "handoffs/C09.md",
-        "evidence/C09-progress.json"
-      ]
+        "decisions/C09-web.md",
+        "evidence/C09-runtime.json",
+        "evidence/C09-validation.json"
+      ],
+      "completed_at": "2026-11-04"
     },
     {
       "id": "C10",
@@ -3600,7 +3607,8 @@
       "C05",
       "C06",
       "C07",
-      "C08"
+      "C08",
+      "C09"
     ],
     "done_tasks": [
       "C01.01",
@@ -3636,9 +3644,11 @@
       "C08.03",
       "C08.04",
       "C09.01",
-      "C09.02"
+      "C09.02",
+      "C09.03",
+      "C09.04"
     ],
-    "next_package": "C09",
+    "next_package": "C10",
     "product_implementation_started": true
   }
 }
