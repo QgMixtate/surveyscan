@@ -5,7 +5,7 @@
   "branch": "codex/v2-c13-operations",
   "base": "d55a23d",
   "done_total": 48,
-  "task": "C13.01/C13.02 in_progress; boot and live update pending",
+  "task": "C13.01-C13.03 in_progress; actual boot/live update/full restore pending",
   "staging": {
     "task": "C13.01",
     "status": "partial-passed",
@@ -49,7 +49,9 @@
     "systemd realboot/reboot/autostart",
     "PG/Bao/edge/config provisioning",
     "live checked update",
-    "backuprestore/cleanstand"
+    "Bao Raft and filesystem/full restore",
+    "previous-release schema upgrade",
+    "two clean systems"
   ],
   "publication": "local only",
   "release": {
@@ -94,5 +96,40 @@
     "make_verify": "passed;39 unit +58 C03 fixtures, local httptest ports require escalation",
     "web_build": "passed; initial sandbox Node spawnSync denied, repeated with escalation",
     "source": "local only; GitHub refs rechecked unchanged via fetch; no push"
+  },
+  "pg_component_restore": {
+    "package": "C13",
+    "task": "C13.03 PG component preparation",
+    "status": "passed",
+    "count": 17,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "synthetic agent enrollment traverses collector",
+      "durable collector transport receipt retains source data",
+      "center commit receipt verifies with pinned key and exact bindings",
+      "committed PG registry card visible through real authenticated API",
+      "collector trims only after verified center acknowledgement",
+      "exactly one durable observation in isolated PostgreSQL",
+      "PG17 custom archive completed privately after actual binary services quiesced",
+      "PG-only manifest never marks complete PG/Bao/filesystem backup or writes system backup-age marker",
+      "existing backup and source database restore refused without destructive flags",
+      "corrupt archive refused before writing to clean destination",
+      "nonempty restore target refused and pre-existing sentinel table preserved",
+      "all46 table fingerprints identical: UID, access/session/hash, history, observations, receipt, retry queue/outbox and migration ledger",
+      "current binary verifies restored33 migration hashes and applies zero duplicate migrations",
+      "restored real server authenticates previous admin credentials and serves same UID/card through TLS API",
+      "second restore onto running/nonempty registry refused"
+    ],
+    "table_count": 46,
+    "target": "real PG17 custom dump/restore into new DB; compiled server/collector, TLS, synthetic signed inventory; explicit SQL retry checkpoint fixture",
+    "unrun": [
+      "Bao Raft snapshot/restore and key operations",
+      "filesystem/agent/collector identity/spool backup",
+      "complete-system point-in-time consistency",
+      "schema upgrade from previous release",
+      "clean OS/systemd boot/reboot",
+      "production/DR/RPO/RTO"
+    ]
   }
 }

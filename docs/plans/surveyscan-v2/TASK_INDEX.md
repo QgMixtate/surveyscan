@@ -1,6 +1,6 @@
 # Индекс чатов surveyscan v2
 
-Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07 — локальный collector/upload; C08 — live Linux host agent/heartbeat; C09 — отдельный Web UI/detail API; C10 recovery готов локально; C11 OpenBao/renewal принят локально, C12 CLI/profiles/diagnostics/operator готов локально; C13.01/02 in_progress; C13.03–C50 planned.
+Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07 — локальный collector/upload; C08 — live Linux host agent/heartbeat; C09 — отдельный Web UI/detail API; C10 recovery готов локально; C11 OpenBao/renewal принят локально, C12 CLI/profiles/diagnostics/operator готов локально; C13.01–03 in_progress; C13.04–C50 planned.
 Один пакет ≈ один чат с возможным продолжением .a/.b. Вход — указанные зависимости с evidence.
 Не читать все 50 подробных файлов: выберите текущий ID и его spec sections.
 
@@ -18,7 +18,7 @@
 | [C10](packages/C10.md) | E1 | Долговечная доставка и восстановление | C08 | [Запрос](prompts/C10.md) | done (локально) |
 | [C11](packages/C11.md) | E1 | OpenBao и жизненный цикл машинных доступов | C10 | [Запрос](prompts/C11.md) | done (bounded E1) |
 | [C12](packages/C12.md) | E1 | CLI, управление циклом и наблюдаемость | C09, C11 | [Запрос](prompts/C12.md) | done (local E1) |
-| [C13](packages/C13.md) | E1 | Установка, сервисы, обновление и backup | C12 | [Запрос](prompts/C13.md) | in_progress (01 staged; 02 signed bundle) |
+| [C13](packages/C13.md) | E1 | Установка, сервисы, обновление и backup | C12 | [Запрос](prompts/C13.md) | in_progress (01 staged; 02 signed bundle; 03 PG restore) |
 | [C14](packages/C14.md) | E1 | Приёмка и выпуск первого рабочего SMB | C13 | [Запрос](prompts/C14.md) | planned |
 | [C15](packages/C15.md) | E2 | Постоянный Windows-агент | C14 | [Запрос](prompts/C15.md) | planned |
 | [C16](packages/C16.md) | E2 | Постоянный Linux-агент и platform parity | C14 | [Запрос](prompts/C16.md) | planned |

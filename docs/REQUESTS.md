@@ -312,3 +312,11 @@ R-019, продолжение «Дальше / продолжи», 2026-11-05 (�
 Production key custody, actualboot/reboot/live update/backuprestore не проверены; done48/200 не изменён.
 Нет QEMU/KVM/nspawn, Docker cgroupdriver none; host service changes не выполнялись.
 GitHub fetch подтвердил прежние refs; нет push/merge/deploy/env publication. Handoff C13 хранит следующий шаг.
+
+R-019, далее2026-11-05: C13.03 начат компонентом PostgreSQL17. Private custom archive,
+checksum/size verification, restore только в другую пустую БД без DROP/--clean, single transaction.
+17 real pipeline+restore checks passed:46tables fingerprints preserved, UID/access/history/retry/outbox,
+33migration hashes/current migrate0, прежний admin login и карточка через restored TLS server.
+Fixture processes quiesced, retrycheckpoint явно SQLfixture; own backup/DBs cleaned. Runbook v2/deploy/BACKUP.md.
+PG-only не complete-system backup: Bao/filesystem/custody/previous-schema upgrade/boot ещёpending.
+C13.01–03 in_progress,04planned,done48/200; cc242c5 release checkpoint. No push/merge/deploy/env publication.

@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C12 done locally; C13.01/C13.02 in progress; C13.03-C50 planned",
+  "status": "C01-C12 done locally; C13.01-C13.03 in progress; C13.04-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1241,8 +1241,13 @@
           "output": "Backup PG/artifacts/Bao state, restore runbook и upgrade procedure",
           "verification": "На чистом стенде восстановлены UID, доступы, очередь и история",
           "estimation_basis": "1 round-trip restore и 1 последовательное обновление схемы",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "in_progress",
+          "work_group": "Реализация",
+          "evidence": [
+            "handoffs/C13.md",
+            "evidence/C13-progress.json"
+          ],
+          "verification_status": "17 real pipeline+PG component restore checks passed,46 table fingerprints/TLS login/card; whole-system restore and previous-schema upgrade pending"
         },
         {
           "id": "C13.04",

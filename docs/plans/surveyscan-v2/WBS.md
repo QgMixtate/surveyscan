@@ -696,7 +696,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Backup PG/artifacts/Bao state, restore runbook и upgrade procedure.
 - Проверка: На чистом стенде восстановлены UID, доступы, очередь и история.
 - База оценки: 1 round-trip restore и 1 последовательное обновление схемы.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress; PG component restore17checks passed; Bao/filesystem/full restore и schema upgrade pending. См. handoffs/C13.md.
 
 ## C13.04 — Проверить повторяемость поставки
 
