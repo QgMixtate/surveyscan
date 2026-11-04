@@ -10,14 +10,15 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func run(args []string) error {
 	if len(args) == 1 && (args[0] == "version" || args[0] == "--version") {
 		return buildinfo.Print(os.Stdout, "collector")
 	}
-	if len(args) == 0 || args[0] != "run" {
-		return fmt.Errorf("supported commands: run --config PRIVATE_FILE, version")
+	if len(args) == 0 || (args[0] != "run" && args[0] != "renew") {
+		return fmt.Errorf("supported commands: run/renew --config PRIVATE_FILE, version")
 	}
 	flags := flag.NewFlagSet("run", flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
@@ -31,6 +32,15 @@ func run(args []string) error {
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
+	if args[0] == "renew" {
+		task, stop := context.WithTimeout(ctx, 30*time.Second)
+		defer stop()
+		if e = relay.RenewOnce(task); e != nil {
+			return e
+		}
+		fmt.Println("collector_certificate_renewed")
+		return nil
+	}
 	fmt.Println("collector HTTPS relay started; pending data retained until verified center result")
 	return relay.Run(ctx)
 }

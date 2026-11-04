@@ -16,6 +16,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/contracts"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/diskspool"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/machinecred"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/pki"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/privatefile"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/retry"
@@ -28,17 +29,21 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
 type Config struct {
-	Listen      string `json:"listen"`
-	CenterURL   string `json:"center_url"`
-	Certificate string `json:"certificate_file"`
-	PrivateKey  string `json:"private_key_file"`
-	CA          string `json:"ca_certificate_file"`
-	Spool       string `json:"spool_directory"`
-	Limit       int64  `json:"spool_limit_bytes"`
+	SourceID        string `json:"source_id,omitempty"`
+	CredentialState string `json:"credential_directory,omitempty"`
+	SigningKey      string `json:"signing_private_key_file,omitempty"`
+	Listen          string `json:"listen"`
+	CenterURL       string `json:"center_url"`
+	Certificate     string `json:"certificate_file"`
+	PrivateKey      string `json:"private_key_file"`
+	CA              string `json:"ca_certificate_file"`
+	Spool           string `json:"spool_directory"`
+	Limit           int64  `json:"spool_limit_bytes"`
 }
 type packet struct {
 	Tenant  string          `json:"tenant"`
@@ -49,14 +54,19 @@ type packet struct {
 	Receipt json.RawMessage `json:"receipt,omitempty"`
 }
 type Collector struct {
-	Config  Config
-	Claims  pki.Claims
-	TLS     *tls.Config
-	client  *http.Client
-	wire    *wire.Validator
-	mu      sync.Mutex
-	pump    sync.Mutex
-	retries map[string]*retry.Backoff
+	clock       func() time.Time
+	certificate atomic.Pointer[tls.Certificate]
+	roots       *x509.CertPool
+	signing     ed25519.PrivateKey
+	renewMu     sync.Mutex
+	Config      Config
+	Claims      pki.Claims
+	TLS         *tls.Config
+	client      *http.Client
+	wire        *wire.Validator
+	mu          sync.Mutex
+	pump        sync.Mutex
+	retries     map[string]*retry.Backoff
 }
 
 func Load(path string) (*Collector, error) {
@@ -94,11 +104,7 @@ func New(cfg Config) (*Collector, error) {
 	if cfg.Limit < 524288 || cfg.Limit > 1073741824 || cfg.Spool == "" {
 		return nil, errors.New("bounded private spool required")
 	}
-	certificate, e := os.ReadFile(cfg.Certificate)
-	if e != nil || len(certificate) > 65536 {
-		return nil, errors.New("collector certificate unavailable")
-	}
-	key, e := privatefile.Read(cfg.PrivateKey, 16384)
+	certificate, key, e := readCredential(cfg)
 	if e != nil {
 		return nil, e
 	}
@@ -122,7 +128,7 @@ func New(cfg Config) (*Collector, error) {
 		return nil, errors.New("collector certificate not trusted")
 	}
 	claims, e := pki.ClaimsFromCertificate(leaf)
-	if e != nil || claims.Kind != "collector" || claims.Collector == "" || claims.CenterKeyID == "" || len(claims.CenterPublic) != 32 {
+	if e != nil || claims.Kind != "collector" || (cfg.CredentialState != "" && (!identifier.Valid(cfg.SourceID) || claims.Source != cfg.SourceID)) || claims.Collector == "" || claims.CenterKeyID == "" || len(claims.CenterPublic) != 32 {
 		return nil, errors.New("collector requires CA-attested identity and center verification key")
 	}
 	if e = os.MkdirAll(cfg.Spool, 0700); e != nil {
@@ -135,8 +141,18 @@ func New(cfg Config) (*Collector, error) {
 	if e != nil {
 		return nil, e
 	}
-	client := &http.Client{Timeout: 12 * time.Second, Transport: &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: roots, Certificates: []tls.Certificate{pair}}}, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
-	return &Collector{Config: cfg, Claims: claims, TLS: &tls.Config{MinVersion: tls.VersionTLS12, Certificates: []tls.Certificate{pair}, ClientCAs: roots, ClientAuth: tls.VerifyClientCertIfGiven}, client: client, wire: v}, nil
+	out := &Collector{Config: cfg, Claims: claims, roots: roots, wire: v, clock: time.Now}
+	pair.Leaf = leaf
+	out.certificate.Store(&pair)
+	if cfg.CredentialState != "" {
+		out.signing, e = readSigningKey(cfg.SigningKey)
+		if e != nil || !ed25519.PublicKey(claims.SigningPublic).Equal(out.signing.Public()) {
+			return nil, errors.New("collector signing key does not match attested identity")
+		}
+	}
+	out.client = &http.Client{Timeout: 12 * time.Second, Transport: &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: roots, GetClientCertificate: func(*tls.CertificateRequestInfo) (*tls.Certificate, error) { return out.certificate.Load(), nil }}}, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
+	out.TLS = &tls.Config{MinVersion: tls.VersionTLS12, GetCertificate: func(*tls.ClientHelloInfo) (*tls.Certificate, error) { return out.certificate.Load(), nil }, ClientCAs: roots, ClientAuth: tls.VerifyClientCertIfGiven}
+	return out, nil
 }
 func atomicWrite(path string, b []byte) error { return diskspool.Atomic(path, b) }
 func (c *Collector) path(id, suffix string) string {
@@ -572,6 +588,11 @@ func (c *Collector) Run(ctx context.Context) error {
 		return e
 	}
 	defer unlock()
+	credentialsUnlock, e := c.lockCredentials()
+	if e != nil {
+		return e
+	}
+	defer credentialsUnlock()
 	if e = diskspool.RecoverTemps(c.Config.Spool); e != nil {
 		return e
 	}
@@ -581,6 +602,7 @@ func (c *Collector) Run(ctx context.Context) error {
 	go func() { finished <- server.ListenAndServeTLS("", "") }()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
+	renewalAt := time.Time{}
 	for {
 		select {
 		case <-ctx.Done():
@@ -593,6 +615,15 @@ func (c *Collector) Run(ctx context.Context) error {
 			}
 			return errors.New("collector HTTPS listener failed")
 		case <-ticker.C:
+			if c.Config.CredentialState != "" && !time.Now().Before(renewalAt) && machinecred.Due(c.Config.CredentialState, c.certificate.Load().Leaf.NotAfter, c.clock()) {
+				task, cancel := context.WithTimeout(ctx, 15*time.Second)
+				err := c.renew(task)
+				cancel()
+				if err != nil && ctx.Err() == nil {
+					fmt.Fprintln(os.Stderr, "collector certificate renewal pending; previous identity and spool retained")
+				}
+				renewalAt = time.Now().Add(time.Minute)
+			}
 			task, cancel := context.WithTimeout(ctx, 15*time.Second)
 			e := c.Pump(task)
 			cancel()

@@ -9,7 +9,7 @@
     "C11.04": "in_progress"
   },
   "done_total": 42,
-  "unit_tests": 24,
+  "unit_tests": 27,
   "pg_tests": 46,
   "fixtures": 58,
   "scoped_live": {
@@ -68,12 +68,12 @@
   "hosted_ci": "unrun",
   "publication": "local only",
   "unrun": [
-    "collector self-renewal",
     "full clone/expired-cert recovery matrix",
     "physical power loss",
     "production HTTPS/custody",
     "24h automatic renewal soak",
-    "backup restore rehearsal"
+    "backup restore rehearsal",
+    "agent host-binding/clone matrix in progress"
   ],
   "branch": "codex/v2-c11-openbao",
   "base": "10a3f93",
@@ -197,5 +197,29 @@
     "auth initially failed because infrastructure test stopped shared PG; sequential retry passed; exact owned leaked DB removed",
     "final scheme guard change: make verify/build and live Bao rerun; other runtime suites passed before that isolated change",
     "full C11 remains partial; collector renewal and expiry/clone acceptance pending"
-  ]
+  ],
+  "collector_rotation_live": {
+    "package": "C11",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "separate credential writer lock rejects a second collector using another spool/listen address",
+      "center outage leaves original unacknowledged batch durable at source and collector before rotation",
+      "real TLS disconnect after collector certificate commit preserves pending key/CSR; fresh CLI process replays one original result",
+      "collector atomically rotates matching TLS key/cert without changing origin signing key or either pending queue",
+      "restart uses rotated inbound/outbound TLS credentials; queued originals and next live inventory apply once to one UID",
+      "real collector Run auto-renews under injected scheduler clock, hot-reloads listener TLS and authenticates new outbound identity; real center/PG/Bao, no restart",
+      "source revoke prevents further renewal of all collector certificates",
+      "actual masked Bao audit excludes application/root tokens and KV canary"
+    ],
+    "target": "compiled Linux agent+collector+server, real host inventory/PG/scoped Bao; real TLS ACK loss; automatic loop tested via Go collector runtime with scheduler clock advanced only",
+    "unrun": [
+      "real24h auto-renewal soak",
+      "physical power loss",
+      "production custody/DR",
+      "full clone/expired administrative recovery matrix"
+    ]
+  }
 }
