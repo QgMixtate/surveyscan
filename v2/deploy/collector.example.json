@@ -1,0 +1,12 @@
+{
+  "source_id": "00000000-0000-4000-8000-000000000001",
+  "listen": "0.0.0.0:8443",
+  "center_url": "https://surveyscan.example.invalid",
+  "certificate_file": "/etc/surveyscan-collector/initial-certificate.pem",
+  "private_key_file": "/etc/surveyscan-collector/initial-tls.key",
+  "ca_certificate_file": "/etc/surveyscan-collector/ca.pem",
+  "signing_private_key_file": "/etc/surveyscan-collector/origin-signing.key",
+  "credential_directory": "/var/lib/surveyscan-collector/credentials",
+  "spool_directory": "/var/lib/surveyscan-collector/spool",
+  "spool_limit_bytes": 67108864
+}

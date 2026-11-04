@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C10 done; C11.01-C11.02 done; C11.03-C11.04 in progress; C12-C50 planned",
+  "status": "C01-C11 done locally; C12-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1022,9 +1022,10 @@
           "evidence": [
             "decisions/C11-openbao.md",
             "handoffs/C11.md",
-            "evidence/C11-progress.json"
+            "evidence/C11-runtime.json",
+            "evidence/C11-lifecycle-matrix.json"
           ],
-          "verification_status": "local live Bao/PG passed; full lifecycle unrun"
+          "verification_status": "passed local bounded E1; real Bao/PG/compiled daemons and race-checked TLS reload; limits documented"
         },
         {
           "id": "C11.02",
@@ -1041,9 +1042,10 @@
           "evidence": [
             "decisions/C11-openbao.md",
             "handoffs/C11.md",
-            "evidence/C11-progress.json"
+            "evidence/C11-runtime.json",
+            "evidence/C11-lifecycle-matrix.json"
           ],
-          "verification_status": "local live Bao/PG passed; full lifecycle unrun"
+          "verification_status": "passed local bounded E1; real Bao/PG/compiled daemons and race-checked TLS reload; limits documented"
         },
         {
           "id": "C11.03",
@@ -1055,14 +1057,15 @@
           "output": "Ротация agent/collector identities и защищённое хранение на ОС",
           "verification": "Revoked identity не принимает новые задания/данные по политике",
           "estimation_basis": "Agent, collector, server; expiry/renewal и clone case",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Реализация",
           "evidence": [
             "decisions/C11-openbao.md",
             "handoffs/C11.md",
-            "evidence/C11-progress.json"
+            "evidence/C11-runtime.json",
+            "evidence/C11-lifecycle-matrix.json"
           ],
-          "verification_status": "local live Bao/PG passed; full lifecycle unrun"
+          "verification_status": "passed local bounded E1; real Bao/PG/compiled daemons and race-checked TLS reload; limits documented"
         },
         {
           "id": "C11.04",
@@ -1074,17 +1077,18 @@
           "output": "Проверки logs/artifacts/errors и отказов Bao/cert",
           "verification": "Тестовые секреты отсутствуют в выдаче и отчётах",
           "estimation_basis": "Позитивные и негативные auth/TLS/Bao сценарии",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Проверка и передача",
           "evidence": [
             "decisions/C11-openbao.md",
             "handoffs/C11.md",
-            "evidence/C11-progress.json"
+            "evidence/C11-runtime.json",
+            "evidence/C11-lifecycle-matrix.json"
           ],
-          "verification_status": "local live Bao/PG passed; full lifecycle unrun"
+          "verification_status": "passed local bounded E1; real Bao/PG/compiled daemons and race-checked TLS reload; limits documented"
         }
       ],
-      "status": "in_progress",
+      "status": "done",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
     },
     {

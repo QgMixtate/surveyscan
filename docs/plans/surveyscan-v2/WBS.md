@@ -586,7 +586,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Ротация agent/collector identities и защищённое хранение на ОС.
 - Проверка: Revoked identity не принимает новые задания/данные по политике.
 - База оценки: Agent, collector, server; expiry/renewal и clone case.
-- Статус: in_progress; handoffs/C11.md, decisions/C11-openbao.md.
+- Статус: done; handoffs/C11.md, decisions/C11-openbao.md.
 
 ## C11.04 — Проверить секреты и доверие
 
@@ -596,7 +596,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Проверки logs/artifacts/errors и отказов Bao/cert.
 - Проверка: Тестовые секреты отсутствуют в выдаче и отчётах.
 - База оценки: Позитивные и негативные auth/TLS/Bao сценарии.
-- Статус: in_progress; handoffs/C11.md, decisions/C11-openbao.md.
+- Статус: done; handoffs/C11.md, decisions/C11-openbao.md.
 
 ## Выход пакета
 

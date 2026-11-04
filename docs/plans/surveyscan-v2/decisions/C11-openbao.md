@@ -84,7 +84,7 @@ audit, token revocation/renewal и health. До сверки не направл
 bao_smoke.py:4 live checks scoped KV/Transit/root rejection/actual403/audit/issuer bootstrap.
 bao_pipeline.py:17 live checks compiled center+collector+PG, synthetic signed agent,
 actual seal/unseal, readonly sealed restart, retained staging и automatic signed ACK без дублей.
-C11.03 renewal/rotation/clone ещё не принят; весь C11 не done. JSON C03/C09 и прежний SQL сохранены.
+C11.03/04 позднее приняты в bounded E1 scope: см. итоговый раздел ниже и lifecycle matrix. JSON C03/C09 и прежний SQL сохранены.
 
 ## Renewal — реализованная часть C11.03
 
@@ -97,7 +97,7 @@ Source lock сериализует issuance/revoke; receipt+challenge consume+ne
 в одной PG transaction. Точный retry возвращает прежний сертификат до проверки истечения
 challenge; другой digest под тем же ID→409. Expired peer/revoked source не получают renewal.
 Ключи подписи origin/center при обычном TLS renewal не меняются; старые pending signatures
-продолжают проверяться. Collector сам ещё не обновляет свой TLS credential (следующий шаг).
+продолжают проверяться. Collector self-renewal добавлен в итоговом разделе ниже.
 
 Agent renew --config использует тот же process lock, что daemon; новый Ed25519 TLS private key,
 CSR и signed request сохраняются в renewal.pending.json0600 до HTTP. После trusted CA/key/
@@ -119,3 +119,39 @@ cloned/reinstalled host подготавливает новый source и про
 Смена generation/ключей подписи и автоматическое сопоставление после переустановки здесь не реализованы.
 При TLS expiry после длительного offline автоматическое renewal не обходит mTLS expiry;
 нужна отдельная административная recovery procedure (ещё не принята). Старый spool не удалять.
+
+## Collector renewal и host continuity — итог C11
+
+Общий platform/machinecred Engine теперь используется agent и collector. Collector config:
+source_id (enrolled UUID), credential_directory и signing_private_key_file (задаются вместе).
+Пример deploy/collector.example.json содержит только paths/placeholders; установить private config0600,
+ключи0600 под UID службы. Credential directory0700 отделён от spool и не может пересекаться с ним.
+Source UUID и signing key сверяются с CA-attested leaf. Отдельный writer lock защищает credentials,
+даже при другом spool/listen. После lock — cold refresh текущего bundle; повреждённый/expired/symlink
+bundle запрещает старт, fallback к initial certificate не допускается.
+
+`surveyscan-collector renew --config ...` требует остановленного daemon и держит оба lock.
+Run автоматически renew за1h до expiry, retry/pending раз в минуту. TLS listener GetCertificate и
+outbound GetClientCertificate читают один atomic pointer; новая пара применяется без restart,
+старые idle outbound connections закрываются. Source/generation/center pins/signing key и pending queues
+не меняются. Положительный автоматический цикл проверен с injected scheduler clock и race detector:
+настоящие server/PG/Bao/TLS и реальный Run, не ожидание24h и не mock issuance.
+
+Agent Prepare создаёт host-binding.json0600: HMAC-SHA256(origin signing seed,domain+source+machine-id).
+Единственный OS input Linux /etc/machine-id, raw значение не сохраняется в binding/логах/отчётах.
+Machine-id unavailable/invalid/mismatch→отказ до использования sequence и отправки нового inventory/heartbeat.
+Pre-C11 enrolled state без binding требует явного `bind-host` после ручной проверки исходного хоста.
+Операция не заменяет существующий mismatching binding. Публичные контрактные JSON не менялись.
+Это local continuity guard от случайного clone/reinstall, не защита от владельца signing key/root.
+Если clone сохраняет все private keys и machine-id, отличить его без внешней hardware identity нельзя.
+Golden image не содержит keys/state/machine-id; fresh source/grant и revoke старого — административные действия.
+Проверены different-host/source/key unit matrix и mismatched copied-state fixture; реальная вторая VM unrun.
+
+Политика expiry — fail closed: actual expired certificate не подменяется initial ещё действующим cert,
+истёкший peer не renew, revoked source не renew/ingest. Offline certificate/revocation ограничения сохранены.
+При длительном offline без действующего bundle оператор сохраняет обе queues, проверяет часы/связность,
+останавливает source и оценивает continuity. Автоматического bypass/reissue expired identity нет.
+Новый source/grant возможен через существующий admin enrollment, но НЕ переносит старые pending/mapping
+автоматически; нужны последующие административные решения. Нельзя менять digest/source/sequence для обхода.
+Расширенный recovery workflow и hardware continuity остаются ограничениями, не проверенными функциями.
+Backup restore/production custody/HTTPS Bao deployment/systemd/24h soak остаются отдельной приёмкой C14/DR.

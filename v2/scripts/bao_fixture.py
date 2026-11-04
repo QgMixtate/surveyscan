@@ -14,6 +14,10 @@ def fixture(directory):
   path=directory/name;fd=os.open(path,os.O_CREAT|os.O_EXCL|os.O_WRONLY,0o600)
   with os.fdopen(fd,'w') as f:f.write(value)
   return str(path)
+ def assert_redacted(*texts):
+  protected=[root,canary,*extra_tokens]+([token] if token else [])
+  assert all(value not in text for text in texts for value in protected),'raw test secret present in emitted output'
+  return True
  def audit_check():
   raw=compose('exec','-T','bao','cat',audit_path,capture=True)
   assert prefix in raw and '"type":"request"' in raw, 'actual scoped audit events missing'
@@ -35,7 +39,7 @@ def fixture(directory):
   short=call('POST','auth/token/create',{'policies':[policy],'no_default_policy':True,'period':'30s','renewable':True,'no_parent':True})['auth']['client_token'];extra_tokens.append(short)
   short_file=save('short-token',short+'\n');short_cfg=dict(cfg,token_file=short_file);short_config=save('short-config.json',json.dumps(short_cfg))
   dead=call('POST','auth/token/create',{'policies':[policy],'no_default_policy':True,'period':'1h','renewable':True,'no_parent':True})['auth']['client_token'];call('POST','auth/token/revoke',{'token':dead});dead_file=save('revoked-token',dead+'\n')
-  yield {'short_config':short_config,'revoked_token_file':dead_file,'audit_check':lambda: audit_check(), 'config':config,'root_config':root_config,'profile':cfg,'token':token,'canary':canary,'call':call,'transit':transit,'kv':kv,'policy':policy}
+  yield {'short_config':short_config,'revoked_token_file':dead_file,'assert_redacted':assert_redacted,'audit_check':lambda: audit_check(), 'config':config,'root_config':root_config,'profile':cfg,'token':token,'canary':canary,'call':call,'transit':transit,'kv':kv,'policy':policy}
  finally:
   # Снять seal тем же authorized dev bootstrap, не reset volume/keys.
   try:unseal()

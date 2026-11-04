@@ -1,21 +1,37 @@
 {
   "package": "C11",
   "date": "2026-11-04 Europe/Moscow",
-  "status": "partial",
+  "status": "passed-bounded-E1",
+  "branch": "codex/v2-c11-openbao",
+  "base": "88c0d1a",
+  "collector_checkpoint": "3d591e8",
   "tasks": {
     "C11.01": "done",
     "C11.02": "done",
-    "C11.03": "in_progress",
-    "C11.04": "in_progress"
+    "C11.03": "done",
+    "C11.04": "done"
   },
-  "done_total": 42,
-  "unit_tests": 27,
+  "done_total": 44,
+  "unit_tests": 30,
   "pg_tests": 46,
   "fixtures": 58,
+  "migrations": 31,
+  "tables": 42,
+  "failed": 0,
+  "skipped": 0,
+  "hosted_ci": "unrun for C11",
+  "publication": "local only",
+  "matrix": "C11-lifecycle-matrix.json",
+  "limits": [
+    "identical machine-id+private keys cannot be distinguished; no hardware attestation",
+    "clone input tested via unit IDs/copied binding fixture, not a real second VM",
+    "expired TLS fails closed; automatic reissue/admin continuity workflow unsupported",
+    "24h timer/production HTTPS deployment/DR restore/systemd not run; later C14/DR acceptance"
+  ],
   "scoped_live": {
     "package": "C11",
     "status": "passed",
-    "scope": "OpenBao scoped bootstrap/key ops/secret refs; full C11 renewal not yet accepted",
+    "scope": "OpenBao scoped bootstrap/key ops/secret refs component proof; package acceptance in C11 evidence",
     "count": 4,
     "checks": [
       "real scoped token/KV ref/Transit signature and root-token rejection pass Go live test",
@@ -26,7 +42,6 @@
     "target": "real persistent OpenBao2.7.2 Raft; temporary unique mounts/policy/periodic scoped token; Go live client; root only operator provisioning",
     "private_material": "test token/KV canary/mounts/policy/private files removed; no secret in report",
     "unrun": [
-      "full machine lifecycle/renewal/clone",
       "production HTTPS/bootstrap custody",
       "raft backup/restore rehearsal"
     ]
@@ -63,43 +78,52 @@
     ],
     "private_material": "no root token in app config, no CA/receipt private keys outside Bao, all own keys/tokens/policy/test DB cleaned"
   },
-  "migrations": 31,
-  "tables": 42,
-  "hosted_ci": "unrun",
-  "publication": "local only",
-  "unrun": [
-    "full clone/expired-cert recovery matrix",
-    "physical power loss",
-    "production HTTPS/custody",
-    "24h automatic renewal soak",
-    "backup restore rehearsal",
-    "agent host-binding/clone matrix in progress"
-  ],
-  "branch": "codex/v2-c11-openbao",
-  "base": "10a3f93",
-  "failed": 0,
-  "skipped": 0,
-  "agent_rotation_live": {
+  "agent_live": {
     "package": "C11",
     "status": "passed",
-    "count": 8,
+    "count": 10,
     "checks": [
       "compiled center starts with explicit private loopback PKI",
       "compiled collector enrolls and starts HTTPS daemon",
       "live agent commits host inventory and daemon lock blocks simultaneous renewal writer",
+      "unbound legacy identity cannot start; explicit one-time bind-host adoption preserves identity/counters and is idempotent on original host",
+      "copied-state mismatched host-binding fixture refuses startup before contact/inventory/sequence use; actual separate-host clone is not emulated",
       "actual TLS disconnect after committed renewal retains pending CSR/private key; separate CLI retry returns same certificate without duplicate issuance",
       "compiled agent rotates TLS key using scoped Bao issuer; atomic private bundle commits matching cert/key and leaves origin signing key/generation/counters unchanged",
       "restart loads atomic rotated credentials and resumes real inventory/ACK with one UID and monotonic sequence",
       "source revoke prevents renewed credentials from obtaining another certificate",
-      "actual audit has no raw operator/application tokens or canary"
+      "actual audit and own binary logs have no raw operator/application tokens or canary"
     ],
     "target": "compiled Linux/amd64 agent+collector+server, real host inventory/PG/TLS/scoped OpenBao Transit CA, no mocked APIs",
     "unrun": [
-      "collector self-renewal",
       "physical power-loss rotation windows",
       "expired certificate administrative recovery",
       "full clone matrix",
       "production key custody/DR"
+    ]
+  },
+  "collector_live": {
+    "package": "C11",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "separate credential writer lock rejects a second collector using another spool/listen address",
+      "center outage leaves original unacknowledged batch durable at source and collector before rotation",
+      "real TLS disconnect after collector certificate commit preserves pending key/CSR; fresh CLI process replays one original result",
+      "collector atomically rotates matching TLS key/cert without changing origin signing key or either pending queue",
+      "restart uses rotated inbound/outbound TLS credentials; queued originals and next live inventory apply once to one UID",
+      "real collector Run auto-renews under injected scheduler clock, hot-reloads listener TLS and authenticates new outbound identity; race detector; real center/PG/Bao, no restart",
+      "source revoke prevents further renewal of all collector certificates",
+      "actual masked Bao audit excludes application/root tokens and KV canary; own binary logs also scanned"
+    ],
+    "target": "compiled Linux agent+collector+server, real host inventory/PG/scoped Bao; real TLS ACK loss; automatic loop tested via Go collector runtime with scheduler clock advanced only",
+    "unrun": [
+      "real24h auto-renewal soak",
+      "physical power loss",
+      "production custody/DR",
+      "full clone/expired administrative recovery matrix"
     ]
   },
   "recovery_regression": {
@@ -149,77 +173,15 @@
       "production/100-user load/24h soak"
     ]
   },
-  "commands": {
-    "verify_build": "make verify build: exit0,24unit/58fixtures; c11-transport-final-verify.log",
-    "pg": "scripts/dev.py integration: exit0,46groups",
-    "bao": "bao_smoke.py exit0; c11-transport-bao-live.log",
-    "pipeline": "scripts/bao_pipeline.py: exit0,17checks",
-    "rotation": "scripts/renewal_smoke.py: exit0,8checks",
-    "recovery": "scripts/recovery_smoke.py: exit0,8checks",
-    "browser": "scripts/web_smoke.py: exit0,14checks",
-    "dev_up": "scripts/dev.py up: exit0,applied0030 without volume reset"
-  },
-  "checkpoint": "8754e1c",
-  "auth_regression": {
-    "package": "C06",
-    "status": "passed",
-    "count": 10,
-    "checks": [
-      "binary migrate and repeat",
-      "CLI bootstrap once; no credential in output",
-      "CLI provision viewer",
-      "live login and origin policy",
-      "auth/CSRF gate before future domain handlers",
-      "session survives real server process restart",
-      "live token issue/revoke",
-      "live logout revokes session",
-      "viewer mutation forbidden",
-      "console disable revokes active HTTP session"
-    ],
-    "target": "real compiled Go binary + isolated PG + local Bao; HTTP allowed only with explicit dev flag",
-    "private_material": "temporary password removed; no credential in report"
-  },
-  "infrastructure_regression": {
-    "status": "passed",
-    "checks": [
-      "health and unauthenticated API rejected on 58080",
-      "health and unauthenticated API rejected on 58081",
-      "separate proxy serves OpenAPI",
-      "Bao stop/restart/unseal readiness recovery",
-      "PostgreSQL stop/restart preserves committed row and migrations",
-      "backend restart through proxy"
-    ],
-    "count": 6,
-    "business_handlers": "registry C06; machine TLS tested separately by machine_smoke.py",
-    "production": "unrun"
-  },
-  "verification_notes": [
-    "auth initially failed because infrastructure test stopped shared PG; sequential retry passed; exact owned leaked DB removed",
-    "final scheme guard change: make verify/build and live Bao rerun; other runtime suites passed before that isolated change",
-    "full C11 remains partial; collector renewal and expiry/clone acceptance pending"
+  "logs": [
+    "c11-complete-verify.log",
+    "c11-complete-integration.log",
+    "c11-final-scoped-accept.log",
+    "c11-complete-bao-pipeline.log",
+    "c11-final-agent-accept.log",
+    "c11-final-collector-accept.log",
+    "c11-complete-recovery.log",
+    "c11-complete-web.log"
   ],
-  "collector_rotation_live": {
-    "package": "C11",
-    "status": "passed",
-    "count": 10,
-    "checks": [
-      "compiled center starts with explicit private loopback PKI",
-      "compiled collector enrolls and starts HTTPS daemon",
-      "separate credential writer lock rejects a second collector using another spool/listen address",
-      "center outage leaves original unacknowledged batch durable at source and collector before rotation",
-      "real TLS disconnect after collector certificate commit preserves pending key/CSR; fresh CLI process replays one original result",
-      "collector atomically rotates matching TLS key/cert without changing origin signing key or either pending queue",
-      "restart uses rotated inbound/outbound TLS credentials; queued originals and next live inventory apply once to one UID",
-      "real collector Run auto-renews under injected scheduler clock, hot-reloads listener TLS and authenticates new outbound identity; real center/PG/Bao, no restart",
-      "source revoke prevents further renewal of all collector certificates",
-      "actual masked Bao audit excludes application/root tokens and KV canary"
-    ],
-    "target": "compiled Linux agent+collector+server, real host inventory/PG/scoped Bao; real TLS ACK loss; automatic loop tested via Go collector runtime with scheduler clock advanced only",
-    "unrun": [
-      "real24h auto-renewal soak",
-      "physical power loss",
-      "production custody/DR",
-      "full clone/expired administrative recovery matrix"
-    ]
-  }
+  "report_scope_note": "individual reports retain their own pre-final unrun lists; final matrix distinguishes completed software checks from real second-VM/production/DR limits"
 }

@@ -63,3 +63,24 @@ C10.01/02: квота теперь включает receipt и оставляе�
 после restart schedule начинается заново, counters/data сохраняются. Политика docs/decisions/C10-spool.md.
 Central leases/admission и bounded overload/timeout matrix C10.03/04 завершены локально;
 large production storm/24h остаются эксплуатационной проверкой.
+
+C11: обычный TLS renewal сохраняет source/generation, observation signing key и counters.
+`surveyscan-agent renew --config ...` выполняет немедленное продление под daemon lock;
+Run пытается продлить сертификат за1h до expiry, pending retry раз в минуту.
+Новый TLS key+CSR+proof сохраняются до отправки, затем matching cert/key одним tls-identity.json0600.
+При потере ACK повторяется тот же pending request. Начальные tls.key/identity.json не удалять:
+rotated bundle имеет приоритет; повреждённый bundle не вызывает fallback.
+
+Prepare привязывает новый state к Linux /etc/machine-id через локальный HMAC, raw machine-id
+в host-binding.json не хранится. Copy state при отличающемся machine-id запрещает startup/renewal/
+inventory/heartbeat; source/generation/sequence не сбрасываются. Для pre-C11 state без binding оператор
+сначала проверяет исходный хост/source/UID, затем останавливает daemon и выполняет один раз
+`surveyscan-agent bind-host --config ...`. Команда не перезаписывает несовпадающий существующий binding.
+Это защита от случайного копирования, не hardware attestation: одинаковые machine-id+keys неотличимы.
+Не включать state/keys/machine-id в golden image; новый хост генерирует machine-id и новый prepare/grant.
+Если machine-id недоступен/сменился, не удалять binding для обхода: сохранить state и разбирать continuity.
+
+После TLS expiry network renewal не обходит mTLS. Сначала проверить часы/путь к Bao/сети;
+если действующий rotated bundle отсутствует, остановить службу и сохранить обе очереди для оператора.
+Автоматического expired-identity reissue в E1 пока нет; новый source/grant требует административного
+решения о continuity и старых pending. Нельзя переименовать старый batch под новый source или сбросить counters.

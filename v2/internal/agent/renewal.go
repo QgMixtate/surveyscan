@@ -12,6 +12,9 @@ import (
 type tlsIdentity = machinecred.Identity
 
 func (c *Client) Renew(ctx context.Context) error {
+	if e := verifyHostBinding(c.cfg, c.claims.Source, c.key); e != nil {
+		return e
+	}
 	roots, e := rootsFor(c.cfg)
 	if e != nil {
 		return e

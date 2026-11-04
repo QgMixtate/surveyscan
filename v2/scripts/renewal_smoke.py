@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Real compiled Linux agent renewal with atomic identity bundle and persistent server ledger."""
-import json,os,subprocess,tempfile,time,uuid,http.server,ssl,socket,threading
+import json,os,subprocess,tempfile,time,uuid,http.server,ssl,socket,threading,shutil
 from pathlib import Path
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
@@ -29,6 +29,9 @@ def main():
     permission=save('agent-grant.json',json.dumps(grant));command('enroll',['--grant-file',permission]);old=json.loads((state/'identity.json').read_text());signing=(state/'signing.key').read_bytes()
     process=s['start']('renewal-agent-before',[binary,'run','--config',config]);until(lambda:sql('SELECT count(*) FROM inventory.observations')=='1','first live inventory missing');until(lambda:not list((state/'spool').glob('*.pending')),'source ACK not durable')
     command('renew',expect=1);process.terminate();process.wait(timeout=8);uid=sql('SELECT asset_uid::text FROM assets.assets');counters=(state/'sequences.json').read_bytes();checks.append('live agent commits host inventory and daemon lock blocks simultaneous renewal writer')
+    # Explicit legacy upgrade must not silently adopt copied enrolled state.
+    binding=(state/'host-binding.json').read_bytes();(state/'host-binding.json').unlink();command('run',expect=1);assert not (state/'host-binding.json').exists();command('bind-host');command('bind-host');assert (state/'host-binding.json').read_bytes()==binding and (state/'sequences.json').read_bytes()==counters;checks.append('unbound legacy identity cannot start; explicit one-time bind-host adoption preserves identity/counters and is idempotent on original host')
+    cloned=s['directory']/'cloned-agent-state';shutil.copytree(state,cloned);(cloned/'host-binding.json').write_text(json.dumps({'version':1,'digest':'00'*32}));clone_cfg=dict(cfg,state_directory=str(cloned));clone_file=save('clone-agent.json',json.dumps(clone_cfg));p=subprocess.run([binary,'run','--config',clone_file],capture_output=True,text=True,timeout=15);assert p.returncode==1 and sql('SELECT count(*) FROM inventory.observations')=='1' and (cloned/'sequences.json').read_bytes()==counters;checks.append('copied-state mismatched host-binding fixture refuses startup before contact/inventory/sequence use; actual separate-host clone is not emulated')
     # Real TLS relay drops the first committed renewal ACK; it does not fake issuance/PG.
     collector_cfg=json.loads(Path(s['collector_config']).read_text());upstream=ssl.create_default_context(cafile=s['ca_file']);upstream.load_cert_chain(save('old-agent.pem',old['certificate_chain_pem']),str(state/'tls.key'));seen=[]
     class Relay(http.server.BaseHTTPRequestHandler):
@@ -57,8 +60,8 @@ def main():
     assert sql('SELECT asset_uid::text FROM assets.assets')==uid and sql('SELECT max(source_sequence)::text FROM inventory.observations')=='2';checks.append('restart loads atomic rotated credentials and resumes real inventory/ACK with one UID and monotonic sequence')
     restarted.terminate();restarted.wait(timeout=8)
     status,_,_=request(s['tls_port'],s['plain'],'POST','/api/v1/sources/'+prep['source_id']+'/revocations',{'reason_code':'TEST_REVOKE'},headers);assert status==200;command('renew',expect=1);assert sql('SELECT count(*) FROM sources.renewal_receipts')=='1';checks.append('source revoke prevents renewed credentials from obtaining another certificate')
-    assert f['audit_check']();checks.append('actual audit has no raw operator/application tokens or canary')
-    report={'package':'C11','status':'passed','count':len(checks),'checks':checks,'target':'compiled Linux/amd64 agent+collector+server, real host inventory/PG/TLS/scoped OpenBao Transit CA, no mocked APIs','unrun':['collector self-renewal','physical power-loss rotation windows','expired certificate administrative recovery','full clone matrix','production key custody/DR']};(STATE/'renewal-smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
+    assert f['assert_redacted'](*(p.read_text() for p in s['directory'].glob('*.log')));assert f['audit_check']();checks.append('actual audit and own binary logs have no raw operator/application tokens or canary')
+    report={'package':'C11','status':'passed','count':len(checks),'checks':checks,'target':'compiled Linux/amd64 agent+collector+server, real host inventory/PG/TLS/scoped OpenBao Transit CA, no mocked APIs','unrun':['physical power-loss rotation windows','expired certificate administrative recovery','second-VM clone matrix/hardware identity','production key custody/DR']};(STATE/'renewal-smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
    settings={'config':f['config'],'ca_certificate':str(output/'ca.pem'),'server_certificate':str(output/'server.pem'),'server_private':str(output/'server.key'),'center_id':str(uuid.uuid4()),'center_public':f['profile']['keys']['center']['public_key']}
    harness(agent_scenario=scenario,bao_settings=settings)
 if __name__=='__main__':main()

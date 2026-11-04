@@ -1,0 +1,50 @@
+{
+  "package": "C11",
+  "status": "passed-bounded-E1",
+  "date": "2026-11-04 Europe/Moscow",
+  "cases": [
+    {
+      "id": "bao-scoped-key-secret-ops",
+      "status": "passed",
+      "evidence": "bao-smoke.json",
+      "scope": "live scoped Bao; root/arbitrary paths/export denied"
+    },
+    {
+      "id": "bao-seal-restart-token-revoke",
+      "status": "passed",
+      "evidence": "bao-pipeline.json",
+      "scope": "live seal/unseal, readonly startup/API, retained staging and resumed ACK"
+    },
+    {
+      "id": "agent-renewal-adoption-clone-guard",
+      "status": "passed",
+      "evidence": "renewal-smoke.json",
+      "scope": "compiled agent, ACK loss and explicit legacy binding; copied mismatch fixture"
+    },
+    {
+      "id": "collector-renewal-spool-hot-reload",
+      "status": "passed",
+      "evidence": "collector-renewal-smoke.json",
+      "scope": "compiled collector queues/ACK loss + real Run hot reload with advanced scheduler clock and race detector"
+    },
+    {
+      "id": "renewal-proof-replay-revoke-expiry",
+      "status": "passed",
+      "evidence": "c11-complete-integration.log",
+      "scope": "46 real PG groups incl CSR/domain/expired peer/nonce/tenant/revoke,12concurrent exact repeats"
+    },
+    {
+      "id": "tls-trust-and-local-state",
+      "status": "passed",
+      "evidence": "c11-complete-verify.log",
+      "scope": "normal unit: untrusted/trusted HTTPS + redirect refusal (synthetic HTTP); expired leaf and corrupt/symlink state fail closed"
+    }
+  ],
+  "limits": [
+    "identical machine-id+private keys cannot be distinguished; no hardware attestation",
+    "clone input tested via unit IDs/copied binding fixture, not a real second VM",
+    "expired TLS fails closed; automatic reissue/admin continuity workflow unsupported",
+    "24h timer/production HTTPS deployment/DR restore/systemd not run; later C14/DR acceptance"
+  ],
+  "secret_outputs": "real Bao masked audit + owned binary logs + captured Go output checked internally against canary/operator/application tokens; values never printed"
+}

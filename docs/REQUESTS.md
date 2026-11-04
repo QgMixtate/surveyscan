@@ -275,3 +275,10 @@ No push/merge/deploy/env publication. Подробности handoffs/C11.md.
 C11 checkpoint8754e1c: server/agent renewal и ACK-loss recovery сохранены. Дополнительно auth10/infra6
 passed; initial auth run конфликтовал с infrastructure stopPG, повторён последовательно; own leaked DB удалена.
 Transport guard hardened: parsed URL scheme (mixed-case HTTP), verify/build+liveBao passed. Далее collector self-renew.
+
+R-019, продолжение «Продолжай»,2026-11-04 (Москва): C11 завершён локально в bounded E1 scope.
+Checkpoint3d591e8 shared engine+collector rotation; затем host-binding/legacy adoption и final trust matrix.
+30unit/46PG/58fixtures,10agent/10collector,17Bao,8recovery/14browser passed. Collector hot reload прошёл-race
+с injected scheduler clock; реальные issuer/Bao/PG/TLS.44/200done;31migrations/42tables.
+Hardware clone identity/identical keys+machine-id, automatic expired reissue, production/24h/DR остаются
+ограничениями, см. evidence/C11-lifecycle-matrix.json. Далее автоматически C12. No push/merge/deploy/env publication.

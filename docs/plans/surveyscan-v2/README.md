@@ -102,13 +102,13 @@ ITSM начинается после согласования/приёмки W2.
 
 ## Текущая передача
 
-42/200 задач done,2in_progress,156planned. C01–C03 проект/контракты; C04–C10 реализованы
-и проверены локально. C04/C05 hosted CI success; C06–C11 не опубликованы, main не слит.
-C11.01/02 done,03/04 in_progress: scoped Bao и server/Linux-agent renewal готовы;
-collector self-renewal и full lifecycle acceptance продолжаются.
-[Передача C11](handoffs/C11.md), [решение](decisions/C11-openbao.md), [evidence](evidence/C11-runtime.json).
-
-24unit/46PG/58fixtures,17Bao pipeline/8live TLS rotation+ACK-loss/8SIGKILL recovery/14browser checks passed;
-auth10/infra6 regression passed.31migrations/42tables; prior SQL/C03/C09 byte-identical.
-100users/24h/production HTTPS/custody/DR restore unrun. C12 до завершения C11 не начинать.
-No push/merge/deploy/env publication. Предыдущие handoffs сохраняют историю каждого пакета.
+44/200 задач done,156planned. C01–C11 завершены локально в указанном scope;
+C04/C05 hosted CI success, C06–C11 не опубликованы. Main не слит.
+C11: scoped Bao, server/agent/collector renewal, atomic TLS credentials, queues/ACK loss,
+local host-binding/legacy adoption, expiry/revoke/secret checks.
+30unit/46PG/58fixtures,17Bao pipeline,10agent/10collector,8recovery/14browser passed.
+Collector hot reload — race detector + injected scheduler clock, не24h soak.
+31migrations/42tables, prior SQL/C03/C09 bytes unchanged.
+[Передача C11](handoffs/C11.md), [границы приёмки](evidence/C11-lifecycle-matrix.json).
+Далее C12 CLI/profiles/observability. Production/24h/DR и hardware clone identity unrun/unsupported.
+No push/merge/deploy/env publication.

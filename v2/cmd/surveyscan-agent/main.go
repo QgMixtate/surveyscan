@@ -21,7 +21,7 @@ func run() error {
 		return buildinfo.Print(os.Stdout, "agent")
 	}
 	if len(os.Args) < 2 {
-		return fmt.Errorf("используйте prepare/enroll/renew/run --config /secure/agent.json")
+		return fmt.Errorf("используйте prepare/enroll/bind-host/renew/run --config /secure/agent.json")
 	}
 	command := os.Args[1]
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
@@ -61,6 +61,12 @@ func run() error {
 			return e
 		}
 		fmt.Println("agent_enrolled")
+		return nil
+	case "bind-host":
+		if e = agent.BindHost(ctx, c); e != nil {
+			return e
+		}
+		fmt.Println("agent_host_bound")
 		return nil
 	case "renew":
 		bounded, cancel := context.WithTimeout(ctx, 30*time.Second)

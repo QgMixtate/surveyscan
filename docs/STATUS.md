@@ -3,17 +3,16 @@
 Обновлено: 2026-11-04 (Москва). Основание: git fetch/ls-remote, локальные проверки и история чата; GitHub REST API доступен; C04/C05 PR остаются открыты.
 
 
-Актуальная задача R-019 — последовательно выполнять этапы до лимита.
-C01–C10 done. C11.01/02 done, C11.03/04 in_progress:42/200 done.
-[C11 передача](plans/surveyscan-v2/handoffs/C11.md): scoped OpenBao KV/Transit, non-exportable
-CA/receipt keys, declarative masked audit, no private-key fallback, degraded readiness/readonly API.
-Server cert_renew proof/ledger и Linux agent TLS key rotation с atomic credential bundle реализованы.
-24 unit/46 real PG/58 C03 fixtures passed; scoped Bao token renew/revoke/atomic replacement,
-8 live agent rotation checks (actual TLS ACK loss), recovery8 и Chromium14 regression passed.
-Новая migration0030:31migrations/42tables; SQL0000–0029 и C03/C09 JSON bytes сохранены.
-C11 ещё не принят целиком: далее collector self-renewal, lifecycle/clone/expiry matrix.
-C04/C05 hosted success; C06–C11 локальны, C11 checkpoint10a3f93 + текущая работа.
-Без push/merge/deploy/повторной публикации среды. Main не менялся.
+Актуальная задача R-019 — выполнять этапы последовательно до лимита.
+C01–C11 завершены локально в ограниченном E1 scope:44/200 done.
+[C11 передача](plans/surveyscan-v2/handoffs/C11.md), [точная матрица](plans/surveyscan-v2/evidence/C11-lifecycle-matrix.json).
+Общий durable renewal agent/collector, atomic shared TLS listener/client provider, ключи/очереди сохранены.
+Agent host-binding к Linux machine-id, явный bind-host для legacy; mismatched clone запрещён до отправки.
+30unit/46PG/58fixtures,17Bao pipeline,10agent/10collector (race + scheduler clock),8recovery/14browser passed.
+31migrations/42tables. Source/generation/signing keys/counters при TLS renewal не сбрасываются.
+Identical machine-id+keys неотличимы; actual second-VM/24h/production HTTPS/DR/systemd не проверены.
+Expired identity fail-closed; automatic admin reissue пока не реализован. Ограничения не выдаются за функции.
+Далее C12 CLI/configuration/observability. C04/C05 hosted success; C06–C11 локальны, no push/merge/deploy/env publication.
 
 ## Контекст архитектуры и история C01–C04
 

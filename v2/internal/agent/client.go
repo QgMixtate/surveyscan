@@ -151,12 +151,22 @@ func Prepare(c Config) (Preparation, error) {
 	defer unlock()
 	path := filepath.Join(c.State, "preparation.json")
 	if _, e = os.Stat(path); e == nil {
-		e = loadJSON(path, &out)
-		return out, e
+		if e = loadJSON(path, &out); e != nil {
+			return out, e
+		}
+		key, e := readKey(filepath.Join(c.State, "signing.key"))
+		if e != nil {
+			return out, e
+		}
+		return out, verifyHostBinding(c, out.Source, key)
 	} else if !os.IsNotExist(e) {
 		return out, e
 	}
-	for _, name := range []string{"tls.key", "signing.key", "identity.json", "sequences.json"} {
+	hostID, e := localMachineID()
+	if e != nil {
+		return out, e
+	}
+	for _, name := range []string{"tls.key", "signing.key", "identity.json", "sequences.json", "host-binding.json", "tls-identity.json", "renewal.pending.json"} {
 		if _, e = os.Stat(filepath.Join(c.State, name)); !os.IsNotExist(e) {
 			return out, errors.New("agent state already contains identity material")
 		}
@@ -186,6 +196,9 @@ func Prepare(c Config) (Preparation, error) {
 	digest := sha256.Sum256(csr)
 	out = Preparation{Source: identifier.New(), CSR: string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csr})), Hash: hex.EncodeToString(digest[:]), Public: base64.RawURLEncoding.EncodeToString(signPublic)}
 	if e = saveJSON(filepath.Join(c.State, "sequences.json"), counters{Inventory: "0", Heartbeat: "0"}); e != nil {
+		return out, e
+	}
+	if e = saveJSON(filepath.Join(c.State, "host-binding.json"), bindingValue(out.Source, hostID, signKey)); e != nil {
 		return out, e
 	}
 	return out, saveJSON(path, out)
@@ -257,6 +270,9 @@ func Enroll(ctx context.Context, c Config, grant contracts.EnrollmentGrant) erro
 	if e != nil {
 		return e
 	}
+	if e = verifyHostBinding(c, prep.Source, key); e != nil {
+		return e
+	}
 	public := key.Public().(ed25519.PublicKey)
 	if prep.Public != base64.RawURLEncoding.EncodeToString(public) {
 		return errors.New("enrollment signing key mismatch")
@@ -325,7 +341,8 @@ func Enroll(ctx context.Context, c Config, grant contracts.EnrollmentGrant) erro
 	}
 	return saveJSON(filepath.Join(c.State, "identity.json"), result)
 }
-func Open(c Config) (*Client, error) {
+func Open(c Config) (*Client, error) { return open(c, true) }
+func open(c Config, requireBinding bool) (*Client, error) {
 	var prep Preparation
 	if e := loadJSON(filepath.Join(c.State, "preparation.json"), &prep); e != nil {
 		return nil, e
@@ -333,6 +350,11 @@ func Open(c Config) (*Client, error) {
 	key, e := readKey(filepath.Join(c.State, "signing.key"))
 	if e != nil {
 		return nil, e
+	}
+	if requireBinding {
+		if e = verifyHostBinding(c, prep.Source, key); e != nil {
+			return nil, e
+		}
 	}
 	var result contracts.EnrollmentResult
 	var rotated tlsIdentity
@@ -415,6 +437,9 @@ func (c *Client) signed(payload any, domain string) ([]byte, error) {
 	return json.Marshal(contracts.SignedObservation{Payload: raw, Digest: hex.EncodeToString(sum[:]), KeyID: c.claims.KeyID, Signature: base64.RawURLEncoding.EncodeToString(ed25519.Sign(c.key, append([]byte(domain), canonical...)))})
 }
 func (c *Client) Inventory(ctx context.Context) error {
+	if e := verifyHostBinding(c.cfg, c.claims.Source, c.key); e != nil {
+		return e
+	}
 	if e := diskspool.Data(filepath.Join(c.cfg.State, "spool"), c.cfg.Limit-diskspool.AckReserve, 131072); e != nil {
 		return e
 	}
@@ -535,6 +560,9 @@ func (c *Client) Flush(ctx context.Context) error {
 	return nil
 }
 func (c *Client) Heartbeat(ctx context.Context) error {
+	if e := verifyHostBinding(c.cfg, c.claims.Source, c.key); e != nil {
+		return e
+	}
 	req := contracts.ChallengeRequest{Sources: []string{c.claims.Source}, Purpose: "heartbeat"}
 	raw, _ := json.Marshal(req)
 	code, b, e := request(ctx, c.http, c.cfg.CollectorURL, "POST", "/api/v1/machine/heartbeat-challenges", raw, "")
