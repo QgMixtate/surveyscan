@@ -348,3 +348,8 @@ old rows/hashes/UID/access/history/outbox сохранены, new login/write/de
 39unit/58C03/50PG passed перед публикацией. Workflow расширен всеми C13 checks и separate Web build.
 Публикация pending; точные remote refs/PR/hosted CI записать только после фактической записи GitHub.
 C13.01–03 IP/C13.04planned,48/200; следующие gates systemd boot/live update/two clean OS.
+
+R-020 publication: git push успешен, GitHub branch codex/v2-c13-operations@f1ea70f подтверждена,
+draft PR4 https://github.com/QgMixtate/surveyscan/pull/4. C04–C13 опубликованы одной последовательной веткой,
+main/PR1–3 не слиты/не изменялись. Actual hosted v2 run41924693360 и Web41924693362 стартовали;
+результат покаin_progress. После metadata sync проверить latest PR head и конечные Actions results.

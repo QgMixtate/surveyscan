@@ -1,7 +1,9 @@
 # Текущее состояние surveyscan
 
 R-020, 2026-11-05: пользователь поручил продолжить и опубликовать всё сделанное в GitHub.
-Публикация текущей ветки/PR/Actions подготавливается; прежние no-push ограничения ниже исторические.
+Опубликовано: codex/v2-c13-operations@f1ea70f (вся история C04–C13), draft PR #4: https://github.com/QgMixtate/surveyscan/pull/4.
+Hosted Actions реально стартовал: https://github.com/QgMixtate/surveyscan/actions/runs/41924693360; результат ещё in_progress.
+Push успешен, PR создан; прежние no-push ограничения ниже исторические.
 Main не сливать, production deployment и перепубликация среды не поручены.
 Новые проверки C13: общий stopped-writer PG/Bao/files checkpoint10 и actual C11schema31→33 upgrade13 passed.
 Restore на других FS paths, original host/issuer fenced, pending replay exactly once/UID/sequence3,

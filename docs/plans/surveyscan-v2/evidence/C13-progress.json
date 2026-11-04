@@ -51,7 +51,15 @@
     "two clean OS systems",
     "production HTTPS/KMS/split custody/DR"
   ],
-  "publication": "authorized by R-020; pending push/PR/hosted CI",
+  "publication": {
+    "state": "published to feature branch; not merged",
+    "code_commit": "f1ea70fc8613170e6c0bed2bba89cdf3f4726244",
+    "branch": "codex/v2-c13-operations",
+    "pr": "https://github.com/QgMixtate/surveyscan/pull/4",
+    "first_v2_run": "https://github.com/QgMixtate/surveyscan/actions/runs/41924693360",
+    "first_web_run": "https://github.com/QgMixtate/surveyscan/actions/runs/41924693362",
+    "hosted_result": "in_progress; not claimed passed"
+  },
   "release": {
     "package": "C13",
     "task": "C13.02 preparation",
