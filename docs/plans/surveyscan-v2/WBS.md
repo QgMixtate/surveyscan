@@ -676,7 +676,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Systemd/Windows service по выбранной ОС, конфиги и data dirs.
 - Проверка: После перезагрузки весь поддержанный контур стартует сам.
 - База оценки: 1 E1 платформа и 1 способ серверной установки.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress; staging/static verify passed, boot/reboot unrun; handoffs/C13.md.
 
 ## C13.02 — Подготовить подписываемые артефакты и версии
 
@@ -686,7 +686,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Release manifest/checksums/SBOM и ручное проверяемое обновление.
 - Проверка: Артефакты проверяются до применения; версия видна оператору.
 - База оценки: Server/agent/collector/UI/CLI; совместимость по C03.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress; signed bundle/SBOM/verified staging 14 checks passed, live update pending; handoffs/C13.md.
 
 ## C13.03 — Реализовать backup/restore и миграции
 

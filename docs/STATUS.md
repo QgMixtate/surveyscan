@@ -1,6 +1,14 @@
 # Текущее состояние surveyscan
 
-Обновлено: 2026-11-04 (Москва). Основание: git fetch/ls-remote, локальные проверки и история чата; GitHub REST API доступен; C04/C05 PR остаются открыты.
+Обновлено: 2026-11-05 (Москва). GitHub refs повторно проверены fetch/ls-remote; main73ced7e, PR refs1–3 без изменений. Новые этапы локальны.
+
+C13.01/02 в работе: staged systemd units и подписанный Ed25519 directory bundle,
+SHA256/size/mode manifest, SPDX2.3 dependency inventory, verified atomic filesystem staging.
+14 release checks, make verify (39 unit/58 fixtures) и separate Web build passed.
+Все пять компонентов показывают version/revision/dirty; keys/configs не включаются в поставку.
+Actual systemd boot/reboot и live checked update/backup/restore остаются открытыми:
+host PID1 tail, нет QEMU/KVM/nspawn, Docker cgroup driver none. 48/200 done без изменения.
+Продолжение: [handoff C13](plans/surveyscan-v2/handoffs/C13.md), [release procedure](../v2/deploy/RELEASE.md).
 
 
 Актуальная задача R-019 — выполнять этапы последовательно до лимита.

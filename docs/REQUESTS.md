@@ -304,3 +304,11 @@ Stagedsystemdunits/installer(privatecredentials/data paths) и5stagingchecks,rea
 systemd-analyze staticverifyexit0вnetworklesscontainer. Actualboot/reboot/services не проверены:
 managedhostPID1tail/UID1000. No host service install/start. handoffs/C13.md содержитточнуюграницу.
 C13.02–04release/backup/restore ещёplanned; no push/merge/deploy/env publication.
+
+R-019, продолжение «Дальше / продолжи», 2026-11-05 (Москва): C13.01/02 in_progress.
+Подготовлены signed Ed25519 release bundle, SHA256/size/mode manifest, SPDX2.3 dependency inventory,
+все пять component versions/revisions/dirty, проверка до atomic staging в пустой root.
+14 real signature/tamper/trust/path/mode/staging checks + make verify39unit/58fixtures и Web build passed.
+Production key custody, actualboot/reboot/live update/backuprestore не проверены; done48/200 не изменён.
+Нет QEMU/KVM/nspawn, Docker cgroupdriver none; host service changes не выполнялись.
+GitHub fetch подтвердил прежние refs; нет push/merge/deploy/env publication. Handoff C13 хранит следующий шаг.

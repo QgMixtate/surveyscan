@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C12 done locally; C13.01 in progress; C13.02-C50 planned",
+  "status": "C01-C12 done locally; C13.01/C13.02 in progress; C13.03-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1223,8 +1223,13 @@
           "output": "Release manifest/checksums/SBOM и ручное проверяемое обновление",
           "verification": "Артефакты проверяются до применения; версия видна оператору",
           "estimation_basis": "Server/agent/collector/UI/CLI; совместимость по C03",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "in_progress",
+          "work_group": "Реализация",
+          "evidence": [
+            "handoffs/C13.md",
+            "evidence/C13-progress.json"
+          ],
+          "verification_status": "14 real signed-bundle/verified-staging checks passed; boot/live checked update pending"
         },
         {
           "id": "C13.03",

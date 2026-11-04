@@ -1,11 +1,11 @@
 {
   "package": "C13",
   "status": "partial",
-  "date": "2026-11-04 Europe/Moscow",
+  "date": "2026-11-05 Europe/Moscow",
   "branch": "codex/v2-c13-operations",
   "base": "d55a23d",
   "done_total": 48,
-  "task": "C13.01 in_progress; not done until actualboot",
+  "task": "C13.01/C13.02 in_progress; boot and live update pending",
   "staging": {
     "task": "C13.01",
     "status": "partial-passed",
@@ -48,8 +48,51 @@
   "unrun": [
     "systemd realboot/reboot/autostart",
     "PG/Bao/edge/config provisioning",
-    "signed release/checksums/SBOM",
+    "live checked update",
     "backuprestore/cleanstand"
   ],
-  "publication": "local only"
+  "publication": "local only",
+  "release": {
+    "package": "C13",
+    "task": "C13.02 preparation",
+    "status": "passed",
+    "count": 14,
+    "checks": [
+      "unsigned candidate refused before staging",
+      "real Ed25519 signature and complete file/mode/size/hash inventory verified",
+      "four compiled binaries and separate Web UI identify the same version/revision",
+      "SPDX2.3 inventory contains actual Go module metadata and npm lock/build graph with valid references",
+      "foreign trust anchor refused without creating installation root",
+      "tampered executable refused before target mutation",
+      "tampered signed manifest refused",
+      "extra/missing file, symlink and executable mode changes refused",
+      "even correctly signed traversal inventory refused without writes outside staging",
+      "group/world-readable signing key refused",
+      "verified copy published atomically, binaries executable under umask077, empty private state and no keys copied",
+      "live root and nonempty installation refused; existing receipt/state preserved",
+      "same signed bundle stages twice without rebuild or regenerated machine identity",
+      "duplicate JSON manifest keys refused"
+    ],
+    "target": "actual built ELF binaries/Web, OpenSSL Ed25519 and local empty filesystem roots",
+    "unrun": [
+      "systemd boot/reboot",
+      "live checked update and schema rollback",
+      "production signing custody",
+      "backup/restore",
+      "two independent installed systems"
+    ],
+    "host_services_modified": false
+  },
+  "capabilities": {
+    "qemu_system_x86_64": false,
+    "kvm_device": false,
+    "systemd_nspawn": false,
+    "docker_cgroup_driver": "none",
+    "docker_cgroup_version": 2
+  },
+  "validation": {
+    "make_verify": "passed;39 unit +58 C03 fixtures, local httptest ports require escalation",
+    "web_build": "passed; initial sandbox Node spawnSync denied, repeated with escalation",
+    "source": "local only; GitHub refs rechecked unchanged via fetch; no push"
+  }
 }

@@ -1,16 +1,19 @@
 GO ?= go
 CONTRACT_PYTHON ?= python3
 REVISION := $(shell git rev-parse HEAD)
+VERSION ?= 0.0.0-c13
+DIRTY := $(shell test -z "$$(git status --porcelain --untracked-files=normal)" && echo false || echo true)
 MODULE := github.com/QgMixtate/surveyscan/v2
+BUILD_FLAGS = -X $(MODULE)/internal/platform/buildinfo.Version=$(VERSION) -X $(MODULE)/internal/platform/buildinfo.Revision=$(REVISION) -X $(MODULE)/internal/platform/buildinfo.Dirty=$(DIRTY)
 
 .PHONY: build test vet contracts integration dev-up dev-down fmt-check verify
 build:
 	mkdir -p .dist/contracts
 	$(GO) version
-	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '-X $(MODULE)/internal/platform/buildinfo.Revision=$(REVISION)' -o .dist/surveyscan-server ./cmd/surveyscan-server
-	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -o .dist/surveyscan-collector ./cmd/surveyscan-collector
-	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -o .dist/surveyscan-agent ./cmd/surveyscan-agent
-	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -o .dist/surveyscanctl ./cmd/surveyscanctl
+	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscan-server ./cmd/surveyscan-server
+	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscan-collector ./cmd/surveyscan-collector
+	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscan-agent ./cmd/surveyscan-agent
+	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscanctl ./cmd/surveyscanctl
 	cp contracts/*.json .dist/contracts/
 	chmod 755 .dist .dist/contracts .dist/surveyscan-* .dist/surveyscanctl
 	chmod 644 .dist/contracts/*.json
