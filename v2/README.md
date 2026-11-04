@@ -156,3 +156,12 @@ Dev edge58081 отдаёт независимый production bundle со strict 
 section times/source summary в одном RR snapshot. UI проверяет C03+C09 contract hashes; C03 неизменён.
 29 migrations/39 domain/access tables.14 Chromium/37 PG integration checks passed локально;
 hosted CI unrun. Следующий C10 — durability/quota/recovery hardening.
+
+## C10.01/02: локальное recovery
+
+[Передача](../docs/plans/surveyscan-v2/handoffs/C10.md): quota учитывает receipt/pending, резерв для ACK,
+retention только committed receipt, temp recovery и collector single writer. Cached verified ACK завершает
+unlink после crash/offline; rejected сохраняется без resubmit, transient backoff+jitter ограничены.
+`contract-python scripts/recovery_smoke.py`: real SIGKILL/reconnect.
+`GO=... python3 scripts/diskfault.py`: real ENOSPC в отдельном64KiB Docker tmpfs.
+Central claim/lease/admission и полная overload/timeout матрица ещё выполняются; C10 whole не done.

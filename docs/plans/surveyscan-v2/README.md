@@ -103,7 +103,7 @@ ITSM начинается после согласования/приёмки W2.
 ## Текущая передача
 
 C01/C02 — scope и ER; C03 — [API/envelopes/ACK и проверенные примеры](handoffs/C03.md).
-36/200 задач done,164 planned. [C08](handoffs/C08.md) — настоящий Linux host agent,
+38/200 задач done,1 in progress,161 planned. [C08](handoffs/C08.md) — настоящий Linux host agent,
 три автоматических inventory цикла с тем же UID, четвёртый после restart, независимый heartbeat.
 18 unit/34 PG integration,58 fixtures,11 live-agent,8 collector,10 auth,6 infrastructure checks passed локально.
 C04/C05 hosted CI success; C06–C08 локальны. Далее автоматически C09 по R-019.
@@ -111,3 +111,6 @@ C04/C05 hosted CI success; C06–C08 локальны. Далее автомат
 C09: отдельная frontend сборка и card/IP/MAC/provenance/source summary готовы локально.
 18 unit/37 PG integration/58 C03 fixtures/14 Chromium checks passed. [Передача](handoffs/C09.md).
 Далее автоматически C10.
+
+C10.01/02: file spool/quota/retention/verified cached ACK recovery и bounded retries готовы локально;
+real SIGKILL/reconnect и real ENOSPC passed. Далее C10.03 central claims/admission; whole C10 не done.

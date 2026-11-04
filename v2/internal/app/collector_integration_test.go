@@ -81,7 +81,11 @@ func TestC07AgentCollectorCenterPGAndVerifiedReturn(t *testing.T) {
 	}
 	serverPair := tlsPair(t, string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: serverDER})), serverKey)
 	var centerFailure atomic.Int32
+	var centerAttempts atomic.Int32
 	center := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" && r.URL.Path == "/api/v1/machine/observations" {
+			centerAttempts.Add(1)
+		}
 		switch centerFailure.Load() {
 		case 1:
 			w.WriteHeader(http.StatusServiceUnavailable)
@@ -178,20 +182,36 @@ func TestC07AgentCollectorCenterPGAndVerifiedReturn(t *testing.T) {
 	if _, e = os.Stat(filepath.Join(dir, "spool", batch.DeliveryID+".pending")); e != nil {
 		t.Fatal("transport receipt without durable spool", e)
 	}
+	beforeCommitPacket, err := os.ReadFile(filepath.Join(dir, "spool", batch.DeliveryID+".pending"))
+	if err != nil {
+		t.Fatal(err)
+	}
 	count(t, f, "inventory.observations", 0)
 	// Недоступность центра и недостоверный ACK не удаляют durable packet.
+	pumpAttempt := func() {
+		t.Helper()
+		prior := centerAttempts.Load()
+		deadline := time.Now().Add(5 * time.Second)
+		for centerAttempts.Load() == prior && time.Now().Before(deadline) {
+			_ = relay.Pump(f.ctx)
+			if centerAttempts.Load() == prior {
+				time.Sleep(50 * time.Millisecond)
+			}
+		}
+		if centerAttempts.Load() == prior {
+			t.Fatal("bounded retry never attempted delivery")
+		}
+	}
 	for _, failure := range []int32{1, 2} {
 		centerFailure.Store(failure)
-		_ = relay.Pump(f.ctx)
+		pumpAttempt()
 		if _, err := os.Stat(filepath.Join(dir, "spool", batch.DeliveryID+".pending")); err != nil {
 			t.Fatal("untrusted response removed pending", err)
 		}
 		count(t, f, "inventory.observations", 0)
 	}
 	centerFailure.Store(0)
-	if e = relay.Pump(f.ctx); e != nil {
-		t.Fatal(e)
-	}
+	pumpAttempt()
 	code, receipt, _ := agent.request(t, "GET", "/api/v1/machine/deliveries/"+batch.DeliveryID, "", "", "", nil)
 	expect(t, 200, code)
 	signed, remove, e := f.registry.Wire.VerifyCenterResult(receipt, raw, machine.CenterKeyID, centerPub)
@@ -219,6 +239,9 @@ func TestC07AgentCollectorCenterPGAndVerifiedReturn(t *testing.T) {
 	}
 	count(t, f, "assets.assets", 1)
 	count(t, f, "inventory.observations", 1)
+	// C10 crash window: ACK persisted, pending unlink not durable; center already offline.
+	writePrivate(t, filepath.Join(dir, "spool", batch.DeliveryID+".pending"), beforeCommitPacket)
+	centerFailure.Store(1)
 	// После restart collector хранит receipt и не применяет данные повторно.
 	restarted, e := collector.New(relay.Config)
 	if e != nil {
@@ -227,6 +250,10 @@ func TestC07AgentCollectorCenterPGAndVerifiedReturn(t *testing.T) {
 	if e = restarted.Pump(f.ctx); e != nil {
 		t.Fatal(e)
 	}
+	if _, e = os.Stat(filepath.Join(dir, "spool", batch.DeliveryID+".pending")); !os.IsNotExist(e) {
+		t.Fatal("verified cached ACK failed crash recovery", e)
+	}
+	centerFailure.Store(0)
 	count(t, f, "inventory.observations", 1)
 	admin := newBrowser(t, center)
 	admin.login(t, "admin")

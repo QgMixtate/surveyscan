@@ -5,12 +5,13 @@
   "acceptance_criteria": 55,
   "remarks": 19,
   "dependency_graph": "acyclic",
-  "all_statuses": "C01-C09 done; C10-C50 planned",
+  "all_statuses": "C01-C09 done; C10.01/02 done,03 in_progress; C11-C50 planned",
   "scope_validation": "C09 local real PG/crypto/HTTPS/Chromium/static UI; 14 browser checks; hosted C09 unrun",
   "progress": {
     "done_packages": 9,
-    "done_tasks": 36,
-    "planned_tasks": 164
+    "done_tasks": 38,
+    "in_progress_tasks": 1,
+    "planned_tasks": 161
   },
-  "latest_evidence": "evidence/C09-validation.json"
+  "latest_evidence": "evidence/C10-progress.json"
 }

@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C09 done; C10-C50 planned",
+  "status": "C01-C09 done; C10.01/02 done,03 in_progress; C11-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -917,8 +917,14 @@
           "output": "Ограниченная локальная очередь и восстановление после reboot",
           "verification": "Неутверждённые записи переживают crash/restart",
           "estimation_basis": "Локальное хранилище по ADR; disk quota и retention",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "handoffs/C10.md",
+            "decisions/C10-spool.md",
+            "evidence/C10-progress.json"
+          ],
+          "verification_status": "passed local quota/temp/ACK/real ENOSPC/SIGKILL/reconnect checks; physical power loss unrun"
         },
         {
           "id": "C10.02",
@@ -930,8 +936,14 @@
           "output": "Receipt/applied state и end-to-end confirmation routing",
           "verification": "Потеря связи с центром не очищает agent/collector результаты",
           "estimation_basis": "2 очереди; 2 ACK уровня; duplicate/reorder",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "handoffs/C10.md",
+            "decisions/C10-spool.md",
+            "evidence/C10-progress.json"
+          ],
+          "verification_status": "passed local quota/temp/ACK/real ENOSPC/SIGKILL/reconnect checks; physical power loss unrun"
         },
         {
           "id": "C10.03",
@@ -943,8 +955,12 @@
           "output": "Lease/claim/checkpoint/inbox, retry/backoff и dead-letter state",
           "verification": "Crash между commit и ACK не дублирует эффекты",
           "estimation_basis": "По одной точке сбоя до/после commit и delivery",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "in_progress",
+          "work_group": "Реализация",
+          "evidence": [
+            "handoffs/C10.md"
+          ],
+          "verification_status": "current pipeline inspected; lease/admission/checkpoint fencing implementation next"
         },
         {
           "id": "C10.04",
@@ -960,8 +976,13 @@
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "in_progress",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "evidence": [
+        "handoffs/C10.md",
+        "decisions/C10-spool.md",
+        "evidence/C10-progress.json"
+      ]
     },
     {
       "id": "C11",
@@ -3646,7 +3667,9 @@
       "C09.01",
       "C09.02",
       "C09.03",
-      "C09.04"
+      "C09.04",
+      "C10.01",
+      "C10.02"
     ],
     "next_package": "C10",
     "product_implementation_started": true

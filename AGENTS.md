@@ -29,7 +29,7 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10.01/02 done,03 in progress; C11–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
@@ -67,3 +67,5 @@ IP/MAC/provenance/section attempt-success/friendly responsibility/source generat
 summary обновляется через source-owned port (29 migrations/39 tables), heartbeat его не меняет.
 18 unit/37 PG/58 C03 fixtures/14 browser checks passed; C03 unchanged. 36/200 done.
 C06–C09 не опубликованы. Следующий C10 по R-019; не сливать main/не менять настройки среды.
+
+C10.01/02 done,03 in progress: handoffs/C10.md. File spool/single writer/ACK reserve/receipt GC/cachedACK recovery и process-local backoff; bbolt C01 был кандидатом, формат сохранён без новой зависимости.22 unit/37 PG/7 real SIGKILL-reconnect/1 real ENOSPC passed.38/200 done; C10 whole не done до central lease/admission/fencing и полной fault matrix. SQL29/39tables и C03/C09 bytes сохранены. Следующий шаг C10.03, не C11.

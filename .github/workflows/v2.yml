@@ -43,6 +43,10 @@ jobs:
         run: .contract-tools/bin/python scripts/machine_smoke.py
       - name: Live host agent, three scheduled cycles and heartbeat
         run: .contract-tools/bin/python scripts/agent_smoke.py
+      - name: Real daemon SIGKILL, offline spools and reconnect
+        run: .contract-tools/bin/python scripts/recovery_smoke.py
+      - name: Real ENOSPC in disposable tmpfs
+        run: GO=go python scripts/diskfault.py
       - name: Retain sanitized reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -55,6 +59,8 @@ jobs:
             v2/.local/auth-smoke.json
             v2/.local/machine-smoke.json
             v2/.local/agent-smoke.json
+            v2/.local/recovery-smoke.json
+            v2/.local/diskfault-smoke.json
           if-no-files-found: ignore
       - name: Stop isolated development stack
         if: always()

@@ -9,7 +9,11 @@ C06–C09 завершены локально; main/merge/production не мен
 IP/MAC/provenance, friendly responsibility, раздельные section/source времена и generation.
 18 unit/37 PG integration/58 fixtures/14 Chromium checks, auth/collector/outage regression passed.
 29 migrations/39 domain/access tables. C03 сохранён, новое API — отдельное расширение C09/1.0.
-Прогресс36/200, далее автоматически C10. C04/C05 hosted success; C06–C09 не опубликованы.
+Прогресс38/200. C09 checkpoint8081188. C10.01/02 done локально: bounded spool/retention,
+verified cachedACK recovery, collector single writer и backoff.22 unit/37 PG tests,7 real SIGKILL/reconnect
+checks и1 real ENOSPC passed. C10.03 in progress: central lease/admission/fencing; whole C10 не done.
+[Передача C10](plans/surveyscan-v2/handoffs/C10.md).
+C04/C05 hosted success; C06–C10 не опубликованы.
 Настройки среды повторно не применяются и не публикуются.
 
 ## Контекст архитектуры и история C01–C04

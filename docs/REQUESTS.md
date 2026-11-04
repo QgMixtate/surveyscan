@@ -234,7 +234,10 @@ C08 checkpoint c5a3eef. C09 начат:01/02 done,03/04 in progress. Separate bu
 checks с real API/PG/strict CSP passed; IP/provenance/full acceptance pending, handoffs/C09.md.
 C09 завершён локально после продолжения: handoffs/C09.md; 29 migrations/39 tables,
 18 unit/37 PG/58 fixtures/14 Chromium checks passed. Card/IP/MAC/provenance/source summaries реализованы.
-Прогресс36/200; следующий C10. C06–C09 локальны, без push/merge.
+C09 checkpoint8081188. C10.01/02 выполнены локально: quota/retention/single writer/cachedACK/backoff;
+22 unit/37 PG tests,7 real SIGKILL/reconnect checks,1 real ENOSPC passed.
+Прогресс38/200; C10.03 центральные lease/admission/checkpoints продолжаются, whole C10 не done.
+C06–C10 локальны, без push/merge; handoffs/C10.md.
 
 ## Шаблон новой записи
 - ID и дата:

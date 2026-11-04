@@ -14,9 +14,11 @@ import (
 	"errors"
 	"fmt"
 	"github.com/QgMixtate/surveyscan/v2/contracts"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/diskspool"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/pki"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/privatefile"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/retry"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
 	"io"
 	"net"
@@ -47,12 +49,14 @@ type packet struct {
 	Receipt json.RawMessage `json:"receipt,omitempty"`
 }
 type Collector struct {
-	Config Config
-	Claims pki.Claims
-	TLS    *tls.Config
-	client *http.Client
-	wire   *wire.Validator
-	mu     sync.Mutex
+	Config  Config
+	Claims  pki.Claims
+	TLS     *tls.Config
+	client  *http.Client
+	wire    *wire.Validator
+	mu      sync.Mutex
+	pump    sync.Mutex
+	retries map[string]*retry.Backoff
 }
 
 func Load(path string) (*Collector, error) {
@@ -134,34 +138,7 @@ func New(cfg Config) (*Collector, error) {
 	client := &http.Client{Timeout: 12 * time.Second, Transport: &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: roots, Certificates: []tls.Certificate{pair}}}, CheckRedirect: func(_ *http.Request, _ []*http.Request) error { return http.ErrUseLastResponse }}
 	return &Collector{Config: cfg, Claims: claims, TLS: &tls.Config{MinVersion: tls.VersionTLS12, Certificates: []tls.Certificate{pair}, ClientCAs: roots, ClientAuth: tls.VerifyClientCertIfGiven}, client: client, wire: v}, nil
 }
-func atomicWrite(path string, raw []byte) error {
-	f, e := os.CreateTemp(filepath.Dir(path), ".spool-*")
-	if e != nil {
-		return e
-	}
-	name := f.Name()
-	defer os.Remove(name)
-	if _, e = f.Write(raw); e != nil {
-		f.Close()
-		return e
-	}
-	if e = f.Sync(); e != nil {
-		f.Close()
-		return e
-	}
-	if e = f.Close(); e != nil {
-		return e
-	}
-	if e = os.Rename(name, path); e != nil {
-		return e
-	}
-	dir, e := os.Open(filepath.Dir(path))
-	if e != nil {
-		return e
-	}
-	defer dir.Close()
-	return dir.Sync()
-}
+func atomicWrite(path string, b []byte) error { return diskspool.Atomic(path, b) }
 func (c *Collector) path(id, suffix string) string {
 	return filepath.Join(c.Config.Spool, strings.ToLower(id)+suffix)
 }
@@ -399,24 +376,8 @@ func (c *Collector) Handler() http.Handler {
 				return
 			}
 		}
-		entries, e := os.ReadDir(c.Config.Spool)
-		if e != nil {
-			failure(w, 503, "TEMPORARILY_UNAVAILABLE")
-			return
-		}
-		var used int64
-		for _, entry := range entries {
-			if strings.HasSuffix(entry.Name(), ".pending") {
-				info, e := entry.Info()
-				if e != nil {
-					failure(w, 503, "TEMPORARILY_UNAVAILABLE")
-					return
-				}
-				used += info.Size()
-			}
-		}
 		body, _ := json.Marshal(p)
-		if used+int64(len(body)) > c.Config.Limit {
+		if e = diskspool.Data(c.Config.Spool, c.Config.Limit-diskspool.AckReserve, int64(len(body))); e != nil {
 			w.Header().Set("Retry-After", "30")
 			failure(w, 429, "SPOOL_FULL")
 			return
@@ -468,6 +429,11 @@ func (c *Collector) verify(p packet, raw []byte) (bool, error) {
 	return remove, e
 }
 func (c *Collector) Pump(ctx context.Context) error {
+	c.pump.Lock()
+	defer c.pump.Unlock()
+	if c.retries == nil {
+		c.retries = map[string]*retry.Backoff{}
+	}
 	c.mu.Lock()
 	entries, e := os.ReadDir(c.Config.Spool)
 	c.mu.Unlock()
@@ -488,25 +454,59 @@ func (c *Collector) Pump(ctx context.Context) error {
 			c.mu.Unlock()
 			return errors.New("spool record unreadable")
 		}
-		if _, e = os.Stat(c.path(p.ID, ".receipt")); e == nil {
+		if cached, err := readPacket(c.path(p.ID, ".receipt")); err == nil {
+			if cached.ID != p.ID || cached.Source != p.Source || cached.Tenant != p.Tenant || cached.Digest != p.Digest {
+				c.mu.Unlock()
+				return errors.New("cached receipt binding corrupted")
+			}
+			remove, verify := c.verify(p, cached.Receipt)
+			if verify != nil {
+				c.mu.Unlock()
+				return errors.New("cached receipt verification failed")
+			}
+			if remove {
+				e = os.Remove(path)
+				if e == nil {
+					e = diskspool.SyncDir(c.Config.Spool)
+				}
+			} else {
+				e = nil
+			}
 			c.mu.Unlock()
+			if e != nil {
+				return e
+			}
 			continue
 		}
 		c.mu.Unlock()
+		state := c.retries[p.ID]
+		if state == nil {
+			state = &retry.Backoff{}
+			c.retries[p.ID] = state
+		}
+		if !state.Ready(time.Now()) {
+			continue
+		}
 		_, raw, e := c.post(ctx, "/api/v1/machine/observations", p.Batch, "")
 		if e != nil {
+			state.Failed(time.Now())
 			continue
 		}
 		remove, e := c.verify(p, raw)
 		if e != nil {
+			state.Failed(time.Now())
 			continue
 		}
+		delete(c.retries, p.ID)
 		cached := p
 		cached.Batch = nil
 		cached.Receipt = raw
 		body, _ := json.Marshal(cached)
 		c.mu.Lock()
-		e = atomicWrite(c.path(p.ID, ".receipt"), body)
+		e = diskspool.Capacity(c.Config.Spool, c.Config.Limit, int64(len(body)))
+		if e == nil {
+			e = atomicWrite(c.path(p.ID, ".receipt"), body)
+		}
 		if e == nil && remove {
 			e = os.Remove(path)
 			if e == nil {
@@ -526,6 +526,14 @@ func (c *Collector) Pump(ctx context.Context) error {
 	return nil
 }
 func (c *Collector) Run(ctx context.Context) error {
+	unlock, e := diskspool.Lock(c.Config.Spool)
+	if e != nil {
+		return e
+	}
+	defer unlock()
+	if e = diskspool.RecoverTemps(c.Config.Spool); e != nil {
+		return e
+	}
 	server := &http.Server{Addr: c.Config.Listen, Handler: c.Handler(), TLSConfig: c.TLS, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16384}
 	defer server.Close()
 	finished := make(chan error, 1)

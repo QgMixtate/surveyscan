@@ -25,9 +25,11 @@ import (
 	"time"
 
 	"github.com/QgMixtate/surveyscan/v2/contracts"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/diskspool"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/pki"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/privatefile"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/retry"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
 )
 
@@ -64,33 +66,7 @@ type Client struct {
 	sequence    counters
 }
 
-func writeAtomic(path string, b []byte) error {
-	f, e := os.CreateTemp(filepath.Dir(path), ".agent-*")
-	if e != nil {
-		return e
-	}
-	defer os.Remove(f.Name())
-	if _, e = f.Write(b); e != nil {
-		f.Close()
-		return e
-	}
-	if e = f.Sync(); e != nil {
-		f.Close()
-		return e
-	}
-	if e = f.Close(); e != nil {
-		return e
-	}
-	if e = os.Rename(f.Name(), path); e != nil {
-		return e
-	}
-	dir, e := os.Open(filepath.Dir(path))
-	if e != nil {
-		return e
-	}
-	defer dir.Close()
-	return dir.Sync()
-}
+func writeAtomic(path string, b []byte) error { return diskspool.Atomic(path, b) }
 func loadJSON(path string, out any) error {
 	b, e := privatefile.Read(path, 65536)
 	if e != nil {
@@ -428,22 +404,8 @@ func (c *Client) signed(payload any, domain string) ([]byte, error) {
 	return json.Marshal(contracts.SignedObservation{Payload: raw, Digest: hex.EncodeToString(sum[:]), KeyID: c.claims.KeyID, Signature: base64.RawURLEncoding.EncodeToString(ed25519.Sign(c.key, append([]byte(domain), canonical...)))})
 }
 func (c *Client) Inventory(ctx context.Context) error {
-	entries, e := os.ReadDir(filepath.Join(c.cfg.State, "spool"))
-	if e != nil {
+	if e := diskspool.Data(filepath.Join(c.cfg.State, "spool"), c.cfg.Limit-diskspool.AckReserve, 131072); e != nil {
 		return e
-	}
-	var size int64
-	for _, entry := range entries {
-		if strings.HasSuffix(entry.Name(), ".pending") {
-			info, e := entry.Info()
-			if e != nil {
-				return e
-			}
-			size += info.Size()
-		}
-	}
-	if size+131072 > c.cfg.Limit {
-		return errors.New("agent spool full; previous observations retained")
 	}
 	snapshot, e := Collect(ctx)
 	if e != nil {
@@ -473,6 +435,7 @@ func (c *Client) Flush(ctx context.Context) error {
 	if e != nil {
 		return e
 	}
+	waiting := false
 	for _, entry := range entries {
 		if !strings.HasSuffix(entry.Name(), ".pending") {
 			continue
@@ -489,6 +452,27 @@ func (c *Client) Flush(ctx context.Context) error {
 		var batch contracts.Batch
 		if e = json.Unmarshal(raw, &batch); e != nil || batch.DeliveryID != id || batch.TenantID != c.claims.Tenant {
 			return errors.New("invalid agent pending packet")
+		}
+		if _, stat := os.Stat(filepath.Join(c.cfg.State, "spool", id+".receipt")); stat == nil {
+			cached, e := privatefile.Read(filepath.Join(c.cfg.State, "spool", id+".receipt"), 1048576)
+			if e != nil {
+				return e
+			}
+			_, remove, e := c.wire.VerifyCenterResult(cached, raw, c.claims.CenterKeyID, c.claims.CenterPublic)
+			if e != nil {
+				return errors.New("cached source receipt verification failed")
+			}
+			if remove {
+				if e = os.Remove(path); e != nil {
+					return e
+				}
+				if e = diskspool.SyncDir(filepath.Dir(path)); e != nil {
+					return e
+				}
+			}
+			continue
+		} else if !os.IsNotExist(stat) {
+			return stat
 		}
 		// У transport receipt нет права удалять пакет. Результат центра проверяется независимо.
 		code, ack, e := request(ctx, c.http, c.cfg.CollectorURL, "POST", "/api/v1/machine/observations", raw, "")
@@ -510,7 +494,11 @@ func (c *Client) Flush(ctx context.Context) error {
 			_, remove, verify = c.wire.VerifyCenterResult(ack, raw, c.claims.CenterKeyID, c.claims.CenterPublic)
 		}
 		if verify != nil {
+			waiting = true
 			continue
+		}
+		if e = diskspool.Capacity(filepath.Join(c.cfg.State, "spool"), c.cfg.Limit, int64(len(ack))); e != nil {
+			return e
 		}
 		if e = writeAtomic(filepath.Join(c.cfg.State, "spool", id+".receipt"), ack); e != nil {
 			return e
@@ -529,6 +517,9 @@ func (c *Client) Flush(ctx context.Context) error {
 				return e
 			}
 		}
+	}
+	if waiting {
+		return errors.New("center result pending; source packet retained")
 	}
 	return nil
 }
@@ -592,6 +583,12 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 		return e
 	}
 	defer unlock()
+	if e = diskspool.RecoverTemps(c.State); e != nil {
+		return e
+	}
+	if e = diskspool.RecoverTemps(filepath.Join(c.State, "spool")); e != nil && !os.IsNotExist(e) {
+		return e
+	}
 	client, e := Open(c)
 	if e != nil {
 		return e
@@ -600,6 +597,7 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	inventoryAt, heartbeatAt := time.Time{}, time.Time{}
+	var delivery retry.Backoff
 	for {
 		if e = ctx.Err(); e != nil {
 			return nil
@@ -621,8 +619,13 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 			}
 			inventoryAt = time.Now().Add(jitter(c.InventorySeconds, c.Jitter))
 		}
-		if e = client.Flush(ctx); e != nil {
-			report("delivery_pending")
+		if delivery.Ready(time.Now()) {
+			if e = client.Flush(ctx); e != nil {
+				delivery.Failed(time.Now())
+				report("delivery_pending")
+			} else {
+				delivery.Reset()
+			}
 		}
 		select {
 		case <-ctx.Done():
