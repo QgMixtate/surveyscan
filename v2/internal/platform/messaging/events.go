@@ -22,7 +22,7 @@ func (Writer) Emit(ctx context.Context, tx pgx.Tx, event Event) error {
 		return domain.Invalid
 	}
 
-	kinds := map[string][3]string{"asset.created.v1": {"Assets", "asset", "asset_uid"}, "asset.facts_changed.v1": {"Assets", "asset", "asset_uid"}, "responsibility.assigned.v1": {"Responsibility", "asset", "asset_uid"}, "observation.recorded.v1": {"Inventory", "observation", "observation_id"}, "source.contact_updated.v1": {"Sources", "source", "source_id"}}
+	kinds := map[string][3]string{"asset.created.v1": {"Assets", "asset", "asset_uid"}, "asset.facts_changed.v1": {"Assets", "asset", "asset_uid"}, "responsibility.assigned.v1": {"Responsibility", "asset", "asset_uid"}, "observation.recorded.v1": {"Inventory", "observation", "observation_id"}, "source.contact_updated.v1": {"Sources", "source", "source_id"}, "source.profile_updated.v1": {"Sources", "source", "source_id"}}
 	binding, ok := kinds[event.Type]
 	if !ok || binding[0] != event.Producer || binding[1] != event.Aggregate || event.Data[binding[2]] != event.AssetID || !identifier.Valid(event.Tenant) || !identifier.Valid(event.AssetID) || event.Version == "0" {
 		return domain.Invalid

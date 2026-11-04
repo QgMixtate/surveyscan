@@ -57,6 +57,7 @@ type counters struct {
 	Heartbeat string `json:"heartbeat"`
 }
 type Client struct {
+	profile     *contracts.ProfilePayload
 	cfg         Config
 	preparation Preparation
 	claims      pki.Claims
@@ -407,6 +408,10 @@ func open(c Config, requireBinding bool) (*Client, error) {
 	if e = os.MkdirAll(filepath.Join(c.State, "spool"), 0700); e != nil {
 		return nil, e
 	}
+	if e = out.loadProfile(); e != nil {
+		out.http.CloseIdleConnections()
+		return nil, e
+	}
 	return out, nil
 }
 func (c *Client) next(heartbeat bool) (string, error) {
@@ -635,13 +640,30 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 	defer func() { client.http.CloseIdleConnections() }()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	inventoryAt, heartbeatAt, renewalAt := time.Time{}, time.Time{}, time.Time{}
+	inventoryAt, heartbeatAt, renewalAt, profileAt := time.Time{}, time.Time{}, time.Time{}, time.Time{}
 	var delivery retry.Backoff
 	for {
 		if e = ctx.Err(); e != nil {
 			return nil
 		}
 		now := time.Now()
+		if !now.Before(profileAt) {
+			task, cancel := context.WithTimeout(ctx, 3*time.Second)
+			changed, err := client.PollProfile(task)
+			cancel()
+			if err != nil {
+				report("profile_unavailable_cached_or_local")
+			} else if changed {
+				report("profile_applied")
+				if !inventoryAt.IsZero() {
+					inventoryAt = time.Now().Add(jitter(client.cfg.InventorySeconds, client.cfg.Jitter))
+				}
+				if !heartbeatAt.IsZero() {
+					heartbeatAt = time.Now().Add(jitter(client.cfg.HeartbeatSeconds, client.cfg.Jitter))
+				}
+			}
+			profileAt = time.Now().Add(20 * time.Second)
+		}
 		if !now.Before(renewalAt) && client.renewalDue(now) {
 			if e = client.Renew(ctx); e != nil {
 				report("renewal_pending")
@@ -656,7 +678,7 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 			} else {
 				report("heartbeat_accepted")
 			}
-			heartbeatAt = time.Now().Add(jitter(c.HeartbeatSeconds, c.Jitter))
+			heartbeatAt = time.Now().Add(jitter(client.cfg.HeartbeatSeconds, client.cfg.Jitter))
 		}
 		if !now.Before(inventoryAt) {
 			if e = client.Inventory(ctx); e != nil {
@@ -664,7 +686,7 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 			} else {
 				report("inventory_queued")
 			}
-			inventoryAt = time.Now().Add(jitter(c.InventorySeconds, c.Jitter))
+			inventoryAt = time.Now().Add(jitter(client.cfg.InventorySeconds, client.cfg.Jitter))
 		}
 		if delivery.Ready(time.Now()) {
 			if e = client.Flush(ctx); e != nil {

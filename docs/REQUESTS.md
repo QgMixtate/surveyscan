@@ -288,3 +288,7 @@ assets/sources/status/logout поверх existing API, private session0600, TLS
 33unit/58fixtures и16live checks (8existingpipeline+8CLI groups),2real tenants/viewer passed.
 45/200done. C12.02central profiles/configuration,03metrics,04operator scenario не выполнены.
 No push/merge/deploy/env publication. handoffs/C12.md хранит следующую задачу.
+
+C12.02 готов локально: managed versioned profiles, signed origin/center delivery/ACK, CLIupdate,
+agent runtime/cache и collectorheartbeat.36unit/49PG/58fixtures/10livechecks passed.32migrations/44tables,
+46/200done. C12.03diagnostics вработе,04operator pending. No push/merge/deploy/env publication.

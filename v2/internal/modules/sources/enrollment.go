@@ -480,6 +480,9 @@ func (s *MachineService) Config(ctx context.Context, fingerprint string) (contra
 	if e != nil {
 		return contracts.MachineConfig{}, e
 	}
-	result := contracts.MachineConfig{SourceID: actor.Source, CollectorID: actor.Collector, Revision: "1", Sections: []string{"identity", "os", "network"}, Heartbeat: 60, Inventory: 900, Jitter: 10, SpoolBytes: 64 * 1024 * 1024}
+	result, _, e := s.configTx(ctx, tx, actor.Tenant, actor.Source)
+	if e != nil {
+		return result, e
+	}
 	return result, tx.Commit(ctx)
 }

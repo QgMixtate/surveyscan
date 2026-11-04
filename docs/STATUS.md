@@ -127,3 +127,7 @@ staging retained→automatic ACK/no duplicates. make verify/build и43PG passed.
 Renewal/rotation/clone matrix ещё не готова; продолжать C11.03, не переходить к C12.
 Передача plans/surveyscan-v2/handoffs/C11.md; production HTTPS/custody/restore rehearsal unrun.
 Без push/merge/deploy/повторной публикации среды.
+
+C12.02 готов локально: managed versioned profiles, signed origin/center delivery/ACK, CLIupdate,
+agent runtime/cache и collectorheartbeat.36unit/49PG/58fixtures/10livechecks passed.32migrations/44tables,
+46/200done. C12.03diagnostics вработе,04operator pending. No push/merge/deploy/env publication.

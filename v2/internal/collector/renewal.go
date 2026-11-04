@@ -107,6 +107,10 @@ func (c *Collector) lockCredentials() (func(), error) {
 			return nil, e
 		}
 	}
+	if e = c.loadProfile(); e != nil {
+		unlock()
+		return nil, e
+	}
 	return unlock, nil
 }
 

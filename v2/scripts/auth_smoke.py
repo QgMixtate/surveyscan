@@ -48,7 +48,7 @@ def main():
    proc=None
  try:
   sql('CREATE DATABASE '+db);created=True
-  assert 'applied_migrations=31' in command('migrate')
+  assert 'applied_migrations=32' in command('migrate')
   assert 'applied_migrations=0' in command('migrate');checks.append('binary migrate and repeat')
   base=['--tenant',tenant,'--username','admin','--password-file',str(password_file)]
   command('bootstrap-admin',*base,'--tenant-name','C05 binary smoke')

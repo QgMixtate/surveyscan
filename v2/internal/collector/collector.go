@@ -20,6 +20,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/pki"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/privatefile"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/retry"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/sourceprofile"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
 	"io"
 	"net"
@@ -54,6 +55,7 @@ type packet struct {
 	Receipt json.RawMessage `json:"receipt,omitempty"`
 }
 type Collector struct {
+	profile     *contracts.ProfilePayload
 	clock       func() time.Time
 	certificate atomic.Pointer[tls.Certificate]
 	roots       *x509.CertPool
@@ -222,6 +224,41 @@ func (c *Collector) post(ctx context.Context, path string, raw []byte, token str
 }
 func (c *Collector) Handler() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("POST /api/v1/machine/profile", func(w http.ResponseWriter, r *http.Request) {
+		claims, e := c.peer(r)
+		if e != nil {
+			failure(w, 401, "AUTHENTICATION_REQUIRED")
+			return
+		}
+		raw, e := io.ReadAll(http.MaxBytesReader(w, r.Body, 65536))
+		if e != nil || c.wire.Validate("ProfileRequest", raw) != nil {
+			failure(w, 422, "SCHEMA_INVALID")
+			return
+		}
+		var frame contracts.ProfileFrame
+		_ = json.Unmarshal(raw, &frame)
+		var req contracts.ProfileRequestPayload
+		_ = json.Unmarshal(frame.Payload, &req)
+		if req.Tenant != claims.Tenant || req.Origin.SourceID != claims.Source || req.Origin.GenerationID != claims.Generation || req.Origin.SourceKind != claims.Kind || sourceprofile.Verify(frame, sourceprofile.RequestDomain, claims.KeyID, claims.SigningPublic) != nil {
+			failure(w, 403, "FORBIDDEN")
+			return
+		}
+		status, b, e := c.post(r.Context(), "/api/v1/machine/profile", raw, "")
+		if e != nil {
+			failure(w, 503, "CENTER_UNAVAILABLE")
+			return
+		}
+		if status == 200 {
+			if _, e = sourceprofile.VerifyResponse(c.wire, b, claims, req.Nonce, true); e != nil {
+				failure(w, 503, "INVALID_CENTER_RESPONSE")
+				return
+			}
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.WriteHeader(status)
+		_, _ = w.Write(b)
+	})
 	// Heartbeat relay не хранит старые ответы для имитации свежего контакта.
 	mux.HandleFunc("POST /api/v1/machine/heartbeat-challenges", func(w http.ResponseWriter, r *http.Request) {
 		claims, e := c.peer(r)
@@ -602,7 +639,7 @@ func (c *Collector) Run(ctx context.Context) error {
 	go func() { finished <- server.ListenAndServeTLS("", "") }()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	renewalAt := time.Time{}
+	renewalAt, profileAt, heartbeatAt := time.Time{}, time.Time{}, time.Time{}
 	for {
 		select {
 		case <-ctx.Done():
@@ -615,6 +652,30 @@ func (c *Collector) Run(ctx context.Context) error {
 			}
 			return errors.New("collector HTTPS listener failed")
 		case <-ticker.C:
+			if c.Config.CredentialState != "" {
+				if !time.Now().Before(profileAt) {
+					task, cancel := context.WithTimeout(ctx, 3*time.Second)
+					err := c.pollProfile(task)
+					cancel()
+					if err != nil && ctx.Err() == nil {
+						fmt.Fprintln(os.Stderr, "collector profile unavailable; cached or local configuration retained")
+					}
+					profileAt = time.Now().Add(20 * time.Second)
+				}
+				if !time.Now().Before(heartbeatAt) {
+					task, cancel := context.WithTimeout(ctx, 3*time.Second)
+					err := c.heartbeat(task)
+					cancel()
+					if err != nil && ctx.Err() == nil {
+						fmt.Fprintln(os.Stderr, "collector heartbeat not accepted")
+					}
+					interval := 60
+					if c.profile != nil && c.profile.Managed {
+						interval = c.profile.Config.Heartbeat
+					}
+					heartbeatAt = time.Now().Add(time.Duration(interval) * time.Second)
+				}
+			}
 			if c.Config.CredentialState != "" && !time.Now().Before(renewalAt) && machinecred.Due(c.Config.CredentialState, c.certificate.Load().Leaf.NotAfter, c.clock()) {
 				task, cancel := context.WithTimeout(ctx, 15*time.Second)
 				err := c.renew(task)

@@ -1,0 +1,51 @@
+{
+  "task": "C12.02",
+  "status": "passed",
+  "date": "2026-11-04 Europe/Moscow",
+  "branch": "codex/v2-c12-cli",
+  "base": "1c33dae",
+  "unit": 36,
+  "real_pg": 49,
+  "C03fixtures": 58,
+  "migrations": 32,
+  "domain_tables": 44,
+  "live": {
+    "package": "C12",
+    "task": "C12.02",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "unpublished revision1 is explicit local-config mode; central profile read does not fabricate source contact",
+      "admin CLI publishes revision2 and stale If-Match receives412 instead of overwriting",
+      "real agent validates signed nonce-bound relay profile, caches it and reports applied revision; config contact is separate from heartbeat and inventory freshness",
+      "running agent applies new interval revision without restarting source/generation/signing key/counters",
+      "center outage/restart retains verified last managed profile and unacknowledged source data",
+      "reconnect applies offline original and next inventory exactly once to one UID with profile intact",
+      "real viewer cannot publish; another tenant admin cannot read or update known source profile",
+      "both accepted profile updates have one durable audit and outbox event each"
+    ],
+    "target": "compiled agent/collector/server/CLI +real HTTPS/PG; signed config relay and origin proof; real clock/outage/restart; no mocked configuration/auth",
+    "unrun": [
+      "UI interval controls",
+      "metrics/alerts C12.03",
+      "24h soak",
+      "collector autonomous network inventory (C16)"
+    ],
+    "source_health": "profile last_config_contact/applied_revision remain separate from heartbeat and inventory freshness"
+  },
+  "logs": [
+    "c12-profiles-final-code.log",
+    "c12-profiles-full-pg.log",
+    "c12-profiles-accept.log",
+    "c12-profiles-dev-up.log"
+  ],
+  "limits": [
+    "E1 sections identity/os/network together",
+    "collector inventory cadence gated900 untilC16",
+    "cached nonsecret config allowed indefinitely offline; source auth still enforced centrally",
+    "C12.03metrics/04operator acceptance pending"
+  ],
+  "publication": "local only"
+}

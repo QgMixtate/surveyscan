@@ -54,7 +54,7 @@ func client(p profile) (*http.Client, error) {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.TLSClientConfig = &tls.Config{MinVersion: tls.VersionTLS12}
 	if p.CA != "" {
-		raw, e := os.ReadFile(p.CA)
+		raw, e := boundedFile(p.CA, 65536)
 		if e != nil || len(raw) > 65536 {
 			return nil, fail(2, "INVALID_CA_FILE")
 		}
@@ -69,7 +69,7 @@ func client(p profile) (*http.Client, error) {
 	}
 	return &http.Client{Timeout: 15 * time.Second, Transport: transport, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}, nil
 }
-func call(ctx context.Context, c *http.Client, p profile, method, path string, body any) ([]byte, *http.Response, error) {
+func call(ctx context.Context, c *http.Client, p profile, method, path string, body any, extra ...http.Header) ([]byte, *http.Response, error) {
 	var input io.Reader
 	if body != nil {
 		raw, e := json.Marshal(body)
@@ -81,6 +81,11 @@ func call(ctx context.Context, c *http.Client, p profile, method, path string, b
 	r, e := http.NewRequestWithContext(ctx, method, p.Server+path, input)
 	if e != nil {
 		return nil, nil, fail(2, "INVALID_REQUEST")
+	}
+	for _, headers := range extra {
+		for key, values := range headers {
+			r.Header[key] = values
+		}
 	}
 	r.Header.Set("Accept", "application/json")
 	if body != nil {
@@ -120,6 +125,22 @@ func call(ctx context.Context, c *http.Client, p profile, method, path string, b
 		return nil, response, fail(5, "INVALID_JSON_RESPONSE")
 	}
 	return raw, response, nil
+}
+func boundedFile(path string, limit int64) ([]byte, error) {
+	f, e := os.Open(path)
+	if e != nil {
+		return nil, e
+	}
+	defer f.Close()
+	info, e := f.Stat()
+	if e != nil || !info.Mode().IsRegular() || info.Size() > limit {
+		return nil, errors.New("bounded regular file required")
+	}
+	raw, e := io.ReadAll(io.LimitReader(f, limit+1))
+	if e != nil || int64(len(raw)) > limit {
+		return nil, errors.New("input too large")
+	}
+	return raw, nil
 }
 func emit(w io.Writer, v any) error {
 	if e := json.NewEncoder(w).Encode(v); e != nil {
@@ -174,14 +195,14 @@ func read(path string) (profile, error) {
 }
 func execute(ctx context.Context, args []string, out io.Writer) error {
 	if len(args) == 1 && (args[0] == "help" || args[0] == "--help") {
-		return emit(out, map[string]any{"commands": []string{"login --server URL --username USER --password-file PRIVATE --context-file PRIVATE [--ca-file CA]", "context show --context-file PRIVATE", "assets list --context-file PRIVATE [--limit 1..200 --cursor CURSOR]", "assets get --context-file PRIVATE --id UUID", "sources list|get|status --context-file PRIVATE [--id UUID]", "status --context-file PRIVATE", "logout --context-file PRIVATE", "version"}, "output": "JSON", "exit_codes": map[string]int{"success": 0, "arguments_or_private_context": 2, "authentication_or_policy": 3, "not_found": 4, "network_tls_timeout_or_dependency": 5, "other_api_failure": 6}})
+		return emit(out, map[string]any{"commands": []string{"login --server URL --username USER --password-file PRIVATE --context-file PRIVATE [--ca-file CA]", "context show --context-file PRIVATE", "assets list --context-file PRIVATE [--limit 1..200 --cursor CURSOR]", "assets get --context-file PRIVATE --id UUID", "sources list|get|status --context-file PRIVATE [--id UUID]", "profiles get --context-file PRIVATE --id UUID", "profiles set --context-file PRIVATE --id UUID --revision REV --profile-file JSON", "status --context-file PRIVATE", "logout --context-file PRIVATE", "version"}, "output": "JSON", "exit_codes": map[string]int{"success": 0, "arguments_or_private_context": 2, "authentication_or_policy": 3, "not_found": 4, "network_tls_timeout_or_dependency": 5, "other_api_failure": 6}})
 	}
 	if len(args) == 0 {
 		return fail(2, "COMMAND_REQUIRED")
 	}
 	operation := args[0]
 	args = args[1:]
-	if operation == "assets" || operation == "sources" || operation == "context" {
+	if operation == "assets" || operation == "sources" || operation == "context" || operation == "profiles" {
 		if len(args) == 0 {
 			return fail(2, "SUBCOMMAND_REQUIRED")
 		}
@@ -199,6 +220,8 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 	id := f.String("id", "", "")
 	limit := f.Int("limit", 50, "")
 	cursor := f.String("cursor", "", "")
+	optionsFile := f.String("profile-file", "", "")
+	revision := f.String("revision", "", "")
 	if f.Parse(args) != nil || f.NArg() != 0 || *contextFile == "" {
 		return fail(2, "INVALID_ARGUMENTS")
 	}
@@ -285,6 +308,31 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 	}
 	if !time.Now().Before(p.Expires) {
 		return fail(3, "SESSION_EXPIRED")
+	}
+	if operation == "profiles get" || operation == "profiles set" {
+		if !identifier.Valid(*id) {
+			return fail(2, "INVALID_RESOURCE_ID")
+		}
+		method := "GET"
+		var body any
+		headers := http.Header{}
+		if operation == "profiles set" {
+			method = "PATCH"
+			raw, e := boundedFile(*optionsFile, 4096)
+			if e != nil || len(raw) > 4096 || !json.Valid(raw) || *revision == "" {
+				return fail(2, "INVALID_PROFILE_FILE_OR_REVISION")
+			}
+			body = json.RawMessage(raw)
+			headers.Set("If-Match", fmt.Sprintf(`"profile:%s:%s"`, *id, *revision))
+		}
+		raw, _, e := call(ctx, c, p, method, "/api/v1/sources/"+*id+"/profile", body, headers)
+		if e != nil {
+			return e
+		}
+		if _, e = fmt.Fprintln(out, string(raw)); e != nil {
+			return fail(5, "OUTPUT_UNAVAILABLE")
+		}
+		return nil
 	}
 	var path string
 	switch operation {

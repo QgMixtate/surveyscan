@@ -1,0 +1,361 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SurveyScan C12 source profiles",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/sources/{source_id}/profile": {
+      "get": {
+        "operationId": "getSourceProfile",
+        "responses": {
+          "200": {
+            "description": "Published source profile and application status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "c12.schema.json#/$defs/SourceProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "x-required-action": "sources:read"
+      },
+      "patch": {
+        "operationId": "updateSourceProfile",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "If-Match",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-CSRF-Token",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "c12.schema.json#/$defs/SourceProfileUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "c12.schema.json#/$defs/SourceProfile"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "Revision mismatch"
+          },
+          "428": {
+            "description": "If-Match required"
+          },
+          "400": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "SessionCookie": []
+          }
+        ],
+        "x-required-action": "sources:admin"
+      }
+    },
+    "/api/v1/machine/profile": {
+      "post": {
+        "operationId": "pollSignedSourceProfile",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "c12.schema.json#/$defs/ProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Center-signed nonce-bound profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "c12.schema.json#/$defs/SignedProfile"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "API failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "wire.schema.json#/$defs/Error"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "MachineTLS": []
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "SessionCookie": {
+        "type": "apiKey",
+        "in": "cookie",
+        "name": "surveyscan_session"
+      },
+      "MachineTLS": {
+        "type": "mutualTLS"
+      }
+    }
+  }
+}

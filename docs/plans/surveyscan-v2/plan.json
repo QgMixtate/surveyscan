@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C11 done locally; C12.01 done; C12.02-C12.04 and C13-C50 planned",
+  "status": "C01-C11 and C12.01-C12.02 done locally; C12.03-C12.04 pending",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1130,8 +1130,14 @@
           "output": "Versioned profile, intervals и source health API",
           "verification": "Heartbeat/freshness/completeness не смешиваются",
           "estimation_basis": "Agent+collector profiles и last-success/last-contact",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "decisions/C12-profiles.md",
+            "handoffs/C12.md",
+            "evidence/C12-profiles.json"
+          ],
+          "verification_status": "36unit/49realPG/58fixtures +10real compiled profile checks; source-profile schema additive"
         },
         {
           "id": "C12.03",
@@ -1143,7 +1149,7 @@
           "output": "Queue age, import/outbox lag, spool/disk, cert/backup age",
           "verification": "Недоступность/перегрузка обнаруживается по метрикам",
           "estimation_basis": "1 минимальный набор exporters/alerts и structured logs",
-          "status": "planned",
+          "status": "in_progress",
           "work_group": "Реализация"
         },
         {

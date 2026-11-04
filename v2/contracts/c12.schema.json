@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:surveyscan:c12:1:0",
+  "$defs": {
+    "SourceProfileUpdate": {
+      "type": "object",
+      "properties": {
+        "heartbeat_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 3600
+        },
+        "inventory_seconds": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 86400
+        },
+        "jitter_percent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 25
+        },
+        "spool_limit_bytes": {
+          "type": "integer",
+          "minimum": 524288,
+          "maximum": 1073741824
+        }
+      },
+      "required": [
+        "heartbeat_seconds",
+        "inventory_seconds",
+        "jitter_percent",
+        "spool_limit_bytes"
+      ],
+      "additionalProperties": false
+    },
+    "ProfileRequestPayload": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "$ref": "urn:surveyscan:wire:1:0#/$defs/Version"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "origin": {
+          "$ref": "urn:surveyscan:wire:1:0#/$defs/Origin"
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$"
+        },
+        "sent_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "applied_revision": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$",
+              "maxLength": 20
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "origin",
+        "nonce",
+        "sent_at",
+        "applied_revision"
+      ],
+      "additionalProperties": false
+    },
+    "ProfilePayload": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "$ref": "urn:surveyscan:wire:1:0#/$defs/Version"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "origin": {
+          "$ref": "urn:surveyscan:wire:1:0#/$defs/Origin"
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "managed": {
+          "type": "boolean"
+        },
+        "config": {
+          "$ref": "urn:surveyscan:wire:1:0#/$defs/MachineConfig"
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "origin",
+        "nonce",
+        "issued_at",
+        "expires_at",
+        "managed",
+        "config"
+      ],
+      "additionalProperties": false
+    },
+    "ProfileRequest": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/ProfileRequestPayload"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "key_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      },
+      "required": [
+        "payload",
+        "digest",
+        "key_id",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "SignedProfile": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/ProfilePayload"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "key_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      },
+      "required": [
+        "payload",
+        "digest",
+        "key_id",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "SourceProfile": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_state": {
+          "enum": [
+            "pending",
+            "active",
+            "revoked",
+            "disabled"
+          ]
+        },
+        "managed": {
+          "type": "boolean"
+        },
+        "config": {
+          "$ref": "urn:surveyscan:wire:1:0#/$defs/MachineConfig"
+        },
+        "applied_revision": {
+          "oneOf": [
+            {
+              "type": "string",
+              "pattern": "^[1-9][0-9]{0,19}$",
+              "maxLength": 20
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_config_contact_at": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_contact_at": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_successful_inventory_at": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "date-time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "tenant_id",
+        "source_id",
+        "source_state",
+        "managed",
+        "config",
+        "applied_revision",
+        "last_config_contact_at",
+        "last_contact_at",
+        "last_successful_inventory_at"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

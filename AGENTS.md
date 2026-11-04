@@ -98,3 +98,7 @@ C12.01 готов локально: cmd/surveyscanctl +internal/usercli (тол�
 private context0600,JSON output,stable exitcodes; login/logout/assets/sources/status,2tenant isolation.
 33unit/58fixtures и16live checks passed;45/200done. C12.02–04 planned, handoffs/C12.md.
 C11 finalb22efa2, новая веткаcodex/v2-c12-cli. Session auth, не объявлять bearer/OS keychain/table output готовыми.
+
+C12.02 готов локально: managed versioned profiles, signed origin/center delivery/ACK, CLIupdate,
+agent runtime/cache и collectorheartbeat.36unit/49PG/58fixtures/10livechecks passed.32migrations/44tables,
+46/200done. C12.03diagnostics вработе,04operator pending. No push/merge/deploy/env publication.

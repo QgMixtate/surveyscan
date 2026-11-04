@@ -13,9 +13,24 @@ import (
 func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (http.Handler, error) {
 	mux := http.NewServeMux()
 	auth.Register(mux)
+	mux.HandleFunc("GET /api/v1/contracts/c12", func(w http.ResponseWriter, r *http.Request) {
+		b, e := contracts.Files.ReadFile("c12.openapi.json")
+		if e != nil {
+			access.APIError(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		_, _ = w.Write(b)
+	})
 	implementations := map[string]http.Handler{}
 	if len(registry) > 0 && registry[0] != nil {
 		implementations = registry[0].Handlers()
+		if registry[0].Machine != nil {
+			mux.Handle("GET /api/v1/sources/{source_id}/profile", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.humanProfile)))
+			mux.Handle("PATCH /api/v1/sources/{source_id}/profile", auth.Wrap("sources:admin", true, http.HandlerFunc(registry[0].Machine.humanProfile)))
+			mux.HandleFunc("POST /api/v1/machine/profile", registry[0].Machine.machineProfile)
+		}
 		mux.Handle("GET /api/v1/assets/{asset_uid}/inventory", auth.Wrap("assets:read", false, registry[0].inventoryHandler()))
 		if registry[0].Machine != nil {
 			for operation, handler := range registry[0].Machine.human() {

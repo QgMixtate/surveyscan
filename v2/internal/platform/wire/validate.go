@@ -49,6 +49,25 @@ func New() (*Validator, error) {
 	}
 	v.schemas["InventoryDetail"] = detail
 
+	raw12, e := contracts.Files.ReadFile("c12.schema.json")
+	if e != nil {
+		return nil, e
+	}
+	doc12, e := jsonschema.UnmarshalJSON(bytes.NewReader(raw12))
+	if e != nil {
+		return nil, e
+	}
+	id12 := doc12.(map[string]any)["$id"].(string)
+	if e = c.AddResource(id12, doc12); e != nil {
+		return nil, e
+	}
+	for _, n := range []string{"SourceProfileUpdate", "SourceProfile", "ProfileRequest", "SignedProfile"} {
+		compiled, e := c.Compile(id12 + "#/$defs/" + n)
+		if e != nil {
+			return nil, e
+		}
+		v.schemas[n] = compiled
+	}
 	for _, n := range []string{"RenewRequest", "ChallengeRequest", "ChallengeResponse", "SignedHeartbeat", "HeartbeatResult", "Observation", "SignedObservation", "BusinessPatch", "Asset", "AssetPage", "OutboxEvent", "EnrollmentGrantRequest", "EnrollmentGrant", "EnrollmentRequest", "EnrollmentResult", "MachineConfig", "RevocationRequest", "Batch", "RecordResult", "SignedCenterResult", "TransportReceipt", "Source", "SourcePage"} {
 		s, e := c.Compile(id + "#/$defs/" + n)
 		if e != nil {
