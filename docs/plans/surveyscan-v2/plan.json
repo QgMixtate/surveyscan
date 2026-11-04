@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C12 done locally; C13-C50 planned",
+  "status": "C01-C12 done locally; C13.01 in progress; C13.02-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1205,8 +1205,13 @@
           "output": "Systemd/Windows service по выбранной ОС, конфиги и data dirs",
           "verification": "После перезагрузки весь поддержанный контур стартует сам",
           "estimation_basis": "1 E1 платформа и 1 способ серверной установки",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "in_progress",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "handoffs/C13.md",
+            "evidence/C13-progress.json"
+          ],
+          "verification_status": "staging5checks+real systemd-analyze system-modeverify exit0; actualboot/reboot unrun"
         },
         {
           "id": "C13.02",
@@ -1248,7 +1253,7 @@
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
+      "status": "in_progress",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
     },
     {

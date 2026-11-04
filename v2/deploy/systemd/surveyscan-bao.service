@@ -1,0 +1,27 @@
+[Unit]
+Description=SurveyScan OpenBao Raft (requires operator unseal or separately configured auto-unseal)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=surveyscan-bao
+Group=surveyscan-bao
+StateDirectory=surveyscan-bao
+StateDirectoryMode=0700
+LoadCredential=listener_key:/etc/surveyscan-bao/server.key
+ExecStart=/usr/bin/bao server -config=/etc/surveyscan-bao/bao.hcl
+Restart=on-failure
+RestartSec=10s
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=multi-user.target

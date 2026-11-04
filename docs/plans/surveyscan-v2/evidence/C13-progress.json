@@ -1,0 +1,55 @@
+{
+  "package": "C13",
+  "status": "partial",
+  "date": "2026-11-04 Europe/Moscow",
+  "branch": "codex/v2-c13-operations",
+  "base": "d55a23d",
+  "done_total": 48,
+  "task": "C13.01 in_progress; not done until actualboot",
+  "staging": {
+    "task": "C13.01",
+    "status": "partial-passed",
+    "count": 5,
+    "checks": [
+      "complete staged filesystem without host install/start",
+      "all binaries executable and public program paths traversable",
+      "all staged file digests match development inventory",
+      "private state directories; no credentials copied from workspace",
+      "existing filesystem and live root refused"
+    ],
+    "unrun": [
+      "systemd actualboot/reboot",
+      "credential/DB/PKI provisioning",
+      "productioninstall"
+    ]
+  },
+  "systemd_verifier": {
+    "package": "C13",
+    "task": "C13.01",
+    "stage": {
+      "staged": true,
+      "files": 23,
+      "live_install_supported": false,
+      "services_started": false,
+      "scope": "development staging; unsigned, not a release"
+    },
+    "verifier_exit": 0,
+    "scope": "real system-mode systemd-analyze parser in networkless disposable container, not a boot/start test",
+    "unrun": [
+      "realboot/reboot",
+      "PG/Bao dependency start",
+      "credential provisioning",
+      "signed release",
+      "backuprestore"
+    ]
+  },
+  "host_pid1": "tail",
+  "host_uid": 1000,
+  "unrun": [
+    "systemd realboot/reboot/autostart",
+    "PG/Bao/edge/config provisioning",
+    "signed release/checksums/SBOM",
+    "backuprestore/cleanstand"
+  ],
+  "publication": "local only"
+}

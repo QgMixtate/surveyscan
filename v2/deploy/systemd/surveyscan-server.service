@@ -1,0 +1,44 @@
+[Unit]
+Description=SurveyScan server (Linux E1)
+Wants=network-online.target
+After=network-online.target
+Requires=surveyscan-migrate.service
+After=surveyscan-migrate.service surveyscan-bao.service
+StartLimitIntervalSec=120
+StartLimitBurst=8
+
+[Service]
+Type=simple
+User=surveyscan-server
+Group=surveyscan-server
+StateDirectory=surveyscan-server
+StateDirectoryMode=0700
+LoadCredential=pg_password:/etc/surveyscan-server/pg_password
+LoadCredential=machine_config:/etc/surveyscan-server/machine.json
+LoadCredential=bao_config:/etc/surveyscan-server/bao.json
+LoadCredential=bao_token:/etc/surveyscan-server/bao_token
+LoadCredential=server_key:/etc/surveyscan-server/server.key
+EnvironmentFile=/etc/surveyscan-server/server.env
+Environment=SURVEYSCAN_V2_DATABASE_PASSWORD_FILE=%d/pg_password
+Environment=SURVEYSCAN_V2_MACHINE_CONFIG=%d/machine_config
+ExecStart=/opt/surveyscan/current/bin/surveyscan-server serve
+Restart=on-failure
+RestartSec=10s
+TimeoutStopSec=30s
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

@@ -298,3 +298,9 @@ C12 целиком готов локально:39unit/50PG/58fixtures,13operator
 metrics/alerts,CLIJSON/table/localstatus и readonlyUIprofiles. Реальный120→60cadence/UID/revoke verified.
 33migrations/45tables;48/200done. Далее C13 service/install/versions/backup/restore, handoffs/C12.md.
 No push/merge/deploy/env publication; no production/24h/DR/hardwareidentity claim.
+
+C13 начат локально: codex/v2-c13-operations отC12d55a23d.01in_progress (48/200done).
+Stagedsystemdunits/installer(privatecredentials/data paths) и5stagingchecks,real system-mode
+systemd-analyze staticverifyexit0вnetworklesscontainer. Actualboot/reboot/services не проверены:
+managedhostPID1tail/UID1000. No host service install/start. handoffs/C13.md содержитточнуюграницу.
+C13.02–04release/backup/restore ещёplanned; no push/merge/deploy/env publication.

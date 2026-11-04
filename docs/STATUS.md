@@ -130,3 +130,9 @@ Renewal/rotation/clone matrix ещё не готова; продолжать C11
 C12.02 готов локально: managed versioned profiles, signed origin/center delivery/ACK, CLIupdate,
 agent runtime/cache и collectorheartbeat.36unit/49PG/58fixtures/10livechecks passed.32migrations/44tables,
 46/200done. C12.03diagnostics вработе,04operator pending. No push/merge/deploy/env publication.
+
+C13 начат локально: codex/v2-c13-operations отC12d55a23d.01in_progress (48/200done).
+Stagedsystemdunits/installer(privatecredentials/data paths) и5stagingchecks,real system-mode
+systemd-analyze staticverifyexit0вnetworklesscontainer. Actualboot/reboot/services не проверены:
+managedhostPID1tail/UID1000. No host service install/start. handoffs/C13.md содержитточнуюграницу.
+C13.02–04release/backup/restore ещёplanned; no push/merge/deploy/env publication.

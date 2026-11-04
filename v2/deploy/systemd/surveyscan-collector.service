@@ -1,0 +1,35 @@
+[Unit]
+Description=SurveyScan collector (Linux E1)
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=8
+
+[Service]
+Type=simple
+User=surveyscan-collector
+Group=surveyscan-collector
+StateDirectory=surveyscan-collector
+StateDirectoryMode=0700
+LoadCredential=config:/etc/surveyscan-collector/config.json
+ExecStart=/opt/surveyscan/current/bin/surveyscan-collector run --config %d/config
+Restart=on-failure
+RestartSec=10s
+TimeoutStopSec=30s
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX AF_NETLINK
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
