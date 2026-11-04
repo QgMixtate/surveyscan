@@ -621,7 +621,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Login/context, assets list/get, sources/status с JSON и exit codes.
 - Проверка: CLI использует тот же API и tenant policy.
 - База оценки: Команды E1, pagination/timeout, без секретов в argv.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; handoffs/C12.md, evidence/C12-progress.json.
 
 ## C12.02 — Добавить конфигурацию и диагностику источников
 

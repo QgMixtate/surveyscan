@@ -93,3 +93,8 @@ Shared machinecred renewal, collector TLS hot reload/locks, agent host-binding/e
 30unit/46PG/58fixtures,10agent/10collector race+clock/17Bao/8recovery/14browser passed.
 44/200done;31migrations/42tables. Далее C12 CLI/config/metrics. Старые in_progress записи выше исторические.
 Не обещать hardware clone detection, automatic expired reissue/24h/production/DR; matrix содержит пределы.
+
+C12.01 готов локально: cmd/surveyscanctl +internal/usercli (только HTTP, existing session/CSRF API),
+private context0600,JSON output,stable exitcodes; login/logout/assets/sources/status,2tenant isolation.
+33unit/58fixtures и16live checks passed;45/200done. C12.02–04 planned, handoffs/C12.md.
+C11 finalb22efa2, новая веткаcodex/v2-c12-cli. Session auth, не объявлять bearer/OS keychain/table output готовыми.

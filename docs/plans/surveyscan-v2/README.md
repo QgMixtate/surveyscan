@@ -102,7 +102,7 @@ ITSM начинается после согласования/приёмки W2.
 
 ## Текущая передача
 
-44/200 задач done,156planned. C01–C11 завершены локально в указанном scope;
+45/200 задач done,155planned. C01–C11 завершены локально в указанном scope;
 C04/C05 hosted CI success, C06–C11 не опубликованы. Main не слит.
 C11: scoped Bao, server/agent/collector renewal, atomic TLS credentials, queues/ACK loss,
 local host-binding/legacy adoption, expiry/revoke/secret checks.
@@ -112,3 +112,6 @@ Collector hot reload — race detector + injected scheduler clock, не24h soak.
 [Передача C11](handoffs/C11.md), [границы приёмки](evidence/C11-lifecycle-matrix.json).
 Далее C12 CLI/profiles/observability. Production/24h/DR и hardware clone identity unrun/unsupported.
 No push/merge/deploy/env publication.
+
+C12.01 CLI готов: surveyscanctl,33unit/58fixtures/16live API/PG checks.
+Далее C12.02central profiles, затем metrics/операторский сценарий. [Передача](handoffs/C12.md).

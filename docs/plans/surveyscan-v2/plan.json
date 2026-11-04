@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C11 done locally; C12-C50 planned",
+  "status": "C01-C11 done locally; C12.01 done; C12.02-C12.04 and C13-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1112,8 +1112,13 @@
           "output": "Login/context, assets list/get, sources/status с JSON и exit codes",
           "verification": "CLI использует тот же API и tenant policy",
           "estimation_basis": "Команды E1, pagination/timeout, без секретов в argv",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "handoffs/C12.md",
+            "evidence/C12-progress.json"
+          ],
+          "verification_status": "33unit/58fixtures +16 compiled CLI real HTTPS/PG checks passed; two tenants and viewer; remaining C12 unrun"
         },
         {
           "id": "C12.02",
@@ -1155,7 +1160,7 @@
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
+      "status": "in_progress",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
     },
     {

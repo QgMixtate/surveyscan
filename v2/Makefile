@@ -10,8 +10,9 @@ build:
 	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '-X $(MODULE)/internal/platform/buildinfo.Revision=$(REVISION)' -o .dist/surveyscan-server ./cmd/surveyscan-server
 	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -o .dist/surveyscan-collector ./cmd/surveyscan-collector
 	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -o .dist/surveyscan-agent ./cmd/surveyscan-agent
+	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -o .dist/surveyscanctl ./cmd/surveyscanctl
 	cp contracts/*.json .dist/contracts/
-	chmod 755 .dist .dist/contracts .dist/surveyscan-*
+	chmod 755 .dist .dist/contracts .dist/surveyscan-* .dist/surveyscanctl
 	chmod 644 .dist/contracts/*.json
 test:
 	$(GO) test -mod=readonly -count=1 -p 2 ./...

@@ -1,0 +1,60 @@
+{
+  "package": "C12",
+  "status": "partial",
+  "date": "2026-11-04 Europe/Moscow",
+  "branch": "codex/v2-c12-cli",
+  "base": "b22efa2",
+  "tasks": {
+    "C12.01": "done",
+    "C12.02": "planned",
+    "C12.03": "planned",
+    "C12.04": "planned"
+  },
+  "done_total": 45,
+  "unit_tests": 33,
+  "fixtures": 58,
+  "migrations": 31,
+  "tables": 42,
+  "cli_live": {
+    "package": "C12",
+    "task": "C12.01",
+    "status": "passed",
+    "count": 16,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "synthetic agent enrollment traverses collector",
+      "durable collector transport receipt retains source data",
+      "center commit receipt verifies with pinned key and exact bindings",
+      "committed PG registry card visible through real authenticated API",
+      "collector trims only after verified center acknowledgement",
+      "exactly one durable observation in isolated PostgreSQL",
+      "compiled CLI logs in via existing HTTPS/session API and writes private0600 context without printing credentials",
+      "public context omits secrets and existing tenant/session context cannot be overwritten by login",
+      "assets list/get and sources list/status use real backend data; readiness is a separate endpoint",
+      "pagination cursor works and invalid bounds/unknown resource/tenant override have stable exit codes",
+      "second real tenant session cannot list or read first tenant known asset UUID",
+      "viewer reads follow existing role policy and logout revokes its session through Origin/CSRF API",
+      "CLI logout revokes remote sessions and removes local credentials",
+      "all captured CLI outputs exclude password/session cookie/CSRF; no secrets in argv"
+    ],
+    "target": "compiled surveyscanctl+compiled server/collector+real HTTPS/auth/CSRF/PG; synthetic inventory source; two real tenants and viewer; no mocked CLI/API/auth",
+    "authentication": "private session context using existing C03 login/logout API; session token never printed; password read from0600 file",
+    "unrun": [
+      "C12.02 versioned source profiles",
+      "C12.03 metrics/alerts",
+      "C12.04 operator cadence changes",
+      "table output",
+      "interactive OS keychain"
+    ]
+  },
+  "hosted_ci": "unrun",
+  "publication": "local only",
+  "unrun": [
+    "versioned source profiles/central interval changes",
+    "metrics/alerts/operator cadence",
+    "table output",
+    "OS keychain",
+    "C11 PG46/runtime regression passed before additive CLI; not rerun as a new C12 PG suite"
+  ]
+}

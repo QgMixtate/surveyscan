@@ -1,0 +1,14 @@
+{
+  "package": "C12",
+  "status": "partial-validated",
+  "done_total": 45,
+  "checks": [
+    "50packages/200tasks",
+    "CSV agrees",
+    "prior SQL/C03/C09 byte-identical",
+    "existing backend auth/tenant policy unchanged",
+    "CLI only HTTP; no private material staged",
+    "local only"
+  ],
+  "preserved_artifacts": 106
+}

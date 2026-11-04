@@ -282,3 +282,9 @@ Checkpoint3d591e8 shared engine+collector rotation; затем host-binding/lega
 с injected scheduler clock; реальные issuer/Bao/PG/TLS.44/200done;31migrations/42tables.
 Hardware clone identity/identical keys+machine-id, automatic expired reissue, production/24h/DR остаются
 ограничениями, см. evidence/C11-lifecycle-matrix.json. Далее автоматически C12. No push/merge/deploy/env publication.
+
+C11 final checkpointb22efa2; начат C12 на codex/v2-c12-cli. C12.01 done: surveyscanctl login/context/
+assets/sources/status/logout поверх existing API, private session0600, TLS/redirect/timeout/exitcodes,
+33unit/58fixtures и16live checks (8existingpipeline+8CLI groups),2real tenants/viewer passed.
+45/200done. C12.02central profiles/configuration,03metrics,04operator scenario не выполнены.
+No push/merge/deploy/env publication. handoffs/C12.md хранит следующую задачу.

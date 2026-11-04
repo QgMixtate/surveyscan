@@ -4,7 +4,7 @@
 
 
 Актуальная задача R-019 — выполнять этапы последовательно до лимита.
-C01–C11 завершены локально в ограниченном E1 scope:44/200 done.
+C01–C11 и C12.01 завершены локально:45/200 done. C12.02–04 ещё planned.
 [C11 передача](plans/surveyscan-v2/handoffs/C11.md), [точная матрица](plans/surveyscan-v2/evidence/C11-lifecycle-matrix.json).
 Общий durable renewal agent/collector, atomic shared TLS listener/client provider, ключи/очереди сохранены.
 Agent host-binding к Linux machine-id, явный bind-host для legacy; mismatched clone запрещён до отправки.
@@ -12,7 +12,9 @@ Agent host-binding к Linux machine-id, явный bind-host для legacy; mism
 31migrations/42tables. Source/generation/signing keys/counters при TLS renewal не сбрасываются.
 Identical machine-id+keys неотличимы; actual second-VM/24h/production HTTPS/DR/systemd не проверены.
 Expired identity fail-closed; automatic admin reissue пока не реализован. Ограничения не выдаются за функции.
-Далее C12 CLI/configuration/observability. C04/C05 hosted success; C06–C11 локальны, no push/merge/deploy/env publication.
+C12.01: compiled surveyscanctl, private session context/login/logout/assets/sources/status,33unit/58fixtures
+и16real HTTPS/PG CLI checks passed (8pipeline+8CLI groups),2tenant/viewer. [Передача C12](plans/surveyscan-v2/handoffs/C12.md).
+Далее C12.02 versioned source profiles/intervals, затем metrics/операторский сценарий. C04/C05 hosted success; C06–C11 локальны, no push/merge/deploy/env publication.
 
 ## Контекст архитектуры и история C01–C04
 

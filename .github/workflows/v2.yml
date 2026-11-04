@@ -55,6 +55,8 @@ jobs:
         run: .contract-tools/bin/python scripts/renewal_smoke.py
       - name: Collector TLS rotation, queues, committed ACK loss and race-checked hot reload
         run: .contract-tools/bin/python scripts/collector_renewal_smoke.py
+      - name: Human CLI login, two tenants, pagination and remote logout
+        run: .contract-tools/bin/python scripts/cli_smoke.py
       - name: Retain sanitized reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -73,6 +75,7 @@ jobs:
             v2/.local/bao-pipeline.json
             v2/.local/renewal-smoke.json
             v2/.local/collector-renewal-smoke.json
+            v2/.local/cli-smoke.json
           if-no-files-found: ignore
       - name: Stop isolated development stack
         if: always()
