@@ -10,7 +10,10 @@ C06–C08 завершены локально, main/merge/production не мен
 Три автоматических цикла обновляют один UID; restart даёт четвёртый с sequence4.
 18 unit/34 PG integration,58 C03 fixtures,11 live-agent +8 collector +10 auth +6 infrastructure checks passed.
 28 migrations/38 domain/access tables. Source inventory summary ещё baseline-null; asset summary работает.
-C04/C05 hosted CI success; C06–C08 не опубликованы. Прогресс32/200, далее C09 отдельный Web UI.
+C04/C05 hosted CI success; C06–C08 не опубликованы. C08 checkpoint c5a3eef. C09 in progress:01/02 done,03/04 частично; прогресс34/200.
+[Передача C09](plans/surveyscan-v2/handoffs/C09.md): отдельный React/TS/Vite build, login/list/card/sources,
+13 Chromium checks с настоящими API/PG и strict CSP passed. Partial/stale/unknown fixtures проверены отдельно; IP/provenance и финальная приёмка C09 ещё pending.
+Локальная ветка codex/v2-c09-web, не опубликована.
 Настройки среды повторно не применяются и не публикуются.
 
 ## Контекст архитектуры и история C01–C04

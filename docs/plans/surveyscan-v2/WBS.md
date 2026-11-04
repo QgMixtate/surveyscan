@@ -1,6 +1,6 @@
 # Полный WBS surveyscan v2
 
-Версия плана 1.0 по архитектуре 0.5. C01–C08: 32 подзадачи done; остальные 168 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
+Версия плана 1.0 по архитектуре 0.5. C01–C08 done; C09.01/02 done: 34 done, 2 in_progress, 164 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
 
 
 # C01 — Границы первого релиза и карта решений (E0)
@@ -456,7 +456,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Локальные assets, API client и version manifest.
 - Проверка: Production runtime не требует Node/CDN.
 - База оценки: 1 выбранный framework из C01; отдельный pipeline.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; см. handoffs/C09.md и evidence/C09-progress.json.
 
 ## C09.02 — Сделать login и реестр активов
 
@@ -466,7 +466,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Авторизация, список/фильтры/пагинация, обработка API errors.
 - Проверка: UI не получает лишние данные и не полагается на скрытие кнопок.
 - База оценки: Минимальные E1 endpoints C05/C06.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; см. handoffs/C09.md и evidence/C09-progress.json.
 
 ## C09.03 — Сделать карточку и состояния источников
 
@@ -476,7 +476,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Имя/ОС/IP/ответственная команда, section status и времена.
 - Проверка: Unknown/partial/stale/source health различаются.
 - База оценки: 1 карточка; 3 fixtures: полный, partial, нет контакта.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress; см. handoffs/C09.md и evidence/C09-progress.json.
 
 ## C09.04 — Проверить совместимость и браузер
 
@@ -486,7 +486,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Contract/E2E на реальном API и static hosting.
 - Проверка: UI и backend обновляются независимо в согласованной паре.
 - База оценки: 2 ширины 800/1440, keyboard path, version mismatch.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress; см. handoffs/C09.md и evidence/C09-progress.json.
 
 ## Выход пакета
 

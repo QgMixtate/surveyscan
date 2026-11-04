@@ -14,7 +14,7 @@ def b64(b):return base64.urlsafe_b64encode(b).rstrip(b'=').decode()
 def rawpublic(key):return key.public_key().public_bytes(serialization.Encoding.Raw,serialization.PublicFormat.Raw)
 def freeport():
  with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
-def main(agent_scenario=None):
+def main(agent_scenario=None,web_scenario=None,browser_origin=None):
  initialize();db='ssv2machine_'+uuid.uuid4().hex;tenant,site,scope,subject=uid(),uid(),uid(),uid();processes=[];checks=[];created=False
  def sql(query,database='surveyscan_v2'):
   return compose('exec','-T','db','psql','-U','surveyscan_v2','-d',database,'-v','ON_ERROR_STOP=1','-Atc',query,capture=True).strip()
@@ -32,8 +32,9 @@ def main(agent_scenario=None):
   server_key=ed25519.Ed25519PrivateKey.generate();server=x509.CertificateBuilder().subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'C07 center')])).issuer_name(ca_name).public_key(server_key.public_key()).serial_number(x509.random_serial_number()).not_valid_before(now-datetime.timedelta(minutes=1)).not_valid_after(now+datetime.timedelta(hours=12)).add_extension(x509.SubjectAlternativeName([x509.IPAddress(ipaddress.ip_address('127.0.0.1'))]),False).add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]),False).sign(ca_key,None)
   server_file=save('server.pem',server.public_bytes(serialization.Encoding.PEM));server_private=save('server.key',private(server_key));center_key=ed25519.Ed25519PrivateKey.generate();center_id=uid();center_private=save('center.json',json.dumps({'key_id':center_id,'private_key':b64(center_key.private_bytes(serialization.Encoding.Raw,serialization.PrivateFormat.Raw,serialization.NoEncryption())+rawpublic(center_key))}))
   tls_port,http_port,collector_port=freeport(),freeport(),freeport();machine_file=save('machine.json',json.dumps({'dev_mode':True,'listen':f'127.0.0.1:{tls_port}','ca_certificate_file':ca_file,'ca_private_key_file':ca_private,'server_certificate_file':server_file,'server_private_key_file':server_private,'center_signing_key_file':center_private}))
-  origin=f'https://127.0.0.1:{tls_port}';env=dict(os.environ,SURVEYSCAN_V2_DATABASE_URL=f'postgres://surveyscan_v2@127.0.0.1:55432/{db}?sslmode=disable',SURVEYSCAN_V2_DATABASE_PASSWORD_FILE=str(STATE/'pg_password'),SURVEYSCAN_V2_PUBLIC_ORIGIN=origin,SURVEYSCAN_V2_LISTEN=f'127.0.0.1:{http_port}',SURVEYSCAN_V2_BAO_ADDR='http://127.0.0.1:58200',SURVEYSCAN_V2_MACHINE_CONFIG=machine_file)
+  origin=f'https://127.0.0.1:{tls_port}';browser_origin=browser_origin or origin;env=dict(os.environ,SURVEYSCAN_V2_DATABASE_URL=f'postgres://surveyscan_v2@127.0.0.1:55432/{db}?sslmode=disable',SURVEYSCAN_V2_DATABASE_PASSWORD_FILE=str(STATE/'pg_password'),SURVEYSCAN_V2_PUBLIC_ORIGIN=browser_origin,SURVEYSCAN_V2_LISTEN=f'127.0.0.1:{http_port}',SURVEYSCAN_V2_BAO_ADDR='http://127.0.0.1:58200',SURVEYSCAN_V2_MACHINE_CONFIG=machine_file)
   env.pop('SURVEYSCAN_V2_INSECURE_LOCAL_HTTP',None)
+  if browser_origin.startswith('http://127.0.0.1:'):env['SURVEYSCAN_V2_INSECURE_LOCAL_HTTP']='1'
   def command(*args):
    p=subprocess.run([str(ROOT/'.dist/surveyscan-server'),*args],cwd=ROOT,env=env,capture_output=True,text=True,timeout=30)
    assert p.returncode==0,'server console failed';return p.stdout
@@ -66,13 +67,13 @@ def main(agent_scenario=None):
    password=secrets.token_urlsafe(32);password_file=save('password',password+'\n');command('bootstrap-admin','--tenant',tenant,'--tenant-name','C07 synthetic','--username','admin','--password-file',password_file)
    sql(f"INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES('{tenant}','{subject}','team','fallback','synthetic@example.invalid'); INSERT INTO scope.sites(tenant_id,site_id,name,fallback_subject_id) VALUES('{tenant}','{site}','synthetic','{subject}'); INSERT INTO scope.network_scopes(tenant_id,scope_id,site_id,namespace) VALUES('{tenant}','{scope}','{site}','default');",db)
    start('center',[str(ROOT/'.dist/surveyscan-server'),'serve']);plain=context();ready(tls_port,plain);checks.append('compiled center starts with explicit private loopback PKI')
-   status,session,cookie=request(tls_port,plain,'POST','/api/v1/auth/sessions',{'username':'admin','password':password},{'Origin':origin});assert status==201;cookie=cookie.split(';',1)[0]
+   status,session,cookie=request(tls_port,plain,'POST','/api/v1/auth/sessions',{'username':'admin','password':password},{'Origin':browser_origin});assert status==201;cookie=cookie.split(';',1)[0]
    def enroll_material():
     key=ed25519.Ed25519PrivateKey.generate();signing=ed25519.Ed25519PrivateKey.generate();csr=x509.CertificateSigningRequestBuilder().subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'untrusted-subject')])).sign(key,None)
     return key,signing,csr
    def grant(source,kind,collector,key,csr):
     body={'tenant_id':tenant,'source_id':source,'source_kind':kind,'site_id':site,'collector_id':collector,'ttl_seconds':900,'csr_sha256':hashlib.sha256(csr.public_bytes(serialization.Encoding.DER)).hexdigest(),'signing_public_key':b64(rawpublic(key))}
-    status,result,_=request(tls_port,plain,'POST','/api/v1/enrollments',body,{'Origin':origin,'Cookie':cookie,'X-CSRF-Token':session['csrf_token']});assert status==201;return result
+    status,result,_=request(tls_port,plain,'POST','/api/v1/enrollments',body,{'Origin':browser_origin,'Cookie':cookie,'X-CSRF-Token':session['csrf_token']});assert status==201;return result
    collector_source=uid();collector_key,collector_sign,csr=enroll_material();permission=grant(collector_source,'collector',None,collector_sign,csr)
    body={'grant_id':permission['grant_id'],'source_id':collector_source,'csr_pem':csr.public_bytes(serialization.Encoding.PEM).decode(),'signing_public_key':b64(rawpublic(collector_sign))};status,collector_result,_=request(tls_port,plain,'POST','/api/v1/machine/enroll',body,{'Authorization':'Bearer '+permission['enrollment_token']});assert status==201
    collector_cert=save('collector.pem',collector_result['certificate_chain_pem']);collector_private=save('collector.key',private(collector_key));cert=x509.load_pem_x509_certificate(collector_result['certificate_chain_pem'].encode());uris=cert.extensions.get_extension_for_class(x509.SubjectAlternativeName).value.get_values_for_type(x509.UniformResourceIdentifier);collector_id=next(u.rsplit('/',1)[1] for u in uris if '/kind/collector/' in u)
@@ -93,6 +94,9 @@ def main(agent_scenario=None):
    status,card,_=request(tls_port,plain,'GET','/api/v1/assets/'+signed['results'][0]['asset_uid'],headers={'Cookie':cookie});assert status==200 and card['observed_hostname']=='pipeline-host' and card['accountable_subject_id']==subject;checks.append('committed PG registry card visible through real authenticated API')
    assert not (directory/'spool'/(batch['delivery_id']+'.pending')).exists();checks.append('collector trims only after verified center acknowledgement')
    assert sql('SELECT count(*) FROM inventory.observations',db)=='1';checks.append('exactly one durable observation in isolated PostgreSQL')
+   if web_scenario is not None:
+    web_scenario(directory=directory,origin=browser_origin,center_port=tls_port,ca_file=ca_file,username='admin',password=password,asset=signed['results'][0]['asset_uid'],tenant=tenant,checks=checks)
+    return
    report={'package':'C07','status':'passed','checks':checks,'count':len(checks),'target':'compiled server + compiled collector + real TLS/mTLS + synthetic Python Ed25519 source + PostgreSQL','keys':'temporary private files removed after run; no credential in report'};(STATE/'machine-smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
   finally:
    for process in reversed(processes):

@@ -146,3 +146,11 @@ heartbeat. Pending spool удаляется только после провер
 Для приёмки: contract Python `scripts/agent_smoke.py` (три автоматических60s цикла + restart,
 три compiled binaries, настоящий хост и временный PG). Отчёт не содержит host facts или keys.
 Systemd template deploy/surveyscan-agent.service подготовлен; установка/24h/production ещё не проверены.
+
+## C09 в работе: отдельный Web UI
+
+[Сборка](web/README.md), [точка продолжения](../docs/plans/surveyscan-v2/handoffs/C09.md).
+`cd web && npm ci --ignore-scripts --no-audit --no-fund && npm run generate && npm run build`.
+После этого dev edge58081 отдаёт отдельный production bundle с strict CSP; Node/CDN в runtime не нужны.
+Login/list/card/sources и13 Chromium checks с real API/PG прошли. IP/provenance API и полная приёмка
+C09 ещё не завершены. Типы/standalone validators генерируются из C03; никаких secret в web storage.

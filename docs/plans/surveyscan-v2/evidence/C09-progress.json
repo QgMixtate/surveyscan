@@ -1,0 +1,92 @@
+{
+  "package": "C09",
+  "status": "in_progress",
+  "completed_tasks": [
+    "C09.01",
+    "C09.02"
+  ],
+  "remaining_tasks": [
+    "C09.03",
+    "C09.04"
+  ],
+  "branch": "codex/v2-c09-web",
+  "base": "c5a3eef",
+  "publication": "local only; no push/merge/deploy",
+  "checks": {
+    "clean_npm_ci": "passed",
+    "generate_typecheck_build": "passed",
+    "chromium": {
+      "package": "C09",
+      "scope": "C09.01/C09.02 + preliminary C09.03/C09.04; full C09 not accepted",
+      "status": "passed",
+      "count": 13,
+      "checks": [
+        "production static bundle renders with strict CSP and no Node/CDN",
+        "invalid credentials rejected by real backend",
+        "real authenticated tenant asset list from PostgreSQL",
+        "explicit page filter and cursor boundaries",
+        "real asset detail and keyboard close/focus path",
+        "1440 and 800 responsive layouts render without document overflow",
+        "explicit mocked C03 partial/stale/unknown fixture matrix rendered distinctly",
+        "source registration and missing contact displayed separately",
+        "no tokens or credentials in web storage",
+        "real expired session clears old card and tenant workspace cache",
+        "real logout revokes browser session",
+        "version mismatch blocks login before API usage",
+        "zero runtime errors or external requests"
+      ],
+      "target": "Chromium + production bundle + real compiled server/collector + synthetic signed source + PostgreSQL; strict CSP; no mocked auth/assets",
+      "unrun": [
+        "IP/provenance versioned API",
+        "full C09 acceptance"
+      ]
+    },
+    "nginx_static_hosting": "index/version/server OpenAPI200, strict CSP/no-store passed",
+    "machine_regression": {
+      "package": "C07",
+      "status": "passed",
+      "checks": [
+        "compiled center starts with explicit private loopback PKI",
+        "compiled collector enrolls and starts HTTPS daemon",
+        "synthetic agent enrollment traverses collector",
+        "durable collector transport receipt retains source data",
+        "center commit receipt verifies with pinned key and exact bindings",
+        "committed PG registry card visible through real authenticated API",
+        "collector trims only after verified center acknowledgement",
+        "exactly one durable observation in isolated PostgreSQL"
+      ],
+      "count": 8,
+      "target": "compiled server + compiled collector + real TLS/mTLS + synthetic Python Ed25519 source + PostgreSQL",
+      "keys": "temporary private files removed after run; no credential in report"
+    },
+    "Go_C08_baseline": "18 unit/34 PG/58 fixtures passed at c5a3eef; no Go changes in C09",
+    "generated_artifacts_reproducible": "npm run generate repeated; git diff generated files empty"
+  },
+  "unrun": [
+    "full C09 acceptance",
+    "versioned IP/MAC/provenance API",
+    "friendly responsibility/source inventory summary",
+    "hosted C09 CI",
+    "production/100-user load/24h soak"
+  ],
+  "source_sha256": {
+    "v2/web/README.md": "7756f5b012c01c47ad3196d7edcc05a72a565d14e56bd05100079b23e3d6dd5b",
+    "v2/web/package-lock.json": "001c77bc8da231f2c310214e263fc1ab6b91402ad32b3089b221134a4ef4e316",
+    "v2/web/vite.config.ts": "c1bb33c74411a75f1172a474310a475111df2bd229a7e71dcddead73c68f1a6a",
+    "v2/web/.gitignore": "3c3d8ee71c7cb202a6b724b6c42b8e104651dfa767292c29592ae5e4679befbe",
+    "v2/web/index.html": "616fcc70330f579c91fcd15071b0c1d30f91d5db3edca40e721f81d67dfe0b85",
+    "v2/web/package.json": "0a51f19ecbdc6bb21f297161cdde31230e18730a18ea8288ff5d11be47e5053d",
+    "v2/web/tsconfig.json": "a27c4dd17fab16167b5d9206ae6a694145a4463c1f42aa71a0219dd9cc783281",
+    "v2/web/public/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "v2/web/src/main.tsx": "9cff95ea595ce375d6f5476fe828a1d85e44996922845022708243be64c2444a",
+    "v2/web/src/style.css": "a40370810239196a19bf7998c1acfc858ceb39fd3f71b0734b822bbea9a93711",
+    "v2/web/src/api.ts": "7b025c104129695d72806ab7239bbd6f45f87bd37eb3b47c1e89418e642c905e",
+    "v2/web/scripts/validators.mjs": "6ea81017c13d3c6c14fb18601d390e81ce0636760fd7535d8c8c64760de226a6",
+    "v2/web/scripts/manifest.mjs": "a04efb358181027961a7deb7c3766831562669c9aca15f0c5b37bdf9d1469905",
+    "v2/web/scripts/smoke.mjs": "f76bc8e0e9229300efb074fbc212226dd1637ae3872f0ce2ea77960e5a41ecfa",
+    "v2/web/src/generated/wire.cjs": "abfe07d8f4b7153bdf2e1cfb2c118dccd99cccfb7ff6cc0397d8d169933c34c2",
+    "v2/web/src/generated/wire.d.cts": "6883fb6dcf6886e99757367981a7b88cb7c004700223ba5b311376c92a83ebd3",
+    "v2/web/src/generated/c03.ts": "95802145fda71c4c1ded65c410d0b19fdd9302d75cdec33d5d2a0828e64c6b9a"
+  },
+  "plan_validation": "50 packages /200 tasks;34done/2in_progress/164planned; CSV agrees; prior/future packages preserved"
+}

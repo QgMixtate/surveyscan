@@ -1,0 +1,30 @@
+{
+  "name": "@surveyscan/web",
+  "version": "0.1.0-c09",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "scripts": {
+    "generate": "openapi-typescript ../contracts/openapi.json -o src/generated/c03.ts && node scripts/validators.mjs",
+    "check": "tsc --noEmit",
+    "build": "npm run check && vite build && node scripts/manifest.mjs",
+    "dev": "vite --host 127.0.0.1",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "ajv": "8.17.1",
+    "ajv-formats": "3.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "5.9.3",
+    "vite": "8.3.5",
+    "openapi-typescript": "7.13.0",
+    "@playwright/test": "1.64.1"
+  }
+}

@@ -5,12 +5,13 @@
   "acceptance_criteria": 55,
   "remarks": 19,
   "dependency_graph": "acyclic",
-  "all_statuses": "C01-C08 done; C09-C50 planned",
+  "all_statuses": "C01-C08 done; C09 in_progress (01/02 done); C10-C50 planned",
   "scope_validation": "C08 local real Linux host, three scheduled cycles and restart; compiled agent/collector/server, verified mTLS + PG; hosted C04/C05 success; C06-C08 not published",
   "progress": {
     "done_packages": 8,
-    "done_tasks": 32,
-    "planned_tasks": 168
+    "done_tasks": 34,
+    "in_progress_tasks": 2,
+    "planned_tasks": 164
   },
-  "latest_evidence": "evidence/C08-validation.json"
+  "latest_evidence": "evidence/C09-progress.json"
 }

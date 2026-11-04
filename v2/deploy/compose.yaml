@@ -76,7 +76,7 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ../.dist/contracts:/usr/share/nginx/contracts:ro
-      - ../web/public:/usr/share/nginx/html:ro
+      - ../web/dist:/usr/share/nginx/html:ro
     ports: ["127.0.0.1:58081:8080"]
     depends_on:
       backend: {condition: service_healthy}

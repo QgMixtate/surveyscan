@@ -230,7 +230,9 @@ C07 также завершён локально: handoffs/C07.md, 27 migrations
 8 compiled server/collector TLS E2E + regression checks passed. Источник C07 синтетический.
 C07 checkpoint8cd353c. C08 завершён локально: handoffs/C08.md, 28 migrations/38 tables,
 18 unit/34 PG tests,58 fixtures,11 live-agent checks; три scheduled цикла и четвёртый после restart, один UID.
-Прогресс32/200; далее автоматически C09: отдельный Web UI. C06–C08 не опубликованы.
+C08 checkpoint c5a3eef. C09 начат:01/02 done,03/04 in progress. Separate build и13 Chromium
+checks с real API/PG/strict CSP passed; IP/provenance/full acceptance pending, handoffs/C09.md.
+Прогресс34/200; C06–C09 локальны, без push/merge.
 
 ## Шаблон новой записи
 - ID и дата:

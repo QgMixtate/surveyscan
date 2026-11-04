@@ -44,6 +44,8 @@ def unseal():
 
 def up():
  initialize()
+ (ROOT/"web/dist").mkdir(mode=0o755,exist_ok=True)
+ if not (ROOT/"web/dist/index.html").exists():print("Web UI not built; run npm ci and npm run build in v2/web separately.")
  if not (ROOT/'.dist/surveyscan-server').exists():raise RuntimeError('Build v2 binaries first: make build')
  compose('up','--detach','db','bao');unseal()
  compose('build','backend','migrate')
