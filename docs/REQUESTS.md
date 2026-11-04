@@ -228,7 +228,9 @@ C06: 25 migrations, 14 unit/20 real PG tests, C03 и live smoke passed; 24/200 d
 Передача handoffs/C06.md. C06 checkpoint 2a217b9.
 C07 также завершён локально: handoffs/C07.md, 27 migrations/36 tables, 14 unit/31 PG tests,
 8 compiled server/collector TLS E2E + regression checks passed. Источник C07 синтетический.
-Прогресс 28/200; далее автоматически C08: реальный host agent/регулярный цикл/heartbeat.
+C07 checkpoint8cd353c. C08 завершён локально: handoffs/C08.md, 28 migrations/38 tables,
+18 unit/34 PG tests,58 fixtures,11 live-agent checks; три scheduled цикла и четвёртый после restart, один UID.
+Прогресс32/200; далее автоматически C09: отдельный Web UI. C06–C08 не опубликованы.
 
 ## Шаблон новой записи
 - ID и дата:

@@ -14,7 +14,7 @@ def b64(b):return base64.urlsafe_b64encode(b).rstrip(b'=').decode()
 def rawpublic(key):return key.public_key().public_bytes(serialization.Encoding.Raw,serialization.PublicFormat.Raw)
 def freeport():
  with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
-def main():
+def main(agent_scenario=None):
  initialize();db='ssv2machine_'+uuid.uuid4().hex;tenant,site,scope,subject=uid(),uid(),uid(),uid();processes=[];checks=[];created=False
  def sql(query,database='surveyscan_v2'):
   return compose('exec','-T','db','psql','-U','surveyscan_v2','-d',database,'-v','ON_ERROR_STOP=1','-Atc',query,capture=True).strip()
@@ -62,7 +62,7 @@ def main():
    raise RuntimeError('machine/collector binary did not start')
   try:
    sql('CREATE DATABASE '+db);created=True
-   assert 'applied_migrations=27' in command('migrate')
+   assert 'applied_migrations=28' in command('migrate')
    password=secrets.token_urlsafe(32);password_file=save('password',password+'\n');command('bootstrap-admin','--tenant',tenant,'--tenant-name','C07 synthetic','--username','admin','--password-file',password_file)
    sql(f"INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES('{tenant}','{subject}','team','fallback','synthetic@example.invalid'); INSERT INTO scope.sites(tenant_id,site_id,name,fallback_subject_id) VALUES('{tenant}','{site}','synthetic','{subject}'); INSERT INTO scope.network_scopes(tenant_id,scope_id,site_id,namespace) VALUES('{tenant}','{scope}','{site}','default');",db)
    start('center',[str(ROOT/'.dist/surveyscan-server'),'serve']);plain=context();ready(tls_port,plain);checks.append('compiled center starts with explicit private loopback PKI')
@@ -77,6 +77,9 @@ def main():
    body={'grant_id':permission['grant_id'],'source_id':collector_source,'csr_pem':csr.public_bytes(serialization.Encoding.PEM).decode(),'signing_public_key':b64(rawpublic(collector_sign))};status,collector_result,_=request(tls_port,plain,'POST','/api/v1/machine/enroll',body,{'Authorization':'Bearer '+permission['enrollment_token']});assert status==201
    collector_cert=save('collector.pem',collector_result['certificate_chain_pem']);collector_private=save('collector.key',private(collector_key));cert=x509.load_pem_x509_certificate(collector_result['certificate_chain_pem'].encode());uris=cert.extensions.get_extension_for_class(x509.SubjectAlternativeName).value.get_values_for_type(x509.UniformResourceIdentifier);collector_id=next(u.rsplit('/',1)[1] for u in uris if '/kind/collector/' in u)
    cfg=save('collector.json',json.dumps({'listen':f'127.0.0.1:{collector_port}','center_url':origin,'certificate_file':collector_cert,'private_key_file':collector_private,'ca_certificate_file':ca_file,'spool_directory':str(directory/'spool'),'spool_limit_bytes':1048576}));start('collector',[str(ROOT/'.dist/surveyscan-collector'),'run','--config',cfg]);collector_name=collector_source+'.collector.invalid';ready(collector_port,plain,collector_name);checks.append('compiled collector enrolls and starts HTTPS daemon')
+   if agent_scenario is not None:
+    agent_scenario(checks=checks,save=save,request=request,sql=lambda query:sql(query,db),start=start,tenant=tenant,site=site,scope=scope,collector_port=collector_port,collector_source=collector_source,collector_id=collector_id,ca_file=ca_file,directory=directory,tls_port=tls_port,plain=plain,origin=origin,cookie=cookie,session=session,subject=subject)
+    return
    agent_source=uid();agent_key,agent_sign,agent_csr=enroll_material();permission=grant(agent_source,'agent',collector_id,agent_sign,agent_csr);body={'grant_id':permission['grant_id'],'source_id':agent_source,'csr_pem':agent_csr.public_bytes(serialization.Encoding.PEM).decode(),'signing_public_key':b64(rawpublic(agent_sign))};status,agent_result,_=request(collector_port,plain,'POST','/api/v1/machine/enroll',body,{'Authorization':'Bearer '+permission['enrollment_token']},collector_name);assert status==201;checks.append('synthetic agent enrollment traverses collector')
    agent_cert=save('agent.pem',agent_result['certificate_chain_pem']);agent_private=save('agent.key',private(agent_key));client=context(agent_cert,agent_private);stamp=datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='microseconds').replace('+00:00','Z')
    payload={'schema_version':{'major':1,'minor':0},'observation_id':uid(),'tenant_id':tenant,'origin':{'source_id':agent_source,'source_kind':'agent','generation_id':agent_result['generation_id']},'source_record':{'namespace':'host','source_local_id':'synthetic-host'},'scope':{'site_id':site,'network_scope_id':scope},'source_sequence':'1','collected_at':stamp,'clock_quality':'trusted','identity_candidates':[{'kind':'hostname','namespace':'dns','value':'pipeline-host'}],'sections':[{'name':'identity','collected_at':stamp,'status':'ok','collection_complete':True,'reason_code':'COLLECTED','record_count':1,'records':[{'hostname':'pipeline-host'}]}]}

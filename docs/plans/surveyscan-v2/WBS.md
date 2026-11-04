@@ -1,6 +1,6 @@
 # Полный WBS surveyscan v2
 
-Версия плана 1.0 по архитектуре 0.5. C01–C07: 28 подзадач done; остальные 172 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
+Версия плана 1.0 по архитектуре 0.5. C01–C08: 32 подзадачи done; остальные 168 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
 
 
 # C01 — Границы первого релиза и карта решений (E0)
@@ -401,7 +401,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Сбор identity/hostname/ОС/IP/MAC с section statuses.
 - Проверка: На реальном тестовом хосте получены ожидаемые сведения.
 - База оценки: 1 ОС/архитектура из C01; ограниченный набор полей E1.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C08](evidence/C08-runtime.json), [передача](handoffs/C08.md).
 
 ## C08.02 — Реализовать agent enrollment и HTTPS client
 
@@ -411,7 +411,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Уникальная machine identity, binding к collector и TLS trust.
 - Проверка: Неверный endpoint/cert и revoked identity отклонены.
 - База оценки: 1 agent→collector connection; без PG и remote target secrets.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C08](evidence/C08-runtime.json), [передача](handoffs/C08.md).
 
 ## C08.03 — Добавить регулярный цикл и heartbeat
 
@@ -421,7 +421,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Расписание, раздельный heartbeat, jitter, timeout и graceful stop.
 - Проверка: Несколько циклов обновляют один asset без ручного запуска.
 - База оценки: Одна configurable schedule; heartbeat и inventory интервалы.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C08](evidence/C08-runtime.json), [передача](handoffs/C08.md).
 
 ## C08.04 — Показать ранний работающий вертикальный срез
 
@@ -431,7 +431,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Реальный agent→collector→server→PG→API/CLI-dev просмотр.
 - Проверка: Свежие данные обновились минимум 3 цикла, UID тот же.
 - База оценки: 1 живой хост; без заявления production-ready.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; [runtime C08](evidence/C08-runtime.json), [передача](handoffs/C08.md).
 
 ## Выход пакета
 

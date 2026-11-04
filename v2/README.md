@@ -136,3 +136,13 @@ C04/C05 SQL не редактировать, данные не сбрасыва�
 Заранее доверенный CA проверяется всегда; ключ подписания ACK аттестован CA в identity certificate.
 Частные ключи/конфиги 0600, spool0700; не включать в Git или CI artifacts. Production Bao issuer — C11.
 Heartbeat, live host agent и automatic enrollment client — C08; production recovery/quota hardening — C10.
+
+## C08: постоянный Linux host agent
+
+28 migrations/38 domain/access tables. `surveyscan-agent prepare/enroll/run --config PRIVATE_FILE`.
+[Регистрация и конфиг](internal/agent/README.md), [передача](../docs/plans/surveyscan-v2/handoffs/C08.md).
+Настоящие hostname/OS/IP/MAC, origin signature, mTLS к назначенному collector; отдельный fresh-challenge
+heartbeat. Pending spool удаляется только после проверки center ACK, counters переживают restart.
+Для приёмки: contract Python `scripts/agent_smoke.py` (три автоматических60s цикла + restart,
+три compiled binaries, настоящий хост и временный PG). Отчёт не содержит host facts или keys.
+Systemd template deploy/surveyscan-agent.service подготовлен; установка/24h/production ещё не проверены.

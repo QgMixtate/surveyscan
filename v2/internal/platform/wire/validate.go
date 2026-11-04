@@ -31,7 +31,7 @@ func New() (*Validator, error) {
 		return nil, e
 	}
 	v := &Validator{schemas: map[string]*jsonschema.Schema{}}
-	for _, n := range []string{"SignedObservation", "BusinessPatch", "Asset", "AssetPage", "OutboxEvent", "EnrollmentGrantRequest", "EnrollmentGrant", "EnrollmentRequest", "EnrollmentResult", "MachineConfig", "RevocationRequest", "Batch", "RecordResult", "SignedCenterResult", "TransportReceipt", "Source", "SourcePage"} {
+	for _, n := range []string{"ChallengeRequest", "ChallengeResponse", "SignedHeartbeat", "HeartbeatResult", "Observation", "SignedObservation", "BusinessPatch", "Asset", "AssetPage", "OutboxEvent", "EnrollmentGrantRequest", "EnrollmentGrant", "EnrollmentRequest", "EnrollmentResult", "MachineConfig", "RevocationRequest", "Batch", "RecordResult", "SignedCenterResult", "TransportReceipt", "Source", "SourcePage"} {
 		s, e := c.Compile(id + "#/$defs/" + n)
 		if e != nil {
 			return nil, e

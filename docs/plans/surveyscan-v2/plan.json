@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C07 done; C08-C50 planned",
+  "status": "C01-C08 done; C09-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -725,8 +725,14 @@
           "output": "Сбор identity/hostname/ОС/IP/MAC с section statuses",
           "verification": "На реальном тестовом хосте получены ожидаемые сведения",
           "estimation_basis": "1 ОС/архитектура из C01; ограниченный набор полей E1",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "../../../v2/internal/agent/inventory.go",
+            "../../../v2/internal/agent/inventory_test.go",
+            "evidence/C08-runtime.json"
+          ],
+          "verification_status": "passed local real Linux/amd64 host; three scheduled cycles + restart; real TLS/mTLS/PG; hosted C08 unrun"
         },
         {
           "id": "C08.02",
@@ -738,8 +744,14 @@
           "output": "Уникальная machine identity, binding к collector и TLS trust",
           "verification": "Неверный endpoint/cert и revoked identity отклонены",
           "estimation_basis": "1 agent→collector connection; без PG и remote target secrets",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/internal/agent/client.go",
+            "../../../v2/cmd/surveyscan-agent/main.go",
+            "evidence/C08-runtime.json"
+          ],
+          "verification_status": "passed local real Linux/amd64 host; three scheduled cycles + restart; real TLS/mTLS/PG; hosted C08 unrun"
         },
         {
           "id": "C08.03",
@@ -751,8 +763,14 @@
           "output": "Расписание, раздельный heartbeat, jitter, timeout и graceful stop",
           "verification": "Несколько циклов обновляют один asset без ручного запуска",
           "estimation_basis": "Одна configurable schedule; heartbeat и inventory интервалы",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "done",
+          "work_group": "Реализация",
+          "evidence": [
+            "../../../v2/internal/modules/sources/heartbeat.go",
+            "../../../v2/internal/agent/lock_linux.go",
+            "evidence/C08-runtime.json"
+          ],
+          "verification_status": "passed local real Linux/amd64 host; three scheduled cycles + restart; real TLS/mTLS/PG; hosted C08 unrun"
         },
         {
           "id": "C08.04",
@@ -764,12 +782,25 @@
           "output": "Реальный agent→collector→server→PG→API/CLI-dev просмотр",
           "verification": "Свежие данные обновились минимум 3 цикла, UID тот же",
           "estimation_basis": "1 живой хост; без заявления production-ready",
-          "status": "planned",
-          "work_group": "Проверка и передача"
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "../../../v2/scripts/agent_smoke.py",
+            "../../../v2/internal/app/heartbeat_integration_test.go",
+            "evidence/C08-runtime.json"
+          ],
+          "verification_status": "passed local real Linux/amd64 host; three scheduled cycles + restart; real TLS/mTLS/PG; hosted C08 unrun"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "evidence": [
+        "handoffs/C08.md",
+        "decisions/C08-host-agent.md",
+        "evidence/C08-runtime.json",
+        "evidence/C08-validation.json"
+      ],
+      "completed_at": "2026-11-04"
     },
     {
       "id": "C09",
@@ -3544,7 +3575,8 @@
       "C04",
       "C05",
       "C06",
-      "C07"
+      "C07",
+      "C08"
     ],
     "done_tasks": [
       "C01.01",
@@ -3574,9 +3606,13 @@
       "C07.01",
       "C07.02",
       "C07.03",
-      "C07.04"
+      "C07.04",
+      "C08.01",
+      "C08.02",
+      "C08.03",
+      "C08.04"
     ],
-    "next_package": "C08",
+    "next_package": "C09",
     "product_implementation_started": true
   }
 }

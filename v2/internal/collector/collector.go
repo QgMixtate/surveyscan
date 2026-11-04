@@ -229,6 +229,79 @@ func (c *Collector) post(ctx context.Context, path string, raw []byte, token str
 }
 func (c *Collector) Handler() http.Handler {
 	mux := http.NewServeMux()
+	// Heartbeat relay не хранит старые ответы для имитации свежего контакта.
+	mux.HandleFunc("POST /api/v1/machine/heartbeat-challenges", func(w http.ResponseWriter, r *http.Request) {
+		claims, e := c.peer(r)
+		if e != nil {
+			failure(w, 401, "AUTHENTICATION_REQUIRED")
+			return
+		}
+		raw, e := io.ReadAll(http.MaxBytesReader(w, r.Body, 65536))
+		if e != nil || c.wire.Validate("ChallengeRequest", raw) != nil {
+			failure(w, 422, "SCHEMA_INVALID")
+			return
+		}
+		var req contracts.ChallengeRequest
+		_ = json.Unmarshal(raw, &req)
+		if req.Purpose != "heartbeat" || len(req.Sources) != 1 || req.Sources[0] != claims.Source {
+			failure(w, 403, "FORBIDDEN")
+			return
+		}
+		status, b, e := c.post(r.Context(), "/api/v1/machine/heartbeat-challenges", raw, "")
+		if e != nil {
+			failure(w, 503, "CENTER_UNAVAILABLE")
+			return
+		}
+		if status == 200 && c.wire.Validate("ChallengeResponse", b) != nil {
+			failure(w, 503, "INVALID_CENTER_RESPONSE")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.WriteHeader(status)
+		_, _ = w.Write(b)
+	})
+	mux.HandleFunc("POST /api/v1/machine/heartbeats", func(w http.ResponseWriter, r *http.Request) {
+		claims, e := c.peer(r)
+		if e != nil {
+			failure(w, 401, "AUTHENTICATION_REQUIRED")
+			return
+		}
+		raw, e := io.ReadAll(http.MaxBytesReader(w, r.Body, 65536))
+		if e != nil || c.wire.Validate("SignedHeartbeat", raw) != nil {
+			failure(w, 422, "SCHEMA_INVALID")
+			return
+		}
+		var signed contracts.SignedHeartbeat
+		_ = json.Unmarshal(raw, &signed)
+		var h contracts.Heartbeat
+		_ = json.Unmarshal(signed.Payload, &h)
+		if h.Tenant != claims.Tenant || h.Origin.SourceID != claims.Source || h.Origin.GenerationID != claims.Generation || h.Origin.SourceKind != claims.Kind || signed.KeyID != claims.KeyID {
+			failure(w, 403, "FORBIDDEN")
+			return
+		}
+		canonical, e := wire.Canonical(signed.Payload)
+		sum := sha256.Sum256(canonical)
+		sig, decode := base64.RawURLEncoding.Strict().DecodeString(signed.Signature)
+		if e != nil || decode != nil || hex.EncodeToString(sum[:]) != signed.Digest || !ed25519.Verify(claims.SigningPublic, append([]byte("SURVEYSCAN-HEARTBEAT-V1\n"), canonical...), sig) {
+			failure(w, 422, "SIGNATURE_INVALID")
+			return
+		}
+		status, b, e := c.post(r.Context(), "/api/v1/machine/heartbeats", raw, "")
+		if e != nil {
+			failure(w, 503, "CENTER_UNAVAILABLE")
+			return
+		}
+		if status == 200 && c.wire.Validate("HeartbeatResult", b) != nil {
+			failure(w, 503, "INVALID_CENTER_RESPONSE")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.WriteHeader(status)
+		_, _ = w.Write(b)
+	})
+
 	mux.HandleFunc("POST /api/v1/machine/enroll", func(w http.ResponseWriter, r *http.Request) {
 		if r.TLS == nil {
 			failure(w, 401, "AUTHENTICATION_REQUIRED")

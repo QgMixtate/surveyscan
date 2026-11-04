@@ -41,6 +41,8 @@ jobs:
         run: python scripts/auth_smoke.py
       - name: Compiled collector, mTLS and signed center result
         run: .contract-tools/bin/python scripts/machine_smoke.py
+      - name: Live host agent, three scheduled cycles and heartbeat
+        run: .contract-tools/bin/python scripts/agent_smoke.py
       - name: Retain sanitized reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -52,6 +54,7 @@ jobs:
             v2/.local/smoke.json
             v2/.local/auth-smoke.json
             v2/.local/machine-smoke.json
+            v2/.local/agent-smoke.json
           if-no-files-found: ignore
       - name: Stop isolated development stack
         if: always()

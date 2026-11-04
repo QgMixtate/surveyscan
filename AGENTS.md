@@ -29,13 +29,13 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
 C04/0.5/план опубликованы в codex/v2-c04-foundation (7407da6); C05 — ветка codex/v2-c05-auth. Main не слит. Точные publication refs — в STATUS/evidence; не выдавать local tests за hosted CI.
 Планирование не означает разрешение сразу реализовать все пакеты или выполнить production deployment.
-Следующий пакет — C08; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
+Следующий пакет — C09; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
 Матрица замечаний: docs/specifications/requirements-traceability-v0.5.md;
 исследование аналогов: docs/research/inventory-platform-analogues.md.
 Правила snapshot/dashboard ниже относятся к текущей Python v1, не архитектуре v2.
@@ -59,3 +59,5 @@ C05: docs/plans/surveyscan-v2/handoffs/C05.md. Argon2id и PG-backed sessions/CL
 C06: docs/plans/surveyscan-v2/handoffs/C06.md. Registry.Ingest внутренний, проверяет C03 JCS/SHA256/Ed25519 и source bindings; GET/list/PATCH assets реальны. Новые migrations0019–0024, всего25; SQL commit guards требуют history/event/audit. Network IP/MAC хранятся, публичный shape C09. Consumer registry-version атомарен и monotonic. 14 unit/20 real PG tests passed. C04/C05 hosted CI уже подтверждён через GitHub API; прежние network-blocker записи исторические. R-019 требует автоматически переходить к следующему проверенному этапу до лимита, сохраняя handoff.
 
 C07: handoffs/C07.md. Enrollment/CA-attested identities/center-key trust, mTLS collector daemon и durable staging/receipts готовы локально. 27 migrations/36 tables, 14 unit/31 PG integration + compiled server/collector E2E passed. Machine TLS включается только явным private dev config; production OpenBao issuer C11. Agent/heartbeat — C08, hardening recovery/quota C10. C06/C07 не опубликованы.
+
+C08: handoffs/C08.md. Linux/amd64 read-only host adapter и prepare/enroll/run daemon, durable sender spool/counters, independent challenge heartbeat готовы локально. 28 migrations/38 tables; 18 unit/34 PG tests, три живых scheduled цикла + четвёртый после restart passed. Source inventory summary пока baseline-null; asset inventory summary работает. Systemd template не устанавливался (C14), Windows C15; production PKI C11, recovery/quota/GC C10. Следующий C09, отдельный React/TS/Vite UI.

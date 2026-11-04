@@ -4,12 +4,13 @@
 
 
 Актуальная задача R-019 — последовательно выполнять этапы до лимита.
-C06 и C07 завершены локально, main/merge/production не менялись.
-[C07 передача](plans/surveyscan-v2/handoffs/C07.md): enrollment/mTLS, collector daemon,
-staging/checkpoints, подписанные center ACK; 27 migrations/36 tables.
-14 unit + 31 PG integration, C03 58 fixtures, 8 compiled E2E, 10 auth и 6 infrastructure checks passed.
-Источник в C07 синтетический; реальный host agent и heartbeat — C08.
-C04/C05 hosted CI success; C06/C07 не опубликованы. Прогресс 28/200, следующий C08.
+C06–C08 завершены локально, main/merge/production не менялись.
+[C08 передача](plans/surveyscan-v2/handoffs/C08.md): Linux/amd64 host agent prepare/enroll/run,
+постоянный inventory60s/heartbeat30s в live приёмке, durable sender spool/counters и verified center ACK.
+Три автоматических цикла обновляют один UID; restart даёт четвёртый с sequence4.
+18 unit/34 PG integration,58 C03 fixtures,11 live-agent +8 collector +10 auth +6 infrastructure checks passed.
+28 migrations/38 domain/access tables. Source inventory summary ещё baseline-null; asset summary работает.
+C04/C05 hosted CI success; C06–C08 не опубликованы. Прогресс32/200, далее C09 отдельный Web UI.
 Настройки среды повторно не применяются и не публикуются.
 
 ## Контекст архитектуры и история C01–C04

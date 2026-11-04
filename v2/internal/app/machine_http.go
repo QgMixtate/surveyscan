@@ -189,6 +189,33 @@ func (m *MachineAPI) machine(operation string) http.Handler {
 			m.upload(w, r, fingerprint, operation)
 			return
 		}
+		if operation == "createHeartbeatChallenges" {
+			var req contracts.ChallengeRequest
+			if !m.decode(w, r, "ChallengeRequest", &req) {
+				return
+			}
+			result, e := m.Sources.Challenges(ctx, fingerprint, req)
+			if e != nil {
+				m.fail(w, e)
+				return
+			}
+			registryJSON(w, result)
+			return
+		}
+		if operation == "submitHeartbeat" {
+			var req contracts.SignedHeartbeat
+			if !m.decode(w, r, "SignedHeartbeat", &req) {
+				return
+			}
+			raw, _ := json.Marshal(req)
+			result, e := m.Sources.Heartbeat(ctx, fingerprint, raw)
+			if e != nil {
+				m.fail(w, e)
+				return
+			}
+			registryJSON(w, result)
+			return
+		}
 		if operation == "getMachineConfig" {
 			result, e := m.Sources.Config(ctx, fingerprint)
 			if e != nil {
