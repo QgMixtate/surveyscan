@@ -4,17 +4,12 @@
 
 
 Актуальная задача R-019 — последовательно выполнять этапы до лимита.
-C06–C09 завершены локально; main/merge/production не менялись.
-[C09 передача](plans/surveyscan-v2/handoffs/C09.md): отдельный Web UI, атомарная card/detail API,
-IP/MAC/provenance, friendly responsibility, раздельные section/source времена и generation.
-18 unit/37 PG integration/58 fixtures/14 Chromium checks, auth/collector/outage regression passed.
-29 migrations/39 domain/access tables. C03 сохранён, новое API — отдельное расширение C09/1.0.
-Прогресс38/200. C09 checkpoint8081188. C10.01/02 done локально: bounded spool/retention,
-verified cachedACK recovery, collector single writer и backoff.22 unit/37 PG tests,7 real SIGKILL/reconnect
-checks и1 real ENOSPC passed. C10.03 in progress: central lease/admission/fencing; whole C10 не done.
-[Передача C10](plans/surveyscan-v2/handoffs/C10.md).
-C04/C05 hosted success; C06–C10 не опубликованы.
-Настройки среды повторно не применяются и не публикуются.
+C06–C10 завершены локально, main/merge/production не менялись.
+[C10 передача](plans/surveyscan-v2/handoffs/C10.md): bounded spool/ACK recovery, row lease/fencing,
+admission, payload GC после signed receipt, retry/deadletter и recovery после revoke/crash.
+22 unit/42 PG/58 fixtures/8 real process-recovery/1 real ENOSPC/14 browser checks passed.
+30 migrations/40 domain tables; C03/C09 contract bytes сохранены. Прогресс40/200, далее C11 OpenBao/PKI.
+C04/C05 hosted success; C06–C10 не опубликованы. Настройки среды не публиковались повторно.
 
 ## Контекст архитектуры и история C01–C04
 

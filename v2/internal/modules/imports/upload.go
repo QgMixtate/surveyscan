@@ -20,6 +20,7 @@ import (
 )
 
 type UploadService struct {
+	Limits   Limits
 	Pool     *pgxpool.Pool
 	Auth     sourceport.MachineAuthorizer
 	Registry port.Registry
@@ -73,11 +74,6 @@ func (s *UploadService) Stage(ctx context.Context, fingerprint string, raw []byt
 	if actor.Tenant != batch.TenantID || actor.Kind != "collector" || actor.Collector == nil {
 		return result, domain.Unauthorized
 	}
-	for _, o := range observations {
-		if e = s.Auth.AllowOrigin(ctx, tx, fingerprint, o); e != nil {
-			return result, e
-		}
-	}
 	if _, e = tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", "delivery:"+batch.TenantID+":"+batch.DeliveryID); e != nil {
 		return result, e
 	}
@@ -88,6 +84,15 @@ func (s *UploadService) Stage(ctx context.Context, fingerprint string, raw []byt
 			return result, domain.Conflict
 		}
 	} else if e == pgx.ErrNoRows {
+		// Exact prior delivery belongs to this active courier and is recovery, not new ingress.
+		for _, o := range observations {
+			if e = s.Auth.AllowOrigin(ctx, tx, fingerprint, o); e != nil {
+				return result, e
+			}
+		}
+		if e = s.admit(ctx, tx, batch.TenantID, actor.Source, int64(len(canonical))); e != nil {
+			return result, e
+		}
 		if _, e = tx.Exec(ctx, "INSERT INTO imports.deliveries(tenant_id,delivery_id,collector_id,digest,state) VALUES($1,$2,$3,$4,'processing')", batch.TenantID, batch.DeliveryID, actor.Collector, digest); e != nil {
 			return result, e
 		}
@@ -129,6 +134,11 @@ func (s *UploadService) load(ctx context.Context, tx pgx.Tx, fingerprint, id str
 	if owner != actor.Source || generation != actor.Generation {
 		return d, domain.NotFound
 	}
+	if len(raw) == 0 && len(d.Receipt) > 0 {
+		d.Batch.TenantID = actor.Tenant
+		d.Batch.DeliveryID = id
+		return d, nil
+	}
 	if e = json.Unmarshal(raw, &d.Batch); e != nil {
 		return d, e
 	}
@@ -152,22 +162,50 @@ func (s *UploadService) Status(ctx context.Context, fingerprint, id string) ([]b
 	}
 	return json.Marshal(contracts.TransportReceipt{Type: "transport", TenantID: d.Batch.TenantID, DeliveryID: d.Batch.DeliveryID, Digest: d.Digest, Stage: "processing", SpoolAction: "retain", RequestID: identifier.New()})
 }
-func (s *UploadService) Process(ctx context.Context, fingerprint, id string) ([]byte, error) {
-	if len(s.Key) != ed25519.PrivateKeySize || !identifier.Valid(s.KeyID) {
+func (s *UploadService) Process(ctx context.Context, fingerprint, id string) (response []byte, failure error) {
+	if len(s.Key) != ed25519.PrivateKeySize || !identifier.Valid(s.KeyID) || !identifier.Valid(id) {
 		return nil, domain.Invalid
 	}
-	tx, e := s.Pool.Begin(ctx)
-	if e != nil {
-		return nil, e
+	var d loadedDelivery
+	var owner string
+	for {
+		tx, e := s.Pool.Begin(ctx)
+		if e != nil {
+			return nil, e
+		}
+		d, e = s.load(ctx, tx, fingerprint, id, false)
+		tx.Rollback(ctx)
+		if e != nil {
+			return nil, e
+		}
+		if len(d.Receipt) > 0 {
+			return d.Receipt, nil
+		}
+		var claimed bool
+		owner, claimed, e = s.claim(ctx, d.Batch.TenantID, id)
+		if e != nil {
+			return nil, e
+		}
+		if claimed {
+			break
+		}
+		timer := time.NewTimer(50 * time.Millisecond)
+		select {
+		case <-ctx.Done():
+			timer.Stop()
+			return nil, ctx.Err()
+		case <-timer.C:
+		}
 	}
-	d, e := s.load(ctx, tx, fingerprint, id, false)
-	tx.Rollback(ctx)
-	if e != nil {
-		return nil, e
-	}
-	if len(d.Receipt) > 0 {
-		return d.Receipt, nil
-	}
+	defer func() {
+		if failure != nil {
+			s.failClaim(d.Batch.TenantID, id, owner)
+		}
+	}()
+	return s.process(ctx, fingerprint, id, owner, d)
+}
+func (s *UploadService) process(ctx context.Context, fingerprint, id, owner string, d loadedDelivery) ([]byte, error) {
+	var e error
 	for _, raw := range d.Batch.Records {
 		var signed contracts.SignedObservation
 		var o contracts.Observation
@@ -180,6 +218,9 @@ func (s *UploadService) Process(ctx context.Context, fingerprint, id string) ([]
 		}
 		if len(saved) > 0 {
 			continue
+		}
+		if e = s.renew(ctx, d.Batch.TenantID, id, owner); e != nil {
+			return nil, e
 		}
 		result, e := s.Registry.Apply(ctx, fingerprint, raw)
 		if e != nil {
@@ -206,8 +247,20 @@ func (s *UploadService) Process(ctx context.Context, fingerprint, id string) ([]
 		if result.Disposition != "rejected" {
 			accepted = &o.ID
 		}
-		_, e = s.Pool.Exec(ctx, `INSERT INTO imports.import_checkpoints(tenant_id,delivery_id,record_key,state,observation_id,reason_code,result) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(tenant_id,delivery_id,record_key) DO NOTHING`, d.Batch.TenantID, id, o.ID, result.Disposition, accepted, result.Reason, body)
+		checkpoint, e := s.Pool.Begin(ctx)
 		if e != nil {
+			return nil, e
+		}
+		if e = s.fence(ctx, checkpoint, d.Batch.TenantID, id, owner, true); e != nil {
+			checkpoint.Rollback(ctx)
+			return nil, e
+		}
+		_, e = checkpoint.Exec(ctx, `INSERT INTO imports.import_checkpoints(tenant_id,delivery_id,record_key,state,observation_id,reason_code,result) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(tenant_id,delivery_id,record_key) DO NOTHING`, d.Batch.TenantID, id, o.ID, result.Disposition, accepted, result.Reason, body)
+		if e != nil {
+			checkpoint.Rollback(ctx)
+			return nil, e
+		}
+		if e = checkpoint.Commit(ctx); e != nil {
 			return nil, e
 		}
 	}
@@ -222,6 +275,9 @@ func (s *UploadService) Process(ctx context.Context, fingerprint, id string) ([]
 	}
 	if len(d.Receipt) > 0 {
 		return d.Receipt, nil
+	}
+	if e = s.fence(ctx, final, d.Batch.TenantID, id, owner, false); e != nil {
+		return nil, e
 	}
 	var now time.Time
 	if e = final.QueryRow(ctx, "SELECT clock_timestamp()").Scan(&now); e != nil {
@@ -263,10 +319,13 @@ func (s *UploadService) Process(ctx context.Context, fingerprint, id string) ([]
 	if e = s.Wire.Validate("SignedCenterResult", response); e != nil {
 		return nil, e
 	}
-	if _, e = final.Exec(ctx, "UPDATE imports.delivery_payloads SET receipt=$3 WHERE tenant_id=$1 AND delivery_id=$2", d.Batch.TenantID, id, response); e != nil {
+	if _, e = final.Exec(ctx, "UPDATE imports.delivery_payloads SET receipt=$3,payload=NULL WHERE tenant_id=$1 AND delivery_id=$2", d.Batch.TenantID, id, response); e != nil {
 		return nil, e
 	}
 	if _, e = final.Exec(ctx, "UPDATE imports.deliveries SET state=$3,revision=revision+1 WHERE tenant_id=$1 AND delivery_id=$2", d.Batch.TenantID, id, payload.Status); e != nil {
+		return nil, e
+	}
+	if _, e = final.Exec(ctx, "UPDATE imports.processing_claims SET state='completed',owner=NULL,lease_until=NULL,retry_at=NULL,failures=0 WHERE tenant_id=$1 AND delivery_id=$2 AND owner=$3", d.Batch.TenantID, id, owner); e != nil {
 		return nil, e
 	}
 	if e = final.Commit(ctx); e != nil {

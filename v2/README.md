@@ -157,11 +157,10 @@ section times/source summary в одном RR snapshot. UI проверяет C0
 29 migrations/39 domain/access tables.14 Chromium/37 PG integration checks passed локально;
 hosted CI unrun. Следующий C10 — durability/quota/recovery hardening.
 
-## C10.01/02: локальное recovery
+## C10: доставка и восстановление
 
-[Передача](../docs/plans/surveyscan-v2/handoffs/C10.md): quota учитывает receipt/pending, резерв для ACK,
-retention только committed receipt, temp recovery и collector single writer. Cached verified ACK завершает
-unlink после crash/offline; rejected сохраняется без resubmit, transient backoff+jitter ограничены.
-`contract-python scripts/recovery_smoke.py`: real SIGKILL/reconnect.
-`GO=... python3 scripts/diskfault.py`: real ENOSPC в отдельном64KiB Docker tmpfs.
-Central claim/lease/admission и полная overload/timeout матрица ещё выполняются; C10 whole не done.
+[Передача](../docs/plans/surveyscan-v2/handoffs/C10.md). Durable spool/quotas/retention/ACK recovery,
+processing lease120s/fencing/checkpoint, bounded staging admission и payload GC после signed result.
+После5 failures без progress — deadletter, privileged retry описан в operations runbook.
+30 migrations/40 domain tables;22unit/42PG/58fixtures/8crash-recovery/1real ENOSPC/14browser passed.
+C10 jobs foundation import/outbox готов, jobs execution/API — C12. Следующий C11 OpenBao/PKI.

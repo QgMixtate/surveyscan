@@ -61,4 +61,5 @@ C10.01/02: квота теперь включает receipt и оставляе�
 через7d/при capacity pressure. Pending/rejected не вытесняются. Cached signed ACK после crash позволяет
 закончить удаление offline; rejected receipt исключает повторную отправку. Retry1–60s base±25% jitter,
 после restart schedule начинается заново, counters/data сохраняются. Политика docs/decisions/C10-spool.md.
-Central leases/admission и полная overload/timeout matrix ещё выполняются C10.03/04.
+Central leases/admission и bounded overload/timeout matrix C10.03/04 завершены локально;
+large production storm/24h остаются эксплуатационной проверкой.

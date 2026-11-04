@@ -12,6 +12,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"encoding/pem"
+	"errors"
 	"github.com/QgMixtate/surveyscan/v2/contracts"
 	"github.com/QgMixtate/surveyscan/v2/internal/app"
 	"github.com/QgMixtate/surveyscan/v2/internal/collector"
@@ -85,6 +86,24 @@ func TestC07AgentCollectorCenterPGAndVerifiedReturn(t *testing.T) {
 	center := httptest.NewUnstartedServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" && r.URL.Path == "/api/v1/machine/observations" {
 			centerAttempts.Add(1)
+		}
+		if centerFailure.Load() == 3 && r.URL.Path == "/api/v1/machine/observations" {
+			saved := httptest.NewRecorder()
+			handler.ServeHTTP(saved, r)
+			connection, _, err := w.(http.Hijacker).Hijack()
+			if err == nil {
+				_ = connection.Close()
+			}
+			return
+		}
+		if centerFailure.Load() == 4 && r.URL.Path == "/api/v1/machine/observations" {
+			select {
+			case <-r.Context().Done():
+				return
+			case <-time.After(2 * time.Second):
+				w.WriteHeader(503)
+				return
+			}
 		}
 		switch centerFailure.Load() {
 		case 1:
@@ -187,11 +206,24 @@ func TestC07AgentCollectorCenterPGAndVerifiedReturn(t *testing.T) {
 		t.Fatal(err)
 	}
 	count(t, f, "inventory.observations", 0)
+	// Реальный TLS timeout до commit не удаляет durable packet.
+	centerFailure.Store(4)
+	short, cancel := context.WithTimeout(f.ctx, 150*time.Millisecond)
+	_ = relay.Pump(short)
+	cancel()
+	if !errors.Is(short.Err(), context.DeadlineExceeded) || centerAttempts.Load() != 1 {
+		t.Fatal("socket timeout not exercised")
+	}
+	count(t, f, "inventory.observations", 0)
+	relay, e = collector.New(relay.Config)
+	if e != nil {
+		t.Fatal(e)
+	}
 	// Недоступность центра и недостоверный ACK не удаляют durable packet.
 	pumpAttempt := func() {
 		t.Helper()
 		prior := centerAttempts.Load()
-		deadline := time.Now().Add(5 * time.Second)
+		deadline := time.Now().Add(8 * time.Second)
 		for centerAttempts.Load() == prior && time.Now().Before(deadline) {
 			_ = relay.Pump(f.ctx)
 			if centerAttempts.Load() == prior {
@@ -209,6 +241,13 @@ func TestC07AgentCollectorCenterPGAndVerifiedReturn(t *testing.T) {
 			t.Fatal("untrusted response removed pending", err)
 		}
 		count(t, f, "inventory.observations", 0)
+	}
+	// Drop ACK после настоящего commit: источник всё ещё обязан retain.
+	centerFailure.Store(3)
+	pumpAttempt()
+	count(t, f, "inventory.observations", 1)
+	if _, err := os.Stat(filepath.Join(dir, "spool", batch.DeliveryID+".pending")); err != nil {
+		t.Fatal("dropped ACK lost pending", err)
 	}
 	centerFailure.Store(0)
 	pumpAttempt()

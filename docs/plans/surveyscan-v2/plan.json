@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C09 done; C10.01/02 done,03 in_progress; C11-C50 planned",
+  "status": "C01-C10 done; C11-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -922,9 +922,10 @@
           "evidence": [
             "handoffs/C10.md",
             "decisions/C10-spool.md",
-            "evidence/C10-progress.json"
+            "decisions/C10-operations.md",
+            "evidence/C10-runtime.json"
           ],
-          "verification_status": "passed local quota/temp/ACK/real ENOSPC/SIGKILL/reconnect checks; physical power loss unrun"
+          "verification_status": "passed local real PG/TLS/crash/ENOSPC/bounded24-call burst; hosted unrun; jobs runtime C12"
         },
         {
           "id": "C10.02",
@@ -941,9 +942,10 @@
           "evidence": [
             "handoffs/C10.md",
             "decisions/C10-spool.md",
-            "evidence/C10-progress.json"
+            "decisions/C10-operations.md",
+            "evidence/C10-runtime.json"
           ],
-          "verification_status": "passed local quota/temp/ACK/real ENOSPC/SIGKILL/reconnect checks; physical power loss unrun"
+          "verification_status": "passed local real PG/TLS/crash/ENOSPC/bounded24-call burst; hosted unrun; jobs runtime C12"
         },
         {
           "id": "C10.03",
@@ -955,12 +957,15 @@
           "output": "Lease/claim/checkpoint/inbox, retry/backoff и dead-letter state",
           "verification": "Crash между commit и ACK не дублирует эффекты",
           "estimation_basis": "По одной точке сбоя до/после commit и delivery",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Реализация",
           "evidence": [
-            "handoffs/C10.md"
+            "handoffs/C10.md",
+            "decisions/C10-spool.md",
+            "decisions/C10-operations.md",
+            "evidence/C10-runtime.json"
           ],
-          "verification_status": "current pipeline inspected; lease/admission/checkpoint fencing implementation next"
+          "verification_status": "passed local real PG/TLS/crash/ENOSPC/bounded24-call burst; hosted unrun; jobs runtime C12"
         },
         {
           "id": "C10.04",
@@ -972,17 +977,26 @@
           "output": "Fault tests network cut, disk full, reconnect storm",
           "verification": "Сохранность, квоты и явные ошибки подтверждены",
           "estimation_basis": "Agent+collector+center restart по отдельности и ограниченный reconnect burst",
-          "status": "planned",
-          "work_group": "Проверка и передача"
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "handoffs/C10.md",
+            "decisions/C10-spool.md",
+            "decisions/C10-operations.md",
+            "evidence/C10-runtime.json"
+          ],
+          "verification_status": "passed local real PG/TLS/crash/ENOSPC/bounded24-call burst; hosted unrun; jobs runtime C12"
         }
       ],
-      "status": "in_progress",
+      "status": "done",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
       "evidence": [
         "handoffs/C10.md",
         "decisions/C10-spool.md",
-        "evidence/C10-progress.json"
-      ]
+        "evidence/C10-runtime.json",
+        "evidence/C10-validation.json"
+      ],
+      "completed_at": "2026-11-04"
     },
     {
       "id": "C11",
@@ -3629,7 +3643,8 @@
       "C06",
       "C07",
       "C08",
-      "C09"
+      "C09",
+      "C10"
     ],
     "done_tasks": [
       "C01.01",
@@ -3669,9 +3684,11 @@
       "C09.03",
       "C09.04",
       "C10.01",
-      "C10.02"
+      "C10.02",
+      "C10.03",
+      "C10.04"
     ],
-    "next_package": "C10",
+    "next_package": "C11",
     "product_implementation_started": true
   }
 }

@@ -29,13 +29,13 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10.01/02 done,03 in progress; C11–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10 recovery done; C11–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
 C04/0.5/план опубликованы в codex/v2-c04-foundation (7407da6); C05 — ветка codex/v2-c05-auth. Main не слит. Точные publication refs — в STATUS/evidence; не выдавать local tests за hosted CI.
 Планирование не означает разрешение сразу реализовать все пакеты или выполнить production deployment.
-Следующий пакет — C10; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
+Следующий пакет — C11; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
 Матрица замечаний: docs/specifications/requirements-traceability-v0.5.md;
 исследование аналогов: docs/research/inventory-platform-analogues.md.
 Правила snapshot/dashboard ниже относятся к текущей Python v1, не архитектуре v2.
@@ -68,4 +68,8 @@ summary обновляется через source-owned port (29 migrations/39 ta
 18 unit/37 PG/58 C03 fixtures/14 browser checks passed; C03 unchanged. 36/200 done.
 C06–C09 не опубликованы. Следующий C10 по R-019; не сливать main/не менять настройки среды.
 
-C10.01/02 done,03 in progress: handoffs/C10.md. File spool/single writer/ACK reserve/receipt GC/cachedACK recovery и process-local backoff; bbolt C01 был кандидатом, формат сохранён без новой зависимости.22 unit/37 PG/7 real SIGKILL-reconnect/1 real ENOSPC passed.38/200 done; C10 whole не done до central lease/admission/fencing и полной fault matrix. SQL29/39tables и C03/C09 bytes сохранены. Следующий шаг C10.03, не C11.
+C10 done локально: handoffs/C10.md. Leased/fenced import processing, bounded admission, payload GC
+после signed durable result, retry/deadletter и cached-ACK/revoke recovery. SQL30/40tables;
+22 unit/42 PG/58 fixtures/8 real process-recovery/1 real ENOSPC/14 browser checks passed.
+40/200 done. Jobs runtime/API C12; C10 import/outbox foundation. Следующий C11 OpenBao/PKI.
+C06–C10 не опубликованы; no merge/deploy/env publication.

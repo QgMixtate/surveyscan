@@ -322,6 +322,14 @@ func (s *MachineService) PeerFingerprint(ctx context.Context, tx pgx.Tx, fingerp
 	return result, e
 }
 func (s *MachineService) AllowOrigin(ctx context.Context, tx pgx.Tx, fingerprint string, o contracts.Observation) error {
+	return s.allowOrigin(ctx, tx, fingerprint, o, false)
+}
+
+// AllowRecordedOrigin разрешает только чтение уже committed доказательства; новый ingest всё равно требует active binding.
+func (s *MachineService) AllowRecordedOrigin(ctx context.Context, tx pgx.Tx, fingerprint string, o contracts.Observation) error {
+	return s.allowOrigin(ctx, tx, fingerprint, o, true)
+}
+func (s *MachineService) allowOrigin(ctx context.Context, tx pgx.Tx, fingerprint string, o contracts.Observation, recorded bool) error {
 	actor, e := s.PeerFingerprint(ctx, tx, fingerprint)
 	if e != nil {
 		return e
@@ -339,7 +347,7 @@ func (s *MachineService) AllowOrigin(ctx context.Context, tx pgx.Tx, fingerprint
 		return domain.Unauthorized
 	}
 	var valid bool
-	e = tx.QueryRow(ctx, "SELECT s.state='active' AND s.generation_id=$4 AND s.site_id=$5 FROM sources.agents a JOIN sources.sources s USING(tenant_id,source_id) WHERE a.tenant_id=$1 AND a.source_id=$2 AND a.collector_id=$3 FOR SHARE OF s,a", actor.Tenant, o.Origin.SourceID, *actor.Collector, o.Origin.GenerationID, o.Scope.SiteID).Scan(&valid)
+	e = tx.QueryRow(ctx, "SELECT ($6 OR s.state='active') AND s.generation_id=$4 AND s.site_id=$5 FROM sources.agents a JOIN sources.sources s USING(tenant_id,source_id) WHERE a.tenant_id=$1 AND a.source_id=$2 AND a.collector_id=$3 FOR SHARE OF s,a", actor.Tenant, o.Origin.SourceID, *actor.Collector, o.Origin.GenerationID, o.Scope.SiteID, recorded).Scan(&valid)
 	if e == pgx.ErrNoRows {
 		return domain.Unauthorized
 	}

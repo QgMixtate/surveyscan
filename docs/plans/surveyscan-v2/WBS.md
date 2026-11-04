@@ -1,6 +1,6 @@
 # Полный WBS surveyscan v2
 
-Версия плана 1.0 по архитектуре 0.5. C01–C09 иC10.01/02:38 done,1 in_progress,161 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
+Версия плана 1.0 по архитектуре 0.5. C01–C10:40 done,160 planned. Оценка в часах не выполнялась; база оценки указана по каждой подзадаче.
 
 
 # C01 — Границы первого релиза и карта решений (E0)
@@ -511,7 +511,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Ограниченная локальная очередь и восстановление после reboot.
 - Проверка: Неутверждённые записи переживают crash/restart.
 - База оценки: Локальное хранилище по ADR; disk quota и retention.
-- Статус: done; см. handoffs/C10.md и evidence/C10-progress.json.
+- Статус: done; см. handoffs/C10.md и evidence/C10-runtime.json.
 
 ## C10.02 — Сохранить collector spool и двухэтапные ACK
 
@@ -521,7 +521,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Receipt/applied state и end-to-end confirmation routing.
 - Проверка: Потеря связи с центром не очищает agent/collector результаты.
 - База оценки: 2 очереди; 2 ACK уровня; duplicate/reorder.
-- Статус: done; см. handoffs/C10.md и evidence/C10-progress.json.
+- Статус: done; см. handoffs/C10.md и evidence/C10-runtime.json.
 
 ## C10.03 — Укрепить jobs/import/outbox recovery
 
@@ -531,7 +531,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Lease/claim/checkpoint/inbox, retry/backoff и dead-letter state.
 - Проверка: Crash между commit и ACK не дублирует эффекты.
 - База оценки: По одной точке сбоя до/после commit и delivery.
-- Статус: in_progress; см. handoffs/C10.md и evidence/C10-progress.json.
+- Статус: done; см. handoffs/C10.md и evidence/C10-runtime.json.
 
 ## C10.04 — Проверить outage и перегрузку
 
@@ -541,7 +541,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Fault tests network cut, disk full, reconnect storm.
 - Проверка: Сохранность, квоты и явные ошибки подтверждены.
 - База оценки: Agent+collector+center restart по отдельности и ограниченный reconnect burst.
-- Статус: planned; см. handoffs/C10.md и evidence/C10-progress.json.
+- Статус: done; см. handoffs/C10.md и evidence/C10-runtime.json.
 
 ## Выход пакета
 

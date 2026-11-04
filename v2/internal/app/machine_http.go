@@ -48,6 +48,11 @@ func (m *MachineAPI) decode(w http.ResponseWriter, r *http.Request, name string,
 	return true
 }
 func (m *MachineAPI) fail(w http.ResponseWriter, e error) {
+	if errors.Is(e, imports.ErrQuota) {
+		w.Header().Set("Retry-After", "30")
+		access.APIError(w, 429, "STAGING_FULL")
+		return
+	}
 	if errors.Is(e, sources.ErrEnrollmentLimit) {
 		w.Header().Set("Retry-After", "60")
 		access.APIError(w, 429, "RATE_LIMITED")
@@ -260,6 +265,10 @@ func (m *MachineAPI) upload(w http.ResponseWriter, r *http.Request, fingerprint,
 		}
 		response, e = m.Uploads.Process(r.Context(), fingerprint, transport.DeliveryID)
 		if e != nil {
+			if errors.Is(e, imports.ErrDeadLetter) {
+				access.APIError(w, 503, "DELIVERY_DEAD_LETTER")
+				return
+			}
 			transport.Stage = "processing"
 			response, _ = json.Marshal(transport)
 		}
@@ -272,6 +281,10 @@ func (m *MachineAPI) upload(w http.ResponseWriter, r *http.Request, fingerprint,
 		}
 		response = status
 		processed, e := m.Uploads.Process(r.Context(), fingerprint, id)
+		if errors.Is(e, imports.ErrDeadLetter) {
+			access.APIError(w, 503, "DELIVERY_DEAD_LETTER")
+			return
+		}
 		if e == nil {
 			response = processed
 		}

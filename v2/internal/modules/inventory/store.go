@@ -1,6 +1,7 @@
 package inventory
 
 import (
+	"bytes"
 	"context"
 	"encoding/base64"
 	"encoding/json"
@@ -281,4 +282,21 @@ func (Store) Enrich(ctx context.Context, tx pgx.Tx, a *contracts.Asset) error {
 		}
 	}
 	return nil
+}
+
+// RecordedExact не создаёт эффектов и сравнивает сохранённую исходную подпись, а не только observation digest.
+func (s Store) RecordedExact(ctx context.Context, tx pgx.Tx, o contracts.Observation, digest, key string, signature []byte) (Result, bool, error) {
+	result, exists, e := s.Duplicate(ctx, tx, o, digest)
+	if e != nil || !exists {
+		return result, exists, e
+	}
+	var storedKey string
+	var storedSignature []byte
+	if e = tx.QueryRow(ctx, "SELECT origin_key_id::text,origin_signature FROM inventory.observations WHERE tenant_id=$1 AND observation_id=$2", o.TenantID, o.ID).Scan(&storedKey, &storedSignature); e != nil {
+		return result, false, e
+	}
+	if key != storedKey || !bytes.Equal(signature, storedSignature) {
+		return result, false, domain.Invalid
+	}
+	return result, true, nil
 }

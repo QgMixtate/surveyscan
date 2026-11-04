@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """C10 real SIGKILL, offline spool/reconnect on compiled agent/collector/server + isolated PG."""
-import json,subprocess,time,uuid
+import json,subprocess,time,uuid,ssl
 from pathlib import Path
 from dev import ROOT,STATE
 from machine_smoke import main as machine_harness,freeport
@@ -33,8 +33,18 @@ def recovery(**s):
  start('recovery-collector',[str(ROOT/'.dist/surveyscan-collector'),'run','--config',s['collector_config']]);time.sleep(.6)
  start('recovery-agent-restarted',[binary,'run','--config',config]);until(lambda:len(list(agent_spool.glob('*.pending')))>=2,'restart did not resume sequence while center unavailable')
  sequences=json.loads((Path(cfg['state_directory'])/'sequences.json').read_text());assert sequences['inventory']=='2';assert all((agent_spool/name).read_bytes()==data for name,data in original.items());checks.append('exclusive lock released by crash; source identity/sequence resumes without discarding old pending')
- start('recovery-center',[str(ROOT/'.dist/surveyscan-server'),'serve']);until(lambda:sql('SELECT count(*) FROM inventory.observations')=='2','reconnect did not commit both observations',timeout=30)
+ restarted_center=start('recovery-center',[str(ROOT/'.dist/surveyscan-server'),'serve']);until(lambda:sql('SELECT count(*) FROM inventory.observations')=='2','reconnect did not commit both observations',timeout=30)
  until(lambda:not list(agent_spool.glob('*.pending')) and not list(collector_spool.glob('*.pending')),'verified ACK did not drain both spools',timeout=20)
  assert sql('SELECT count(*) FROM assets.assets')=='1';assert sql('SELECT max(source_sequence)::text FROM inventory.observations')=='2';assert sql('SELECT count(*) FROM inventory.observation_results')=='2';checks.append('reconnect applies two original observations once to one UID then verified ACK drains both queues')
- report={'package':'C10','status':'passed','count':len(checks),'checks':checks,'target':'real compiled agent/collector/server; real TLS/mTLS/PG; explicit center outage and SIGKILL of both daemons; no mocked network or storage','unrun':['full C10 central lease/backoff/admission','large reconnect storm','physical reboot/power loss','production/24h soak']};(STATE/'recovery-smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
+ # Центр тоже переживает настоящий SIGKILL; повтор уже committed batch не меняет факты.
+ first_raw=next(iter(original.values()));first_batch=json.loads(first_raw);expected=json.loads((agent_spool/(first_batch['delivery_id']+'.receipt')).read_text());event_count=sql('SELECT count(*) FROM messaging.outbox_events');collected=sql('SELECT max(collected_at)::text FROM inventory.observations')
+ restarted_center.kill();restarted_center.wait(timeout=5);start('recovery-center-after-kill',[str(ROOT/'.dist/surveyscan-server'),'serve'])
+ collector_cfg=json.loads(Path(s['collector_config']).read_text());client=ssl.create_default_context(cafile=s['ca_file']);client.load_cert_chain(collector_cfg['certificate_file'],collector_cfg['private_key_file'])
+ def ready():
+  try:return request(s['tls_port'],client,'GET','/health/live')[0]==200
+  except OSError:return False
+ until(ready,'center did not recover after SIGKILL')
+ status,replayed,_=request(s['tls_port'],client,'POST','/api/v1/machine/observations',first_batch)
+ assert status==202 and replayed['signature']==expected['signature'] and replayed['payload']['receipt_id']==expected['payload']['receipt_id'];assert sql('SELECT count(*) FROM inventory.observations')=='2' and sql('SELECT count(*) FROM messaging.outbox_events')==event_count and sql('SELECT max(collected_at)::text FROM inventory.observations')==collected;checks.append('center SIGKILL/restart preserves cached receipt after payload GC; replay adds no effects or false inventory freshness')
+ report={'package':'C10','status':'passed','count':len(checks),'checks':checks,'target':'real compiled agent/collector/server; real TLS/mTLS/PG; explicit center outage and SIGKILL of both daemons; no mocked network or storage','unrun':['large reconnect storm/production scale','physical reboot/power loss','production/24h soak']};(STATE/'recovery-smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
 if __name__=='__main__':machine_harness(agent_scenario=recovery)

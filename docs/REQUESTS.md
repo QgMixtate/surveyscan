@@ -247,3 +247,8 @@ C06–C10 локальны, без push/merge; handoffs/C10.md.
 - Ветка, коммит, PR:
 - Проверки и ограничения:
 - Незавершённое и следующий шаг:
+
+R-019 продолжение: пользователь «дальше, делай все этапы пока не упрешься в лимит».
+C10 завершён локально: handoffs/C10.md,30 migrations/40 tables,22unit/42PG/58fixtures,8process recovery,
+1 real ENOSPC/14 browser checks passed.40/200done. Далее автоматически C11 OpenBao/PKI.
+Никаких push/merge/deploy или повторной публикации среды.
