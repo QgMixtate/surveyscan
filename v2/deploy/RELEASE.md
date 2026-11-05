@@ -1,8 +1,9 @@
 # C13 — проверяемая поставка Linux/amd64 (кандидат)
 
-Пока поддерживается подготовка подписанного directory bundle и пустого staging root.
-Это не завершённый installer/upgrade: реальные systemd boot/reboot, работающий checked update,
-backup/restore и приёмка двух чистых систем остаются открытыми задачами C13.
+Поддерживаются подписанный directory bundle, проверка и пустой staging root. C13 принят
+в пределах Linux E1: два свежих Debian12/systemd VM прошли reboot/autostart/checked update;
+PG/Bao/filesystem checkpoint, restore и schema-safe recovery проверены отдельно.
+Эксплуатационная приёмка C14 остаётся открытой до реального суточного прогона.
 Службы на build host не устанавливаются и не запускаются.
 
 ## Сборка и происхождение
@@ -70,12 +71,20 @@ state0700, public binary/unit paths0755/0644 и staging receipt. Chown/sysusers/
 
 Проверка новой поставки обязательна **до** изменения службы или схемы. Текущая команда
 `stage` предназначена для проверки файлов на отдельном пустом root; применять её поверх
-существующей установки нельзя. Переключение working `current`, draining очередей,
-backup checkpoint и schema upgrade ещё не реализованы/не приняты.
+существующей установки нельзя. Для проверяемого переключения `current`, persistent fence/journal,
+schema checks, checkpoint prerequisite и recovery использовать [UPDATE.md](UPDATE.md);
+общий PG/Bao/filesystem checkpoint описан в [BACKUP.md](BACKUP.md).
 Rollback symlink после миграции БД не считается безопасным rollback данных.
 Нельзя удалять state directories, выдавать новый source ID или пересоздавать Bao storage
-ради обновления binary. Эти сценарии должны войти в оставшуюся C13 приёмку.
+ради обновления binary. Эти инварианты проверены C13; production KMS/physical power loss/HA/geo
+остаются вне bounded E1. Артефакт считается принятым SMB только после C14.
 
 Проверка реализации: `GO=/path/to/go python3 scripts/release_smoke.py`.
 Создаёт только временные test keys и два filesystem staging root; оба удаляются.
 Это не две загруженные чистые ОС и не production signing ceremony.
+
+Доказательства C13: [runtime](../../docs/plans/surveyscan-v2/evidence/C13-runtime.json),
+[hosted](../../docs/plans/surveyscan-v2/evidence/C13-published-final.json). Формулировка `scope`
+в manifest — описание кандидата, не подписанный сертификат прохождения тестов. Приёмка привязана
+к конкретным source/binary hashes и отчётам. Не менять metadata или пересобирать тестируемые bytes
+после суток без оценки затронутых проверок. [Непрерывная проверка C14](SOAK.md).

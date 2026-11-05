@@ -390,3 +390,23 @@ soakserverleaf120h avoids expirybefore24hwindow; machineleaf24h mustrotate onact
 C13 latestpublished8568927 hostedv2 41940421426/Web41940421462/boot41940421446 SUCCESS;
 downloaded reports+hashes in C13-published-final/native-hosted. Nextcleancommit/build/startactual24h,
 thenpersist exactrunID/start/deadline andcontinue E1acceptance/CI, noC15 untilrealC14gate.
+
+C14 actualsoak started: run10812e7a-8a6a-4dae-9dd5-b0583f503c83 PID3505270,
+measuredstart2026-11-05T00:31:49.765786Z, earliestcomplete2026-11-06T00:31:49.765786Z.
+Clean source8560f57b11e9ed0fecd5774942c4d616b3afddc6 publishedPR4; all3 Go components record
+source_dirty=false, frozenbinarySHA256/runnerSHA/configintervals in evidence/C14-soak.json.
+Private localstatusv2/.local/c14-soak/<run-id>/status.json; scripts/soak_status.py checks livePID/age.
+Actual24h RUNNING/notpassed; C14.02IP,53/200done; noC15beforeactualacceptance.
+New8560f57hostedv2/Web/boot stillpending; C13old8568927all3SUCCESS retainedprecisely.
+No shareddevPG/Bao outage/seal tests duringsoak. Detached runner survives tool/chat exit,
+not machine/environmentshutdown. Persisted running marker alone neverPASS.
+
+C14: реальный суточный прогон продолжает работать на зафиксированных binaries8560f57.
+Добавлен архитектурный guard для E1-T15:92 production Go files,7 негативных контрпримеров.
+`make verify` прошёл; точный JSON count —41 top-level tests +3 subtests (44 named PASS),
+0 named fail/skip и58 C03 fixtures. Package-level skip означает отсутствие test files.
+Guard меняет только тесты; исполняемый код суточного комплекта не менялся. Его ограничения
+и pgx.Tx transaction coupling описаны в C14-architecture.json; API/worker production — C35/C40.
+Обновлены устаревшие RELEASE/systemd/UPDATE docs по реально принятому C13.
+C14.03/04 по-прежнему planned; C14-defects.json — журнал уже исправленных условий
+предварительной проверки, не заключение о ещё не закончившемся суточном прогоне.

@@ -1,14 +1,17 @@
-# C13.01 — Linux/systemd staging (в работе)
+# C13.01 — Linux/systemd: установка и проверенный стенд
 
-Units предназначены для Debian/Ubuntu Linux, systemd>=252. Это шаблоны и staging,
-не завершённая production установка. Host managed среды не PID1systemd; службы на нём не ставятся.
+Units предназначены для Linux с systemd>=252. Фактическая приёмка выполнена на двух
+независимо свежих Debian12/amd64 VM с systemd252; совместимость других дистрибутивов не измерена.
+Есть templates/staging и проверенный service path с операторскими prerequisites, не production wizard.
+Host managed среды не PID1systemd; службы на нём не ставятся.
 Windows service — C15. PostgreSQL17 и OpenBao2.7.2 executable — внешние prerequisites.
 
 `python scripts/stage_install.py --root /absolute/empty/staging`
 копирует только четыре `.dist` бинарника, public contracts, отдельный `web/dist`, unit/sysusers files.
 Root должен быть пустым; `/` запрещён. Existing data/configs не заменяются. Результат development/unsigned,
 не release. Для versioned manifest/checksums/SBOM/signature и verified staging добавлен
-[release tool](../RELEASE.md); live checked update C13.02 остаётся открытым.
+[release tool](../RELEASE.md); checked live update описан в [UPDATE.md](../UPDATE.md) и проверен
+реальным systemd controller в двух VM.
 Program/unit dirs0755/0644; binaries0755; state0700. Sysusers/root ownership и StateDirectory chown
 применяются только при настоящей установке на целевой машине, stage их на host не выполняет.
 
@@ -30,8 +33,8 @@ machine.json, bao.json, scoped bao_token и server.key. LoadCredential даёт 
 
 Migrate oneshot uses тот же PG secret, After/Requires postgresql.service; server Requires migrate.
 Это выбранный local PostgreSQL system installation path, не настройка remoteDB. Миграция выполняется
-перед serverstart и drift не игнорируется. Upgrade/rollback data procedure ещё C13.02/03, не просто
-symlink rollback после изменённой schema. Snapshot/keys/Bao state не пересоздавать ради установки.
+перед serverstart и drift не игнорируется. Upgrade/rollback выполнять по [UPDATE.md](../UPDATE.md):
+symlink rollback после несовместимой миграции запрещён. Snapshot/keys/Bao state не пересоздавать.
 
 Bao unit запускает собственный binary и Raft directory /var/lib/surveyscan-bao. HCL оператор должен
 задать HTTPSlistener/publiccert+LoadCredential listener_key path,privateRaft/audit paths иcustody.
@@ -43,5 +46,7 @@ Auto-unseal/KMS и recovery должны быть выбраны/провере�
 `python scripts/unit_check.py` проверяет четыре app/migrate unit реальным system-mode
 systemd-analyze в одноразовом networkless/read-only/cap-drop container. В него копируются только public
 parser/libs/targets и собственный staged filesystem. Bao unit не проверяет внешний binary/runtime.
-Это статическая проверка, НЕ реальные boot/reboot/services/PG/Bao starts. Нет production/systemd/DR claim.
-Для C13.01 done нужен отдельный clean boot stand; затем C13.02 release,03backup/restore,04repeatability.
+Это только статическая проверка. Отдельный [boot stand](../bootstand/README.md) реально загружает
+Debian12/systemd, включает все службы, выполняет kernel reboot, sealed-Bao degraded startup,
+operator unseal, replay pending, combined update и CLI/Web. Два fresh VM по9 checks прошли локально
+и в hosted CI. Нет claim о physical power loss, production custody/DR/HA или100users.

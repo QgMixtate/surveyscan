@@ -1,0 +1,63 @@
+{
+  "package": "C14",
+  "task": "C14.02",
+  "run_id": "10812e7a-8a6a-4dae-9dd5-b0583f503c83",
+  "kind": "actual-soak",
+  "status": "running",
+  "started_at": "2026-11-05T00:31:46.763874Z",
+  "required_seconds": 86400,
+  "source_revision": "8560f57b11e9ed0fecd5774942c4d616b3afddc6",
+  "source_dirty": false,
+  "intervals": {
+    "inventory_seconds": 60,
+    "heartbeat_seconds": 30,
+    "monitor_seconds": 30
+  },
+  "topology": "real Linux host agent → loopback TLS relay → collector → loopback TLS relay → center → own PG17 DB; scoped Bao Transit/KV; no mocked frames or time",
+  "unrun": [
+    "production/HA/geo/100-user SLA"
+  ],
+  "measured_started_at": "2026-11-05T00:31:49.765786Z",
+  "initial_observations": 1,
+  "binary_sha256": {
+    "surveyscan-agent": "2ccf66957e08f07c380e666f9b7c8482ad385a42124f6edb58507e3ae2392d68",
+    "surveyscan-server": "fe579e9fb20dca8f48dc8c6dffe153826d3d86fea88a06cc4ab9d4c5d1a10196",
+    "surveyscan-collector": "22e98a94330ca51d795ab2fce17ba274e666867cb779f8a68c437f62c5fd2244"
+  },
+  "runner_sha256": "97caffd509f3e5cf434f90d938d61d7e2ec89b327136ad528624dba4d232ece2",
+  "versions": {
+    "surveyscan-server": {
+      "component": "server",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "8560f57b11e9ed0fecd5774942c4d616b3afddc6",
+      "source_dirty": "false",
+      "stage": "C12 scoped OpenBao, machine lifecycle and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscan-collector": {
+      "component": "collector",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "8560f57b11e9ed0fecd5774942c4d616b3afddc6",
+      "source_dirty": "false",
+      "stage": "C12 durable HTTPS relay with profiles and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscan-agent": {
+      "component": "agent",
+      "go_version": "go1.27.3",
+      "inventory_implemented": true,
+      "revision": "8560f57b11e9ed0fecd5774942c4d616b3afddc6",
+      "source_dirty": "false",
+      "stage": "C12 Linux agent with profiles and diagnostics",
+      "version": "0.0.0-c13"
+    }
+  },
+  "recorded_snapshot_at": "2026-11-05T00:32:51.711166+00:00",
+  "earliest_finish_utc": "2026-11-06T00:31:49.765786+00:00",
+  "earliest_finish_moscow": "2026-11-06T03:31:49.765786+03:00",
+  "evidence_location": "v2/.local/c14-soak/10812e7a-8a6a-4dae-9dd5-b0583f503c83/status.json (private local workspace)",
+  "inspection_command": "python scripts/soak_status.py 10812e7a-8a6a-4dae-9dd5-b0583f503c83",
+  "acceptance": "RUNNING, notpassed; snapshot only, inspect live process/sample before trusting ongoing state"
+}

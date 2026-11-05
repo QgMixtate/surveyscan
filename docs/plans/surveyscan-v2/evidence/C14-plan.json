@@ -233,11 +233,12 @@
       "acceptance_criteria": [
         "AC-53"
       ],
-      "status": "not_started",
+      "status": "running actual24h, notpassed",
       "evidence_candidates": [
-        "C14-plan.json"
+        "C14-soak.json",
+        "C14-preflight.json"
       ],
-      "notes": ">=86400 real monotonic seconds after first observation; short preflight always distinct preflight_passed; no mock frames/time; persistent run ID/status/events/samples",
+      "notes": "actual clean8560f57 started2026-11-05T00:31:49Z; earliestcomplete2026-11-06T00:31:49Z; inspectdurablestatus; shortpreflightnot24h",
       "command": "python scripts/soak.py --hours 24"
     },
     {
@@ -250,12 +251,13 @@
         "AC-44",
         "AC-55"
       ],
-      "status": "reviewed bounded E1; release gated",
+      "status": "passed bounded E1 architecture guard; release still gated",
       "evidence_candidates": [
+        "C14-architecture.json",
         "C14-plan.json"
       ],
-      "notes": "Go modules own schemas; composition in app, separate Web/API contract hashes; exact combined/API-worker distributed production profile deferred C35/C40, not silently accepted",
-      "command": "make verify; make integration (TestC06DatabaseRejectsMissingCommitEvidence, TestC05WorkerTenantAndCommitAuthorizationFence); review module ports and C01 capabilities"
+      "notes": "92 production Go files,7 negative counterexamples; static AST/literal limits explicit; pgx.Tx ports couple E1 transactions and need redesign for extraction; combined only, API/worker production equivalence remains C35/C40",
+      "command": "make verify (TestModuleBoundaries, TestGuardRejectsBoundaryCounterexamples); make integration (commit/authorization guards)"
     }
   ],
   "release_gate": [

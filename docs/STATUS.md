@@ -1,28 +1,36 @@
 # Текущее состояние surveyscan
 
-Обновлено2026-11-05 (Москва). C01–C13 done bounded E1, C14.01 done,53/200.
-Текущая ветка codex/v2-c13-operations, draftPR4 https://github.com/QgMixtate/surveyscan/pull/4.
-Main73ced7e не слит; production deployment/env publication не поручены. R020 разрешает push/PR/CI,
-R021 требует автономно выполнять следующие этапы до лимита, сохраняя реальные зависимости/приёмку.
+Обновлено: 2026-11-05, Москва. C01–C13 приняты в пределах E1; C14.01 done,
+**53/200 подзадач**. C14.02 выполняется, C14.03/04 ждут суточного результата.
+Ветка `codex/v2-c13-operations`, draft [PR4](https://github.com/QgMixtate/surveyscan/pull/4).
+Main73ced7e не слит; production deployment и публикация среды не поручены.
+R-020 разрешает push/PR/CI, R-021 — автономное выполнение до лимита.
 
-C13 принят локально и опубликован: [runtime](plans/surveyscan-v2/evidence/C13-runtime.json),
-[hosted final](plans/surveyscan-v2/evidence/C13-published-final.json), [native hosted](plans/surveyscan-v2/evidence/C13-native-hosted.json).
-На8568927 hosted v2 run41940421426/Web41940421462/boot41940421446 SUCCESS.
-Две fresh native Debian12/systemdVM9+9 actualreboot/nonroot/LoadCredential/manual operatorunseal/
-UID+queues/combined server+collector+agent checkedupdate/CLI/staticWeb; updater19 включая privatecompiled
-schema34 checkpoint/rollback/SIGKILL/recovery. Product SQL0000–0032/C03/C09 unchanged.
-Не обещатьproductionKMS/HA/geo/physicalpowerloss/100users. Testoperator provisioning не productionwizard.
+**Реальный 24h прогон работает**: `10812e7a-8a6a-4dae-9dd5-b0583f503c83`, PID3505270.
+Чистый опубликованный source8560f57, бинарники скопированы и зафиксированы SHA256.
+Начало: **5 ноября 00:31:49 UTC**, завершить можно не раньше **6 ноября 00:31:49 UTC**
+(03:31:49 Москва). [Снимок старта](plans/surveyscan-v2/evidence/C14-soak.json) — не PASS.
+Проверять `python scripts/soak_status.py <run-id>` изv2: PID и возраст sample, не только marker.
+Приватный status: `v2/.local/c14-soak/<run-id>/status.json`. Не останавливать/запечатывать
+общие dev PG/Bao. Runner переживает завершение вызова/чата, но не выключение машины.
+[Инструкция](../v2/deploy/SOAK.md), [передача C14](plans/surveyscan-v2/handoffs/C14.md).
 
-C14.01 matrix reviewed: [15 E1 scenarios](plans/surveyscan-v2/evidence/C14-plan.json),
-[handoff](plans/surveyscan-v2/handoffs/C14.md).41unit/58C03 makeverify passed.
-E1-T07 [reconnect5](plans/surveyscan-v2/evidence/C14-reconnect.json) passed:3 realagentprocesses/onehost,
-quota/backpressure/bytes/sequence preserved, simultaneousnetworkrestore/4queuesdrain/replaynoeffects.
-Final [preflight](plans/surveyscan-v2/evidence/C14-preflight.json) passed121.597s; never24h claim.
-C14.02 actual24h ещёне начат: следующий шаг cleancommit/build и detached scripts/soak.py --hours24.
-Проверка scripts/soak_status.py <run-id> различает живойprocess и stale marker. Runner/privatefiles
-неupload; нельзя останавливать общиеdev PG/Bao в течениеокна. [Инструкция](../v2/deploy/SOAK.md).
-До фактических86400s+всехgates нельзя закрытьC14/выпустить принятыйSMB/начатьC15. C14.03/04planned.
-Текущий C14 source localpendingpublication; prior856hostedPASS не относитсякnewC14source.
+[Матрица C14](plans/surveyscan-v2/evidence/C14-plan.json): 15 сценариев E1→AC→команды/границы.
+[Reconnect5](plans/surveyscan-v2/evidence/C14-reconnect.json) прошёл на3 реальных agent процессах/
+одном хосте: quota/backpressure, сохранность pending/sequence, simultaneous reconnect,
+четыре очереди пусты, replay без новых эффектов. [Preflight](plans/surveyscan-v2/evidence/C14-preflight.json)
+прошёл121.597s; это явно не24h. Verify41 top-level unit +3 subtests/58C03 прошёл. [Архитектурный guard](plans/surveyscan-v2/evidence/C14-architecture.json)
+проверил92 production Go files и7 негативных контрпримеров; его статические границы указаны явно.
+C14 source8560f57 опубликован, его новые hosted CI пока проверяются.
+
+C13 [runtime](plans/surveyscan-v2/evidence/C13-runtime.json),
+[hosted](plans/surveyscan-v2/evidence/C13-published-final.json),
+[native hosted](plans/surveyscan-v2/evidence/C13-native-hosted.json): на8568927 v2 run41940421426,
+Web41940421462 иboot41940421446 **SUCCESS**. Две свежих Debian12/systemd VM9+9:
+настоящий reboot, nonroot/LoadCredential, operator unseal, UID/queues, combined checked update,
+CLI/static Web. Updater19 со schema/checkpoint/fence/SIGKILL/rollback/recovery.
+SQL0000–0032/C03/C09 не менялись. ProductionKMS/HA/geo/physical power loss/100users не доказаны.
+До86400 реальных секунд и всех gates нельзя закрыть C14, принять SMB или начать C15.
 
 ## Контекст архитектуры и история C01–C04
 
