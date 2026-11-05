@@ -30,9 +30,10 @@ v2 42003198591, Web42003198611, native42003198599, acceptance-evidence4200319878
 [Полные отчёты/хеши/timings](plans/surveyscan-v2/evidence/C14-hosted-802.json).
 Новые CI unit tests:10 synthetic evidence checks+5 safe diagnostic redaction checks; это не24hPASS.
 
-Ранее e7a07fe native failed после8checks на CLI-login. Ошибка не воспроизвелась в2local+4hosted
-freshVM; login2.625–4.706s. Таймауты/auth/runtime не менялись; retry внутриVM не добавлялся.
-Причина прежнего CLI error не подтверждена, [C14-D08](plans/surveyscan-v2/evidence/C14-defects.json)
+Ранее e7a07fe native failed после8checks на CLI-login. Исторически ошибка не воспроизводилась в2local+4hosted
+freshVM; теперь CLI-login снова failed в42126656841 на3eb6c79: HTTP503 за5.741s. login2.625–4.706s. Таймауты/auth/runtime не менялись; retry внутриVM не добавлялся.
+Внутренняя причина503 не подтверждена;5s login context — гипотеза, не доказанная RCA.
+[Recurrence proof](plans/surveyscan-v2/evidence/C14-native-cli-recurrence.json). Причина прежнего CLI error не подтверждена, [C14-D08](plans/surveyscan-v2/evidence/C14-defects.json)
 сохранён дляC14.03. Новая безопасная диагностика содержит exit/категорию/длительность и невыводит
 argv/stderr/credentials. Старые failed runs не переименованы вPASS.
 
@@ -52,7 +53,8 @@ Go/SQL/contracts/build files побайтно равны measured8560f57; пос
 Windows runtime/API/ACL/SCM/reboot unrun. 54done, C15.02 in_progress: draft observation1.2/Python19 + isolated Go payload validator
 (corpus19/semantic7/malformed3) passed; make verify/C03 58 passed. Hosted Windows first run
 42125403759 failed in checker cp1252 read; UTF-8 fix made, repeat42126106107 SUCCESS
-(Python/Go payload/build/version). Native baseline APIs добавлены отдельно и ждут hosted proof;
+(Python/Go payload/build/version). Native8 baseline прошёл Windows42127549414 на13702a8: token_elevated=true,
+3 native test functions passed, synthetic envelope;
 pipeline, служба, DACL/reboot unrun.
 После реального≥86400s PASS — C14.03 triage/регрессия, C14.04 acceptance/поставка.
 Подготовка C15 не отменяет этот gate и не меняет измеряемые binaries/stand.

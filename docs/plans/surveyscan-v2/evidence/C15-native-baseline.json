@@ -33,13 +33,25 @@
     ],
     "local_windows_test_cross_compile": "passed",
     "GOOS_windows_vet": "passed",
-    "hosted_result": "pending",
+    "hosted_result": "success",
     "remaining_unsupported": [
       "updates",
       "users_groups",
       "protection",
       "neighbors"
-    ]
+    ],
+    "source_revision": "13702a83797d15b952f13f2c8dda7ba584635691",
+    "run_id": 42127549414,
+    "runner": "windows-2022",
+    "token_elevated": true,
+    "tests": [
+      "TestNativeWindowsBaseline",
+      "TestNativeWindowsCancellation",
+      "TestNativeMetadataBounds"
+    ],
+    "elapsed_single_baseline_test_seconds": 0.07,
+    "resource_budget_claim": false,
+    "envelope": "synthetic origin/scope/sequence; native local facts"
   },
   "unrun": [
     "native Windows 11",

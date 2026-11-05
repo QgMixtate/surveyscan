@@ -42,5 +42,14 @@
     "conclusion": "failure",
     "defect": "C15-D01",
     "native_inventory_executed": false
+  },
+  "hosted_repeat": {
+    "run_id": 42127549414,
+    "source_revision": "13702a83797d15b952f13f2c8dda7ba584635691",
+    "runner": "windows-2022",
+    "conclusion": "success",
+    "scope": "Python19,Go payload validator,native eight-section baseline and version only",
+    "token_elevated": true,
+    "scheduled_signed_delivery": false
   }
 }

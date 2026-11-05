@@ -521,3 +521,14 @@ RtlGetVersion/net.Interfaces;3 partial sections,9 unsupported. Windows test exec
 Uninstall machine/currentuser32/64, read-only SCM states, fixed volumes/free space и IPv4/IPv6routes.
 Данные partial,4секции unsupported; C15.02 не done. Windows cross-compile и vet passed, hostedpending.
 Предыдущий3-section source3eb6c79 реально прошёл Windows42126656625; synthetic envelope указан.
+
+Новый C14-D08 evidence: hosted boot42126656841/source3eb6c79 failed после8checks вCLIlogin.
+Sanitized artifact13461866650 показывает command_exit5/HTTP503/5.741s. Это повтор того же этапа,
+но внутренний root cause не установлен;5s auth context и медленныйTCG/PG — гипотезы.
+HTTP timeout/auth/runtime не менялись, retry не добавлен; C14.03 gate открыт.
+Failed proof сохранён вC14-native-cli-recurrence.json, не заменён успешным Windows CI.
+
+R-023 checkpoint: Windows42127549414 на13702a8 SUCCESS —8native baseline sections, elevatedtoken
+true, Go payload/Python19/CLIversion;3 native test functions passed. Windows facts real, envelope
+synthetic. C15.02 partial,54done. Всё вPR5; E1fullregression/boot13702a8 ещёпроверять отдельно.
+C14-D08 recurring503 остаётсяopen; actualsoak не заменён Windows/API тестами.
