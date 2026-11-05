@@ -313,9 +313,9 @@
     "readiness/scoped Bao renewal and actual machine leaf renewal at23h"
   ],
   "current_release_gates": [
-    "actual>=24h run stillpending",
-    "C14-D08 latest native CLI login failure under investigation; safely instrumented local2VM pass is not a proven fix",
-    "post-soak C14.03 triage/regression and C14.04 final acceptance"
+    "actual>=24h run stillpending, real machine leaf renewals/final drain not complete",
+    "C14.03 triage includes earlier nativeCLI incident not reproduced in6freshVM; causeunconfirmed",
+    "C14.04 acceptance/release afterdependencies"
   ],
-  "latest_hosted": "C14-hosted.json:5954f5c v2/Web/native allSUCCESS"
+  "latest_hosted": "C14-hosted-802.json:8024972 all4workflowsSUCCESS, additionaltwo-VM boundedrepeatSUCCESS"
 }

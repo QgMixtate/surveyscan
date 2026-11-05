@@ -95,7 +95,8 @@ exit2 — preflight/failed/stale/несогласованный результа
 
 10 unit tests используют явно синтетические журналы2020 и повреждения evidence. Они проверяют
 сам валидатор и никогда не считаются настоящим суточным прогоном. Отдельный workflow
-`surveyscan-acceptance-evidence` выполняет только эти unit tests, без ожидания суток/доступа к данным.
+`surveyscan-acceptance-evidence` выполняет10 evidence tests и5 safe-diagnostic redaction tests,
+без ожидания суток/доступа к данным.
 
 Для текущего run дополнительно запущен private detached follow-up: после завершения процесса
 он вызовет валидатор и сохранит `acceptance-review.json` в каталоге run с0600. Checker/status helper/

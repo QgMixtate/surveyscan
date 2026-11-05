@@ -5,7 +5,7 @@
   "recorded_status": "running",
   "runtime_observed": {
     "pid_matches_run": true,
-    "sample_age_seconds": 25.947,
+    "sample_age_seconds": 5.539,
     "state": "live"
   },
   "accepted_24h": false,
@@ -20,22 +20,22 @@
   "measured_started_at": "2026-11-05T00:31:49.765786Z",
   "measured_ended_at": null,
   "required_seconds": 86400,
-  "recorded_elapsed_seconds": 8856.24,
-  "complete_samples": 282,
-  "last_sample_at": "2026-11-05T02:59:26.610933Z",
-  "latest_observations": 146,
+  "recorded_elapsed_seconds": 34054.052,
+  "complete_samples": 1082,
+  "last_sample_at": "2026-11-05T09:59:24.427385Z",
+  "latest_observations": 559,
   "end_observations": null,
   "max_inventory_age_seconds": 184.439111,
   "max_source_inventory_age_seconds": 184.981892,
   "peak_rss_kib": {
-    "agent": 16792,
-    "collector": 17292,
+    "agent": 17420,
+    "collector": 18012,
     "center": 156816
   },
   "latest_rss_kib": {
-    "center": 23156,
-    "collector": 17028,
-    "agent": 16004
+    "center": 22224,
+    "collector": 17264,
+    "agent": 16380
   },
   "peak_pending_files": {
     "agent": 3,
@@ -86,9 +86,19 @@
       "at": "2026-11-05T02:34:13.839015Z",
       "event": "center_link_restored",
       "elapsed_seconds": 7344.073
+    },
+    {
+      "at": "2026-11-05T03:31:59.523995Z",
+      "event": "collector_restart",
+      "elapsed_seconds": 10809.754
+    },
+    {
+      "at": "2026-11-05T04:32:19.179732Z",
+      "event": "center_restart",
+      "elapsed_seconds": 14429.405
     }
   ],
   "scope": "sampled acceptance measurements, not production capacity/SLA; running/stale/failed/preflight never count as24h acceptance",
-  "snapshot_recorded_at": "2026-11-05T02:59:52.598488+00:00",
-  "status_note": "running snapshot only; both real network faults recovered; not24h acceptance"
+  "snapshot_recorded_at": "2026-11-05T09:59:30.016834+00:00",
+  "status_note": "live snapshot, allscheduled faults/restarts completed; not actual24hPASS"
 }

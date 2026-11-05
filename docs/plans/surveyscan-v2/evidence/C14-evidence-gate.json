@@ -15,9 +15,9 @@
       "monitor gaps<=120s, freshness<=300s, bounded spools/readiness failures",
       "observation/sequence counters do not regress; scheduled events ordered"
     ],
-    "samples": 965,
-    "max_sample_gap_seconds": 32.027,
-    "recorded_elapsed_seconds": 30361.785,
+    "samples": 1082,
+    "max_sample_gap_seconds": 32.16,
+    "recorded_elapsed_seconds": 34054.052,
     "pending_gates": [
       "real24h completion",
       "finite final drain",
@@ -29,7 +29,7 @@
     "run_id": "10812e7a-8a6a-4dae-9dd5-b0583f503c83",
     "scope": "read-only evidence consistency; live SQL UID/dedup/final conservation rely on pinned runner assertions; not a release approval"
   },
-  "actual_review_recorded_at": "2026-11-05T09:03:56.441991+00:00",
+  "actual_review_recorded_at": "2026-11-05T09:59:30.016834+00:00",
   "followup": {
     "pid": 843094,
     "status": "started detached, read-only with pinned checker/reference dependencies",
@@ -47,5 +47,12 @@
     "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41999415338",
     "conclusion": "success",
     "scope": "10 synthetic validator logic tests only; no actual24h acceptance"
+  },
+  "latest_hosted": {
+    "source": "8024972731797ee87a73750da197d86a03c72b84",
+    "run_id": 42003198780,
+    "conclusion": "success",
+    "tests": 15,
+    "scope": "10 synthetic evidence+5 redaction, no actual24h acceptance"
   }
 }

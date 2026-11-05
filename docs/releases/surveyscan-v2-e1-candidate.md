@@ -42,10 +42,12 @@ Linux/amd64. Все четыре Go components и Web имеют source_dirty=fa
   [Browser](../plans/surveyscan-v2/evidence/C14-candidate-browser.json).
 - Короткий preflight121.597s прошёл, но никогда не заменяет сутки.
 
-Последний code5954f5c прошёл все3 hosted workflows: v2/Web/native, включая два fresh VM9+9.
-[Отчёты/хеши](../plans/surveyscan-v2/evidence/C14-hosted.json). Ранние native failures сохранены:
-operator readiness исправлен ожиданием активной Raft после unseal и проверенного collector TLS.
-Безопасная диагностика различает стадии; ранние неуспешные runs не выдаются заPASS.
+Последний code8024972 прошёл4 hosted workflows (v2/Web/native/evidence-guard), включая
+два freshVM9+9; ещё один фиксированный двух-VM campaign на том жеSHA тожеSUCCESS.
+[Evidence](../plans/surveyscan-v2/evidence/C14-hosted-802.json). Ранние failures сохранены;
+CLI incident e7 не воспроизвёлся в6 freshVM, причина не подтверждена. Новая безопасная диагностика
+сохраняет exit/category/timing, не раскрываяrawstderr/credentials.15 Python unit tests проверяют
+только evidence validator/redaction, не реальное24h выполнение.
 
 ## Оставшиеся обязательные условия
 

@@ -71,11 +71,12 @@
     {
       "id": "C14-D08",
       "component": "native CLI acceptance",
-      "status": "investigating; both local VM9+9passed, cold CLI login4.286s/4.706s; safe diagnostics need hosted execution",
+      "status": "not reproduced in2local+4hosted fresh VM; diagnostic category missing in original failure; root cause unconfirmed, retain for C14.03",
       "finding": "e7a07fe hosted first VM passed8checks then shipped CLI login command failed",
       "evidence": "C14-native-cli-failure.json",
       "change": "safe exit/program/duration/allowlisted CLI error diagnostics plus successful operation timings; no retries/default timeout/production code changes",
-      "diagnostic_unit_tests": 5
+      "diagnostic_unit_tests": 5,
+      "reproduction_campaign": "C14-hosted-802.json: fixed-size one extra two-VM campaign, no VM-internal retry/runtime changes"
     }
   ],
   "remaining_gates": [

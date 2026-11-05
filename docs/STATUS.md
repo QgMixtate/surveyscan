@@ -9,34 +9,30 @@ Main73ced7e не слит, production deployment и публикация нас�
 **Реальный24h прогон работает**: `10812e7a-8a6a-4dae-9dd5-b0583f503c83`, PID3505270.
 Чистый runtime source8560f57, frozen private copies/SHA256. Начало5 ноября00:31:49UTC;
 завершить можно не раньше **6 ноября03:31:49 по Москве** (00:31:49UTC), при всех успешных checks.
-Run жив уже≥8h; выполнены оба networkfault и запланированные restart collector/center.
+Run жив уже≥9h; выполнены оба networkfault и запланированные restart collector/center.
 На [снимке](plans/surveyscan-v2/evidence/C14-soak-progress.json) пройдены оба настоящих разрыва
 связи, UID/sequence сохранены, очереди опустели; это **не** суточный PASS.
 Изv2: `python scripts/soak_status.py <run-id>`, `python scripts/soak_report.py <run-id>`
 и `python scripts/soak_acceptance.py <run-id>` (exit3=pending, не24hPASS).
 [Evidence guard](plans/surveyscan-v2/evidence/C14-evidence-gate.json):10 synthetic tests passed;
-965 actual samples проверены, max gap32.027s, pending. Private follow-up PID843094 после
+Полнота actual samples перепроверена, max gap≈32s, pending. Private follow-up PID843094 после
 завершения runner сохранит acceptance-review.json; plan/Git/C15 автоматически не меняет.
 Local state `.local/c14-soak/<run-id>/status.json`; stdout `.local/c14-actual-soak.log`.
 Проверять PID/run ID и свежий sample; marker running без процесса неPASS. Не останавливать/
 запечатывать общий dev PG/Bao. Runner отделён от жизни вызова/чата, но не переживает выключение машины.
 [Инструкция](../v2/deploy/SOAK.md), [передача C14](plans/surveyscan-v2/handoffs/C14.md).
 
-**Последний полностью зелёный runtime/code baseline5954f5c:3 hosted workflows SUCCESS**:
-v2 run41956828439, Web41956828524 иnative boot41956828433.
-[Скачанные отчёты/хеши](plans/surveyscan-v2/evidence/C14-hosted.json),
-[native proof](plans/surveyscan-v2/evidence/C14-native-hosted.json).
-Две fresh VM9+9 подтвердили reboot/autostart/nonroot/LoadCredential/operator unseal/UID+queues/
-combined checked update/CLI/staticWeb. Readiness исправлен: unseal ждёт активную Raft health,
-collector — проверенный TLS listener. Безопасные phase/call-line diagnostics сохраняют причины;
-старые failed runs не переименованы вPASS. [Дефекты](plans/surveyscan-v2/evidence/C14-defects.json).
+**Последний code8024972: все4 hosted workflows SUCCESS**:
+v2 42003198591, Web42003198611, native42003198599, acceptance-evidence42003198780.
+Ещё один ограниченный native campaign42004731564 на том жеSHA тожеSUCCESS:2 freshVM9+9.
+[Полные отчёты/хеши/timings](plans/surveyscan-v2/evidence/C14-hosted-802.json).
+Новые CI unit tests:10 synthetic evidence checks+5 safe diagnostic redaction checks; это не24hPASS.
 
-Новая проверка e7a07fe: validator workflow41999415338 SUCCESS (10 synthetic tests),
-v2 41999415657 SUCCESS; native41999415334 failed после8checks на CLI-login.
-[C14-D08](plans/surveyscan-v2/evidence/C14-native-cli-failure.json) остаётся на разборе.
-Два local VM9+9 с timings прошли (CLI-login4.286s/4.706s); добавлены безопасные exit/category/
-duration diagnostics и5 unit tests на отсутствие credential/stderr leakage. Это ещё не исправление
-неизвестной причины hosted CLI сбоя; новый instrumented hosted run нужен для диагностики.
+Ранее e7a07fe native failed после8checks на CLI-login. Ошибка не воспроизвелась в2local+4hosted
+freshVM; login2.625–4.706s. Таймауты/auth/runtime не менялись; retry внутриVM не добавлялся.
+Причина прежнего CLI error не подтверждена, [C14-D08](plans/surveyscan-v2/evidence/C14-defects.json)
+сохранён дляC14.03. Новая безопасная диагностика содержит exit/категорию/длительность и невыводит
+argv/stderr/credentials. Старые failed runs не переименованы вPASS.
 
 Local verification:43 top-level Go tests +3 subtests,58 C03 fixtures; исходные architecture guards
 сохранены, новый SQL guard проверяет92 production Go files/7 контрпримеров.136 runtime inputs

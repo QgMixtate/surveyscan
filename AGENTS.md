@@ -217,3 +217,11 @@ allowlisted CLI error diagnostics иуспешные timings безargv/stderr/c
 прошли, всегоPython15 (10 evidence+5redaction). Два local fresh VM9+9 passed, login4.286s/4.706s.
 Причина remoteCLI пока не подтверждена; timeout/production code не менялись, retries не добавлялись.
 Новый instrumented source нужно проверить вhosted. Actualsoak8560f57 продолжаетработать.
+
+Checkpoint8024972: все4hosted SUCCESS (v2 42003198591/Web42003198611/native42003198599/
+evidence-guard42003198780), дополнительный boundednative42004731564 тожеSUCCESS.
+C14-hosted-802.json:21 v2 reports/Web16/дваprimaryVM9+9+дваextraVM9+9;15 Python unit tests
+(10evidence+5redaction). CLI e7 incident не повторился в6freshVM; causeunconfirmed, C14-D08
+сохранён дляC14.03, auth/timeouts не менялись, VM retry нет. Actualsoak уже≥9h, все4fault/restart
+действия выполнены, queuesempty, evidence audit pending.53done/C14.02IP. Private pinnedfollow-up
+843094 запишетreview автоматически послеfinish; не меняетGit/plan/C15 и не запускает чат.
