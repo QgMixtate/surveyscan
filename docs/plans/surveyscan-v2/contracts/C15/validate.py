@@ -18,11 +18,11 @@ def validate(payload, validator, names):
 
 
 def main():
-    schema = json.loads((ROOT / "observation.schema.json").read_text())
+    schema = json.loads((ROOT / "observation.schema.json").read_text(encoding="utf-8"))
     Draft202012Validator.check_schema(schema)
     validator = Draft202012Validator(schema, format_checker=FormatChecker())
     names = set(schema["$defs"]["Section"]["properties"]["name"]["enum"])
-    fixtures = json.loads((ROOT / "fixtures.json").read_text())
+    fixtures = json.loads((ROOT / "fixtures.json").read_text(encoding="utf-8"))
     failures = []
     for fixture in fixtures:
         actual = validate(fixture["payload"], validator, names)

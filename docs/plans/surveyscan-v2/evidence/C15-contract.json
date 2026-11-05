@@ -17,5 +17,30 @@
     "collector/server storage/projection/detail API",
     "native Windows inventory",
     "actual Windows lifecycle/reboot"
-  ]
+  ],
+  "go_validation": {
+    "factory": "wire.NewInventory12",
+    "pipeline_enabled": false,
+    "top_level_new_tests": 3,
+    "corpus_subtests": 19,
+    "semantic_subtests": 7,
+    "malformed_payload_probes": 3,
+    "checks": [
+      "JCS/duplicate keys",
+      "uint64 sequence",
+      "section time/count/unique names",
+      "IP family/prefix/DNS/routes/neighbors",
+      "1MiB draft payload limit",
+      "embedded schema parity",
+      "legacy C03 rejection"
+    ],
+    "local_status": "passed"
+  },
+  "local_verify": "make verify passed: format/vet/all Go unit tests/architecture/C03 58 fixtures; initial sandbox socket restriction rerun with permitted loopback access",
+  "hosted_first_run": {
+    "run_id": 42125403759,
+    "conclusion": "failure",
+    "defect": "C15-D01",
+    "native_inventory_executed": false
+  }
 }

@@ -235,8 +235,7 @@
             "partial",
             "unavailable",
             "unsupported",
-            "not_requested",
-            "unknown"
+            "not_requested"
           ]
         },
         "collection_complete": {
@@ -277,7 +276,7 @@
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 128,
-                "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+                "pattern": "^[^\u0000-\u001f]+$"
               },
               "maxItems": 16,
               "uniqueItems": true
@@ -535,8 +534,7 @@
                 "enum": [
                   "unavailable",
                   "unsupported",
-                  "not_requested",
-                  "unknown"
+                  "not_requested"
                 ]
               }
             }
@@ -639,25 +637,25 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "vendor": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "model": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "serial": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "uuid": {
           "type": "string",
@@ -717,19 +715,19 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 255,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "fqdn": {
           "type": "string",
           "minLength": 1,
           "maxLength": 255,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "domain": {
           "type": "string",
           "minLength": 1,
           "maxLength": 255,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "machine_uuid": {
           "type": "string",
@@ -739,7 +737,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         }
       },
       "required": [
@@ -760,7 +758,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "mac": {
           "type": "string",
@@ -775,7 +773,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 64,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         }
       },
       "required": [
@@ -869,19 +867,19 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "version": {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "build": {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "architecture": {
           "enum": [
@@ -924,7 +922,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "enabled": {
           "type": "boolean"
@@ -933,13 +931,13 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "state": {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         }
       },
       "required": [
@@ -962,13 +960,13 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "filesystem": {
           "type": "string",
           "minLength": 1,
           "maxLength": 64,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "total_bytes": {
           "type": "integer",
@@ -984,7 +982,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         }
       },
       "required": [
@@ -1013,13 +1011,13 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "gateway": {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "metric": {
           "type": "integer",
@@ -1030,7 +1028,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "local_port": {
           "type": "integer",
@@ -1041,7 +1039,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "remote_port": {
           "type": "integer",
@@ -1052,7 +1050,7 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 64,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "interface_index": {
           "type": "integer",
@@ -1121,13 +1119,13 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "display_name": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "state": {
           "enum": [
@@ -1155,13 +1153,13 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "executable": {
           "type": "string",
           "minLength": 1,
           "maxLength": 2048,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         }
       },
       "required": [
@@ -1177,19 +1175,19 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "version": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "vendor": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "architecture": {
           "enum": [
@@ -1232,13 +1230,13 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "description": {
           "type": "string",
           "minLength": 1,
           "maxLength": 512,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "installed_on": {
           "type": "string",
@@ -1270,19 +1268,19 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 184,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "name": {
           "type": "string",
           "minLength": 1,
           "maxLength": 256,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "group_sid": {
           "type": "string",
           "minLength": 1,
           "maxLength": 184,
-          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+          "pattern": "^[^\u0000-\u001f]+$"
         },
         "disabled": {
           "type": "boolean"

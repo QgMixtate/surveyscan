@@ -501,3 +501,12 @@ C15.02 начат с draft observation1.2 для12 typed sections.19 synthetic f
 (7valid/12invalid); runtime/Windows unrun. Старые C03/C09, applied SQL, Go runtime не менялись.
 Запрос «Продолжи следующие этапы после окончания» подтверждает автопродолжение без routine approvals.
 C14.02 на последней live-проверке80432.676s/1320observations, queues0, sample8.58s, running.
+
+C15.02 продолжение: отдельный Go NewInventory12 payload validator (пока без handler dispatch),
+JCS/duplicate JSON keys/uint64/time/unique counts/IP-family limits и copy parity.3 top-level tests,
+19 corpus +7 semantic subtests +3 malformed probes passed; make verify (format/vet/unit/C03 58) passed.
+Full make verify сначала упёрся в sandbox socket prohibition, затем разрешённый loopback прогон passed.
+Hosted Windows42125403759 на bb5c344 failed в Python-checker cp1252/UTF-8 до выполнения Go/version;
+explicit UTF-8 fix и Python/Go-compatible regex проверены локально, repeat требуется.
+Это изолированные C15 изменения; исходная C14 рабочая копия/pinned files/PG/Bao не менялись.
+Draft stacked PR5: https://github.com/QgMixtate/surveyscan/pull/5 (base codex/v2-c13-operations).

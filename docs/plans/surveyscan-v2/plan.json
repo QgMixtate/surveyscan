@@ -1389,7 +1389,7 @@
             "contracts/C15/observation.schema.json",
             "evidence/C15-contract.json"
           ],
-          "verification_status": "draft schema + 19 synthetic fixtures passed; runtime integration and native Windows implementation unrun"
+          "verification_status": "draft schema/Python19 and isolated Go payload validator corpus19+semantic7+malformed3 passed; make verify passed/C03 58; hosted repeat pending; pipeline/native Windows unrun"
         },
         {
           "id": "C15.03",

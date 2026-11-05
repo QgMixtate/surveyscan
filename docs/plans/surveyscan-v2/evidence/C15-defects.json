@@ -1,0 +1,22 @@
+{
+  "package": "C15",
+  "defects": [
+    {
+      "id": "C15-D01",
+      "scope": "new synthetic Python checker on hosted Windows",
+      "run_id": 42125403759,
+      "source_revision": "bb5c34442555f36df5f1307e2acbebf897e5f5c9",
+      "observed": "UnicodeDecodeError: default cp1252 read of UTF-8 fixtures",
+      "fix": "explicit encoding=utf-8 for JSON reads",
+      "verification": "local reference check passed; hosted repeat pending; agent version step was never reached in this failed run"
+    },
+    {
+      "id": "C15-D02",
+      "scope": "new draft schema in isolated Go validator; local only",
+      "observed": "Go regexp rejects backslash-u escapes accepted by Python regex",
+      "fix": "JSON-escaped control characters decode to literal range in the pattern, compatible with both validators",
+      "verification": "Python19 and Go corpus/counterexamples passed locally; hosted repeat pending"
+    }
+  ],
+  "windows_inventory_tested": false
+}
