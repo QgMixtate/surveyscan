@@ -6,7 +6,6 @@ package windowsinventory
 
 import (
 	"context"
-	"encoding/binary"
 	"errors"
 	"fmt"
 	"net"
@@ -45,15 +44,8 @@ func identity() []map[string]any {
 	key, err := registry.OpenKey(registry.LOCAL_MACHINE, `SOFTWARE\Microsoft\Cryptography`, registry.QUERY_VALUE|registry.WOW64_64KEY)
 	if err == nil {
 		defer key.Close()
-		var raw [256]byte
-		if n, kind, err := key.GetValue("MachineGuid", raw[:]); err == nil && kind == registry.SZ && n > 0 && n <= len(raw) && n%2 == 0 {
-			codepoints := make([]uint16, n/2)
-			for i := range codepoints {
-				codepoints[i] = binary.LittleEndian.Uint16(raw[i*2 : i*2+2])
-			}
-			if guid := windows.UTF16ToString(codepoints); identifier.Valid(guid) {
-				row["machine_uuid"] = strings.ToLower(guid)
-			}
+		if guid := registryText(key, "MachineGuid", 128); identifier.Valid(guid) {
+			row["machine_uuid"] = strings.ToLower(guid)
 		}
 	}
 	return []map[string]any{row}
@@ -122,8 +114,8 @@ func Collect(ctx context.Context) ([]contracts.Section, error) {
 		read func() []map[string]any
 	}{
 		{"identity", identity}, {"os", operatingSystem}, {"network", func() []map[string]any { return network(ctx) }},
-		{"hardware", nil}, {"software", nil}, {"updates", nil}, {"services", nil},
-		{"users_groups", nil}, {"routes_ports", nil}, {"resources", nil}, {"protection", nil}, {"neighbors", nil},
+		{"hardware", hardware}, {"software", func() []map[string]any { return software(ctx) }}, {"updates", nil}, {"services", func() []map[string]any { return services(ctx) }},
+		{"users_groups", nil}, {"routes_ports", func() []map[string]any { return routes(ctx) }}, {"resources", func() []map[string]any { return resources(ctx) }}, {"protection", nil}, {"neighbors", nil},
 	}
 	sections := make([]contracts.Section, 0, len(collectors))
 	for _, c := range collectors {

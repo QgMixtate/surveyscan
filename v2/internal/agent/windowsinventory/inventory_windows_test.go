@@ -4,13 +4,17 @@ package windowsinventory
 
 import (
 	"context"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"os"
 	"testing"
 	"time"
+	"unicode/utf16"
+	"unsafe"
 
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
+	"golang.org/x/sys/windows"
 )
 
 func TestNativeWindowsBaseline(t *testing.T) {
@@ -24,12 +28,13 @@ func TestNativeWindowsBaseline(t *testing.T) {
 		t.Fatal("native identity/OS baseline missing")
 	}
 	names := map[string]bool{}
-	for i, section := range sections {
+	implemented := map[string]bool{"identity": true, "os": true, "network": true, "hardware": true, "software": true, "services": true, "routes_ports": true, "resources": true}
+	for _, section := range sections {
 		if names[section.Name] || section.Complete || section.Count != len(section.Records) {
 			t.Fatal("incorrect section status or count")
 		}
 		names[section.Name] = true
-		if i >= 3 && (section.Status != "unsupported" || section.Count != 0 || section.Reason != "ADAPTER_NOT_IMPLEMENTED") {
+		if !implemented[section.Name] && (section.Status != "unsupported" || section.Count != 0 || section.Reason != "ADAPTER_NOT_IMPLEMENTED") {
 			t.Fatal("unimplemented section misrepresented")
 		}
 	}
@@ -69,7 +74,7 @@ func TestNativeWindowsBaseline(t *testing.T) {
 	if _, err = v.Payload(b); err != nil {
 		t.Fatal("native baseline violates draft payload contract")
 	}
-	t.Log("native Windows identity/OS/network baseline checked; nine sections unsupported; synthetic envelope; no delivery/service/reboot test")
+	t.Logf("native Windows eight-section baseline checked; four sections unsupported; token_elevated=%t; synthetic envelope; no delivery/service/reboot test", windows.GetCurrentProcessToken().IsElevated())
 }
 
 func TestNativeWindowsCancellation(t *testing.T) {
@@ -77,5 +82,31 @@ func TestNativeWindowsCancellation(t *testing.T) {
 	cancel()
 	if _, err := Collect(ctx); !errors.Is(err, context.Canceled) {
 		t.Fatal("cancelled collection started")
+	}
+}
+
+func TestNativeMetadataBounds(t *testing.T) {
+	for _, bad := range []string{"", "line\nvalue", "embedded\x00value", "too-long"} {
+		if safeText(bad, 4) != "" {
+			t.Fatal("unbounded/control metadata accepted")
+		}
+	}
+	if safeText("хост", 4) != "хост" {
+		t.Fatal("Unicode metadata lost")
+	}
+	units := utf16.Encode([]rune("служба\x00"))
+	buffer := make([]byte, len(units)*2)
+	for i, unit := range units {
+		binary.LittleEndian.PutUint16(buffer[i*2:], unit)
+	}
+	pointer := (*uint16)(unsafe.Pointer(&buffer[0]))
+	if serviceText(pointer, buffer, 256) != "служба" {
+		t.Fatal("bounded UTF-16 name lost")
+	}
+	if serviceText(pointer, buffer[:len(buffer)-2], 256) != "" || serviceText(pointer, buffer, 2) != "" {
+		t.Fatal("unterminated/overlong service name accepted")
+	}
+	if serviceText(nil, buffer, 256) != "" || serviceText(pointer, nil, 256) != "" {
+		t.Fatal("invalid service buffer accepted")
 	}
 }

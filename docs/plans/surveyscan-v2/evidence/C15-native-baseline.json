@@ -1,0 +1,53 @@
+{
+  "package": "C15",
+  "task": "C15.02",
+  "scope": "isolated Windows native API baseline; not enrolled/delivered",
+  "hosted_first_three_sections": {
+    "run_id": 42126656625,
+    "source_revision": "3eb6c793b4d12436e1e486814444a26f85d28ae4",
+    "runner": "windows-2022",
+    "conclusion": "success",
+    "tests": [
+      "TestNativeWindowsBaseline",
+      "TestNativeWindowsCancellation"
+    ],
+    "native_sections": [
+      "identity",
+      "os",
+      "network"
+    ],
+    "envelope": "synthetic origin/scope/sequence",
+    "unimplemented_sections": 9,
+    "privilege_profile": "hosted runner default, elevation not recorded in that source"
+  },
+  "expanded_baseline": {
+    "sections": [
+      "identity",
+      "os",
+      "network",
+      "hardware",
+      "software",
+      "services",
+      "routes_ports",
+      "resources"
+    ],
+    "local_windows_test_cross_compile": "passed",
+    "GOOS_windows_vet": "passed",
+    "hosted_result": "pending",
+    "remaining_unsupported": [
+      "updates",
+      "users_groups",
+      "protection",
+      "neighbors"
+    ]
+  },
+  "unrun": [
+    "native Windows 11",
+    "standard user and LocalService profiles",
+    "full section coverage",
+    "enrolled signed delivery and projection",
+    "Windows DACL/spool lock/host continuity",
+    "SCM lifecycle/update/actual reboot",
+    "resource budgets"
+  ]
+}

@@ -516,3 +516,8 @@ C15 hosted repeat42126106107 на142b889 SUCCESS: Python19, Go payload corpus и
 Следующий изолированный native baseline добавлен: GetComputerNameEx/HKLM64 boundedMachineGuid/
 RtlGetVersion/net.Interfaces;3 partial sections,9 unsupported. Windows test executable cross-compiled
 локально; actual native API тест ожидает следующего hosted run. Служба и delivery не подключены.
+
+Следующий C15 increment: расширен изолированный native baseline до8секций; CPU/RAM/BIOS,
+Uninstall machine/currentuser32/64, read-only SCM states, fixed volumes/free space и IPv4/IPv6routes.
+Данные partial,4секции unsupported; C15.02 не done. Windows cross-compile и vet passed, hostedpending.
+Предыдущий3-section source3eb6c79 реально прошёл Windows42126656625; synthetic envelope указан.
