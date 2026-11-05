@@ -28,6 +28,7 @@ DOCKER = ['docker', '--host=unix:///var/run/docker.sock']
 
 
 def main():
+    STATE.mkdir(parents=True, exist_ok=True, mode=0o700)
     (STATE/'c13-boot-smoke.json').write_text(json.dumps({'status':'in_progress','scope':'actual QEMU VM'})+'\n')
     with tempfile.TemporaryDirectory(prefix='c13-vm-', dir=STATE) as temp:
         work = Path(temp)
