@@ -532,3 +532,14 @@ R-023 checkpoint: Windows42127549414 на13702a8 SUCCESS —8native baseline sec
 true, Go payload/Python19/CLIversion;3 native test functions passed. Windows facts real, envelope
 synthetic. C15.02 partial,54done. Всё вPR5; E1fullregression/boot13702a8 ещёпроверять отдельно.
 C14-D08 recurring503 остаётсяopen; actualsoak не заменён Windows/API тестами.
+
+
+R-023 publication follow-up: C15 опубликован отдельно в draftPR5/baseE1. C15.01 design done,
+C15.02 in_progress; общий54-task status находится в C15 branch, исходная E1 plan copy содержит53.
+Hosted Windows42126106107 passed schema/Go payload/build/version;42126656625 на3eb6c79 passed
+actual3-section native API baseline с synthetic origin/scope/sequence. Source13702a8 добавляет
+8baseline sections, localWindows cross-compile/vet passed, hostedpending. Standarduser/LocalService/
+Windows11/fullinventory/SCM/reboot/delivery не приняты. Original E1 runtime/frozen soak неизменны.
+
+Синхронизация C15 с E1 parent9e880ed: сохранены журналы обеих веток;
+новые C15 runtime libraries остаются изолированными от измеряемого E1 checkout.
