@@ -67,6 +67,15 @@
       "change": "operator unseal waits for HTTPS sys/health200 initialized=true sealed=false standby=false before provisioning; no retry of writes/reset/custody regeneration; Bao HTTP status+operation retained safely on failure",
       "evidence": "C14-native-failure.json",
       "causality": "explains reproduced local failure; old hosted second VM original phase was discarded and cannot be proven identical"
+    },
+    {
+      "id": "C14-D08",
+      "component": "native CLI acceptance",
+      "status": "investigating; both local VM9+9passed, cold CLI login4.286s/4.706s; safe diagnostics need hosted execution",
+      "finding": "e7a07fe hosted first VM passed8checks then shipped CLI login command failed",
+      "evidence": "C14-native-cli-failure.json",
+      "change": "safe exit/program/duration/allowlisted CLI error diagnostics plus successful operation timings; no retries/default timeout/production code changes",
+      "diagnostic_unit_tests": 5
     }
   ],
   "remaining_gates": [

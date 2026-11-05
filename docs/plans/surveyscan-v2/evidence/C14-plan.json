@@ -313,7 +313,8 @@
     "readiness/scoped Bao renewal and actual machine leaf renewal at23h"
   ],
   "current_release_gates": [
-    "actual>=24h run10812e7a-8a6a-4dae-9dd5-b0583f503c83 not yet complete",
+    "actual>=24h run stillpending",
+    "C14-D08 latest native CLI login failure under investigation; safely instrumented local2VM pass is not a proven fix",
     "post-soak C14.03 triage/regression and C14.04 final acceptance"
   ],
   "latest_hosted": "C14-hosted.json:5954f5c v2/Web/native allSUCCESS"

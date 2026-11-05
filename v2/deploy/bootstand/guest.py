@@ -18,6 +18,7 @@ BIN = Path('/opt/surveyscan/current/bin')
 SEED = Path('/root/boot-seed')
 STATE = Path('/root/boot-phase.json')
 CHECKS = []
+CLI_TIMINGS = []
 PHASE = 'initializing'
 
 
@@ -33,11 +34,37 @@ class BaoFailure(RuntimeError):
         self.operation, self.status = operation, status
 
 
+class CommandFailure(RuntimeError):
+    def __init__(self, program, code, elapsed, stderr):
+        super().__init__('test command failed')
+        names = {'systemctl','python3','surveyscanctl','surveyscan-server','surveyscan-agent','openssl','psql','systemd-run'}
+        self.program = program if program in names else 'test_command'
+        self.code, self.elapsed = code, round(elapsed,3)
+        self.cli_error = None
+        if program == 'surveyscanctl':
+            try:
+                value = json.loads(stderr).get('error')
+                allowed = {'NETWORK_OR_TLS_UNAVAILABLE','CONTEXT_ALREADY_EXISTS_OR_UNAVAILABLE',
+                           'PRIVATE_PASSWORD_FILE_REQUIRED','INVALID_PASSWORD_FILE','INVALID_SESSION_RESPONSE',
+                           'SESSION_COOKIE_MISSING','INVALID_SESSION_COOKIE','CONTEXT_DURABILITY_UNAVAILABLE',
+                           'INVALID_CA_FILE','INVALID_SERVER_ORIGIN','HTTPS_REQUIRED','INVALID_JSON_RESPONSE',
+                           'INVALID_RESPONSE','CONTEXT_UNAVAILABLE','INVALID_PRIVATE_CONTEXT','SESSION_EXPIRED',
+                           'OUTPUT_UNAVAILABLE','OPERATION_UNAVAILABLE','INVALID_ARGUMENTS'}
+                if isinstance(value,str) and (value in allowed or re.fullmatch(r'HTTP_[1-5][0-9]{2}',value)):
+                    self.cli_error = value
+            except (ValueError,AttributeError,TypeError):
+                pass
+
+
 def command(args, env=None, timeout=60):
+    started = time.monotonic()
     result = subprocess.run([str(x) for x in args], env=env, capture_output=True, timeout=timeout)
     if result.returncode:
         print('TEST_COMMAND_STDERR ' + result.stderr.decode(errors='replace')[:2048], flush=True)
-        raise RuntimeError('test operation failed: ' + str(args[0]))
+        raise CommandFailure(Path(args[0]).name, result.returncode, time.monotonic()-started, result.stderr)
+    if Path(args[0]).name == 'surveyscanctl':
+        operation = str(args[1]) if len(args)>1 and args[1] in ('login','assets','logout') else 'other'
+        CLI_TIMINGS.append({'operation':operation,'elapsed_seconds':round(time.monotonic()-started,3)})
     return result.stdout
 
 
@@ -332,30 +359,37 @@ def second_boot(seed):
     assert card['asset_uid'] == old['asset_uid']
     command([cli, 'logout', '--context-file', context])
     CHECKS.append('guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session')
-    return {'package': 'C13', 'status': 'passed', 'count': len(CHECKS), 'checks': CHECKS,
+    return {'package': 'C13', 'status': 'passed', 'count': len(CHECKS), 'checks': CHECKS, 'cli_timings': CLI_TIMINGS,
             'target': 'actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI',
             'custody': 'explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env',
             'unrun': ['two independently clean OS installations', 'schema-changing update through updater', 'physical power loss', 'production KMS/split custody/DR/RPO/RTO/100users']}
 
 
-try:
-    seed = json.loads((SEED / 'seed.json').read_text())
-    if STATE.exists():
-        result = second_boot(seed)
-        print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(result), flush=True)
+def main():
+    try:
+        seed = json.loads((SEED / 'seed.json').read_text())
+        if STATE.exists():
+            result = second_boot(seed)
+            print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(result), flush=True)
+            command(['systemctl', 'poweroff'])
+        else:
+            first_boot(seed)
+    except Exception as error:
+        import traceback
+        traceback.print_exc()
+        debug = subprocess.run(['journalctl','-b','--no-pager','-n','100','-u','surveyscan-*'],capture_output=True)
+        print(debug.stdout.decode(errors='replace'), flush=True)
+        frames = [f for f in traceback.extract_tb(error.__traceback__) if Path(f.filename).name == 'guest.py']
+        diagnostic = {'status': 'failed', 'error_type': type(error).__name__, 'phase': PHASE,
+                      'failed_guest_line': frames[-1].lineno if frames else 0,
+                      'guest_call_lines': [f.lineno for f in frames], 'completed_checks': len(CHECKS)}
+        if isinstance(error, BaoFailure):
+            diagnostic.update(bao_operation=error.operation, bao_http_status=error.status)
+        if isinstance(error, CommandFailure):
+            diagnostic.update(command_program=error.program, command_exit=error.code,
+                              command_elapsed_seconds=error.elapsed, cli_error=error.cli_error)
+        print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(diagnostic), flush=True)
         command(['systemctl', 'poweroff'])
-    else:
-        first_boot(seed)
-except Exception as error:
-    import traceback
-    traceback.print_exc()
-    debug = subprocess.run(['journalctl','-b','--no-pager','-n','100','-u','surveyscan-*'],capture_output=True)
-    print(debug.stdout.decode(errors='replace'), flush=True)
-    frames = [f for f in traceback.extract_tb(error.__traceback__) if Path(f.filename).name == 'guest.py']
-    diagnostic = {'status': 'failed', 'error_type': type(error).__name__, 'phase': PHASE,
-                  'failed_guest_line': frames[-1].lineno if frames else 0,
-                  'guest_call_lines': [f.lineno for f in frames], 'completed_checks': len(CHECKS)}
-    if isinstance(error, BaoFailure):
-        diagnostic.update(bao_operation=error.operation, bao_http_status=error.status)
-    print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(diagnostic), flush=True)
-    command(['systemctl', 'poweroff'])
+
+
+if __name__ == '__main__':main()

@@ -40,5 +40,12 @@
     "runtime UID/dedup/final conservation and both-role leaf files rely on pinned runner assertions",
     "evidence consistency is not a production security/availability attestation",
     "following code stages require an active assistant session after actual24h result"
-  ]
+  ],
+  "hosted_validator": {
+    "source": "e7a07fe4e5a74e6e2591d2687103d75dcb752166",
+    "run_id": 41999415338,
+    "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41999415338",
+    "conclusion": "success",
+    "scope": "10 synthetic validator logic tests only; no actual24h acceptance"
+  }
 }

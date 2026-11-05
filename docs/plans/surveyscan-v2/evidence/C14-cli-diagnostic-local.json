@@ -1,0 +1,85 @@
+{
+  "status": "passed",
+  "stands": [
+    {
+      "package": "C13",
+      "status": "passed",
+      "count": 9,
+      "checks": [
+        "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+        "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+        "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+        "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+        "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+        "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+        "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+        "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+        "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session"
+      ],
+      "cli_timings": [
+        {
+          "operation": "login",
+          "elapsed_seconds": 4.286
+        },
+        {
+          "operation": "assets",
+          "elapsed_seconds": 0.364
+        },
+        {
+          "operation": "logout",
+          "elapsed_seconds": 0.397
+        }
+      ],
+      "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+      "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+      "unrun": [
+        "two independently clean OS installations",
+        "schema-changing update through updater",
+        "physical power loss",
+        "production KMS/split custody/DR/RPO/RTO/100users"
+      ]
+    },
+    {
+      "package": "C13",
+      "status": "passed",
+      "count": 9,
+      "checks": [
+        "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+        "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+        "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+        "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+        "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+        "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+        "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+        "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+        "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session"
+      ],
+      "cli_timings": [
+        {
+          "operation": "login",
+          "elapsed_seconds": 4.706
+        },
+        {
+          "operation": "assets",
+          "elapsed_seconds": 0.289
+        },
+        {
+          "operation": "logout",
+          "elapsed_seconds": 0.309
+        }
+      ],
+      "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+      "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+      "unrun": [
+        "two independently clean OS installations",
+        "schema-changing update through updater",
+        "physical power loss",
+        "production KMS/split custody/DR/RPO/RTO/100users"
+      ]
+    }
+  ],
+  "package": "C14",
+  "scope": "two fresh local VM9+9 passed before pure diagnostic main wrapper refactor; CLI login4.286s/4.706s, no reproduction of hosted failure",
+  "source_base": "e7a07fe plus command metadata/timings instrumentation",
+  "next_scope": "new command/CLI error allowlist5 unit tests passed; no runtime timeout/credential/production code change"
+}

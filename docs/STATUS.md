@@ -22,7 +22,7 @@ Local state `.local/c14-soak/<run-id>/status.json`; stdout `.local/c14-actual-so
 запечатывать общий dev PG/Bao. Runner отделён от жизни вызова/чата, но не переживает выключение машины.
 [Инструкция](../v2/deploy/SOAK.md), [передача C14](plans/surveyscan-v2/handoffs/C14.md).
 
-**Последний code5954f5c: все3 hosted workflows SUCCESS**:
+**Последний полностью зелёный runtime/code baseline5954f5c:3 hosted workflows SUCCESS**:
 v2 run41956828439, Web41956828524 иnative boot41956828433.
 [Скачанные отчёты/хеши](plans/surveyscan-v2/evidence/C14-hosted.json),
 [native proof](plans/surveyscan-v2/evidence/C14-native-hosted.json).
@@ -30,6 +30,13 @@ v2 run41956828439, Web41956828524 иnative boot41956828433.
 combined checked update/CLI/staticWeb. Readiness исправлен: unseal ждёт активную Raft health,
 collector — проверенный TLS listener. Безопасные phase/call-line diagnostics сохраняют причины;
 старые failed runs не переименованы вPASS. [Дефекты](plans/surveyscan-v2/evidence/C14-defects.json).
+
+Новая проверка e7a07fe: validator workflow41999415338 SUCCESS (10 synthetic tests),
+v2 41999415657 SUCCESS; native41999415334 failed после8checks на CLI-login.
+[C14-D08](plans/surveyscan-v2/evidence/C14-native-cli-failure.json) остаётся на разборе.
+Два local VM9+9 с timings прошли (CLI-login4.286s/4.706s); добавлены безопасные exit/category/
+duration diagnostics и5 unit tests на отсутствие credential/stderr leakage. Это ещё не исправление
+неизвестной причины hosted CLI сбоя; новый instrumented hosted run нужен для диагностики.
 
 Local verification:43 top-level Go tests +3 subtests,58 C03 fixtures; исходные architecture guards
 сохранены, новый SQL guard проверяет92 production Go files/7 контрпримеров.136 runtime inputs

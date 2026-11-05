@@ -209,3 +209,11 @@ maxmonitor gap32.027s, resultpending/accepted_24h=false. Проверяются 
 counters/faults/finaldrain/realrenewal. Private pinned follow-up PID843094 сохранитreview после
 терминального run, без Git/plan/release/C15 изменений. C14.02 ещёIP,53done; code stages после
 реального24h результата в активной сессии. Новые source/tests/workflow publicationpending.
+
+C14 follow-up: e7a07fe validator10 synthetic tests CI41999415338 иfullv2 41999415657 SUCCESS,
+ноnative41999415334 failed после8checks на CLI-login. Safe phase/call lines сохранены в
+C14-native-cli-failure.json; это новый расследуемый C14-D08. Добавлены command exit/duration/
+allowlisted CLI error diagnostics иуспешные timings безargv/stderr/credentials.5 redaction tests
+прошли, всегоPython15 (10 evidence+5redaction). Два local fresh VM9+9 passed, login4.286s/4.706s.
+Причина remoteCLI пока не подтверждена; timeout/production code не менялись, retries не добавлялись.
+Новый instrumented source нужно проверить вhosted. Actualsoak8560f57 продолжаетработать.

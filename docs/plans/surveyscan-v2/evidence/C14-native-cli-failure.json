@@ -1,0 +1,18 @@
+{
+  "package": "C13",
+  "status": "failed",
+  "qemu_exit": 0,
+  "guest_result_present": true,
+  "phase": "second_edge_cli",
+  "error_type": "RuntimeError",
+  "failed_guest_line": 40,
+  "guest_call_lines": [
+    344,
+    329,
+    40
+  ],
+  "completed_checks": 8,
+  "source_head": "e7a07fe4e5a74e6e2591d2687103d75dcb752166",
+  "run_id": 41999415334,
+  "root_cause": "not yet known; CLI error/exit/duration capture added to test operator, runtime binaries unchanged"
+}
