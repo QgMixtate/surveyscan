@@ -1,26 +1,28 @@
 # Текущее состояние surveyscan
 
-Обновлено2026-11-05 (Москва). C01–C13 done в bounded E1,52/200; C14.01 в работе.
-[C13 runtime evidence](plans/surveyscan-v2/evidence/C13-runtime.json), [handoff](plans/surveyscan-v2/handoffs/C13.md).
-Две независимо свежих Debian12/QEMU/systemd VM по9checks: real kernel reboot/autostart,
-nonroot/LoadCredential, sealedBao readonly→operatorunseal, preservedUID/session/pending→sequence3,
-actual verified combined server/collector/agent update, staticTLSedge/Web и CLI без guest Go/Node.
-Updater19: signature/catalog/checkpoint, actual SIGKILL/fence/rollback, compiled private schema34 fixture,
-committedDDL refuses old33, explicit recovery. Product SQL0000–0032/C03/C09 unchanged.
-40unit/50PG/58fixtures, release14/unitstatic0, PG18/Bao9/commoncheckpoint10/C11upgrade13 passed.
-Custody manualoperator; no auto-unseal/KMS/physicalpowerloss/HAgeoDR/100users/24h claim.
-Первыйservice-installpath DebianLinux; PG/Bao/TLS/custody operator prerequisites, guest.py synthetic testoperator.
+Обновлено2026-11-05 (Москва). C01–C13 done bounded E1, C14.01 done,53/200.
+Текущая ветка codex/v2-c13-operations, draftPR4 https://github.com/QgMixtate/surveyscan/pull/4.
+Main73ced7e не слит; production deployment/env publication не поручены. R020 разрешает push/PR/CI,
+R021 требует автономно выполнять следующие этапы до лимита, сохраняя реальные зависимости/приёмку.
 
-Следующийпакет C14: [план](plans/surveyscan-v2/packages/C14.md), draft15scenario matrix
-[evidence/C14-plan.json](plans/surveyscan-v2/evidence/C14-plan.json). Actual24h soak ещёне начат;
-его запускать detached/persistent, фиксировать running/elapsed, не blockchat/не заменять fakeclock.
-До фактических24h и всехобязательныхchecks нельзя объявлять принятыйSMB/начинатьC15.
+C13 принят локально и опубликован: [runtime](plans/surveyscan-v2/evidence/C13-runtime.json),
+[hosted final](plans/surveyscan-v2/evidence/C13-published-final.json), [native hosted](plans/surveyscan-v2/evidence/C13-native-hosted.json).
+На8568927 hosted v2 run41940421426/Web41940421462/boot41940421446 SUCCESS.
+Две fresh native Debian12/systemdVM9+9 actualreboot/nonroot/LoadCredential/manual operatorunseal/
+UID+queues/combined server+collector+agent checkedupdate/CLI/staticWeb; updater19 включая privatecompiled
+schema34 checkpoint/rollback/SIGKILL/recovery. Product SQL0000–0032/C03/C09 unchanged.
+Не обещатьproductionKMS/HA/geo/physicalpowerloss/100users. Testoperator provisioning не productionwizard.
 
-Публикация: draftPR4 https://github.com/QgMixtate/surveyscan/pull/4; текущаяветка codex/v2-c13-operations.
-07adce1 published, hostedv2run41934091393 иWeb41934091411 SUCCESS для updater18/source40unit.
-Новые nativeVM/combinedcontroller/updated19 acceptance покаlocal, следующийpush поR020 разрешён.
-Ранее code215f10c тожеhostedsuccess: [evidence](plans/surveyscan-v2/evidence/C13-hosted.json).
-Main73ced7e не слит, productiondeploy/envpublication не поручены.
+C14.01 matrix reviewed: [15 E1 scenarios](plans/surveyscan-v2/evidence/C14-plan.json),
+[handoff](plans/surveyscan-v2/handoffs/C14.md).41unit/58C03 makeverify passed.
+E1-T07 [reconnect5](plans/surveyscan-v2/evidence/C14-reconnect.json) passed:3 realagentprocesses/onehost,
+quota/backpressure/bytes/sequence preserved, simultaneousnetworkrestore/4queuesdrain/replaynoeffects.
+Final [preflight](plans/surveyscan-v2/evidence/C14-preflight.json) passed121.597s; never24h claim.
+C14.02 actual24h ещёне начат: следующий шаг cleancommit/build и detached scripts/soak.py --hours24.
+Проверка scripts/soak_status.py <run-id> различает живойprocess и stale marker. Runner/privatefiles
+неupload; нельзя останавливать общиеdev PG/Bao в течениеокна. [Инструкция](../v2/deploy/SOAK.md).
+До фактических86400s+всехgates нельзя закрытьC14/выпустить принятыйSMB/начатьC15. C14.03/04planned.
+Текущий C14 source localpendingpublication; prior856hostedPASS не относитсякnewC14source.
 
 ## Контекст архитектуры и история C01–C04
 

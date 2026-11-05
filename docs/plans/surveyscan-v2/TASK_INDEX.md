@@ -1,6 +1,6 @@
 # Индекс чатов surveyscan v2
 
-Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07 — локальный collector/upload; C08 — live Linux host agent/heartbeat; C09 — отдельный Web UI/detail API; C10 recovery готов локально; C11 OpenBao/renewal принят локально, C12 CLI/profiles/diagnostics/operator готов локально; C13 done bounded E1; C14.01 in_progress; C14.02–C50 planned.
+Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07 — локальный collector/upload; C08 — live Linux host agent/heartbeat; C09 — отдельный Web UI/detail API; C10 recovery готов локально; C11 OpenBao/renewal принят локально, C12 CLI/profiles/diagnostics/operator готов локально; C13 done bounded E1; C14.01 done; C14.02–C50 planned.
 Один пакет ≈ один чат с возможным продолжением .a/.b. Вход — указанные зависимости с evidence.
 Не читать все 50 подробных файлов: выберите текущий ID и его spec sections.
 

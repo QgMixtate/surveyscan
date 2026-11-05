@@ -379,3 +379,14 @@ HTTP liveness wait, Raftinit60timeout. Успешныonly финальные2ind
 Далее C14.01matrix/evidence review, C14.02actual24h persistentsoak. Until24h elapsed нельзяpass/release.
 07adce1 published hostedv2/Websuccess; latestnativeVM/codefixes ещёlocal, pushразрешёнR020.
 Main merge/deploy/envpublication не поручены.
+
+R021 checkpoint C14: C14.01 reviewed executable15scenario matrix done,53/200. New runner real24h,
+privatefsyncedstatus/events/samples/frozenbinaryhashes/twoTLSlinkfaults/realrenewal required; actualsoak
+notstartedyet. Finalpreflight121.597s passed, explicit accepted_24h=false. Первые2short attemptsfailed
+45sdrain withactiveproducer; finitefinaldrain fixed andpassed. Reconnect5passed real3agents/onehost,
+smallquota/backpressure/retry/pendingpreserved/simultaneousreconnect/onceonly+cachedACKreplay.
+41unit/58fixtures passed. Devbootstrapservervalidity bounded1h..168h default24h preserved;
+soakserverleaf120h avoids expirybefore24hwindow; machineleaf24h mustrotate onactualclock.
+C13 latestpublished8568927 hostedv2 41940421426/Web41940421462/boot41940421446 SUCCESS;
+downloaded reports+hashes in C13-published-final/native-hosted. Nextcleancommit/build/startactual24h,
+thenpersist exactrunID/start/deadline andcontinue E1acceptance/CI, noC15 untilrealC14gate.

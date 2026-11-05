@@ -1,0 +1,160 @@
+{
+  "package": "C14",
+  "task": "C14.02",
+  "run_id": "70f6076c-16e9-440b-9f58-bf59ee6ed1b4",
+  "kind": "preflight",
+  "status": "preflight_passed",
+  "started_at": "2026-11-05T00:27:43.494795Z",
+  "required_seconds": 120,
+  "source_revision": "8568927002b9de8b2b5fe3017095c4f840e3e718",
+  "source_dirty": true,
+  "intervals": {
+    "inventory_seconds": 60,
+    "heartbeat_seconds": 30,
+    "monitor_seconds": 1
+  },
+  "topology": "real Linux host agent → loopback TLS relay → collector → loopback TLS relay → center → own PG17 DB; scoped Bao Transit/KV; no mocked frames or time",
+  "unrun": [
+    "production/HA/geo/100-user SLA"
+  ],
+  "events": [
+    {
+      "at": "2026-11-05T00:27:46.834516Z",
+      "event": "measured_window_started"
+    },
+    {
+      "at": "2026-11-05T00:27:53.841308Z",
+      "event": "agent_link_cut",
+      "elapsed_seconds": 7.027
+    },
+    {
+      "at": "2026-11-05T00:27:53.844744Z",
+      "event": "agent_restart_while_disconnected",
+      "elapsed_seconds": 7.027
+    },
+    {
+      "at": "2026-11-05T00:28:12.819031Z",
+      "event": "agent_link_restored",
+      "elapsed_seconds": 26.005
+    },
+    {
+      "at": "2026-11-05T00:28:22.259553Z",
+      "event": "center_link_cut",
+      "elapsed_seconds": 35.446
+    },
+    {
+      "at": "2026-11-05T00:28:24.615190Z",
+      "event": "agent_collect_while_center_disconnected",
+      "elapsed_seconds": 37.798
+    },
+    {
+      "at": "2026-11-05T00:28:43.364524Z",
+      "event": "center_link_restored",
+      "elapsed_seconds": 56.551
+    },
+    {
+      "at": "2026-11-05T00:29:02.691010Z",
+      "event": "collector_restart",
+      "elapsed_seconds": 75.86
+    },
+    {
+      "at": "2026-11-05T00:29:21.893661Z",
+      "event": "center_restart",
+      "elapsed_seconds": 95.062
+    },
+    {
+      "at": "2026-11-05T00:29:48.004071Z",
+      "event": "final_drain_started",
+      "elapsed_seconds": 121.191,
+      "inventory_seconds": 86400
+    },
+    {
+      "at": "2026-11-05T00:29:48.816855Z",
+      "event": "measured_window_completed",
+      "accepted_24h": false
+    }
+  ],
+  "binary_sha256": {
+    "surveyscan-agent": "26e415fa0b3aef789c945c7da4a8da90a95de04219f6ed520f60de4eb008fa80",
+    "surveyscan-server": "ab20ccf61f9eaeaf6a630dc67bac537a6254d8951e804e50ddae63817152bfab",
+    "surveyscan-collector": "175559792e7830b21f038f94760e4aec73fbc656111a64266524c8625154f49e"
+  },
+  "runner_sha256": "88d3ebc47adf31cf5b7bc4f6b2857f734aa05c7376b656644636f3b0b68c8466",
+  "measured_started_at": "2026-11-05T00:27:46.813554Z",
+  "elapsed_seconds": 121.597,
+  "initial_observations": 1,
+  "source_id": "19c4abfe-542b-496d-a01f-8ef32bf80fb1",
+  "asset_uid": "4a617995-c770-4183-ab2f-1a6577bc0a20",
+  "server_certificate_not_after": "2026-11-10T00:27:43+00:00",
+  "versions": {
+    "surveyscan-server": {
+      "component": "server",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "c33de521367f8b31d57a3f511dfc5cfef2dd7c98",
+      "source_dirty": "true",
+      "stage": "C12 scoped OpenBao, machine lifecycle and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscan-collector": {
+      "component": "collector",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "c33de521367f8b31d57a3f511dfc5cfef2dd7c98",
+      "source_dirty": "true",
+      "stage": "C12 durable HTTPS relay with profiles and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscan-agent": {
+      "component": "agent",
+      "go_version": "go1.27.3",
+      "inventory_implemented": true,
+      "revision": "c33de521367f8b31d57a3f511dfc5cfef2dd7c98",
+      "source_dirty": "true",
+      "stage": "C12 Linux agent with profiles and diagnostics",
+      "version": "0.0.0-c13"
+    }
+  },
+  "last_sample": {
+    "at": "2026-11-05T00:29:46.117097Z",
+    "elapsed_seconds": 118.707,
+    "observations": 4,
+    "max_source_sequence": "4",
+    "inventory_age_seconds": 20.790019,
+    "agent_pending": 0,
+    "collector_pending": 0,
+    "agent_pending_bytes": 0,
+    "collector_pending_bytes": 0,
+    "rss_kib": {
+      "center": 94456,
+      "collector": 15540,
+      "agent": 15368
+    },
+    "process_cpu_seconds": {
+      "center": 0.28,
+      "collector": 0.07,
+      "agent": 0.1
+    },
+    "ready": true,
+    "sections": {
+      "ok": 12
+    },
+    "outbox_unapplied": 0,
+    "source_inventory_age_seconds": 21.214397,
+    "renewal_receipts": 0
+  },
+  "samples": 51,
+  "peak_rss_kib": {
+    "center": 157664,
+    "collector": 16464,
+    "agent": 15812
+  },
+  "measured_ended_at": "2026-11-05T00:29:48.680182Z",
+  "end_observations": 5,
+  "pending_drained": true,
+  "observed_pending": {
+    "agent": true,
+    "collector": true
+  },
+  "proof_scope": "short real121.597s preflight only; NEVER24h acceptance; subsequent runner-only change makes pending-byte sampling tolerate concurrently acknowledged/unlinked packets"
+}

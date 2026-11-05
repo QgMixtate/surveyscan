@@ -1,7 +1,7 @@
 {
   "package": "C14",
-  "task": "C14.01 preparation",
-  "status": "draft until C13 acceptance",
+  "task": "C14.01",
+  "status": "reviewed executable plan; acceptance incomplete",
   "date": "2026-11-05 Europe/Moscow",
   "source": "decisions/C01-acceptance.md",
   "scenarios": [
@@ -14,12 +14,13 @@
         "AC-01",
         "AC-40"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed bounded Debian12 Linux",
       "evidence_candidates": [
-        "C13-hosted.json",
-        "C13-progress.json"
+        "C13-runtime.json",
+        "C13-native-hosted.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "two actual VM9 each; dependencies PG/Bao/TLS and operator custody provisioned by test operator; no Python/Node needed by shipped Go/static Web",
+      "command": "GO=go python scripts/boot_smoke.py (two fresh stands); python scripts/release_smoke.py"
     },
     {
       "id": "E1-T02",
@@ -30,12 +31,12 @@
         "AC-09",
         "AC-13"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed scoped tests",
       "evidence_candidates": [
-        "C13-hosted.json",
-        "C12-runtime.json"
+        "C13-hosted.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "real PG/API two-tenant isolation/roles/CSRF/revoke; no default credentials",
+      "command": "make integration; python scripts/auth_smoke.py; python scripts/cli_smoke.py"
     },
     {
       "id": "E1-T03",
@@ -47,12 +48,12 @@
         "AC-27",
         "AC-46"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed live short run; soak pending",
       "evidence_candidates": [
-        "C13-hosted.json",
-        "C13-progress.json"
+        "C13-runtime.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "real Linux read-only adapter, >=3 live cycles/reboot same UID; hardware absence reported as unavailable/unsupported",
+      "command": "python scripts/agent_smoke.py; python scripts/boot_smoke.py; python scripts/soak.py --hours 24"
     },
     {
       "id": "E1-T04",
@@ -65,11 +66,12 @@
         "AC-18",
         "AC-27"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed scoped tests",
       "evidence_candidates": [
         "C13-hosted.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "signed synthetic frames intentionally test late/partial/replay; distinct from live Linux adapter evidence",
+      "command": "make integration (TestC06SignedIngestConcurrentReplayAndSequenceConflict, TestC06LatePartialUnavailableAndManualFields)"
     },
     {
       "id": "E1-T05",
@@ -81,11 +83,12 @@
         "AC-28",
         "AC-32"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed scoped tests",
       "evidence_candidates": [
         "C13-hosted.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "real PG transactional fallback/history/audit/outbox and rollback guards",
+      "command": "make integration (TestIdentityResponsibilityTenantConstraints, TestC06EventFailureRollsBackWholeIngest, TestC06DatabaseRejectsMissingCommitEvidence)"
     },
     {
       "id": "E1-T06",
@@ -97,12 +100,12 @@
         "AC-32",
         "AC-47"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed scoped recovery; soak pending",
       "evidence_candidates": [
-        "C13-hosted.json",
-        "C13-progress.json"
+        "C13-hosted.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "compiled source/relay/center crash windows and exact ACK replay; real outages scheduled again during soak",
+      "command": "python scripts/recovery_smoke.py; python scripts/soak.py --hours 24"
     },
     {
       "id": "E1-T07",
@@ -113,12 +116,13 @@
         "AC-47",
         "AC-50"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed bounded three-agent reconnect",
       "evidence_candidates": [
-        "C13-hosted.json",
-        "C13-progress.json"
+        "C14-reconnect.json",
+        "C13-hosted.json"
       ],
-      "notes": "ENOSPC/admission/backpressure proven separately; multi-real-agent reconnect scenario still to run."
+      "notes": "three distinct enrolled sources/processes on one actual host; real signed observations/TLS/PG; explicit quota filler380000bytes tests admission, real ENOSPC tested separately; reconnect drains4queues, replay adds no effects; no large reconnect storm claim",
+      "command": "python scripts/reconnect_smoke.py; python scripts/diskfault.py; python scripts/recovery_smoke.py"
     },
     {
       "id": "E1-T08",
@@ -132,12 +136,12 @@
         "AC-49",
         "AC-52"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed bounded PKI/Bao",
       "evidence_candidates": [
-        "C11-lifecycle-matrix.json",
-        "C13-hosted.json"
+        "C11-lifecycle-matrix.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "actual Bao/PG/mTLS; renewal scheduling in earlier tests uses explicit advanced scheduling clock, not a 24h acceptance; actual soak exercises real expiry boundary",
+      "command": "make integration; python scripts/bao_pipeline.py; python scripts/renewal_smoke.py; python scripts/collector_renewal_smoke.py"
     },
     {
       "id": "E1-T09",
@@ -148,11 +152,12 @@
         "AC-27",
         "AC-49"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed bounded identity fixtures",
       "evidence_candidates": [
         "C11-lifecycle-matrix.json"
       ],
-      "notes": "Different host machine-id binding/revoke covered; identical cloned key+machine-id cannot be attested as different hardware."
+      "notes": "different machine-id binding/revoke/sequence conflicts tested; copied machine-id and keys cannot distinguish hardware; second physical host matrix unrun",
+      "command": "make verify (TestHostBindingRejectsCloneAndWrongSigningKey, TestMissingHostBindingRequiresExplicitLegacyAdoption); make integration"
     },
     {
       "id": "E1-T10",
@@ -164,12 +169,12 @@
         "AC-29",
         "AC-40"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed scoped API/CLI/Web",
       "evidence_candidates": [
-        "C12-runtime.json",
-        "C13-hosted.json"
+        "C12-runtime.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "16 Chromium checks; partial/stale/unknown display matrix uses explicit mocked API; auth/assets/profiles use real API; no claim complete future OpenAPI surface",
+      "command": "python scripts/cli_smoke.py; npm run build; separate Web Playwright workflow"
     },
     {
       "id": "E1-T11",
@@ -180,12 +185,12 @@
         "AC-48",
         "AC-52"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed live bounded profile change",
       "evidence_candidates": [
-        "C12-runtime.json",
-        "C13-hosted.json"
+        "C12-runtime.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "actual cadence120→60 and immutable keys/generation; contact/config contact/inventory distinct; actual source outage not inferred as mass missing",
+      "command": "python scripts/profiles_smoke.py; make integration (TestC12ProfileOriginProofAckAndFreshnessIsolation)"
     },
     {
       "id": "E1-T12",
@@ -197,11 +202,13 @@
         "AC-49",
         "AC-54"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed native systemd",
       "evidence_candidates": [
-        "C13-progress.json"
+        "C13-runtime.json",
+        "C13-native-hosted.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "actual PID1/reboot, distinct nonroot UIDs/LoadCredential, queued source replay, server+collector+agent checked update; physical power failure unrun",
+      "command": "GO=go python scripts/boot_smoke.py (two fresh stands)"
     },
     {
       "id": "E1-T13",
@@ -211,11 +218,12 @@
       "acceptance_criteria": [
         "AC-54"
       ],
-      "status": "evidence_review_pending",
+      "status": "passed bounded checkpoint/upgrade",
       "evidence_candidates": [
-        "C13-progress.json"
+        "C13-runtime.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "PG18/Bao9/common10/old31→33 upgrade13/update19; full product schema-changing migration not invented: appended34 only isolated compiled acceptance fixture",
+      "command": "python scripts/checkpoint_smoke.py; python scripts/upgrade_smoke.py; python scripts/update_smoke.py"
     },
     {
       "id": "E1-T14",
@@ -226,8 +234,11 @@
         "AC-53"
       ],
       "status": "not_started",
-      "evidence_candidates": [],
-      "notes": "At least24 real hours; outside-chat persistent runner required. Short smoke/fake clock never count as24h."
+      "evidence_candidates": [
+        "C14-plan.json"
+      ],
+      "notes": ">=86400 real monotonic seconds after first observation; short preflight always distinct preflight_passed; no mock frames/time; persistent run ID/status/events/samples",
+      "command": "python scripts/soak.py --hours 24"
     },
     {
       "id": "E1-T15",
@@ -239,27 +250,64 @@
         "AC-44",
         "AC-55"
       ],
-      "status": "evidence_review_pending",
+      "status": "reviewed bounded E1; release gated",
       "evidence_candidates": [
-        "C13-hosted.json"
+        "C14-plan.json"
       ],
-      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+      "notes": "Go modules own schemas; composition in app, separate Web/API contract hashes; exact combined/API-worker distributed production profile deferred C35/C40, not silently accepted",
+      "command": "make verify; make integration (TestC06DatabaseRejectsMissingCommitEvidence, TestC05WorkerTenantAndCommitAuthorizationFence); review module ports and C01 capabilities"
     }
   ],
   "release_gate": [
     "C13 completed",
     "all applicable E1 scenarios have actual scoped evidence",
     "24h real soak completed",
-    "no unresolved mandatory failures"
+    "no unresolved mandatory failures",
+    "E1-T07 simultaneous reconnect completed or documented unresolved blocker"
   ],
   "unrun": [
-    "C14 consolidated acceptance",
-    "24h soak"
+    "actual >=24h soak (E1-T14)",
+    "production/HA/geo/100-user SLA/hardware attestation"
   ],
   "deferred": [
     "Windows/agentless/discovery/topology/portable E2",
     "merge-split/FTS/100users E3",
     "geo/sharding/production multi-instance E5",
     "lifecycle/store/ITSM later waves"
+  ],
+  "review_source": "C01-acceptance.md E1-T01..15 and scopes C01-smb-scope.md; observed C11/C12/C13 evidence, explicit limits retained",
+  "stand": {
+    "os": "Linux/amd64, Debian12 systemd252 for install/reboot; managed Linux for process soak",
+    "go": "1.27.3",
+    "postgres": "17.11",
+    "openbao": "2.7.2 scoped Transit/KV, no exportable CA fallback",
+    "topology": "own tenant/PG database, real read-only host agent, one collector, combined center, private TLS with two loopback relay faults; separate Web tested independently",
+    "inventory_seconds": 60,
+    "heartbeat_seconds": 30,
+    "jitter_percent": 0,
+    "agent_spool_limit_bytes": 4194304,
+    "collector_spool_limit_bytes": 1048576,
+    "monitor_seconds": 30,
+    "duration_seconds": 86400,
+    "server_certificate_validity_hours": 120,
+    "machine_leaf_validity_hours": 24,
+    "source_binary_snapshots": "private immutable copies + SHA256 recorded per run"
+  },
+  "failure_schedule_seconds": {
+    "3600": "cut agent→collector",
+    "3601": "restart agent while disconnected (real collection to spool)",
+    "3720": "restore agent link",
+    "7200": "cut collector→center",
+    "7201": "restart agent to collect while center disconnected",
+    "7320": "restore center link",
+    "10800": "restart collector",
+    "14400": "restart center"
+  },
+  "recorded_metrics": [
+    "timestamp/source sequence/observation count/one UID/no duplicate source sequence",
+    "section status/count/freshness and source inventory freshness",
+    "both pending queue counts/bytes and final committed result equality/drain",
+    "per-process RSS/CPU and outbox unapplied count",
+    "readiness/scoped Bao renewal and actual machine leaf renewal at23h"
   ]
 }

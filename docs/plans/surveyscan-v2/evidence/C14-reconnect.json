@@ -1,0 +1,31 @@
+{
+  "package": "C14",
+  "scenario": "E1-T07",
+  "status": "passed",
+  "count": 5,
+  "checks": [
+    "three independently enrolled real agent processes retain one original signed observation each while agent TLS link is cut",
+    "explicit380000-byte quota fixture triggers real admission failure without changing pending bytes/source inventory sequence; all processes stay alive",
+    "real8s disconnected interval has bounded1..12 delivery retries per agent with production jitter/backoff enabled",
+    "one real network restore commits three source sequence1 observations once, keeps source identities distinct and drains all four queues after signed ACK",
+    "exact original source replay with verified cached receipt adds no observations/assets/outbox effects and drains again"
+  ],
+  "agents": 3,
+  "hosts": 1,
+  "spool_quota_bytes": 524288,
+  "quota_fixture_bytes": 380000,
+  "retry_counts_during8s": [
+    3,
+    4,
+    4
+  ],
+  "reconnect_drain_seconds": 25.312,
+  "binary_sha256": "26e415fa0b3aef789c945c7da4a8da90a95de04219f6ed520f60de4eb008fa80",
+  "scope": "real compiled Linux read-only agents/collector/center/PG/TLS; own tenant/database/private dirs; quota fixture declared; no mocked observation/clock",
+  "unrun": [
+    "three separate physical hosts",
+    "large reconnect storm/100-user SLA",
+    "ENOSPC in this script (separate diskfault.py report)",
+    "24h acceptance"
+  ]
+}

@@ -78,6 +78,8 @@ jobs:
         run: .contract-tools/bin/python scripts/cli_smoke.py
       - name: Central profiles, signed source diagnostics and tenant policy
         run: .contract-tools/bin/python scripts/profiles_smoke.py
+      - name: Three real agents, quota backpressure and simultaneous reconnect
+        run: .contract-tools/bin/python scripts/reconnect_smoke.py
       - name: PostgreSQL backup, clean DB restore and authenticated write
         run: .contract-tools/bin/python scripts/backup_smoke.py
       - name: Isolated OpenBao Raft restore, non-exportable keys and restart
@@ -115,6 +117,7 @@ jobs:
             v2/.local/c13-checkpoint-smoke.json
             v2/.local/c13-upgrade-smoke.json
             v2/.local/c13-update-smoke.json
+            v2/.local/c14-reconnect-smoke.json
           if-no-files-found: ignore
       - name: Stop isolated development stack
         if: always()

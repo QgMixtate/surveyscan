@@ -29,13 +29,13 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10 recovery done; C11 done (bounded E1), C12–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10 recovery done; C11 done (bounded E1), C12/C13 done bounded E1; C14.01 done, C14.02 preparation, C15–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
 C04/0.5/план опубликованы в codex/v2-c04-foundation (7407da6); C05 — ветка codex/v2-c05-auth. Main не слит. Точные publication refs — в STATUS/evidence; не выдавать local tests за hosted CI.
 Планирование не означает разрешение сразу реализовать все пакеты или выполнить production deployment.
-Следующий пакет — C11; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
+Текущий пакет — C14; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
 Матрица замечаний: docs/specifications/requirements-traceability-v0.5.md;
 исследование аналогов: docs/research/inventory-platform-analogues.md.
 Правила snapshot/dashboard ниже относятся к текущей Python v1, не архитектуре v2.
@@ -139,3 +139,9 @@ Updater19(compiledprivateDDL34/checkpoint/rollback/SIGKILL),40unit/50PG/58C03/re
 52/200done. C14.01IP,24hsoaknotstarted; C14prompt explicitly nonblocking24h/persistentrecording, nofakepass.
 R021 asksautonextpackagesuntilquota; source fixes uncommittedpendingpush, R020 stillauthorizesGitHubPR/CI.
 07adce1hostedv2/Websuccess; latestnativeVM source notyetpublished. Main/deploy/envpublication notauthorized.
+
+C14 checkpoint: .01 done53/200, reviewed15E1scenario matrix; .02runner/preflight ready, actual24h notstarted.
+Finalpreflight121.597s≠24h; reconnect5actual3processes/onehost+quota+simultaneousreconnect passed.
+41unit/58fixtures. C13 published8568927 allv2/Web/nativebootCI SUCCESS (SHA-specific evidence).
+Readhandoffs/C14.md/deploy/SOAK.md. Start actualsoak detached aftercleanbuild; do notstopshareddevPG/Bao.
+Only86400realelapsed+allgates cancloseC14; noC15/releaseacceptance based onshortpreflight.

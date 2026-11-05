@@ -16,7 +16,7 @@
 - Результат: Манифест версии 0.5, статуса веток и незавершённых документов.
 - Проверка: Различены локальное, опубликованное и реализованное.
 - База оценки: 1 репозиторий; 4 исходных документа и матрица U-01–19.
-- Статус: done; evidence: [C01-baseline.json](decisions/C01-baseline.json); продуктовые проверки unrun.
+- Статус: done; document-reviewed; product tests unrun.
 
 ## C01.02 — Описать capabilities SMB-релиза
 
@@ -26,7 +26,7 @@
 - Результат: Список полей E1, целевых ОС и явных исключений.
 - Проверка: Есть постоянный цикл agent→collector→card и нет enterprise prerequisite.
 - База оценки: 1 профиль E1; платформенный выбор Windows либо Linux.
-- Статус: done; evidence: [C01-smb-scope.md](decisions/C01-smb-scope.md); продуктовые проверки unrun.
+- Статус: done; document-reviewed; product tests unrun.
 
 ## C01.03 — Выбрать блокирующие решения E1
 
@@ -36,7 +36,7 @@
 - Результат: ADR scope: auth/enrollment, frontend, версии Go/PG, локальное хранилище очередей, trust.
 - Проверка: У каждого решения статус user-confirmed/proposed/blocked и аргументы.
 - База оценки: Только D-01/03/06/07/09/11/14/16/17 в части E1; прочие отложены по эпохам.
-- Статус: done; evidence: [C01-decisions.md](decisions/C01-decisions.md); продуктовые проверки unrun.
+- Статус: done; document-reviewed; product tests unrun.
 
 ## C01.04 — Определить приёмку и пилотный стенд
 
@@ -46,7 +46,7 @@
 - Результат: Сценарии раннего среза и 24-часового E1 прогона.
 - Проверка: Не выданы плановые показатели за выполненные тесты.
 - База оценки: 1 VM/хост выбранной ОС, 1 collector, 1 центральный стенд.
-- Статус: done; evidence: [C01-acceptance.md](decisions/C01-acceptance.md); продуктовые проверки unrun.
+- Статус: done; document-reviewed; product tests unrun.
 
 ## Выход пакета
 
@@ -71,7 +71,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: ER: tenant/site/asset/identifier/source/agent/collector и scope.
 - Проверка: agent_id и IP не используются как canonical asset_uid.
 - База оценки: 8 базовых сущностей; 3 способа источника.
-- Статус: done; evidence: [C02-identity-model.md](decisions/C02-identity-model.md), [C02-model.json](decisions/C02-model.json). Runtime/mock tests unrun.
+- Статус: done; design reviewed and structural documentation checks; runtime/mock tests unrun.
 
 ## C02.02 — Спроектировать наблюдения и проекции
 
@@ -81,7 +81,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: ER observation/section/current_fact, collected/received/sequence, statuses.
 - Проверка: Старое и partial наблюдение не стирает достоверные факты.
 - База оценки: 5 статусов секции и unknown legacy; 2 временные оси.
-- Статус: done; evidence: [C02-observations.md](decisions/C02-observations.md). Runtime/mock tests unrun.
+- Статус: done; design reviewed and structural documentation checks; runtime/mock tests unrun.
 
 ## C02.03 — Описать ownership и инварианты
 
@@ -91,7 +91,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Матрица таблица→модуль, source mapping, fallback team, outbox.
 - Проверка: Tenant constraints и запрет чужих записей проверяемы.
 - База оценки: Реестр, inventory, sources, responsibility, jobs/import.
-- Статус: done; evidence: [C02-ownership.md](decisions/C02-ownership.md). Runtime/mock tests unrun.
+- Статус: done; design reviewed and structural documentation checks; runtime/mock tests unrun.
 
 ## C02.04 — Проверить модель на контрпримерах
 
@@ -101,7 +101,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Набор примеров повтор, смена IP, клон VM, offline и конфликт.
 - Проверка: Есть ожидаемое решение каждого примера и открытые вопросы.
 - База оценки: Не менее 6 сценариев идентичности и поздних данных.
-- Статус: done; evidence: [C02-counterexamples.md](decisions/C02-counterexamples.md), [C02-counterexamples.json](decisions/C02-counterexamples.json). Runtime/mock tests unrun.
+- Статус: done; design reviewed and structural documentation checks; runtime/mock tests unrun.
 
 ## Выход пакета
 
@@ -126,7 +126,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Версионированная схема source/identity/section/provenance/sequence.
 - Проверка: Валидные и ошибочные образцы проходят schema checks.
 - База оценки: 1 major schema, 3 source_kind, ограниченные payloads.
-- Статус: done; evidence: [C03-envelope.md](decisions/C03-envelope.md), [wire.schema.json](contracts/C03/schemas/wire.schema.json). Runtime HTTP/mTLS/PG unrun.
+- Статус: done; schemas/reference fixtures executed; runtime HTTP/mTLS/PG unrun.
 
 ## C03.02 — Задать agent→collector→center протокол
 
@@ -136,7 +136,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: API enrollment/heartbeat/upload/status и state machine receipt/applied.
 - Проверка: Промежуточный ACK не выдаётся за commit центра.
 - База оценки: 3 компонента; 2 этапа подтверждения; retry/dedup.
-- Статус: done; evidence: [C03-protocol.md](decisions/C03-protocol.md), [openapi.json](contracts/C03/openapi.json). Runtime HTTP/mTLS/PG unrun.
+- Статус: done; schemas/reference fixtures executed; runtime HTTP/mTLS/PG unrun.
 
 ## C03.03 — Описать задания и события
 
@@ -146,7 +146,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Lease/attempt/cancellation, envelope outbox и consumer checkpoint.
 - Проверка: Падение после commit допускает повтор без повторного эффекта.
 - База оценки: 1 очередь заданий, 1 outbox, version/idempotency keys.
-- Статус: done; evidence: [C03-jobs-events.md](decisions/C03-jobs-events.md), [state-machines.json](contracts/C03/state-machines.json). Runtime HTTP/mTLS/PG unrun.
+- Статус: done; schemas/reference fixtures executed; runtime HTTP/mTLS/PG unrun.
 
 ## C03.04 — Подготовить контрактные fixtures
 
@@ -156,7 +156,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Набор JSON/HTTP fixtures и матрица совместимости.
 - Проверка: Unknown major, подмена tenant, conflicting digest отклоняются.
 - База оценки: Минимум 8 позитивных/негативных контрактных сценариев.
-- Статус: done; evidence: [C03-fixtures.md](decisions/C03-fixtures.md), [manifest.json](contracts/C03/fixtures/manifest.json), [C03-contract-validation.json](evidence/C03-contract-validation.json). Runtime HTTP/mTLS/PG unrun.
+- Статус: done; schemas/reference fixtures executed; runtime HTTP/mTLS/PG unrun.
 
 ## Выход пакета
 
@@ -181,7 +181,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: cmd/internal/contracts с границами импортов и combined entrypoint.
 - Проверка: Сборка и архитектурная проверка импортов проходят.
 - База оценки: Server, collector и agent entrypoints без бизнес-заглушек в приёмке.
-- Статус: done; [передача C04](handoffs/C04.md), [проверки](evidence/C04-runtime.json).
+- Статус: done; passed local live/unit; hosted GitHub Actions unrun.
 
 ## C04.02 — Поднять постоянный PostgreSQL и миграции
 
@@ -191,7 +191,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Версионированные миграции минимальной модели и конфиг.
 - Проверка: Повторное применение безопасно; данные не зависят от scan DB.
 - База оценки: 1 PG кластер; схема из C02.
-- Статус: done; [передача C04](handoffs/C04.md), [проверки](evidence/C04-runtime.json).
+- Статус: done; passed local live/unit; hosted GitHub Actions unrun.
 
 ## C04.03 — Собрать локальный инфраструктурный стенд
 
@@ -201,7 +201,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Документированный запуск PG/backend/OpenBao/proxy с локальными томами.
 - Проверка: Чистый стенд стартует и диагностирует недостающие настройки.
 - База оценки: 1 поддержанный binary/container путь; без Kubernetes.
-- Статус: done; [передача C04](handoffs/C04.md), [проверки](evidence/C04-runtime.json).
+- Статус: done; passed local live/unit; hosted GitHub Actions unrun.
 
 ## C04.04 — Настроить CI и базовые проверки
 
@@ -211,7 +211,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Go build/test, PG integration и schema validation в CI.
 - Проверка: Проверки реально выполняются и сохраняют exit status.
 - База оценки: 1 CI pipeline и воспроизводимый тестовый PG.
-- Статус: done; [передача C04](handoffs/C04.md), [проверки](evidence/C04-runtime.json).
+- Статус: done; passed local live/unit; hosted GitHub Actions unrun.
 
 ## Выход пакета
 
@@ -236,7 +236,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Безопасная процедура первого пользователя и хранилище credential metadata.
 - Проверка: Нет общих заводских паролей и секретов в логах.
 - База оценки: 1 bootstrap flow; reset/expiry policy по ADR.
-- Статус: done; [передача C05](handoffs/C05.md), [проверки](evidence/C05-runtime.json).
+- Статус: done; passed local real PG/TLS/CLI/HTTP; hosted CI unconfirmed (network blocker).
 
 ## C05.02 — Добавить auth и минимальные роли
 
@@ -246,7 +246,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Login/session/token, operator/viewer/admin и tenant context.
 - Проверка: Revocation/expiry и отказ неверной роли проверены.
 - База оценки: 1 выбранный auth-method; 3 минимальные роли.
-- Статус: done; [передача C05](handoffs/C05.md), [проверки](evidence/C05-runtime.json).
+- Статус: done; passed local real PG/TLS/CLI/HTTP; hosted CI unconfirmed (network blocker).
 
 ## C05.03 — Защитить API и фоновые операции
 
@@ -256,7 +256,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Общий authorization contract для handlers/jobs/artifacts.
 - Проверка: Подмена UUID или tenant не даёт чужие данные.
 - База оценки: Все минимальные E1 endpoints и job context.
-- Статус: done; [передача C05](handoffs/C05.md), [проверки](evidence/C05-runtime.json).
+- Статус: done; passed local real PG/TLS/CLI/HTTP; hosted CI unconfirmed (network blocker).
 
 ## C05.04 — Проверить auth threat cases
 
@@ -266,7 +266,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Негативные интеграционные проверки и краткий threat record.
 - Проверка: Session/cookie/CSRF либо token policy соответствует ADR.
 - База оценки: 2 tenant, expired/revoked credential, concurrent session.
-- Статус: done; [передача C05](handoffs/C05.md), [проверки](evidence/C05-runtime.json).
+- Статус: done; passed local real PG/TLS/CLI/HTTP; hosted CI unconfirmed (network blocker).
 
 ## Выход пакета
 
@@ -291,7 +291,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Create/get/list с canonical UID и минимальной reconciliation policy.
 - Проверка: Повтор источника не создаёт дубли; конфликт виден.
 - База оценки: Минимальные поля E1 и source-local mapping.
-- Статус: done; [runtime C06](evidence/C06-runtime.json), [передача](handoffs/C06.md).
+- Статус: done; passed local real PG/crypto/HTTPS/binary tests; hosted C06 unrun.
 
 ## C06.02 — Сохранить observations/current facts
 
@@ -301,7 +301,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Транзакционный ingest с provenance и приоритетом свежести.
 - Проверка: Partial/late не затирают бизнес-поля и новые факты.
 - База оценки: Поле имя/ОС/IP/MAC, times/statuses из C01.
-- Статус: done; [runtime C06](evidence/C06-runtime.json), [передача](handoffs/C06.md).
+- Статус: done; passed local real PG/crypto/HTTPS/binary tests; hosted C06 unrun.
 
 ## C06.03 — Добавить ответственность, историю и outbox
 
@@ -311,7 +311,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Fallback team при создании, аудит и событие в той же транзакции.
 - Проверка: Нет бесхозной карточки или commit данных без события.
 - База оценки: 1 accountable role, asset history и минимальный consumer.
-- Статус: done; [runtime C06](evidence/C06-runtime.json), [передача](handoffs/C06.md).
+- Статус: done; passed local real PG/crypto/HTTPS/binary tests; hosted C06 unrun.
 
 ## C06.04 — Проверить реестр на PostgreSQL
 
@@ -321,7 +321,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Integration tests и fixtures повторов/конкуренции.
 - Проверка: Tenant isolation, rollback и idempotency подтверждены.
 - База оценки: 2 tenant; duplicate/late/conflict/rollback.
-- Статус: done; [runtime C06](evidence/C06-runtime.json), [передача](handoffs/C06.md).
+- Статус: done; passed local real PG/crypto/HTTPS/binary tests; hosted C06 unrun.
 
 ## Выход пакета
 
@@ -346,7 +346,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Machine identity и привязка site/tenant с ограниченными правами.
 - Проверка: Незарегистрированный/отозванный collector отклоняется.
 - База оценки: 1 enrollment flow и identity lifecycle базового ADR.
-- Статус: done; [runtime C07](evidence/C07-runtime.json), [передача](handoffs/C07.md).
+- Статус: done; passed local real PG/x509/mTLS and compiled server/collector; synthetic source; hosted C07 unrun.
 
 ## C07.02 — Реализовать центральный upload/status pipeline
 
@@ -356,7 +356,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Staging/validation/checkpoints и передача в реестр.
 - Проверка: Размер, схема, digest и tenant проверяются до применения.
 - База оценки: E1 JSON/stream envelope; крупный portable archive позже C23.
-- Статус: done; [runtime C07](evidence/C07-runtime.json), [передача](handoffs/C07.md).
+- Статус: done; passed local real PG/x509/mTLS and compiled server/collector; synthetic source; hosted C07 unrun.
 
 ## C07.03 — Реализовать collector ingress для агента
 
@@ -366,7 +366,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: HTTPS endpoint приёма наблюдений и outbound доставка в центр.
 - Проверка: Источник и provenance не подменяются collector metadata.
 - База оценки: 1 collector; agent ingress и center egress.
-- Статус: done; [runtime C07](evidence/C07-runtime.json), [передача](handoffs/C07.md).
+- Статус: done; passed local real PG/x509/mTLS and compiled server/collector; synthetic source; hosted C07 unrun.
 
 ## C07.04 — Проверить минимальный сквозной путь
 
@@ -376,7 +376,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Прогон контрактного источника через collector в PG.
 - Проверка: Результат виден в API со статусом applied и mapping UID.
 - База оценки: Синтетические fixtures C03; это ещё не проверка реального host agent.
-- Статус: done; [runtime C07](evidence/C07-runtime.json), [передача](handoffs/C07.md).
+- Статус: done; passed local real PG/x509/mTLS and compiled server/collector; synthetic source; hosted C07 unrun.
 
 ## Выход пакета
 
@@ -401,7 +401,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Сбор identity/hostname/ОС/IP/MAC с section statuses.
 - Проверка: На реальном тестовом хосте получены ожидаемые сведения.
 - База оценки: 1 ОС/архитектура из C01; ограниченный набор полей E1.
-- Статус: done; [runtime C08](evidence/C08-runtime.json), [передача](handoffs/C08.md).
+- Статус: done; passed local real Linux/amd64 host; three scheduled cycles + restart; real TLS/mTLS/PG; hosted C08 unrun.
 
 ## C08.02 — Реализовать agent enrollment и HTTPS client
 
@@ -411,7 +411,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Уникальная machine identity, binding к collector и TLS trust.
 - Проверка: Неверный endpoint/cert и revoked identity отклонены.
 - База оценки: 1 agent→collector connection; без PG и remote target secrets.
-- Статус: done; [runtime C08](evidence/C08-runtime.json), [передача](handoffs/C08.md).
+- Статус: done; passed local real Linux/amd64 host; three scheduled cycles + restart; real TLS/mTLS/PG; hosted C08 unrun.
 
 ## C08.03 — Добавить регулярный цикл и heartbeat
 
@@ -421,7 +421,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Расписание, раздельный heartbeat, jitter, timeout и graceful stop.
 - Проверка: Несколько циклов обновляют один asset без ручного запуска.
 - База оценки: Одна configurable schedule; heartbeat и inventory интервалы.
-- Статус: done; [runtime C08](evidence/C08-runtime.json), [передача](handoffs/C08.md).
+- Статус: done; passed local real Linux/amd64 host; three scheduled cycles + restart; real TLS/mTLS/PG; hosted C08 unrun.
 
 ## C08.04 — Показать ранний работающий вертикальный срез
 
@@ -431,7 +431,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Реальный agent→collector→server→PG→API/CLI-dev просмотр.
 - Проверка: Свежие данные обновились минимум 3 цикла, UID тот же.
 - База оценки: 1 живой хост; без заявления production-ready.
-- Статус: done; [runtime C08](evidence/C08-runtime.json), [передача](handoffs/C08.md).
+- Статус: done; passed local real Linux/amd64 host; three scheduled cycles + restart; real TLS/mTLS/PG; hosted C08 unrun.
 
 ## Выход пакета
 
@@ -456,7 +456,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Локальные assets, API client и version manifest.
 - Проверка: Production runtime не требует Node/CDN.
 - База оценки: 1 выбранный framework из C01; отдельный pipeline.
-- Статус: done; см. handoffs/C09.md и evidence/C09-runtime.json.
+- Статус: done; passed local real static UI + Chromium/TLS/PG; generated contracts/build; hosted unrun.
 
 ## C09.02 — Сделать login и реестр активов
 
@@ -466,7 +466,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Авторизация, список/фильтры/пагинация, обработка API errors.
 - Проверка: UI не получает лишние данные и не полагается на скрытие кнопок.
 - База оценки: Минимальные E1 endpoints C05/C06.
-- Статус: done; см. handoffs/C09.md и evidence/C09-runtime.json.
+- Статус: done; passed local real static UI + Chromium/TLS/PG; generated contracts/build; hosted unrun.
 
 ## C09.03 — Сделать карточку и состояния источников
 
@@ -476,7 +476,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Имя/ОС/IP/ответственная команда, section status и времена.
 - Проверка: Unknown/partial/stale/source health различаются.
 - База оценки: 1 карточка; 3 fixtures: полный, partial, нет контакта.
-- Статус: done; см. handoffs/C09.md и evidence/C09-runtime.json.
+- Статус: done; passed local real static UI + Chromium/TLS/PG; generated contracts/build; hosted unrun.
 
 ## C09.04 — Проверить совместимость и браузер
 
@@ -486,7 +486,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Contract/E2E на реальном API и static hosting.
 - Проверка: UI и backend обновляются независимо в согласованной паре.
 - База оценки: 2 ширины 800/1440, keyboard path, version mismatch.
-- Статус: done; см. handoffs/C09.md и evidence/C09-runtime.json.
+- Статус: done; passed local real static UI + Chromium/TLS/PG; generated contracts/build; hosted unrun.
 
 ## Выход пакета
 
@@ -511,7 +511,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Ограниченная локальная очередь и восстановление после reboot.
 - Проверка: Неутверждённые записи переживают crash/restart.
 - База оценки: Локальное хранилище по ADR; disk quota и retention.
-- Статус: done; см. handoffs/C10.md и evidence/C10-runtime.json.
+- Статус: done; passed local real PG/TLS/crash/ENOSPC/bounded24-call burst; hosted unrun; jobs runtime C12.
 
 ## C10.02 — Сохранить collector spool и двухэтапные ACK
 
@@ -521,7 +521,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Receipt/applied state и end-to-end confirmation routing.
 - Проверка: Потеря связи с центром не очищает agent/collector результаты.
 - База оценки: 2 очереди; 2 ACK уровня; duplicate/reorder.
-- Статус: done; см. handoffs/C10.md и evidence/C10-runtime.json.
+- Статус: done; passed local real PG/TLS/crash/ENOSPC/bounded24-call burst; hosted unrun; jobs runtime C12.
 
 ## C10.03 — Укрепить jobs/import/outbox recovery
 
@@ -531,7 +531,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Lease/claim/checkpoint/inbox, retry/backoff и dead-letter state.
 - Проверка: Crash между commit и ACK не дублирует эффекты.
 - База оценки: По одной точке сбоя до/после commit и delivery.
-- Статус: done; см. handoffs/C10.md и evidence/C10-runtime.json.
+- Статус: done; passed local real PG/TLS/crash/ENOSPC/bounded24-call burst; hosted unrun; jobs runtime C12.
 
 ## C10.04 — Проверить outage и перегрузку
 
@@ -541,7 +541,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Fault tests network cut, disk full, reconnect storm.
 - Проверка: Сохранность, квоты и явные ошибки подтверждены.
 - База оценки: Agent+collector+center restart по отдельности и ограниченный reconnect burst.
-- Статус: done; см. handoffs/C10.md и evidence/C10-runtime.json.
+- Статус: done; passed local real PG/TLS/crash/ENOSPC/bounded24-call burst; hosted unrun; jobs runtime C12.
 
 ## Выход пакета
 
@@ -566,7 +566,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Bootstrap/unseal/runbook, scoped policies и backup key procedure.
 - Проверка: Приложение не использует root token и открытые пароли в PG.
 - База оценки: 1 выбранная версия Bao; KV/Transit только по назначению.
-- Статус: done; handoffs/C11.md, decisions/C11-openbao.md.
+- Статус: done; passed local bounded E1; real Bao/PG/compiled daemons and race-checked TLS reload; limits documented.
 
 ## C11.02 — Подключить server secret references
 
@@ -576,7 +576,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Получение ограниченных secrets/ключевых операций по ADR.
 - Проверка: Недоступность Bao даёт объявленную деградацию.
 - База оценки: Server identity и разрешённые E1 операции без remote target secrets.
-- Статус: done; handoffs/C11.md, decisions/C11-openbao.md.
+- Статус: done; passed local bounded E1; real Bao/PG/compiled daemons and race-checked TLS reload; limits documented.
 
 ## C11.03 — Завершить enrollment/renew/revoke
 
@@ -586,7 +586,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Ротация agent/collector identities и защищённое хранение на ОС.
 - Проверка: Revoked identity не принимает новые задания/данные по политике.
 - База оценки: Agent, collector, server; expiry/renewal и clone case.
-- Статус: done; handoffs/C11.md, decisions/C11-openbao.md.
+- Статус: done; passed local bounded E1; real Bao/PG/compiled daemons and race-checked TLS reload; limits documented.
 
 ## C11.04 — Проверить секреты и доверие
 
@@ -596,7 +596,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Проверки logs/artifacts/errors и отказов Bao/cert.
 - Проверка: Тестовые секреты отсутствуют в выдаче и отчётах.
 - База оценки: Позитивные и негативные auth/TLS/Bao сценарии.
-- Статус: done; handoffs/C11.md, decisions/C11-openbao.md.
+- Статус: done; passed local bounded E1; real Bao/PG/compiled daemons and race-checked TLS reload; limits documented.
 
 ## Выход пакета
 
@@ -621,7 +621,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Login/context, assets list/get, sources/status с JSON и exit codes.
 - Проверка: CLI использует тот же API и tenant policy.
 - База оценки: Команды E1, pagination/timeout, без секретов в argv.
-- Статус: done; handoffs/C12.md, evidence/C12-progress.json.
+- Статус: done; passed local bounded E1:39unit/50PG/58fixtures,13operator/17CLI/16browser,8recovery+10agent+10collector race.
 
 ## C12.02 — Добавить конфигурацию и диагностику источников
 
@@ -631,7 +631,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Versioned profile, intervals и source health API.
 - Проверка: Heartbeat/freshness/completeness не смешиваются.
 - База оценки: Agent+collector profiles и last-success/last-contact.
-- Статус: done; handoffs/C12.md, evidence/C12-runtime.json.
+- Статус: done; passed local bounded E1:39unit/50PG/58fixtures,13operator/17CLI/16browser,8recovery+10agent+10collector race.
 
 ## C12.03 — Добавить метрики и аудит
 
@@ -641,7 +641,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Queue age, import/outbox lag, spool/disk, cert/backup age.
 - Проверка: Недоступность/перегрузка обнаруживается по метрикам.
 - База оценки: 1 минимальный набор exporters/alerts и structured logs.
-- Статус: done; handoffs/C12.md, evidence/C12-runtime.json.
+- Статус: done; passed local bounded E1:39unit/50PG/58fixtures,13operator/17CLI/16browser,8recovery+10agent+10collector race.
 
 ## C12.04 — Проверить операторский сценарий
 
@@ -651,7 +651,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Оператор меняет интервал и видит регулярный результат в UI/CLI.
 - Проверка: Изменения аудируются; отключённый источник не делает массовый missing.
 - База оценки: 1 человек, 1 агент, 1 collector, 2 tenant негативный тест.
-- Статус: done; handoffs/C12.md, evidence/C12-runtime.json.
+- Статус: done; passed local bounded E1:39unit/50PG/58fixtures,13operator/17CLI/16browser,8recovery+10agent+10collector race.
 
 ## Выход пакета
 
@@ -676,7 +676,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Systemd/Windows service по выбранной ОС, конфиги и data dirs.
 - Проверка: После перезагрузки весь поддержанный контур стартует сам.
 - База оценки: 1 E1 платформа и 1 способ серверной установки.
-- Статус: done (bounded E1); actual runtime evidence: handoffs/C13.md, evidence/C13-runtime.json.
+- Статус: done; actual nonroot units/LoadCredential/PG notify readiness and real kernel reboot/autostart passed.
 
 ## C13.02 — Подготовить подписываемые артефакты и версии
 
@@ -686,7 +686,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Release manifest/checksums/SBOM и ручное проверяемое обновление.
 - Проверка: Артефакты проверяются до применения; версия видна оператору.
 - База оценки: Server/agent/collector/UI/CLI; совместимость по C03.
-- Статус: done (bounded E1); actual runtime evidence: handoffs/C13.md, evidence/C13-runtime.json.
+- Статус: done; release14/update19 with schema-safe rollback/SIGKILL/checkpoint, actual systemd server+collector+agent updater and separate CLI/Web passed.
 
 ## C13.03 — Реализовать backup/restore и миграции
 
@@ -696,7 +696,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Backup PG/artifacts/Bao state, restore runbook и upgrade procedure.
 - Проверка: На чистом стенде восстановлены UID, доступы, очередь и история.
 - База оценки: 1 round-trip restore и 1 последовательное обновление схемы.
-- Статус: done (bounded E1); actual runtime evidence: handoffs/C13.md, evidence/C13-runtime.json.
+- Статус: done; PG18/Bao9/common checkpoint10/C11 schema31→33 upgrade13; private compiled migration34 fixture through updater19 passed.
 
 ## C13.04 — Проверить повторяемость поставки
 
@@ -706,7 +706,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Чистая установка, restart и upgrade/restore отчёт.
 - Проверка: Нет зависимости от build machine и потерянных локальных ключей.
 - База оценки: 2 чистых среды или восстановленные VM snapshots.
-- Статус: done (bounded E1); actual runtime evidence: handoffs/C13.md, evidence/C13-runtime.json.
+- Статус: done; two independently fresh VM factory runs, each9 checks; no guest Go/Node; restart/update and earlier clean-state restore rehearsal passed.
 
 ## Выход пакета
 
@@ -731,7 +731,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Матрица capabilities E1→AC→тесты и конфигурация стенда.
 - Проверка: Отложенные поля и функции не названы реализованными.
 - База оценки: AC E1 из §14; реальные host/collector/center.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; reviewed executable15scenario matrix; E1-T07 multi-agent and E1-T14 real24h remain explicit release gates.
 
 ## C14.02 — Запустить непрерывный 24-часовой прогон
 

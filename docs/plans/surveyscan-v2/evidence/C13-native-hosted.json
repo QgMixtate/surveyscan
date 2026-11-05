@@ -1,0 +1,34 @@
+{
+  "package": "C13",
+  "source_head": "8568927002b9de8b2b5fe3017095c4f840e3e718",
+  "run_id": 41940421446,
+  "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41940421446",
+  "conclusion": "success",
+  "artifact": "c13-boot-proof",
+  "reports": [
+    {
+      "file": "c13-boot-smoke.json",
+      "status": "passed",
+      "count": 9,
+      "sha256": "3cecc5d6e1299cc756cfed61080c9343daf946871a9c0ae92bce75cd42df648f"
+    },
+    {
+      "file": "c13-boot-stand1.json",
+      "status": "passed",
+      "count": 9,
+      "sha256": "3cecc5d6e1299cc756cfed61080c9343daf946871a9c0ae92bce75cd42df648f"
+    },
+    {
+      "file": "c13-boot-stand2.json",
+      "status": "passed",
+      "count": 9,
+      "sha256": "3cecc5d6e1299cc756cfed61080c9343daf946871a9c0ae92bce75cd42df648f"
+    }
+  ],
+  "scope": "two fresh real Debian12/systemd VM factory runs on hosted runner, actual kernel reboot/nonroot LoadCredential/manual operator unseal/preserved UID/combined systemd update/CLI/staticWeb; each9checks",
+  "unrun": [
+    "production KMS/split custody",
+    "physical power loss/HA/geo/RPO/RTO",
+    "24h acceptance"
+  ]
+}

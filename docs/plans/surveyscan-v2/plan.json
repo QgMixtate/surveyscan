@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C13 done bounded E1; C14.01 in progress; C14.02-C50 planned",
+  "status": "C01-C13 done bounded E1; C14.01 done; C14.02-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1290,12 +1290,12 @@
           "output": "Матрица capabilities E1→AC→тесты и конфигурация стенда",
           "verification": "Отложенные поля и функции не названы реализованными",
           "estimation_basis": "AC E1 из §14; реальные host/collector/center",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Подготовка и проектирование",
           "evidence": [
             "evidence/C14-plan.json"
           ],
-          "verification_status": "draft15scenario matrix; evidence review in progress after C13 acceptance"
+          "verification_status": "reviewed executable15scenario matrix; E1-T07 multi-agent and E1-T14 real24h remain explicit release gates"
         },
         {
           "id": "C14.02",
@@ -3724,7 +3724,10 @@
       "C07",
       "C08",
       "C09",
-      "C10"
+      "C10",
+      "C11",
+      "C12",
+      "C13"
     ],
     "done_tasks": [
       "C01.01",
@@ -3766,9 +3769,22 @@
       "C10.01",
       "C10.02",
       "C10.03",
-      "C10.04"
+      "C10.04",
+      "C11.01",
+      "C11.02",
+      "C11.03",
+      "C11.04",
+      "C12.01",
+      "C12.02",
+      "C12.03",
+      "C12.04",
+      "C13.01",
+      "C13.02",
+      "C13.03",
+      "C13.04",
+      "C14.01"
     ],
-    "next_package": "C11",
+    "next_package": "C14",
     "product_implementation_started": true
   }
 }

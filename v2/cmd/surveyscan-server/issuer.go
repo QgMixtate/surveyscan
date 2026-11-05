@@ -27,8 +27,12 @@ func bootstrapIssuer(args []string) error {
 	flags.SetOutput(io.Discard)
 	config := flags.String("config", "", "")
 	output := flags.String("output-directory", "", "")
+	validity := flags.Duration("server-validity", 24*time.Hour, "operator dev loopback leaf validity, 1h..168h")
 	if flags.Parse(args) != nil || flags.NArg() != 0 || *config == "" || *output == "" {
 		return errors.New("explicit private OpenBao config and output directory required")
+	}
+	if *validity < time.Hour || *validity > 7*24*time.Hour {
+		return errors.New("loopback server validity must be between 1h and 168h")
 	}
 	client, e := bao.Load(*config)
 	if e != nil {
@@ -74,7 +78,7 @@ func bootstrapIssuer(args []string) error {
 	if e != nil {
 		return e
 	}
-	leaf := &x509.Certificate{SerialNumber: serial, Subject: pkix.Name{CommonName: "SurveyScan dev loopback"}, NotBefore: time.Now().Add(-time.Minute), NotAfter: time.Now().Add(24 * time.Hour), IPAddresses: []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("::1")}, DNSNames: []string{"localhost"}, KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}}
+	leaf := &x509.Certificate{SerialNumber: serial, Subject: pkix.Name{CommonName: "SurveyScan dev loopback"}, NotBefore: time.Now().Add(-time.Minute), NotAfter: time.Now().Add(*validity), IPAddresses: []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("::1")}, DNSNames: []string{"localhost"}, KeyUsage: x509.KeyUsageDigitalSignature, ExtKeyUsage: []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth}}
 	raw, e = x509.CreateCertificate(rand.Reader, leaf, parsed, serverPublic, signer)
 	if e != nil {
 		return e
