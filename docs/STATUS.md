@@ -51,6 +51,13 @@ Windows runtime/API/ACL/SCM/reboot unrun. 53done сохраняется, C15.01 
 После реального≥86400s PASS — C14.03 triage/регрессия, C14.04 acceptance/поставка.
 Подготовка C15 не отменяет этот gate и не меняет измеряемые binaries/stand.
 Нет claim о100users/SLA/production KMS/HA/geo/physical power loss. SQL0000–0032/C03/C09 не менялись.
+Отдельная ветка C15 уже опубликована: [draft PR5](https://github.com/QgMixtate/surveyscan/pull/5),
+base codex/v2-c13-operations. В ней C15.01 design done (общий счёт54), C15.02 in_progress:
+draft12-section contract, изолированный Go payload validator и native Windows baseline.
+Реальный WindowsServer2022 run42126656625 на3eb6c79 прошёл identity/OS/network + synthetic envelope;
+расширенные8секций на13702a8 ждут hosted proof. C14 остаётся отдельным actualsoak, неPASS.
+Актуальная передача C15 — в docs/plans/surveyscan-v2/handoffs/C15.md той ветки;
+эта E1-копия сохраняет исходный53-task plan и pinned runner для проверки суточного результата.
 История ниже — прежние состояния; текущий статус определяется этим блоком и живым run report.
 
 ## Контекст архитектуры и история C01–C04
