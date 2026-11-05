@@ -28,9 +28,10 @@ v2 42003198591, Web42003198611, native42003198599, acceptance-evidence4200319878
 [Полные отчёты/хеши/timings](plans/surveyscan-v2/evidence/C14-hosted-802.json).
 Новые CI unit tests:10 synthetic evidence checks+5 safe diagnostic redaction checks; это не24hPASS.
 
-Ранее e7a07fe native failed после8checks на CLI-login. Ошибка не воспроизвелась в2local+4hosted
-freshVM; login2.625–4.706s. Таймауты/auth/runtime не менялись; retry внутриVM не добавлялся.
-Причина прежнего CLI error не подтверждена, [C14-D08](plans/surveyscan-v2/evidence/C14-defects.json)
+Ранее e7a07fe native failed после8checks на CLI-login. Исторически ошибка не воспроизводилась в2local+4hosted
+freshVM; теперь CLI-login снова failed в42126656841 на3eb6c79: HTTP503 за5.741s. login2.625–4.706s. Таймауты/auth/runtime не менялись; retry внутриVM не добавлялся.
+Внутренняя причина503 не подтверждена;5s login context — гипотеза, не доказанная RCA.
+[Recurrence proof](plans/surveyscan-v2/evidence/C14-native-cli-recurrence.json). Причина прежнего CLI error не подтверждена, [C14-D08](plans/surveyscan-v2/evidence/C14-defects.json)
 сохранён дляC14.03. Новая безопасная диагностика содержит exit/категорию/длительность и невыводит
 argv/stderr/credentials. Старые failed runs не переименованы вPASS.
 

@@ -502,3 +502,9 @@ Hosted Windows42126106107 passed schema/Go payload/build/version;42126656625 н�
 actual3-section native API baseline с synthetic origin/scope/sequence. Source13702a8 добавляет
 8baseline sections, localWindows cross-compile/vet passed, hostedpending. Standarduser/LocalService/
 Windows11/fullinventory/SCM/reboot/delivery не приняты. Original E1 runtime/frozen soak неизменны.
+
+Новый C14-D08 evidence: hosted boot42126656841/source3eb6c79 failed после8checks вCLIlogin.
+Sanitized artifact13461866650 показывает command_exit5/HTTP503/5.741s. Это повтор того же этапа,
+но внутренний root cause не установлен;5s auth context и медленныйTCG/PG — гипотезы.
+HTTP timeout/auth/runtime не менялись, retry не добавлен; C14.03 gate открыт.
+Failed proof сохранён вC14-native-cli-recurrence.json, не заменён успешным Windows CI.

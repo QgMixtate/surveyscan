@@ -1,0 +1,34 @@
+{
+  "package": "C14",
+  "defect": "C14-D08",
+  "run_id": 42126656841,
+  "source_revision": "3eb6c793b4d12436e1e486814444a26f85d28ae4",
+  "conclusion": "failure",
+  "artifact_id": 13461866650,
+  "sanitized_report_sha256": "639aad437d04ce3dff43e41a8f4ae5af2911b1a29b05aded1cb18cdf18f06faf",
+  "diagnostic": {
+    "package": "C13",
+    "status": "failed",
+    "qemu_exit": 0,
+    "guest_result_present": true,
+    "phase": "second_edge_cli",
+    "error_type": "CommandFailure",
+    "failed_guest_line": 64,
+    "guest_call_lines": [
+      372,
+      356,
+      64
+    ],
+    "completed_checks": 8,
+    "command_program": "surveyscanctl",
+    "command_exit": 5,
+    "command_elapsed_seconds": 5.741,
+    "cli_error": "HTTP_503"
+  },
+  "interpretation": "Same CLI-login phase failed again; new diagnostics establish HTTP503, not the internal backend cause. Earlier e7 failure had no status category.",
+  "reviewed_code": "access HTTP login context is5s; access unexpected internal errors map to503; command elapsed5.741s",
+  "hypothesis": "Request deadline under TCG/CPU or PG contention is plausible; no backend error/trace exists to prove which stage.",
+  "runtime_changed": false,
+  "workaround_added": false,
+  "remaining": "C14.03 must classify/resolve before release acceptance; successful repeats do not erase failures."
+}
