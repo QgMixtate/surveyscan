@@ -20,5 +20,49 @@
     "root_cause": "unknown, not inferred; phase/line diagnostic added before reproduction",
     "mandatory_gate": "repeatability must be investigated before release"
   },
-  "note": "do not promote previous source PASS over latest source failure; actual8560f57soak continues with frozen binaries"
+  "note": "do not promote previous source PASS over latest source failure; actual8560f57soak continues with frozen binaries",
+  "e3_boot": {
+    "run_id": 41955176081,
+    "source": "e3fe4491def8cc5ed852c1de5863a965877a4432",
+    "conclusion": "failure",
+    "guest": {
+      "package": "C13",
+      "status": "failed",
+      "qemu_exit": 0,
+      "guest_result_present": true,
+      "phase": "second_unseal_replay",
+      "error_type": "RuntimeError",
+      "failed_guest_line": 57,
+      "completed_checks": 4
+    },
+    "scope": "safe phase diagnostics retained; failure after4checks during second_unseal_replay, old helper call not distinguished"
+  },
+  "pending_fix": "5954f5c operator unseal waits active HTTPS health; two fresh local9+9passed before pure diagnostic subphase additions; hosted repeat pending",
+  "latest_boot": {
+    "source": "5954f5cd6067967e6a9a98fe4c3ddb364bb09dc1",
+    "run_id": 41956828433,
+    "conclusion": "success",
+    "proof": "C14-native-hosted.json",
+    "reports": [
+      {
+        "file": "c13-boot-smoke.json",
+        "status": "passed",
+        "count": 9,
+        "sha256": "3cecc5d6e1299cc756cfed61080c9343daf946871a9c0ae92bce75cd42df648f"
+      },
+      {
+        "file": "c13-boot-stand1.json",
+        "status": "passed",
+        "count": 9,
+        "sha256": "3cecc5d6e1299cc756cfed61080c9343daf946871a9c0ae92bce75cd42df648f"
+      },
+      {
+        "file": "c13-boot-stand2.json",
+        "status": "passed",
+        "count": 9,
+        "sha256": "3cecc5d6e1299cc756cfed61080c9343daf946871a9c0ae92bce75cd42df648f"
+      }
+    ]
+  },
+  "resolved_by_latest": "C14-hosted.json:5954f5c all3workflowsSUCCESS; old failures kept as historical records"
 }

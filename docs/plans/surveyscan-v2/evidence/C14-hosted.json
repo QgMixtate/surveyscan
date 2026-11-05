@@ -1,0 +1,179 @@
+{
+  "package": "C14",
+  "validated_source_head": "5954f5cd6067967e6a9a98fe4c3ddb364bb09dc1",
+  "branch": "codex/v2-c13-operations",
+  "pr": "https://github.com/QgMixtate/surveyscan/pull/4",
+  "v2": {
+    "run_id": 41956828439,
+    "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41956828439",
+    "conclusion": "success",
+    "reports": [
+      {
+        "file": "agent-smoke.json",
+        "status": "passed",
+        "count": 11,
+        "sha256": "cb2227691f590a4793a45c56f36e76a20e94634c58952fa61ddf85af13406951"
+      },
+      {
+        "file": "auth-smoke.json",
+        "status": "passed",
+        "count": 10,
+        "sha256": "2d1a715a334f68ca7cb89063959420c353a615f126c93665989af8530f939bc4"
+      },
+      {
+        "file": "bao-pipeline.json",
+        "status": "passed",
+        "count": 17,
+        "sha256": "0ee88b5f8f8abfddfe874ab1fbd93880805f86cb35256bd2612a2bcfbf1f2c4c"
+      },
+      {
+        "file": "bao-smoke.json",
+        "status": "passed",
+        "count": 4,
+        "sha256": "300ee43014fc1d92e4456701c4cc55260a804bbd5e39bc455d37eb5f57b94455"
+      },
+      {
+        "file": "c13-bao-restore-smoke.json",
+        "status": "passed",
+        "count": 9,
+        "sha256": "3c2651b4006d299aa54f13329378766a6c2b83912095b1c9cc3e944c0f4c12bd"
+      },
+      {
+        "file": "c13-checkpoint-smoke.json",
+        "status": "passed",
+        "count": 10,
+        "sha256": "c61bcc3816c4b4bc0f32682c44cdb656a78b26c9147ed523c66f0272efbaedc1"
+      },
+      {
+        "file": "c13-pg-restore-smoke.json",
+        "status": "passed",
+        "count": 18,
+        "sha256": "3438d3e16f1b66230f038874f58c919892544bc17aca2ea88cb75f06b751871f"
+      },
+      {
+        "file": "c13-release-smoke.json",
+        "status": "passed",
+        "count": 14,
+        "sha256": "3b10c3c158f7109949bf14fc0d420efc5aaf5883ec17e1b52b29e8ff64c7cacf"
+      },
+      {
+        "file": "c13-unit-check.json",
+        "status": null,
+        "count": null,
+        "sha256": "88b644586353756f580c4677ab0d05b19c0bb132c8716f6b793eba9cceb70702"
+      },
+      {
+        "file": "c13-update-smoke.json",
+        "status": "passed",
+        "count": 19,
+        "sha256": "89aada28fac0ee1f625b6ae8d47a8a693d979808e84f4ccec51940b9de220e55"
+      },
+      {
+        "file": "c13-upgrade-smoke.json",
+        "status": "passed",
+        "count": 13,
+        "sha256": "ef52b8d64201af94c04b29278f30ca21b9598670e49f34c81262a0a2f8fa0d95"
+      },
+      {
+        "file": "c14-reconnect-smoke.json",
+        "status": "passed",
+        "count": 5,
+        "sha256": "343d8d4eb2173fc5b4b3c3ac35b457860c2c460e42d865f7443c4b3c3d4f5f46"
+      },
+      {
+        "file": "cli-smoke.json",
+        "status": "passed",
+        "count": 17,
+        "sha256": "9cb3d83d5ccf505d27c25f5fd3e7c7ab5eef4d2e7a362603da3b33815d5d473e"
+      },
+      {
+        "file": "collector-renewal-smoke.json",
+        "status": "passed",
+        "count": 10,
+        "sha256": "2b7ecb998fec0b67f38f848417ee2a2e12108b10f72f088ae64131fb83a152c3"
+      },
+      {
+        "file": "contracts-validation.json",
+        "status": null,
+        "count": null,
+        "sha256": "e400250353d7c7f202a4e16a7c490933032c30c9500cbaec012e4261e95ec189"
+      },
+      {
+        "file": "diskfault-smoke.json",
+        "status": "passed",
+        "count": 1,
+        "sha256": "334315c18d01ffa8b80f6edb1fdd7ff7780d123f9356303ab1b4baaf67965a6a"
+      },
+      {
+        "file": "machine-smoke.json",
+        "status": "passed",
+        "count": 8,
+        "sha256": "3e23d8c14fbff3506906567f97ee96e5b5ac0d9f870b1770c37176769348fae6"
+      },
+      {
+        "file": "profiles-smoke.json",
+        "status": "passed",
+        "count": 13,
+        "sha256": "dccd2dfd5ebf66734c93faa02a78a3c631cd9379a76483e169b5f3a745ab7aa8"
+      },
+      {
+        "file": "recovery-smoke.json",
+        "status": "passed",
+        "count": 8,
+        "sha256": "ac4e2188345258d65253bbc56b24d38473e39284641b7efd0bdd6e57ac283220"
+      },
+      {
+        "file": "renewal-smoke.json",
+        "status": "passed",
+        "count": 10,
+        "sha256": "c89051f54a42093e231e5bb5c4ce48ecc9fbf8cd961e84079ef764e3e5c9e219"
+      },
+      {
+        "file": "smoke.json",
+        "status": "passed",
+        "count": 6,
+        "sha256": "4e78339e0996b942e1ebc59bfde59775ce94946d91b8679c222ea7cde9425b30"
+      }
+    ]
+  },
+  "web": {
+    "run_id": 41956828524,
+    "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41956828524",
+    "conclusion": "success",
+    "reports": [
+      {
+        "file": "web-smoke.json",
+        "status": "passed",
+        "count": 16,
+        "sha256": "93f192b8abe3352ece2d5fd9b1693f488878bbb21087aaf520f6463ad999ecad"
+      }
+    ]
+  },
+  "native": {
+    "run_id": 41956828433,
+    "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41956828433",
+    "conclusion": "success",
+    "proof": "C14-native-hosted.json",
+    "stands": 2,
+    "checks_each": 9
+  },
+  "local_verification": {
+    "top_level_go_tests": 43,
+    "subtests": 3,
+    "named_pass_events": 46,
+    "c03_fixtures": 58,
+    "named_fail_skip": 0
+  },
+  "measured_runtime_source": "8560f57b11e9ed0fecd5774942c4d616b3afddc6",
+  "runtime_inputs_identical_to_measured_source": true,
+  "runtime_input_files_checked": 136,
+  "runtime_input_framed_sha256": "32cae01b1499240a2131eed311b00f5aa1ef2682f134d59d1fb241aac0d906b9",
+  "scope": "hosted current source all3workflows passed; actual>=24h acceptance stillrunning on frozen8560f57 binaries; subsequent evidence/docs-only commit does not change validated code",
+  "unrun": [
+    "completed actual24h acceptance",
+    "C14.03 final post-soak triage",
+    "C14.04 accepted release/publication",
+    "production/HA/geo/SLA100users"
+  ],
+  "earlier_failures": "C14-hosted-progress.json and C14-native-failure.json retained, not relabeled"
+}

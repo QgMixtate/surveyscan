@@ -1,0 +1,35 @@
+{
+  "package": "C14",
+  "source_head": "5954f5cd6067967e6a9a98fe4c3ddb364bb09dc1",
+  "run_id": 41956828433,
+  "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41956828433",
+  "conclusion": "success",
+  "artifact": "c13-boot-proof",
+  "reports": [
+    {
+      "file": "c13-boot-smoke.json",
+      "status": "passed",
+      "count": 9,
+      "sha256": "3cecc5d6e1299cc756cfed61080c9343daf946871a9c0ae92bce75cd42df648f"
+    },
+    {
+      "file": "c13-boot-stand1.json",
+      "status": "passed",
+      "count": 9,
+      "sha256": "3cecc5d6e1299cc756cfed61080c9343daf946871a9c0ae92bce75cd42df648f"
+    },
+    {
+      "file": "c13-boot-stand2.json",
+      "status": "passed",
+      "count": 9,
+      "sha256": "3cecc5d6e1299cc756cfed61080c9343daf946871a9c0ae92bce75cd42df648f"
+    }
+  ],
+  "scope": "two fresh hosted native VM9+9 after active-Raft/verified collector TLS readiness gates; actual kernel reboot/LoadCredential/combined update/CLI/staticWeb; phase+numeric diagnostics retained on failure",
+  "earlier_failures": "C14-hosted-progress.json; never relabeled asPASS",
+  "remaining": [
+    "actual>=24h soak",
+    "C14.03 final triage/regression",
+    "C14.04 acceptance/publication steps"
+  ]
+}

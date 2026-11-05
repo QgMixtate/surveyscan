@@ -50,7 +50,7 @@
     {
       "id": "C14-D06",
       "component": "native boot acceptance fixture",
-      "status": "safe diagnostics persisted; verified collector TLS/edge readiness passed in two fresh local9+9; original1a6guest cause unrecoverable",
+      "status": "fix verified:local twoVM9+9 and latest5954f5c hosted twoVM9+9 passed; historical failures retained",
       "finding": "hosted1a6 second VM failed; old supervisor discarded guest phase/line so original cause is unknown",
       "change": "persist sanitized guest phase/line/error class without raw journals/keys; identified separate TypeSimple collector-start listener race and explicitly wait for verified CA+collector DNS TLS liveness; wait edge liveness",
       "causality": "startup race confirmed by code ordering; not claimed as proven cause of old failure",
@@ -62,7 +62,7 @@
     {
       "id": "C14-D07",
       "component": "native boot test operator Bao provisioning",
-      "status": "fixed; two fresh local native9+9 passed with active-health gate; hosted pending",
+      "status": "fix verified:local twoVM9+9 and latest5954f5c hosted twoVM9+9 passed; historical failures retained",
       "finding": "unseal response sealed=false does not establish active Raft readiness; immediate sys/mounts/transit failed during first_bao_init before app data",
       "change": "operator unseal waits for HTTPS sys/health200 initialized=true sealed=false standby=false before provisioning; no retry of writes/reset/custody regeneration; Bao HTTP status+operation retained safely on failure",
       "evidence": "C14-native-failure.json",

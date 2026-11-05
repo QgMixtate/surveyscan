@@ -1,41 +1,46 @@
 # Текущее состояние surveyscan
 
-Обновлено: 2026-11-05, Москва. C01–C13 приняты в пределах E1; C14.01 done,
-**53/200 подзадач**. C14.02 выполняется, C14.03/04 ждут суточного результата.
+Обновлено:2026-11-05, Москва. C01–C13 приняты в пределах E1; C14.01 done,
+**53/200 подзадач**. C14.02 выполняется; C14.03/04 planned до фактического суточного результата.
 Ветка `codex/v2-c13-operations`, draft [PR4](https://github.com/QgMixtate/surveyscan/pull/4).
-Main73ced7e не слит; production deployment и публикация среды не поручены.
-R-020 разрешает push/PR/CI, R-021 — автономное выполнение до лимита.
+R-020 разрешает push/PR/CI; R-021/R-022 — автоматический переход после приёмки зависимостей.
+Main73ced7e не слит, production deployment и публикация настроек среды не поручены.
 
-**Реальный 24h прогон работает**: `10812e7a-8a6a-4dae-9dd5-b0583f503c83`, PID3505270.
-Чистый опубликованный source8560f57, бинарники скопированы и зафиксированы SHA256.
-Начало: **5 ноября 00:31:49 UTC**, завершить можно не раньше **6 ноября 00:31:49 UTC**
-(03:31:49 Москва). [Снимок старта](plans/surveyscan-v2/evidence/C14-soak.json) — не PASS.
-Проверять `python scripts/soak_status.py <run-id>` изv2: PID и возраст sample, не только marker.
-Приватный status: `v2/.local/c14-soak/<run-id>/status.json`. Не останавливать/запечатывать
-общие dev PG/Bao. Runner переживает завершение вызова/чата, но не выключение машины.
+**Реальный24h прогон работает**: `10812e7a-8a6a-4dae-9dd5-b0583f503c83`, PID3505270.
+Чистый runtime source8560f57, frozen private copies/SHA256. Начало5 ноября00:31:49UTC;
+завершить можно не раньше **6 ноября00:31:49UTC** (03:31:49 Москва), при всех успешных checks.
+На [снимке](plans/surveyscan-v2/evidence/C14-soak-progress.json) пройдены оба настоящих разрыва
+связи, UID/sequence сохранены, очереди опустели; это **не** суточный PASS.
+Изv2: `python scripts/soak_status.py <run-id>` и `python scripts/soak_report.py <run-id>`.
+Local state `.local/c14-soak/<run-id>/status.json`; stdout `.local/c14-actual-soak.log`.
+Проверять PID/run ID и свежий sample; marker running без процесса неPASS. Не останавливать/
+запечатывать общий dev PG/Bao. Runner отделён от жизни вызова/чата, но не переживает выключение машины.
 [Инструкция](../v2/deploy/SOAK.md), [передача C14](plans/surveyscan-v2/handoffs/C14.md).
 
-[Матрица C14](plans/surveyscan-v2/evidence/C14-plan.json): 15 сценариев E1→AC→команды/границы.
-[Reconnect5](plans/surveyscan-v2/evidence/C14-reconnect.json) прошёл на3 реальных agent процессах/
-одном хосте: quota/backpressure, сохранность pending/sequence, simultaneous reconnect,
-четыре очереди пусты, replay без новых эффектов. [Preflight](plans/surveyscan-v2/evidence/C14-preflight.json)
-прошёл121.597s; это явно не24h. Verify43 top-level unit +3 subtests/58C03 прошёл. [Архитектурный guard](plans/surveyscan-v2/evidence/C14-architecture.json)
-проверил92 production Go files и7 негативных контрпримеров; его статические границы указаны явно.
-На1a6c611 hosted v2/Web SUCCESS, boot failed во второй VM; первая прошла9.
-Причина гостевого сбоя старым supervisor не сохранена. Добавлена безопасная phase/line диагностика;
-два новых локальных VM9+9 прошли, ошибка не воспроизвелась. Отдельно устранено подтверждённое
-code-ordering окно: Type=simple collector active не гарантировал TLS listener перед enrollment.
-Новый проверяемый TLS readiness wait и phase report проходят финальную runtime/hosted проверку.
-[Hosted progress](plans/surveyscan-v2/evidence/C14-hosted-progress.json).
+**Последний code5954f5c: все3 hosted workflows SUCCESS**:
+v2 run41956828439, Web41956828524 иnative boot41956828433.
+[Скачанные отчёты/хеши](plans/surveyscan-v2/evidence/C14-hosted.json),
+[native proof](plans/surveyscan-v2/evidence/C14-native-hosted.json).
+Две fresh VM9+9 подтвердили reboot/autostart/nonroot/LoadCredential/operator unseal/UID+queues/
+combined checked update/CLI/staticWeb. Readiness исправлен: unseal ждёт активную Raft health,
+collector — проверенный TLS listener. Безопасные phase/call-line diagnostics сохраняют причины;
+старые failed runs не переименованы вPASS. [Дефекты](plans/surveyscan-v2/evidence/C14-defects.json).
 
-C13 [runtime](plans/surveyscan-v2/evidence/C13-runtime.json),
-[hosted](plans/surveyscan-v2/evidence/C13-published-final.json),
-[native hosted](plans/surveyscan-v2/evidence/C13-native-hosted.json): на8568927 v2 run41940421426,
-Web41940421462 иboot41940421446 **SUCCESS**. Две свежих Debian12/systemd VM9+9:
-настоящий reboot, nonroot/LoadCredential, operator unseal, UID/queues, combined checked update,
-CLI/static Web. Updater19 со schema/checkpoint/fence/SIGKILL/rollback/recovery.
-SQL0000–0032/C03/C09 не менялись. ProductionKMS/HA/geo/physical power loss/100users не доказаны.
-До86400 реальных секунд и всех gates нельзя закрыть C14, принять SMB или начать C15.
+Local verification:43 top-level Go tests +3 subtests,58 C03 fixtures; исходные architecture guards
+сохранены, новый SQL guard проверяет92 production Go files/7 контрпримеров.136 runtime inputs
+Go/SQL/contracts/build files побайтно равны measured8560f57; после него менялись tests/docs/operator stand.
+[Reconnect5](plans/surveyscan-v2/evidence/C14-reconnect.json) на3 процессах/одном хосте и
+[preflight121.597s](plans/surveyscan-v2/evidence/C14-preflight.json) прошли; preflight не заменяет сутки.
+
+[Private candidate27files](plans/surveyscan-v2/evidence/C14-candidate.json): clean8560f57 Go/Web,
+те же3 daemon hashes, test sign/verify/staging и [Chromium16](plans/surveyscan-v2/evidence/C14-candidate-browser.json)
+на точных artifacts passed. Private test signing key удалён, official release не опубликован/не принят.
+[Draft notes](releases/surveyscan-v2-e1-candidate.md), [матрица15 E1 сценариев](plans/surveyscan-v2/evidence/C14-plan.json).
+
+Следующий переход: после реального≥86400s PASS — C14.03 triage/регрессия, C14.04 acceptance/
+поставка, затем C15 без нового routine confirmation поR-022. До этого C14/C15 не считать ready.
+Нет claim о100users/SLA/production KMS/HA/geo/physical power loss. SQL0000–0032/C03/C09 не менялись.
+История ниже — прежние состояния; текущий статус определяется этим блоком и живым run report.
 
 ## Контекст архитектуры и история C01–C04
 
@@ -167,3 +172,18 @@ private test signing key удалён, production trust/release не утвер�
 прошли [Chromium16](plans/surveyscan-v2/evidence/C14-candidate-browser.json).
 [Предварительные release notes](releases/surveyscan-v2-e1-candidate.md); C14.04 остаётсяplanned.
 `soak_report.py <run-id>` сводит только завершённые samples; running/preflight/failed неPASS.
+
+C14 native continuation: e3fe449 failed hosted boot at second_unseal_replay after4checks; safe
+phase/line retained, old until-helper line did not identify the exact replay condition. Local e3
+also reproduced first_bao_init/sys/mounts/transit failure immediately after unseal. Operator now
+waits HTTPS health200 initialized=true/sealed=false/standby=false before provisioning, without
+write retries/storage reset/custody regeneration. Two fresh local VM9+9 passed with this gate.
+5954f5c published the gate and granular readiness/inventory/queue phases plus numeric guest call
+lines/Bao HTTP status; no raw journals/custody upload. Hosted repeat pending. Actualsoak8560f57
+passed both real two-minute cuts;124+ observations/oneUID/no duplicates/both queues drained,
+max sampled inventoryage184.44s<300. Stillrunning/not24hPASS;53done and C15 waits.
+
+Latest native acceptance:5954f5c hosted boot41956828433 SUCCESS, two fresh VM9+9,
+[proof](plans/surveyscan-v2/evidence/C14-native-hosted.json). Active-Raft/readiness fixes verified;
+latestfullv2 regression41956828439 stillpending, Web41956828524 check separately.
+Actual24h8560f57 remains running; both real network faults recovered, no24hPASS claim.

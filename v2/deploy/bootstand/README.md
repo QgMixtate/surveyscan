@@ -48,3 +48,9 @@ guest.py — тестовый оператор с synthetic identities, не pro
 остаётся в .local/c13-boot-smoke.json. Raw prepare/serial logs приватны и не upload.
 CI boot.yml повторяет factory на двух независимо созданных VM, сохраняет только JSON.
 RAM2GiB, disk3GiB sparse, timeout15min/run; host networking/cgroup mounts не используются.
+
+Operator readiness gates: unseal response sealed=false не доказывает активную Raft готовность;
+до provisioning тест ждёт verified HTTPS sys/health200 с initialized=true/sealed=false/standby=false.
+Collector TypeSimple active не доказывает TLS listener: перед enroll проверяются CA и collector DNS.
+Ошибки сохраняют только фазу, error class, guest call lines и Bao HTTP status/operation;
+raw exception/journal/custody остаются private. Это не повтор исполнения доPASS.

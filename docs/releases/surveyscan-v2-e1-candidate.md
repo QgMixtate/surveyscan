@@ -42,9 +42,10 @@ Linux/amd64. Все четыре Go components и Web имеют source_dirty=fa
   [Browser](../plans/surveyscan-v2/evidence/C14-candidate-browser.json).
 - Короткий preflight121.597s прошёл, но никогда не заменяет сутки.
 
-Последний hosted1a6c611: v2/Web SUCCESS, повторный boot failed во второй VM. Причина старым
-supervisor не сохранена; безопасная phase/line диагностика и повторные независимые стенды в работе.
-Нельзя выдавать прежний C13 PASS за результат этого неуспешного повторения.
+Последний code5954f5c прошёл все3 hosted workflows: v2/Web/native, включая два fresh VM9+9.
+[Отчёты/хеши](../plans/surveyscan-v2/evidence/C14-hosted.json). Ранние native failures сохранены:
+operator readiness исправлен ожиданием активной Raft после unseal и проверенного collector TLS.
+Безопасная диагностика различает стадии; ранние неуспешные runs не выдаются заPASS.
 
 ## Оставшиеся обязательные условия
 

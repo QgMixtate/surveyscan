@@ -5,7 +5,7 @@
   "recorded_status": "running",
   "runtime_observed": {
     "pid_matches_run": true,
-    "sample_age_seconds": 3.921,
+    "sample_age_seconds": 25.947,
     "state": "live"
   },
   "accepted_24h": false,
@@ -20,22 +20,22 @@
   "measured_started_at": "2026-11-05T00:31:49.765786Z",
   "measured_ended_at": null,
   "required_seconds": 86400,
-  "recorded_elapsed_seconds": 7502.375,
-  "complete_samples": 239,
-  "last_sample_at": "2026-11-05T02:36:52.824790Z",
-  "latest_observations": 124,
+  "recorded_elapsed_seconds": 8856.24,
+  "complete_samples": 282,
+  "last_sample_at": "2026-11-05T02:59:26.610933Z",
+  "latest_observations": 146,
   "end_observations": null,
   "max_inventory_age_seconds": 184.439111,
   "max_source_inventory_age_seconds": 184.981892,
   "peak_rss_kib": {
-    "agent": 16528,
-    "collector": 17260,
+    "agent": 16792,
+    "collector": 17292,
     "center": 156816
   },
   "latest_rss_kib": {
-    "center": 22300,
-    "collector": 16812,
-    "agent": 16324
+    "center": 23156,
+    "collector": 17028,
+    "agent": 16004
   },
   "peak_pending_files": {
     "agent": 3,
@@ -89,6 +89,6 @@
     }
   ],
   "scope": "sampled acceptance measurements, not production capacity/SLA; running/stale/failed/preflight never count as24h acceptance",
-  "snapshot_recorded_at": "2026-11-05T02:37:52.418619+00:00",
-  "status_note": "running at snapshot; both planned network faults observed and recovered, not24h acceptance"
+  "snapshot_recorded_at": "2026-11-05T02:59:52.598488+00:00",
+  "status_note": "running snapshot only; both real network faults recovered; not24h acceptance"
 }

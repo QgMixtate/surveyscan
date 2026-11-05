@@ -29,7 +29,7 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10 recovery done; C11 done (bounded E1), C12/C13 done bounded E1; C14.01 done, C14.02 preparation, C15–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10 recovery done; C11 done (bounded E1), C12/C13 done bounded E1; C14.01 done, C14.02 actual24h running, C15–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
@@ -183,3 +183,21 @@ guest diagnostic, точная причина неизвестна. Безопа
 collector TypeSimple active-before-TLS устранён явным CA+collector DNS liveness wait передenroll;
 edge также ждётTLS liveness. Не выдавать эту исправленную гонку за доказанную причину старого сбоя.
 Final source/native/hosted checks pending. Actual24h8560f57 не менялся, C14.02IP/53done.
+
+C14 native continuation: e3fe449 failed hosted boot at second_unseal_replay after4checks; safe
+phase/line retained, old until-helper line did not identify the exact replay condition. Local e3
+also reproduced first_bao_init/sys/mounts/transit failure immediately after unseal. Operator now
+waits HTTPS health200 initialized=true/sealed=false/standby=false before provisioning, without
+write retries/storage reset/custody regeneration. Two fresh local VM9+9 passed with this gate.
+5954f5c published the gate and granular readiness/inventory/queue phases plus numeric guest call
+lines/Bao HTTP status; no raw journals/custody upload. Hosted repeat pending. Actualsoak8560f57
+passed both real two-minute cuts;124+ observations/oneUID/no duplicates/both queues drained,
+max sampled inventoryage184.44s<300. Stillrunning/not24hPASS;53done and C15 waits.
+
+C14 publication checkpoint: source5954f5c hosted v2 41956828439/Web41956828524/native41956828433
+всеSUCCESS. Скачаны21 sanitized v2 reports (reconnect5/updater19), Web16, native twoVM9+9,
+хеши в C14-hosted.json/C14-native-hosted.json.136 runtime inputs побайтно равны measured8560f57.
+Actualsoak10812e7a-8a6a-4dae-9dd5-b0583f503c83 ещёrunning; обе реальных networkfaults восстановлены,
+53done/C14.02IP. Final docs/evidence-only commit with[skip ci] не меняет validated code.
+Следующие C14.03/04→C15 после фактического86400s PASS без нового routine confirmation;
+private rawserial/keys/disks/custody/soakstate не опубликованы.

@@ -311,5 +311,10 @@
     "both pending queue counts/bytes and final committed result equality/drain",
     "per-process RSS/CPU and outbox unapplied count",
     "readiness/scoped Bao renewal and actual machine leaf renewal at23h"
-  ]
+  ],
+  "current_release_gates": [
+    "actual>=24h run10812e7a-8a6a-4dae-9dd5-b0583f503c83 not yet complete",
+    "post-soak C14.03 triage/regression and C14.04 final acceptance"
+  ],
+  "latest_hosted": "C14-hosted.json:5954f5c v2/Web/native allSUCCESS"
 }
