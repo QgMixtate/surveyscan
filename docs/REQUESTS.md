@@ -475,3 +475,23 @@ C14-hosted-802.json:21 v2 reports/Web16/дваprimaryVM9+9+дваextraVM9+9;15 P
 сохранён дляC14.03, auth/timeouts не менялись, VM retry нет. Actualsoak уже≥9h, все4fault/restart
 действия выполнены, queuesempty, evidence audit pending.53done/C14.02IP. Private pinnedfollow-up
 843094 запишетreview автоматически послеfinish; не меняетGit/plan/C15 и не запускает чат.
+
+
+## R-023 — Продолжать независимую подготовку, пока заканчивается суточный прогон
+
+Дата: 2026-11-06, Москва. Запрос: «Есть ли смысл дожидать этого времени, уже почти 24 часа прошло, может продолжим?»
+Статус: in_progress. Пользователь разрешает продолжать; независимая подготовка Windows C15.01
+вынесена в отдельный worktree `/workspace/surveyscan-c15`, ветка `codex/v2-c15-windows` от f253a27.
+Это уточняет прежний R-022: ожидание C14 не блокирует проектирование следующего пакета.
+C14.02 всё ещё running, не PASS; release/acceptance C14 и фактический Windows runtime не объявлены готовыми.
+
+Проверено live: PID3505270 совпадает с run10812e7a, sample свежий; elapsed80023.77s
+(22h13m), observations1313, обе очереди0, renewal_receipts0 до ожидаемого окна около23h.
+Earliest finish остаётся6 ноября03:31:49МСК; pinned runner/reference/follow-up и общие PG/Bao не менялись.
+C15.01: подготовлена матрица 12 секций §6.1, API/права/ошибки, ОС Windows11 x64/Server2022 x64
+как цели реализации; обнаружены C03 three-section contract и Linux-only locks/host binding/privatefile
+ограничения. Windows/amd64 cross-build на Go1.27.3 exit0, PE32+; native Windows/API/ACL/SCM/reboot unrun.
+Architecture guards прошли. C15 branch evidence/матрица публикуются отдельно по R-020.
+Следующее: аддитивный observation/detail contract, затем Windows adapter/service и фактические тесты;
+C14 после настоящих24h — read-only acceptance, triage C14-D08 и C14.04.
+53/200 done; C15.01 in_progress, C14 completion не подменён подготовкой C15.

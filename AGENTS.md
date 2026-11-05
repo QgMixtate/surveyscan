@@ -29,13 +29,13 @@ FTS Tantivy/Bluge ещё выбирается; 100 active users — сценар
 Первый рабочий SMB-срез — постоянный цикл E1; enterprise HA/geo/шарды не блокируют первый релиз.
 Волна 2 — ЖЦ/склад/запчасти/движения; волна 3 — ITSM.
 
-[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10 recovery done; C11 done (bounded E1), C12/C13 done bounded E1; C14.01 done, C14.02 actual24h running, C15–C50 planned.
+[План](docs/plans/surveyscan-v2/README.md): 50 пакетов/чатов, 200 подзадач; C01–C03 завершены как проектирование/контракты, C04 — Go-каркас/dev-стенд, C05 — auth/tenant scope, C06 — реестр/проекция/outbox; C07 — collector/upload; C08 — live Linux agent/heartbeat; C09 — Web UI/detail API; C10 recovery done; C11 done (bounded E1), C12/C13 done bounded E1; C14.01 done, C14.02 actual24h running; по R-023 независимая C15.01 preparation в codex/v2-c15-windows, C15.02–C50 planned.
 Для текущей работы читать TASK_INDEX.md и packages/Cxx.md, затем только нужные spec sections.
 Не читать весь WBS в каждом чате. Handoff — по HANDOFF_TEMPLATE.md; evidence и статусы — в plan.json,
 краткая передача в STATUS и REQUESTS. При продолжении сохранять уже заполненные evidence/статусы.
 C04/0.5/план опубликованы в codex/v2-c04-foundation (7407da6); C05 — ветка codex/v2-c05-auth. Main не слит. Точные publication refs — в STATUS/evidence; не выдавать local tests за hosted CI.
 Планирование не означает разрешение сразу реализовать все пакеты или выполнить production deployment.
-Текущий пакет — C14; ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
+Текущий acceptance пакет — C14; независимая подготовка C15.01 разрешена R-023 без объявления C14 done. Ранний сквозной цикл после C08, эксплуатационная приёмка первого SMB после C14.
 Матрица замечаний: docs/specifications/requirements-traceability-v0.5.md;
 исследование аналогов: docs/research/inventory-platform-analogues.md.
 Правила snapshot/dashboard ниже относятся к текущей Python v1, не архитектуре v2.
