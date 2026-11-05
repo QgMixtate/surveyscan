@@ -51,7 +51,9 @@ Go/SQL/contracts/build files побайтно равны measured8560f57; пос
 `codex/v2-c15-windows`. C15.01 design завершён: матрица Windows API/прав и cross-build PE32+;
 Windows runtime/API/ACL/SCM/reboot unrun. 54done, C15.02 in_progress: draft observation1.2/Python19 + isolated Go payload validator
 (corpus19/semantic7/malformed3) passed; make verify/C03 58 passed. Hosted Windows first run
-42125403759 failed in checker cp1252 read; UTF-8 fix made, repeat pending. Pipeline/native API unrun.
+42125403759 failed in checker cp1252 read; UTF-8 fix made, repeat42126106107 SUCCESS
+(Python/Go payload/build/version). Native baseline APIs добавлены отдельно и ждут hosted proof;
+pipeline, служба, DACL/reboot unrun.
 После реального≥86400s PASS — C14.03 triage/регрессия, C14.04 acceptance/поставка.
 Подготовка C15 не отменяет этот gate и не меняет измеряемые binaries/stand.
 Нет claim о100users/SLA/production KMS/HA/geo/physical power loss. SQL0000–0032/C03/C09 не менялись.

@@ -1,9 +1,9 @@
 name: surveyscan-c15-contract-preparation
 on:
   push:
-    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', '.github/workflows/c15.yml']
+    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', '.github/workflows/c15.yml']
   pull_request:
-    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', '.github/workflows/c15.yml']
+    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', '.github/workflows/c15.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -11,7 +11,7 @@ concurrency:
   group: surveyscan-c15-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
-  contract-and-version-only:
+  contract-and-native-baseline:
     runs-on: windows-2022
     timeout-minutes: 10
     steps:
@@ -30,6 +30,9 @@ jobs:
       - name: Go payload validation (synthetic inputs only)
         working-directory: v2
         run: go test -count=1 ./internal/platform/wire
+      - name: Native Windows API baseline (isolated, no delivery or service)
+        working-directory: v2
+        run: go test -count=1 -v ./internal/agent/windowsinventory
       - name: Build and run version command only on Windows Server 2022
         working-directory: v2
         shell: pwsh
@@ -41,4 +44,4 @@ jobs:
           $parsed = $version | ConvertFrom-Json
           if ($parsed.component -ne 'agent') { throw 'Unexpected component' }
           Write-Output $version
-          Write-Output 'Inventory, service, DACL, update and reboot were not executed.'
+          Write-Output 'Only isolated baseline APIs and version were checked; no scheduled delivery, service, DACL, update or reboot.'

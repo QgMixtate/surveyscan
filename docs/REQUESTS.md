@@ -510,3 +510,9 @@ Hosted Windows42125403759 на bb5c344 failed в Python-checker cp1252/UTF-8 д�
 explicit UTF-8 fix и Python/Go-compatible regex проверены локально, repeat требуется.
 Это изолированные C15 изменения; исходная C14 рабочая копия/pinned files/PG/Bao не менялись.
 Draft stacked PR5: https://github.com/QgMixtate/surveyscan/pull/5 (base codex/v2-c13-operations).
+
+C15 hosted repeat42126106107 на142b889 SUCCESS: Python19, Go payload corpus и build/version
+реально выполнены на Windows Server2022; native API тогда ещё не запускались. Первый failed run сохранён.
+Следующий изолированный native baseline добавлен: GetComputerNameEx/HKLM64 boundedMachineGuid/
+RtlGetVersion/net.Interfaces;3 partial sections,9 unsupported. Windows test executable cross-compiled
+локально; actual native API тест ожидает следующего hosted run. Служба и delivery не подключены.
