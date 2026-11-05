@@ -27,6 +27,12 @@ IMAGE = 'surveyscan-c13-boot-tools:local'
 DOCKER = ['docker', '--host=unix:///var/run/docker.sock']
 
 
+class VMFailure(RuntimeError):
+    def __init__(self, record):
+        super().__init__('actual VM boot/reboot failed; sanitized phase/line in report, raw serial private')
+        self.record = record
+
+
 def main():
     STATE.mkdir(parents=True, exist_ok=True, mode=0o700)
     (STATE/'c13-boot-smoke.json').write_text(json.dumps({'status':'in_progress','scope':'actual QEMU VM'})+'\n')
@@ -97,7 +103,15 @@ def main():
                     '-append','root=/dev/vda rw console=ttyS0 init=/lib/systemd/systemd systemd.log_level=warning'],env=ENV,stdout=log,stderr=subprocess.STDOUT,timeout=900)
             serial=(STATE/'c13-vm-serial.log').read_text(errors='replace')
             records=[json.loads(line.split('SURVEYSCAN_BOOT_RESULT ',1)[1].strip()) for line in serial.splitlines() if 'SURVEYSCAN_BOOT_RESULT ' in line]
-            assert result.returncode==0 and records and records[-1]['status']=='passed','actual VM boot/reboot failed; inspect private serial log'
+            if result.returncode != 0 or not records or records[-1]['status'] != 'passed':
+                guest = records[-1] if records else {}
+                # No raw exception text, argv, journal, credentials or unseal material.
+                diagnostic = {'package': 'C13', 'status': 'failed', 'qemu_exit': result.returncode,
+                              'guest_result_present': bool(records)}
+                for key in ('phase', 'error_type', 'failed_guest_line', 'completed_checks'):
+                    if key in guest:
+                        diagnostic[key] = guest[key]
+                raise VMFailure(diagnostic)
             (STATE/'c13-boot-smoke.json').write_text(json.dumps(records[-1],indent=2)+'\n')
             print(json.dumps(records[-1]))
         finally:
@@ -110,5 +124,7 @@ if __name__=='__main__':
     signal.signal(signal.SIGTERM,interrupted)
     try:main()
     except Exception as error:
-        (STATE/'c13-boot-smoke.json').write_text(json.dumps({'status':'failed','error_type':type(error).__name__})+'\n')
+        report = error.record if isinstance(error, VMFailure) else {'status':'failed','error_type':type(error).__name__}
+        (STATE/'c13-boot-smoke.json').write_text(json.dumps(report)+'\n')
+        print(json.dumps(report))
         raise

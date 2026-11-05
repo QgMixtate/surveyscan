@@ -1,10 +1,11 @@
-# C13 — backup/restore по компонентам (в работе)
+# C13 — backup/restore E1
 
 Проверены **PostgreSQL component round-trip и отдельный OpenBao Raft restore**. Полная согласованная копия PostgreSQL,
 OpenBao и файлового состояния проверена отдельным bounded development rehearsal ниже;
 её production/systemd-приёмка остаётся открытой. `pg_backup.py` не обновляет
 общий backup-age marker и явно возвращает `complete_system_backup=false`.
-Нет утверждённых RPO/RTO, geo DR или доказанного reboot recovery.
+Нет утверждённых RPO/RTO или geo DR. Reboot с существующим state проверен отдельными
+native systemd VM; это не восстановление общего checkpoint в новой systemd VM.
 
 ## PostgreSQL17
 

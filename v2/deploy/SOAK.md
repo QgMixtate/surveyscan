@@ -18,6 +18,7 @@ python scripts/soak.py --preflight-seconds 150 --run-id <new-uuid>
 ```sh
 python scripts/soak.py --hours 24 --run-id <new-uuid>
 python scripts/soak_status.py <run-uuid>
+python scripts/soak_report.py <run-uuid>
 ```
 
 Runner следует запускать отдельным supervisor/session с закрытым stdin и приватным stdout,
@@ -39,9 +40,9 @@ TLS server leaf120h — явный dev bootstrap, обычный default24h не
 
 | Elapsed | Действие |
 |---|---|
-| 1h | Разрыв agent→collector; restart agent через1s для реального offline сбора |
+| 1h | Разрыв agent→collector; restart agent после разрыва для реального offline сбора |
 | 1h2m | Восстановление первой связи |
-| 2h | Разрыв collector→center; restart agent через1s |
+| 2h | Разрыв collector→center; restart agent после разрыва |
 | 2h2m | Восстановление второй связи |
 | 3h | Restart collector |
 | 4h | Restart center |
@@ -66,3 +67,9 @@ production backoff/ACK. Проверяются пустые обе очеред�
 на одном хосте, явный quota filler380000bytes в private spool512KiB, bounded retries и
 одновременный reconnect. Это не три физические машины; настоящий ENOSPC имеет отдельный
 `scripts/diskfault.py` в disposable tmpfs. Все границы сохранены в E1 matrix.
+
+`soak_report.py` сводит только завершённые JSONL записи: freshness, RAM, очереди/outbox,
+наблюдения и события. Проверяет живой PID через status helper, не раскрывает host facts/configs/keys.
+Preflight, failed и stale marker не дают accepted_24h; source/binary hashes сохраняются.
+Для старых preflight, где некоторых метрик ещё не было, соответствующее значение остаётся null.
+Сводка не меняет plan status и не запускает следующий пакет до приёмки зависимостей.

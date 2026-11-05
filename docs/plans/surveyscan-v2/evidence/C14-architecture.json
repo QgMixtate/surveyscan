@@ -16,7 +16,7 @@
   ],
   "source_file": "v2/internal/architecture/sql_boundaries_test.go",
   "source_sha256": "cb946f7bb3c570887872eb7f2382401753a56474abddc1ee0a88018827521404",
-  "verification": "make verify passed locally; go/parser source inspection + negative fixtures; no DB/machine fault; running8560f57 binaries unchanged",
+  "verification": "fmt-check/vet/contracts + full Go JSON tests passed; original two guards byte-identical to8560f57;92 production files inspected",
   "limits": [
     "conservative AST/literal checks, not a complete PostgreSQL parser or runtime database privilege boundary",
     "foreign reads require reviewed read projection; guard does not establish multi-process equivalence",
@@ -28,6 +28,6 @@
   "passed_named_events": 46,
   "failed_named_tests": 0,
   "skipped_named_tests": 0,
-  "count_method": "final Go JSON run to confirm43 top-level +3 child subtests; packages without tests counted separately",
+  "count_method": "actual final go test -json -count=1:43 top-level pass +3 child subtests;0 named fail/skip",
   "original_guards": "TestImportBoundaries/TestContractsUnchanged restored byte-identically from8560f57; SQL/import extension is a separate additional test file"
 }

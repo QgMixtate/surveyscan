@@ -8,6 +8,7 @@ from pathlib import Path
 import pwd
 import re
 import shutil
+import socket
 import ssl
 import subprocess
 import time
@@ -17,6 +18,13 @@ BIN = Path('/opt/surveyscan/current/bin')
 SEED = Path('/root/boot-seed')
 STATE = Path('/root/boot-phase.json')
 CHECKS = []
+PHASE = 'initializing'
+
+
+def phase(name):
+    global PHASE
+    PHASE = name
+    print('SURVEYSCAN_BOOT_PHASE ' + name, flush=True)
 
 
 def command(args, env=None, timeout=60):
@@ -49,8 +57,11 @@ def until(predicate, message, seconds=120):
     raise RuntimeError(message)
 
 
-def request(port, tls, method, path, body=None, headers=None, timeout=10):
+def request(port, tls, method, path, body=None, headers=None, timeout=10, server_name=None):
     connection = http.client.HTTPSConnection('127.0.0.1', port, context=tls, timeout=timeout)
+    if server_name:
+        connection.sock = tls.wrap_socket(socket.create_connection(('127.0.0.1', port), timeout=timeout),
+                                          server_hostname=server_name)
     h = dict(headers or {})
     if body is not None:
         body = json.dumps(body).encode()
@@ -104,11 +115,12 @@ def as_agent(*args):
 
 
 def first_boot(seed):
-    print('SURVEYSCAN_BOOT_PHASE first_boot_operator_setup', flush=True)
+    phase('first_infra_setup')
     command(['python3', '/usr/local/lib/surveyscan-boot/updater.py', 'status', '--root', '/', '--public-key', str(SEED / 'release.pub')])
     until(lambda: sql('SELECT 1', 'postgres') == '1', 'PG17 not ready')
     sql('CREATE DATABASE surveyscan_v2', 'postgres')
     until(lambda: not bao('sys/init')['initialized'], 'Bao not ready')
+    phase('first_bao_init')
     custody = bao('sys/init', {'secret_shares': 1, 'secret_threshold': 1})
     save('/root/operator-custody.json', custody)
     unseal(custody)
@@ -133,6 +145,7 @@ def first_boot(seed):
                   'token_file': '/etc/surveyscan-server/bao_token', 'policy': 'surveyscan-server',
                   'transit_mount': 'transit', 'kv_mount': 'kv', 'keys': keys, 'secrets': {}}
     save('/root/issuer-config.json', bao_config)
+    phase('first_issuer')
     command([BIN / 'surveyscan-server', 'bootstrap-issuer', '--config', '/root/issuer-config.json', '--output-directory', '/root/issuer'])
     for name in ('ca.pem', 'server.pem', 'server.key'):
         shutil.copyfile('/root/issuer/' + name, '/etc/surveyscan-server/' + name)
@@ -153,6 +166,7 @@ def first_boot(seed):
     save('/root/admin-password', seed['admin_password'] + '\n')
     command([BIN / 'surveyscan-server', 'bootstrap-admin', '--tenant', seed['tenant'], '--tenant-name', 'Boot synthetic', '--username', 'admin', '--password-file', '/root/admin-password'], env=env)
     sql(f"INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES('{seed['tenant']}','{seed['subject']}','team','fallback','boot@example.invalid'); INSERT INTO scope.sites(tenant_id,site_id,name,fallback_subject_id) VALUES('{seed['tenant']}','{seed['site']}','boot','{seed['subject']}'); INSERT INTO scope.network_scopes(tenant_id,scope_id,site_id,namespace) VALUES('{seed['tenant']}','{seed['scope']}','{seed['site']}','default');")
+    phase('first_center_start')
     command(['systemctl', 'enable', '--now', 'surveyscan-server.service'])
     tls = ssl.create_default_context(cafile='/etc/surveyscan-server/ca.pem')
     until(lambda: request(8443, tls, 'GET', '/health/ready')[0] == 200, 'systemd server not ready')
@@ -161,6 +175,7 @@ def first_boot(seed):
     assert status == 201
     cookie = headers['set-cookie'].split(';', 1)[0]
     user_headers = {'Origin': origin, 'Cookie': cookie, 'X-CSRF-Token': session['csrf_token']}
+    phase('first_collector_enroll')
     collector = Path('/var/lib/surveyscan-collector')
     collector.mkdir(exist_ok=True, mode=0o700)
     command(['openssl', 'genpkey', '-algorithm', 'ED25519', '-out', collector / 'tls.key'])
@@ -187,10 +202,16 @@ def first_boot(seed):
         'signing_private_key_file': str(collector / 'signing.key'), 'listen': '127.0.0.1:8445', 'center_url': 'https://127.0.0.1:8443',
         'certificate_file': str(collector / 'tls.pem'), 'private_key_file': str(collector / 'tls.key'),
         'ca_certificate_file': '/etc/surveyscan-server/ca.pem', 'spool_directory': str(collector / 'spool'), 'spool_limit_bytes': 4194304})
+    phase('first_collector_start')
     command(['systemctl', 'enable', '--now', 'surveyscan-collector.service'])
+    # Type=simple reports active before the TLS listener is ready. Verify CA and
+    # the collector identity DNS name before issuing the first enrollment request.
+    until(lambda: request(8445, tls, 'GET', '/health/live', server_name=source+'.collector.invalid')[0] == 200,
+          'collector TLS listener not live')
     save('/etc/surveyscan-agent/config.json', {'tenant_id': seed['tenant'], 'site_id': seed['site'], 'network_scope_id': seed['scope'],
         'collector_url': 'https://127.0.0.1:8445', 'collector_source_id': source, 'ca_certificate_file': '/etc/surveyscan-server/ca.pem',
         'state_directory': '/var/lib/surveyscan-agent', 'inventory_seconds': 60, 'heartbeat_seconds': 30, 'jitter_percent': 0, 'spool_limit_bytes': 4194304})
+    phase('first_agent_enroll')
     prep = json.loads(as_agent('prepare').decode().strip())
     body = {'tenant_id': seed['tenant'], 'source_id': prep['source_id'], 'source_kind': 'agent', 'site_id': seed['site'],
             'collector_id': collector_id, 'ttl_seconds': 900, 'csr_sha256': prep['csr_sha256'], 'signing_public_key': prep['signing_public_key']}
@@ -200,10 +221,12 @@ def first_boot(seed):
     owned('/var/lib/surveyscan-agent/grant.json', 'surveyscan-agent')
     as_agent('enroll', '--grant-file', '/var/lib/surveyscan-agent/grant.json')
     Path('/var/lib/surveyscan-agent/grant.json').unlink()
+    phase('first_agent_delivery')
     command(['systemctl', 'enable', '--now', 'surveyscan-agent.service'])
     until(lambda: sql('SELECT count(*) FROM inventory.observations') == '1', 'first systemd inventory missing')
     until(lambda: not list(Path('/var/lib/surveyscan-agent/spool').glob('*.pending')) and not list((collector / 'spool').glob('*.pending')), 'first signed ACK missing')
     asset = sql('SELECT asset_uid::text FROM assets.assets')
+    phase('first_edge_start')
     for name in ('edge.pem', 'edge.key'):
         shutil.copyfile(SEED / name, '/etc/nginx/' + name)
         Path('/etc/nginx/' + name).chmod(0o600 if name.endswith('.key') else 0o644)
@@ -212,8 +235,9 @@ def first_boot(seed):
     save('/etc/nginx/sites-enabled/surveyscan', 'server { listen 127.0.0.1:8444 ssl; ssl_certificate /etc/nginx/edge.pem; ssl_certificate_key /etc/nginx/edge.key; root /opt/surveyscan/current/web; location /api/ { proxy_pass http://127.0.0.1:8080; } location /health/ { proxy_pass http://127.0.0.1:8080; } location /contracts/ { alias /opt/surveyscan/current/contracts/; } location / { try_files $uri /index.html; } }\n', 0o644)
     command(['systemctl', 'enable', '--now', 'nginx.service'])
     edge = ssl.create_default_context(cafile=str(SEED / 'infra-ca.pem'))
-    assert request(8444, edge, 'GET', '/')[0] == 200
+    until(lambda: request(8444, edge, 'GET', '/')[0] == 200, 'first edge TLS listener not live')
     # Leave a real packet durable on both hops, then reboot the kernel with all services enabled.
+    phase('first_pre_reboot_pending')
     command(['systemctl', 'stop', 'surveyscan-server.service'])
     command(['systemctl', 'restart', 'surveyscan-agent.service'])
     until(lambda: list(Path('/var/lib/surveyscan-agent/spool').glob('*.pending')) and list((collector / 'spool').glob('*.pending')), 'pre-reboot pending missing')
@@ -224,7 +248,7 @@ def first_boot(seed):
 
 
 def second_boot(seed):
-    print('SURVEYSCAN_BOOT_PHASE second_boot_autostart', flush=True)
+    phase('second_autostart')
     old = json.loads(STATE.read_text())
     assert old['boot_id'] != Path('/proc/sys/kernel/random/boot_id').read_text().strip()
     assert Path('/proc/1/comm').read_text().strip() == 'systemd'
@@ -234,12 +258,14 @@ def second_boot(seed):
         until(lambda name=name: subprocess.run(['systemctl', 'is-active', '--quiet', name + '.service']).returncode == 0, 'service did not autostart: ' + name)
         command(['systemctl', 'is-enabled', name + '.service']) if name != 'surveyscan-migrate' else None
     CHECKS.append('actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot')
+    phase('second_uid_sandbox')
     for name in ('server', 'collector', 'agent', 'bao'):
         pid = int(command(['systemctl', 'show', '-p', 'MainPID', '--value', 'surveyscan-' + name + '.service']))
         status = Path('/proc/' + str(pid) + '/status').read_text()
         assert int(re.search(r'^Uid:\s+(\d+)', status, re.M).group(1)) == pwd.getpwnam('surveyscan-' + name).pw_uid != 0
         assert re.search(r'^NoNewPrivs:\s+1', status, re.M)
     CHECKS.append('all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential')
+    phase('second_sealed_startup')
     sealed = bao('sys/seal-status')
     assert sealed['sealed']
     tls = ssl.create_default_context(cafile='/etc/surveyscan-server/ca.pem')
@@ -249,6 +275,7 @@ def second_boot(seed):
     assert code == 200 and card['asset_uid'] == old['asset_uid']
     CHECKS.append('cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session')
     # Explicit test operator action, not an app service auto-unseal key.
+    phase('second_unseal_replay')
     unseal(json.loads(Path('/root/operator-custody.json').read_text()))
     until(lambda: request(8443, tls, 'GET', '/health/ready')[0] == 200, 'operator unseal did not restore readiness')
     until(lambda: int(sql('SELECT count(*) FROM inventory.observations')) >= 3, 'autostart did not continue source inventory')
@@ -258,9 +285,11 @@ def second_boot(seed):
     assert int(sql('SELECT max(source_sequence)::text FROM inventory.observations')) >= 3
     CHECKS.append('operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID')
     env = dict(os.environ, SURVEYSCAN_V2_DATABASE_URL='postgres://surveyscan_v2@127.0.0.1:5432/surveyscan_v2?sslmode=disable', SURVEYSCAN_V2_DATABASE_PASSWORD_FILE='/etc/surveyscan-server/pg_password')
+    phase('second_schema_check')
     command([BIN / 'surveyscan-server', 'schema-check'], env=env)
     assert sql('SELECT count(*) FROM platform.schema_migrations') == '33'
     CHECKS.append('all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration')
+    phase('second_checked_update')
     script = '/usr/local/lib/surveyscan-boot/updater.py'
     command(['python3', script, 'prepare', '--root', '/', '--public-key', str(SEED / 'release.pub'), '--bundle', '/root/candidate'])
     command(['python3', script, 'apply', '--root', '/', '--public-key', str(SEED / 'release.pub'), '--health-url', 'https://127.0.0.1:8444/health/ready', '--ca-file', str(SEED / 'infra-ca.pem'), '--components', 'server', 'collector', 'agent'], timeout=180)
@@ -277,6 +306,7 @@ def second_boot(seed):
     edge = ssl.create_default_context(cafile=str(SEED / 'infra-ca.pem'))
     assert request(8444, edge, 'GET', '/')[0] == 200
     CHECKS.append('separate static Web UI and TLS/API edge remain available after boot and verified server update')
+    phase('second_edge_cli')
     assert shutil.which('go') is None and shutil.which('node') is None
     context = '/root/cli-session.json'
     cli = BIN / 'surveyscanctl'
@@ -305,5 +335,8 @@ except Exception as error:
     traceback.print_exc()
     debug = subprocess.run(['journalctl','-b','--no-pager','-n','100','-u','surveyscan-*'],capture_output=True)
     print(debug.stdout.decode(errors='replace'), flush=True)
-    print('SURVEYSCAN_BOOT_RESULT ' + json.dumps({'status': 'failed', 'error_type': type(error).__name__, 'checks': CHECKS}), flush=True)
+    frames = [f for f in traceback.extract_tb(error.__traceback__) if Path(f.filename).name == 'guest.py']
+    diagnostic = {'status': 'failed', 'error_type': type(error).__name__, 'phase': PHASE,
+                  'failed_guest_line': frames[-1].lineno if frames else 0, 'completed_checks': len(CHECKS)}
+    print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(diagnostic), flush=True)
     command(['systemctl', 'poweroff'])

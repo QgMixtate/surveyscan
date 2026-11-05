@@ -1,166 +1,136 @@
-# SurveyScan v2 — C06
+# SurveyScan v2 — постоянная инвентаризация E1
 
-Новый Go-каркас рядом с Python v1. Linux/amd64, Go **1.27.3**, Docker Engine + Compose v2,
-Python 3.12+. PostgreSQL **17.11**, OpenBao **2.7.2**, nginx **1.30** закреплены digest в deploy/compose.yaml.
-Зависимости Go закреплены go.mod/go.sum; автоматическое обновление toolchain не требуется.
-Go дистрибутив проверен по SHA256 официального go.dev (linux-amd64:
-`65efbc80fdc1fa2cd2631cad5b481777a68e8725f34e89f50fc6ac714e379b40`).
-В облачной среде сохранять настроенные proxy/CA; в scratch-образ копируется только статический бинарник,
-сетевых загрузок при Docker build нет. Docker CLI использует локальный socket; DOCKER_CONFIG сохраняется.
+Go host agent периодически собирает сведения своего Linux-хоста и отправляет их площадочному
+collector. Collector сохраняет пакеты и доставляет их combined server; постоянный реестр,
+история, ответственность и outbox находятся в PostgreSQL. Секретные операции выполняет OpenBao.
+Отдельный статический Web UI и `surveyscanctl` работают через API.
 
-```bash
+C01–C13 приняты в пределах E1; **C14 ещё выполняется**. Реальный суточный прогон запущен
+5 ноября2026 в00:31:49UTC, run `10812e7a-8a6a-4dae-9dd5-b0583f503c83`.
+Не останавливать/запечатывать общий dev PG/Bao и не запускать outage-тесты на этом стенде,
+пока он выполняется. [Текущий статус](../docs/STATUS.md), [передача C14](../docs/plans/surveyscan-v2/handoffs/C14.md),
+[матрица приёмки](../docs/plans/surveyscan-v2/evidence/C14-plan.json). Незавершённые сутки не считаются PASS.
+
+## Сборка и локальный dev-стенд
+
+Проверенный build target — Linux/amd64, Go1.27.3, Node24/npm11, Python3.12+ и Docker/Compose v2.
+В compose закреплены PostgreSQL17.11, OpenBao2.7.2 и nginx1.30 с digest.
+Go dependencies закреплены go.mod/go.sum; Web — package-lock.json. Runtime Go/static Web
+не требует Go compiler или Node. Python3/OpenSSL3 нужны для operator release/update/backup tools.
+В managed cloud сохранять настроенные proxy/CA и Docker credentials; использовать локальный daemon.
+
+Команды для **отдельного** dev-стенда, без уже идущей приёмки:
+
+```sh
 cd v2
 python3 -m venv .contract-tools
 .contract-tools/bin/pip install -r ../docs/plans/surveyscan-v2/contracts/C03/checks/requirements.txt
 export GOTOOLCHAIN=local
-make CONTRACT_PYTHON=.contract-tools/bin/python verify
+make verify CONTRACT_PYTHON=.contract-tools/bin/python
+(cd web && npm ci --ignore-scripts --no-audit --no-fund && npm run build)
 make build
 python3 scripts/dev.py up
 make integration
-python3 scripts/smoke.py
-python3 scripts/dev.py status
-python3 scripts/dev.py down
 ```
 
-Если Go установлен отдельно, передать `make GO=/path/to/go` и соответствующий GOROOT/PATH.
-При сохранённом старом GOROOT его надо заменить или убрать. Проверки импортов сами используют
-текущий runtime.GOROOT. Integration без явного test DSN завершается ошибкой, не пропускает проверки.
-Тесты создают случайные `ssv2test_*` БД в отдельном dev-кластере и удаляют только созданные ими БД.
-У dev-роли есть CREATEDB для этих тестов; production-права/разделение migrator и app — дальнейшая работа.
+Для отдельной установки Go передать `make GO=/path/to/go` и соответствующий GOROOT/PATH.
+Import guards используют текущий `runtime.GOROOT`. Dev role имеет CREATEDB для временных тестовых
+БД; разделение production migrator/app privileges не проверено как production hardening.
+`dev.py status` показывает контейнеры. `dev.py down` сохраняет named volumes, но прерывает работающий
+стенд/прогон. Не применять `down --volumes`, не сбрасывать state и Bao ради устранения ошибки.
 
-Локальные адреса:
-
-| Компонент | Адрес |
+| Компонент | Локальный адрес |
 |---|---|
-| backend | 127.0.0.1:58080, /health/live и /health/ready |
-| отдельный proxy/UI origin | 127.0.0.1:58081; /contracts/openapi.json |
-| PostgreSQL | 127.0.0.1:55432, БД и пользователь surveyscan_v2 |
+| backend HTTP health/API | 127.0.0.1:58080 |
+| отдельный Web/API edge | http://127.0.0.1:58081 |
+| PostgreSQL | 127.0.0.1:55432, surveyscan_v2 |
 | OpenBao | 127.0.0.1:58200 |
 
-Все опубликованные порты привязаны к loopback. Это локальный HTTP-стенд, не production-конфигурация.
-Proxy раздаёт JSON-контракты отдельно от Go; Web UI появится в C09. Продуктовые `/api/...`
-требуют auth; auth и assets реализованы; прочие будущие handlers после проверки прав отвечают 501. `/` возвращает 404. OpenAPI описывает auth и будущие domain handlers. Agent/collector поддерживают только `version`;
-попытка запуска сбора завершается кодом 2. Сервер поддерживает `serve`, `migrate`, `version`, `healthcheck`.
-Combined composition root собирает модули; worker/API роли появятся вместе с реальными обработчиками.
+Порты привязаны к loopback; это development HTTP, не production TLS. `dev.py up` создаёт
+private `.local/pg_password` и инициализирует single-node Bao Raft. Bootstrap/unseal material
+остаётся в `.local/bao-init.json` (0600, parent0700), backend его не получает. После cold Bao restart
+нужно операторское unseal; dev-команда `dev.py unseal` использует только локальный test custody.
+При существующем томе и утраченных ключах восстанавливать собственную защищённую копию,
+не создавать новое хранилище. `.local`, identities, contexts, spools и backups не включать в Git/artifacts.
 
-`dev.py up` генерирует `.local/pg_password` и инициализирует обычный single-node OpenBao Raft.
-Bootstrap/unseal материал остаётся в `.local/bao-init.json` (0600, каталог 0700); backend его не получает.
-Это локальная схема с одним unseal share. Не использовать её для production, не коммитить/архивировать
-`.local/`, не публиковать compose config/env или bootstrap responses. Backend проверяет только health Bao.
-После перезапуска Bao выполнить `python3 scripts/dev.py unseal`; обычный `up` делает это автоматически.
-Если том существует, а ключи потеряны, скрипт отказывается сбрасывать storage. Восстановить ключи из
-собственной защищённой копии. `down` сохраняет pgdata/baodata. Не выполнять `down -v` для рабочих данных.
-Если изменился пароль в файле, он не меняет автоматически пароль существующей PostgreSQL-роли.
+## Пользователи, агент и CLI
 
-25 forward-only миграций встроены в модули. Apply берёт PG advisory transaction lock, проверяет SHA256,
-owner, известность и непрерывный prefix истории; весь pending batch выполняется одной транзакцией.
-Повтор даёт 0; изменённую историю нужно расследовать, а не перезаписывать checksum. Rollback и
-zero-downtime upgrades не заявлены. 32 domain/access tables + platform.schema_migrations.
-SQL FK/guards читают несколько owner schemas ради C02 транзакционной целостности; записи будущих
-handlers должны идти через владельцев/ports. Ограничения импортов проверяются тестом.
+Заводского пароля нет. Первого администратора создаёт локальная операторская консоль с доступом
+к нужной БД. Пароль передаётся отдельным private file0600 (16–1024bytes), не значением argv/env.
+Ниже UUID/path — значения вашей установки, DATABASE_URL содержит только параметры подключения:
 
-Наблюдение сохраняет canonical_payload, digest, origin key ID и 64 bytes signature по C03.
-SQL проверяет digest и соответствие JSON, но **не** Ed25519, JCS canonicality и доверие ключу:
-это выполняет Registry.Ingest C06. Нулевые synthetic signature в SQL integration tests не являются
-проверкой подписи. Реализованы C05 auth и C06 registry/projector; нет RLS, публичного machine enrollment/transport, spool, collector runtime,
-production TLS/PKI, backup/HA или готовности к 100 пользователям. C07 — следующий пакет.
-
-CI: `.github/workflows/v2.yml`. Та же последовательность команд выполнена локально; C04 опубликован,
-push-триггер отправлен, состояние GitHub Actions пока не подтверждено из-за запрета GitHub API. Smoke временно останавливает **только этот** dev Bao/PG,
-проверяет live=200, ready=503, восстановление после старта/unseal и перезапуска backend.
-
-## C05: пользователи и доступ
-
-[Политика](../docs/plans/surveyscan-v2/decisions/C05-auth-policy.md),
-[threat cases](../docs/plans/surveyscan-v2/decisions/C05-threat-cases.md).
-Внутри compose уже задан origin `http://127.0.0.1:58081` и явный local HTTP opt-in.
-Для обычной установки задать `SURVEYSCAN_V2_PUBLIC_ORIGIN=https://inventory.example`, без dev opt-in;
-TLS завершается доверенным reverse proxy. Нельзя считать локальный HTTP production TLS.
-
-Первого администратора создаёт **локальная консоль**; это требует привилегированного OS/DB доступа.
-Подготовить свой password file 0600 (16–1024 bytes), не помещать пароль в argv или env.
-Ниже путь `/secure/admin-password` — ваш существующий private file, UUID — ваш tenant ID:
-
-```bash
-# В shell задать DATABASE_URL и DATABASE_PASSWORD_FILE для нужной БД, как в deploy/compose.yaml.
+```sh
 .dist/surveyscan-server migrate
 .dist/surveyscan-server bootstrap-admin --tenant YOUR-TENANT-UUID --tenant-name 'Организация' --username admin --password-file /secure/admin-password
 .dist/surveyscan-server create-user --tenant YOUR-TENANT-UUID --username viewer --role viewer --password-file /secure/viewer-password
-.dist/surveyscan-server set-user-state --tenant YOUR-TENANT-UUID --username viewer --role viewer --enabled=false
-.dist/surveyscan-server reset-password --tenant YOUR-TENANT-UUID --username admin --password-file /secure/new-password
 ```
 
-В текущем cloud dev shell для доступа к отдельному кластеру:
+Server получает `SURVEYSCAN_V2_DATABASE_URL`, `SURVEYSCAN_V2_DATABASE_PASSWORD_FILE`,
+`SURVEYSCAN_V2_PUBLIC_ORIGIN`; machine listener — явный `SURVEYSCAN_V2_MACHINE_CONFIG`.
+Для HTTPS установки без dev opt-in нужен доверенный TLS edge и правильный public origin.
+[Auth policy](../docs/plans/surveyscan-v2/decisions/C05-auth-policy.md): роли/tenant/CSRF/Origin,
+PG-backed sessions и read-only scoped tokens; backend проверяет права при каждом write commit.
 
-```bash
-export SURVEYSCAN_V2_DATABASE_URL='postgres://surveyscan_v2@127.0.0.1:55432/surveyscan_v2?sslmode=disable'
-export SURVEYSCAN_V2_DATABASE_PASSWORD_FILE="$PWD/.local/pg_password"
-```
+Host agent: `surveyscan-agent prepare/enroll/run --config PRIVATE_FILE`.
+Он собирает hostname/OS/IP/MAC read-only, подписывает observations; machine/source IDs не заменяют
+asset UID. [Agent config/enrollment](internal/agent/README.md). Collector:
+`surveyscan-collector run --config PRIVATE_FILE`. Site/scope/fallback team и source binding
+оператор готовит до enrollment; production provisioning wizard пока не поставляется.
+`machine_smoke.py` и native boot stand показывают полное синтетическое provisioning для теста.
+CA/pins и назначенный collector проверяются, TLS private keys и state не входят в golden image.
 
-POST `/api/v1/auth/sessions` принимает C03 LoginRequest и точный Origin; возвращает Session и cookie.
-DELETE `/api/v1/auth/session` требует cookie/Origin/X-CSRF-Token и отзывает session.
-POST `/api/v1/auth/tokens` выдаёт read-only scoped token по cookie/CSRF;
-DELETE `/api/v1/auth/tokens/{token_id}` отзывает свой token. Bearer token не заменяет cookie при выдаче.
-Username уникален глобально; один user принадлежит одному tenant. Правила ролей/expiry/reset — в policy.
-Production cookie Secure/HttpOnly/SameSite=Strict. Все session/token secrets в БД хешированы;
-raw token и CSRF из ответов надо защищать на клиенте, не копировать в отчёты/логи.
+[Human CLI](internal/usercli/README.md) поддерживает login/context/logout, assets/sources/status,
+profiles get/set, diagnostics/local-status, JSON/таблицы и стабильные exit codes. Context0600
+содержит session cookie/CSRF; это private file. CLI не подключается к PostgreSQL или Bao.
+[Web UI](web/README.md) поставляется отдельно, проверяет C03/C09/C12 compatibility hashes,
+показывает inventory/provenance/section attempt-success/ответственность и source health отдельно.
+Фильтр текущей страницы не называется full-text search; CDN/Node в Web runtime не нужны.
 
-```bash
-# После make build и dev.py up: новая временная БД, настоящий CLI/HTTP и restart процесса.
-python3 scripts/auth_smoke.py
-```
+## Надёжность, данные и эксплуатация
 
-Скрипт не создаёт постоянного пользователя в рабочей dev-БД; временный пароль и собственную test DB
-удаляет после прогона. `integration` дополнительно использует HTTPS test server и проверяет
-expiry, revocation, roles, tenant context, concurrent bootstrap/sessions/tokens и commit fencing.
-Hosted CI остаётся неподтверждённым до доступа к GitHub API; публикация ветки не равна CI success.
+Agent/collector хранят durable spool и независимые counters. Transport receipt не разрешает
+удаление пакета; для этого проверяется подписанный результат центрального commit.
+Retry/backoff/jitter и квоты ограничены, pending не вытесняется ради нового сбора.
+[Spool policy](../docs/plans/surveyscan-v2/decisions/C10-spool.md),
+[runbook](../docs/plans/surveyscan-v2/decisions/C10-operations.md),
+[profiles](../docs/plans/surveyscan-v2/decisions/C12-profiles.md),
+[diagnostics](../docs/plans/surveyscan-v2/decisions/C12-diagnostics.md).
+Bao использует scoped policies и неэкспортируемые Transit keys; root/unseal material не принадлежит app.
+Machine leaf renewal проверяется вместе с bounded clone/revoke/expiry сценариями; одинаковые
+machine-id+private keys не позволяют аппаратную аттестацию. Expired identity fails closed;
+automatic expired reissue/admin recovery не поставляются как готовая функция.
 
-## C06: реестр и outbox
+33 forward-only SQL migrations встроены в owner modules;45 domain/access tables плюс ledger.
+Apply проверяет advisory lock, owner/SHA256/prefix; pending batch транзакционен, repeat даёт0.
+Применённые SQL и C03 bytes не менять. SQL guards удерживают history/audit/outbox/assignment;
+Ed25519/JCS/source trust дополнительно проверяются на ingest, не одной SQL checksum.
+История observations неизменяема; ручные business fields не затираются inventory.
+Outbox работает в PG без внешней шины; heartbeat/contact не выдаются за успешный inventory.
+Architecture tests сохраняют import/contract guards и проверяют ownership SQL/client boundaries.
 
-GET/list/PATCH `/api/v1/assets` реализованы по C03; остальные future handlers остаются fail-closed.
-[Политика](../docs/plans/surveyscan-v2/decisions/C06-registry.md), [передача](../docs/plans/surveyscan-v2/handoffs/C06.md).
-Внутренний Registry.Ingest проверяет source binding и настоящую C03 Ed25519 подпись; публичный machine
-transport/enrollment — C07. IP/MAC сохраняются в current_facts; C03 Asset публично отдаёт hostname/OS/statuses.
-Combined server обрабатывает PG outbox consumer registry-version каждые 2s без внешней шины.
-Новые guards отклоняют asset/fact/business mutation без history/outbox/audit в той же transaction.
-C04/C05 SQL не редактировать, данные не сбрасывать. Default dev compose project name сохранён ради volumes.
+[Systemd install path](deploy/systemd/README.md), [release](deploy/RELEASE.md),
+[checked update/recovery](deploy/UPDATE.md), [backup/restore](deploy/BACKUP.md),
+[native boot stand](deploy/bootstand/README.md), [суточный прогон](deploy/SOAK.md).
+Operator supplies PG/Bao/TLS/custody/static edge. Проверенный native target — Debian12/amd64/systemd252;
+два fresh VM прошли реальный reboot/autostart/nonroot/LoadCredential/manual unseal/combined update.
+Staging не устанавливает службы на managed host. Rollback после несовместимой SQL миграции запрещён;
+нужны verified checkpoint, совместимая схема и явный recovery. Backup одной PG не равен общему checkpoint.
 
-## C07: collector и machine transport
+## Проверки и границы E1
 
-27 forward-only migrations, 36 domain/access tables. [Передача](../docs/plans/surveyscan-v2/handoffs/C07.md),
-[политика TLS/ACK](../docs/plans/surveyscan-v2/decisions/C07-collector.md).
-`surveyscan-collector run --config /secure/collector.json` запускает HTTPS relay и durable spool.
-Центр включает machine TLS только через `SURVEYSCAN_V2_MACHINE_CONFIG=/secure/machine.json` (dev loopback).
-Формат private configs и полный воспроизводимый запуск — `scripts/machine_smoke.py`:
-запускать Python из contract venv после make build/dev.py up. Скрипт создаёт временную БД/PKI и удаляет их.
-Заранее доверенный CA проверяется всегда; ключ подписания ACK аттестован CA в identity certificate.
-Частные ключи/конфиги 0600, spool0700; не включать в Git или CI artifacts. Production Bao issuer — C11.
-Heartbeat, live host agent и automatic enrollment client — C08; production recovery/quota hardening — C10.
+`make verify`: formatting/vet/обычные Go tests/C03 fixtures. `make integration`: реальные временные PG DB,
+изолированные тесты auth/registry/leases/profiles; отсутствие test DSN — ошибка, не скрытый skip.
+`agent_smoke.py`, `recovery_smoke.py`, `reconnect_smoke.py`, Bao/renewal/CLI/profile scripts проверяют
+конкретные live/process сценарии. `web_smoke.py` использует Chromium: auth/assets/profiles реальны,
+partial/stale/unknown display matrix содержит явно mocked API responses. Host facts/keys не публикуются.
+`smoke.py` и Bao outage tests могут останавливать общие dev services: не выполнять их параллельно soak.
 
-## C08: постоянный Linux host agent
+Hosted workflows: `.github/workflows/v2.yml`, `web.yml`, `boot.yml`.
+Точные SHA/run IDs/results находятся в [evidence](../docs/plans/surveyscan-v2/evidence/),
+а не выводятся из одного факта push. [План](../docs/plans/surveyscan-v2/README.md):50 пакетов/200 задач.
+C14 требует ≥24 реальных часов, фактических отказов/recovery и всех применимых E1 критериев.
 
-28 migrations/38 domain/access tables. `surveyscan-agent prepare/enroll/run --config PRIVATE_FILE`.
-[Регистрация и конфиг](internal/agent/README.md), [передача](../docs/plans/surveyscan-v2/handoffs/C08.md).
-Настоящие hostname/OS/IP/MAC, origin signature, mTLS к назначенному collector; отдельный fresh-challenge
-heartbeat. Pending spool удаляется только после проверки center ACK, counters переживают restart.
-Для приёмки: contract Python `scripts/agent_smoke.py` (три автоматических60s цикла + restart,
-три compiled binaries, настоящий хост и временный PG). Отчёт не содержит host facts или keys.
-Systemd template deploy/surveyscan-agent.service подготовлен; установка/24h/production ещё не проверены.
-
-## C09: отдельный Web UI
-
-[Сборка](web/README.md), [передача](../docs/plans/surveyscan-v2/handoffs/C09.md).
-`cd web && npm ci --ignore-scripts --no-audit --no-fund && npm run generate && npm run build`.
-Dev edge58081 отдаёт независимый production bundle со strict CSP; Node/CDN в runtime не нужны.
-Новый GET /api/v1/assets/{asset_uid}/inventory (C09/1.0) читает card/IP/MAC/provenance/ответственность/
-section times/source summary в одном RR snapshot. UI проверяет C03+C09 contract hashes; C03 неизменён.
-29 migrations/39 domain/access tables.14 Chromium/37 PG integration checks passed локально;
-hosted CI unrun. Следующий C10 — durability/quota/recovery hardening.
-
-## C10: доставка и восстановление
-
-[Передача](../docs/plans/surveyscan-v2/handoffs/C10.md). Durable spool/quotas/retention/ACK recovery,
-processing lease120s/fencing/checkpoint, bounded staging admission и payload GC после signed result.
-После5 failures без progress — deadletter, privileged retry описан в operations runbook.
-30 migrations/40 domain tables;22unit/42PG/58fixtures/8crash-recovery/1real ENOSPC/14browser passed.
-C10 jobs foundation import/outbox готов, jobs execution/API — C12. Следующий C11 OpenBao/PKI.
+Пока не приняты C14/SMB release; не доказаны100 users/SLA/production KMS/HA/geo/physical power loss.
+Windows/agentless/discovery/topology/portable — E2; merge/split/full-text Tantivy/Bluge/100users — E3;
+независимые production API/worker/шарды/geo — E5. Волна2 — ЖЦ/склад/запчасти, волна3 — ITSM.
+Combined E1 и подготовленные module ports не означают принятую multi-process эквивалентность.

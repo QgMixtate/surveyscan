@@ -21,7 +21,12 @@ R-020 разрешает push/PR/CI, R-021 — автономное выполн
 четыре очереди пусты, replay без новых эффектов. [Preflight](plans/surveyscan-v2/evidence/C14-preflight.json)
 прошёл121.597s; это явно не24h. Verify43 top-level unit +3 subtests/58C03 прошёл. [Архитектурный guard](plans/surveyscan-v2/evidence/C14-architecture.json)
 проверил92 production Go files и7 негативных контрпримеров; его статические границы указаны явно.
-C14 source8560f57 опубликован, его новые hosted CI пока проверяются.
+На1a6c611 hosted v2/Web SUCCESS, boot failed во второй VM; первая прошла9.
+Причина гостевого сбоя старым supervisor не сохранена. Добавлена безопасная phase/line диагностика;
+два новых локальных VM9+9 прошли, ошибка не воспроизвелась. Отдельно устранено подтверждённое
+code-ordering окно: Type=simple collector active не гарантировал TLS listener перед enrollment.
+Новый проверяемый TLS readiness wait и phase report проходят финальную runtime/hosted проверку.
+[Hosted progress](plans/surveyscan-v2/evidence/C14-hosted-progress.json).
 
 C13 [runtime](plans/surveyscan-v2/evidence/C13-runtime.json),
 [hosted](plans/surveyscan-v2/evidence/C13-published-final.json),
@@ -153,3 +158,12 @@ Stagedsystemdunits/installer(privatecredentials/data paths) и5stagingchecks,rea
 systemd-analyze staticverifyexit0вnetworklesscontainer. Actualboot/reboot/services не проверены:
 managedhostPID1tail/UID1000. No host service install/start. handoffs/C13.md содержитточнуюграницу.
 C13.02–04release/backup/restore ещёplanned; no push/merge/deploy/env publication.
+
+## Дополнительная подготовка C14
+
+[Внутренний кандидат](plans/surveyscan-v2/evidence/C14-candidate.json) содержит27 public files,
+чистые Go/Web8560f57 и те же3 daemon binaries, что actualsoak. Test-signed/verified/staged локально;
+private test signing key удалён, production trust/release не утверждались. Его точные артефакты
+прошли [Chromium16](plans/surveyscan-v2/evidence/C14-candidate-browser.json).
+[Предварительные release notes](releases/surveyscan-v2-e1-candidate.md); C14.04 остаётсяplanned.
+`soak_report.py <run-id>` сводит только завершённые samples; running/preflight/failed неPASS.

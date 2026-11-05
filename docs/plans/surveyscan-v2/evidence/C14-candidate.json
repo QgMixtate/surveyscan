@@ -1,0 +1,45 @@
+{
+  "bundle": "bundle-clean",
+  "source": "8560f57b11e9ed0fecd5774942c4d616b3afddc6",
+  "version": "0.0.0-c13",
+  "manifest_sha256": "0159a7ea65ed5281333892b9e447e7812696275951ec951deda27ad8b0995834",
+  "files": 27,
+  "status": "prepared, test-signed, verified and staged; NOTaccepted/published release",
+  "same_three_go_binaries_as_actual_soak": true,
+  "web": {
+    "api_contract": "C03+C09+C12",
+    "c09_sha256": "620c32285a9cdb4aed9594908bd88d0323b62680a137bf77dbddb0c7b9e5d910",
+    "c09_version": "1.0",
+    "c12_sha256": "35fd764ec9f8282f4a75d97887d6318165a2835ebefe31dea5d0dc29a6ffde7f",
+    "component": "surveyscan-web",
+    "openapi_sha256": "d59b26ccbd6c9ec54135f082143f31ae820e2b57ff396ac886ceec04b4d11147",
+    "revision": "8560f57b11e9ed0fecd5774942c4d616b3afddc6",
+    "runtime": "static; no Node or CDN",
+    "source_dirty": "false",
+    "version": "0.1.0-c14-web",
+    "wire": {
+      "major": 1,
+      "minor": 0
+    }
+  },
+  "package": "C14",
+  "task": "C14.04 preparation only; remainsplanned until C14.02/03",
+  "signature": "temporary test Ed25519, verified with separate test public anchor; private signing key deleted; NOT production trust",
+  "signer_public_sha256": "2f8b88d941d3c55b03748bbe2c5bc90b37936dfbe9378a3f7d5ba81c274574d4",
+  "go_binary_sha256": {
+    "surveyscan-server": "fe579e9fb20dca8f48dc8c6dffe153826d3d86fea88a06cc4ab9d4c5d1a10196",
+    "surveyscan-collector": "22e98a94330ca51d795ab2fce17ba274e666867cb779f8a68c437f62c5fd2244",
+    "surveyscan-agent": "2ccf66957e08f07c380e666f9b7c8482ad385a42124f6edb58507e3ae2392d68",
+    "surveyscanctl": "819a2739ebf4bafe89fe417763115f8d16275a47b15042119f63ae9a3ec42911"
+  },
+  "source_dirty": false,
+  "soak_run_id": "10812e7a-8a6a-4dae-9dd5-b0583f503c83",
+  "artifact_location": "private local directory referenced by v2/.local/c14-candidate.json; no artifact uploaded",
+  "unrun": [
+    "actual>=24h soak acceptance",
+    "production signing/trust distribution",
+    "release publication/install/production deployment"
+  ],
+  "earlier_provenance_failure": "symlinked node_modules was an untracked file in isolated checkout; dirty candidate refused; rebuilt from real ignored directory with unchanged dependency files",
+  "browser": "C14-candidate-browser.json:16passed on exact candidate artifacts"
+}

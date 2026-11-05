@@ -416,3 +416,20 @@ C14.03/04 по-прежнему planned; C14-defects.json — журнал уж�
 в sql_boundaries_test.go. Все4 architecture tests прошли вместе; final full verification выполняется.
 Новый guard добавляет SQL ownership и client/PG ограничения; старые проверки сохраняются.
 Реальные binaries8560f57 и работающий суточный прогон не менялись.
+
+R-022 (2026-11-05): пользователь повторил «Продолжи» и «После автоматически продолжай остальные этапы».
+Продолжать последовательный план после фактической приёмки зависимостей, без новых routine confirmations.
+На текущий момент24h C14 остаётся обязательным gate; выполнять проверки/диагностику/подготовку
+внутри C14, не подменять elapsed time и не помечать C15 как начатый раньше приёмки.
+
+Продолжение R-022: подготовлен private candidate27files с clean8560f57 Go/Web;3 daemon hashes
+совпадают с actualsoak. Отдельные test sign/verify/staging прошли, private signing key удалён.
+Точные candidate Web/Go прошли Chromium16 с реальным PG/API; mocked display matrix указана.
+README/backup/systemd/release docs актуализированы, добавлены draft release notes и read-only
+soak_report.py (actual/preflight/failed old-format проверены, fake24h acceptance не возникает).
+1a6c611 hosted v2/Web SUCCESS; boot secondVM failed, first9passed. Старый supervisor выбросил
+guest diagnostic, точная причина неизвестна. Безопасные phase/line/error diagnostics сохранены;
+два local VM9+9 повторно passed без воспроизведения. Независимый доказанный startup hazard
+collector TypeSimple active-before-TLS устранён явным CA+collector DNS liveness wait передenroll;
+edge также ждётTLS liveness. Не выдавать эту исправленную гонку за доказанную причину старого сбоя.
+Final source/native/hosted checks pending. Actual24h8560f57 не менялся, C14.02IP/53done.

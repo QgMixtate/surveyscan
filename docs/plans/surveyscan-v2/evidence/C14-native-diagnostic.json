@@ -1,0 +1,62 @@
+{
+  "status": "passed",
+  "stands": [
+    {
+      "package": "C13",
+      "status": "passed",
+      "count": 9,
+      "checks": [
+        "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+        "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+        "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+        "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+        "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+        "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+        "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+        "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+        "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session"
+      ],
+      "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+      "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+      "unrun": [
+        "two independently clean OS installations",
+        "schema-changing update through updater",
+        "physical power loss",
+        "production KMS/split custody/DR/RPO/RTO/100users"
+      ]
+    },
+    {
+      "package": "C13",
+      "status": "passed",
+      "count": 9,
+      "checks": [
+        "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+        "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+        "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+        "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+        "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+        "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+        "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+        "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+        "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session"
+      ],
+      "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+      "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+      "unrun": [
+        "two independently clean OS installations",
+        "schema-changing update through updater",
+        "physical power loss",
+        "production KMS/split custody/DR/RPO/RTO/100users"
+      ]
+    }
+  ],
+  "package": "C14",
+  "scope": "two fresh local native VM reruns with phase/line diagnostics; each9passed; original hosted failure not reproduced",
+  "source_base": "1a6c611 plus recorded working tree",
+  "guest_sha256_before_readiness_change": "diagnostic phase source tested; following operator TLS readiness change needs final runtime validation",
+  "unrun": [
+    "cause of earlier hosted failure not recoverable from old discarded guest diagnostic",
+    "latest collector TLS readiness adjustment pending runtime",
+    "production/24h acceptance"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "package": "C14",
+  "code_sha": "1a6c611476bd60fdf195c421b9693accb6dbeae4",
+  "v2": {
+    "run_id": 41943610389,
+    "conclusion": "success",
+    "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41943610389"
+  },
+  "web": {
+    "run_id": 41943610385,
+    "conclusion": "success",
+    "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41943610385"
+  },
+  "boot": {
+    "run_id": 41943610370,
+    "conclusion": "failure",
+    "url": "https://github.com/QgMixtate/surveyscan/actions/runs/41943610370",
+    "stand1": "passed9",
+    "stand2": "failed with supervisor AssertionError; guest diagnostic not retained by old supervisor",
+    "root_cause": "unknown, not inferred; phase/line diagnostic added before reproduction",
+    "mandatory_gate": "repeatability must be investigated before release"
+  },
+  "note": "do not promote previous source PASS over latest source failure; actual8560f57soak continues with frozen binaries"
+}

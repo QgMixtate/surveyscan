@@ -42,10 +42,22 @@
     {
       "id": "C14-D05",
       "component": "architecture acceptance implementation",
-      "status": "corrected; final verification in progress",
+      "status": "corrected; all4 architecture guards and full43top-level+3subtests passed",
       "finding": "extension initially replaced an existing test file, temporarily removing its two original guards",
       "change": "restore original boundaries_test.go bytes from8560f57; place extension in sql_boundaries_test.go; verify all four guards together",
       "evidence": "C14-architecture.json; git diff8560f57 -- original file is empty"
+    },
+    {
+      "id": "C14-D06",
+      "component": "native boot acceptance fixture",
+      "status": "diagnostics added; two local9+9 reruns passed; latest readiness fix needs final validation",
+      "finding": "hosted1a6 second VM failed; old supervisor discarded guest phase/line so original cause is unknown",
+      "change": "persist sanitized guest phase/line/error class without raw journals/keys; identified separate TypeSimple collector-start listener race and explicitly wait for verified CA+collector DNS TLS liveness; wait edge liveness",
+      "causality": "startup race confirmed by code ordering; not claimed as proven cause of old failure",
+      "evidence": [
+        "C14-hosted-progress.json",
+        "C14-native-diagnostic.json"
+      ]
     }
   ],
   "remaining_gates": [
