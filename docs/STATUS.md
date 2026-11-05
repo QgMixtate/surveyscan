@@ -1,15 +1,15 @@
 # Текущее состояние surveyscan
 
-Обновлено:2026-11-05, Москва. C01–C13 приняты в пределах E1; C14.01 done,
-**53/200 подзадач**. C14.02 выполняется; C14.03/04 planned до фактического суточного результата.
-Ветка `codex/v2-c13-operations`, draft [PR4](https://github.com/QgMixtate/surveyscan/pull/4).
+Обновлено:2026-11-06, Москва. C01–C13 приняты в пределах E1; C14.01 done,
+**54/200 подзадач** (включая C15.01 design по R-023). C14.02 выполняется; C14.03/04 planned до фактического суточного результата.
+Основная E1-ветка `codex/v2-c13-operations`, draft [PR4](https://github.com/QgMixtate/surveyscan/pull/4).
 R-020 разрешает push/PR/CI; R-021/R-022 — автоматический переход после приёмки зависимостей.
 Main73ced7e не слит, production deployment и публикация настроек среды не поручены.
 
 **Реальный24h прогон работает**: `10812e7a-8a6a-4dae-9dd5-b0583f503c83`, PID3505270.
 Чистый runtime source8560f57, frozen private copies/SHA256. Начало5 ноября00:31:49UTC;
 завершить можно не раньше **6 ноября03:31:49 по Москве** (00:31:49UTC), при всех успешных checks.
-Run жив уже≥9h; выполнены оба networkfault и запланированные restart collector/center.
+При live-проверке по R-023 run жив уже≥22h; выполнены оба networkfault и запланированные restart collector/center.
 На [снимке](plans/surveyscan-v2/evidence/C14-soak-progress.json) пройдены оба настоящих разрыва
 связи, UID/sequence сохранены, очереди опустели; это **не** суточный PASS.
 Изv2: `python scripts/soak_status.py <run-id>`, `python scripts/soak_report.py <run-id>`
@@ -21,6 +21,8 @@ Local state `.local/c14-soak/<run-id>/status.json`; stdout `.local/c14-actual-so
 Проверять PID/run ID и свежий sample; marker running без процесса неPASS. Не останавливать/
 запечатывать общий dev PG/Bao. Runner отделён от жизни вызова/чата, но не переживает выключение машины.
 [Инструкция](../v2/deploy/SOAK.md), [передача C14](plans/surveyscan-v2/handoffs/C14.md).
+
+**C15 preparation**: текущий checkout `codex/v2-c15-windows`; [матрица](plans/surveyscan-v2/decisions/C15-windows-capabilities.md), [compile evidence](plans/surveyscan-v2/evidence/C15-cross-build.json). C15.01 design done, C15.02 contract draft in_progress, родительский C14 pending.
 
 **Последний code8024972: все4 hosted workflows SUCCESS**:
 v2 42003198591, Web42003198611, native42003198599, acceptance-evidence42003198780.
@@ -45,8 +47,11 @@ Go/SQL/contracts/build files побайтно равны measured8560f57; пос
 на точных artifacts passed. Private test signing key удалён, official release не опубликован/не принят.
 [Draft notes](releases/surveyscan-v2-e1-candidate.md), [матрица15 E1 сценариев](plans/surveyscan-v2/evidence/C14-plan.json).
 
-Следующий переход: после реального≥86400s PASS — C14.03 triage/регрессия, C14.04 acceptance/
-поставка, затем C15 без нового routine confirmation поR-022. До этого C14/C15 не считать ready.
+По R-023 независимая подготовка **C15.01 начата параллельно** в отдельном worktree/ветке
+`codex/v2-c15-windows`. C15.01 design завершён: матрица Windows API/прав и cross-build PE32+;
+Windows runtime/API/ACL/SCM/reboot unrun. 54done, C15.02 in_progress (draft observation1.2/19 synthetic fixtures passed).
+После реального≥86400s PASS — C14.03 triage/регрессия, C14.04 acceptance/поставка.
+Подготовка C15 не отменяет этот gate и не меняет измеряемые binaries/stand.
 Нет claim о100users/SLA/production KMS/HA/geo/physical power loss. SQL0000–0032/C03/C09 не менялись.
 История ниже — прежние состояния; текущий статус определяется этим блоком и живым run report.
 

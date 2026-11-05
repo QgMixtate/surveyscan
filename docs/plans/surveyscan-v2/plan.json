@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C13 done bounded E1; C14.01 done; C14.02 actual24h running; C14.03-C50 planned",
+  "status": "C01-C13 done bounded E1; C14.01 done; C14.02 actual24h running; C15.01 design done (R-023), C15.02 independent contract preparation in progress; no C14 acceptance claim",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1364,8 +1364,13 @@
           "output": "Матрица ОС/архитектуры/полей и privileges",
           "verification": "Недоступные API не объявлены пустыми данными",
           "estimation_basis": "Выбранные Windows versions и стандартные/админ права",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "decisions/C15-windows-capabilities.md",
+            "evidence/C15-cross-build.json"
+          ],
+          "verification_status": "document-reviewed matrix of 12 sections and rights; cross-build and architecture guards passed; native Windows unrun"
         },
         {
           "id": "C15.02",
@@ -1377,8 +1382,14 @@
           "output": "Оборудование, ПО/KB, службы, группы, сеть/диски/защита",
           "verification": "Ошибка одной секции не уничтожает другие",
           "estimation_basis": "Матрица §6.1 по поддержанным API; scripts policy C01",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "in_progress",
+          "work_group": "Реализация",
+          "evidence": [
+            "contracts/C15/README.md",
+            "contracts/C15/observation.schema.json",
+            "evidence/C15-contract.json"
+          ],
+          "verification_status": "draft schema + 19 synthetic fixtures passed; runtime integration and native Windows implementation unrun"
         },
         {
           "id": "C15.03",
@@ -1407,8 +1418,9 @@
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "in_progress",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "preparation_authorization": "R-023: independent C15.01 preparation while actual C14.02 continues; no C14 acceptance bypass"
     },
     {
       "id": "C16",

@@ -1,0 +1,24 @@
+{
+  "package": "C15",
+  "task": "C15.01",
+  "kind": "cross-compilation-only",
+  "source_revision": "f253a27bcd478fe2361fc69f5085ed2ec6695507",
+  "host": "Linux/amd64",
+  "target": "Windows/amd64",
+  "go_version": "go1.27.3",
+  "command": "GOOS=windows GOARCH=amd64 CGO_ENABLED=0 go build -o .local/c15/surveyscan-agent.exe ./cmd/surveyscan-agent",
+  "exit_code": 0,
+  "artifact_format": "PE32+ executable x86-64",
+  "artifact_sha256": "d3ac8bee1eea4721361310410486276b139e481bfc50e882f4fdd2873c044a23",
+  "artifact_published": false,
+  "windows_executed": false,
+  "unrun": [
+    "native API collection",
+    "standard/elevated rights profiles",
+    "Windows DACL/spool locking and crash recovery",
+    "SCM lifecycle",
+    "actual Windows reboot",
+    "signed Windows update"
+  ],
+  "c14_accepted": false
+}

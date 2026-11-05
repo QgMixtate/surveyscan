@@ -1,0 +1,1343 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:surveyscan:c15:observation:1:2",
+  "$comment": "Draft C15.02 contract; not enabled in runtime. C03/C09 remain immutable.",
+  "$defs": {
+    "Candidate": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "machine_uuid",
+            "bios_uuid",
+            "serial",
+            "hostname",
+            "ipv4",
+            "ipv6",
+            "mac"
+          ]
+        },
+        "namespace": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "value": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "kind",
+        "namespace",
+        "value"
+      ],
+      "additionalProperties": false
+    },
+    "JobReference": {
+      "type": "object",
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attempt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "lease_version": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,19}$",
+          "maxLength": 20
+        }
+      },
+      "required": [
+        "job_id",
+        "attempt_id",
+        "lease_version"
+      ],
+      "additionalProperties": false
+    },
+    "Observation": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "$ref": "#/$defs/Version"
+        },
+        "observation_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "origin": {
+          "$ref": "#/$defs/Origin"
+        },
+        "source_record": {
+          "$ref": "#/$defs/SourceRecord"
+        },
+        "scope": {
+          "$ref": "#/$defs/Scope"
+        },
+        "source_sequence": {
+          "type": "string",
+          "pattern": "^[1-9][0-9]{0,19}$",
+          "maxLength": 20
+        },
+        "collected_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+        },
+        "clock_quality": {
+          "enum": [
+            "trusted",
+            "estimated",
+            "unknown",
+            "skewed"
+          ]
+        },
+        "identity_candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "minItems": 0,
+          "maxItems": 16
+        },
+        "sections": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Section"
+          },
+          "minItems": 12,
+          "maxItems": 12
+        },
+        "asserted_asset_uid": {
+          "oneOf": [
+            {
+              "type": "string",
+              "format": "uuid"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "job": {
+          "$ref": "#/$defs/JobReference"
+        },
+        "extensions": {
+          "type": "object",
+          "maxProperties": 8,
+          "patternProperties": {
+            "^x-[a-z0-9.-]+$": {
+              "type": [
+                "string",
+                "boolean",
+                "null"
+              ],
+              "maxLength": 1024
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "observation_id",
+        "tenant_id",
+        "origin",
+        "source_record",
+        "scope",
+        "source_sequence",
+        "collected_at",
+        "clock_quality",
+        "identity_candidates",
+        "sections"
+      ],
+      "additionalProperties": false
+    },
+    "Origin": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "source_kind": {
+          "enum": [
+            "agent",
+            "collector",
+            "portable"
+          ]
+        },
+        "generation_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "source_id",
+        "source_kind",
+        "generation_id"
+      ],
+      "additionalProperties": false
+    },
+    "Scope": {
+      "type": "object",
+      "properties": {
+        "site_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "network_scope_id": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "required": [
+        "site_id",
+        "network_scope_id"
+      ],
+      "additionalProperties": false
+    },
+    "Section": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "enum": [
+            "identity",
+            "os",
+            "network",
+            "hardware",
+            "software",
+            "updates",
+            "services",
+            "users_groups",
+            "routes_ports",
+            "resources",
+            "protection",
+            "neighbors"
+          ]
+        },
+        "collected_at": {
+          "type": "string",
+          "format": "date-time",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "partial",
+            "unavailable",
+            "unsupported",
+            "not_requested",
+            "unknown"
+          ]
+        },
+        "collection_complete": {
+          "type": "boolean"
+        },
+        "reason_code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+        },
+        "record_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          },
+          "minItems": 0,
+          "maxItems": 100000
+        },
+        "coverage": {
+          "type": "object",
+          "properties": {
+            "scope": {
+              "enum": [
+                "local_host",
+                "machine_and_current_user",
+                "local_accounts",
+                "local_cache",
+                "qfe_subset"
+              ]
+            },
+            "providers": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 128,
+                "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+              },
+              "maxItems": 16,
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "scope"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "name",
+        "collected_at",
+        "status",
+        "collection_complete",
+        "reason_code",
+        "record_count",
+        "records"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "identity"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/identityRow"
+                },
+                "maxItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "os"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/osRow"
+                },
+                "maxItems": 1
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "network"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/networkRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "hardware"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/hardwareRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "software"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/softwareRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "updates"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/updatesRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "services"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/servicesRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "users_groups"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/users_groupsRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "routes_ports"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/routes_portsRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "resources"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/resourcesRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "protection"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/protectionRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "name": {
+                "const": "neighbors"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "records": {
+                "items": {
+                  "$ref": "#/$defs/neighborsRow"
+                },
+                "maxItems": 100000
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "unavailable",
+                  "unsupported",
+                  "not_requested",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "collection_complete": {
+                "const": false
+              },
+              "record_count": {
+                "const": 0
+              },
+              "records": {
+                "maxItems": 0
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "partial"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "collection_complete": {
+                "const": false
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "ok"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "collection_complete": {
+                "const": true
+              }
+            }
+          }
+        }
+      ]
+    },
+    "SourceRecord": {
+      "type": "object",
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9._:-]{0,63}$"
+        },
+        "source_local_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "required": [
+        "namespace",
+        "source_local_id"
+      ],
+      "additionalProperties": false
+    },
+    "Version": {
+      "type": "object",
+      "properties": {
+        "major": {
+          "const": 1
+        },
+        "minor": {
+          "const": 2
+        }
+      },
+      "required": [
+        "major",
+        "minor"
+      ],
+      "additionalProperties": false
+    },
+    "hardwareRow": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "cpu",
+            "memory",
+            "bios",
+            "disk"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "vendor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "serial": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "uuid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "logical_processors": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "cpu"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "logical_processors"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "memory"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "bytes"
+            ]
+          }
+        }
+      ]
+    },
+    "identityRow": {
+      "type": "object",
+      "properties": {
+        "hostname": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "fqdn": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "domain": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "machine_uuid": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "serial": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        }
+      },
+      "required": [
+        "hostname"
+      ],
+      "additionalProperties": false
+    },
+    "neighborsRow": {
+      "type": "object",
+      "properties": {
+        "family": {
+          "enum": [
+            "ipv4",
+            "ipv6"
+          ]
+        },
+        "address": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "mac": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{2}:){5}[0-9a-f]{2}$"
+        },
+        "interface_index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        }
+      },
+      "required": [
+        "family",
+        "address",
+        "interface_index"
+      ],
+      "additionalProperties": false
+    },
+    "networkRow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "mac": {
+          "type": "string",
+          "pattern": "^([0-9a-f]{2}:){5}[0-9a-f]{2}$"
+        },
+        "addresses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ip": {
+                "oneOf": [
+                  {
+                    "type": "string",
+                    "format": "ipv4"
+                  },
+                  {
+                    "type": "string",
+                    "format": "ipv6"
+                  }
+                ]
+              },
+              "prefix": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 128
+              }
+            },
+            "required": [
+              "ip",
+              "prefix"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "dns_servers": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "gateways": {
+          "type": "array",
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "maxLength": 128
+          }
+        },
+        "dhcp_enabled": {
+          "type": "boolean"
+        },
+        "mtu": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "name",
+        "addresses"
+      ],
+      "additionalProperties": false
+    },
+    "osRow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "build": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "architecture": {
+          "enum": [
+            "amd64",
+            "arm64",
+            "386"
+          ]
+        },
+        "boot_time": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "boot_time_quality": {
+          "enum": [
+            "estimated",
+            "trusted",
+            "unknown"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "version",
+        "architecture"
+      ],
+      "additionalProperties": false
+    },
+    "protectionRow": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "firewall",
+            "antivirus",
+            "defender",
+            "privileges"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "resourcesRow": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "volume",
+            "share",
+            "usb"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "filesystem": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "total_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "free_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "device_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        }
+      },
+      "required": [
+        "kind",
+        "name"
+      ],
+      "additionalProperties": false
+    },
+    "routes_portsRow": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "route",
+            "tcp",
+            "udp"
+          ]
+        },
+        "family": {
+          "enum": [
+            "ipv4",
+            "ipv6"
+          ]
+        },
+        "destination": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "gateway": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "metric": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "local_address": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "local_port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "remote_address": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "remote_port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "state": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "interface_index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "kind",
+        "family"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "route"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "destination",
+              "interface_index"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "tcp"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "local_address",
+              "local_port",
+              "state"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "udp"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "local_address",
+              "local_port"
+            ]
+          }
+        }
+      ]
+    },
+    "servicesRow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "state": {
+          "enum": [
+            "stopped",
+            "start_pending",
+            "stop_pending",
+            "running",
+            "continue_pending",
+            "pause_pending",
+            "paused",
+            "unknown"
+          ]
+        },
+        "start_mode": {
+          "enum": [
+            "boot",
+            "system",
+            "auto",
+            "demand",
+            "disabled",
+            "unknown"
+          ]
+        },
+        "account": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "executable": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        }
+      },
+      "required": [
+        "name",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "softwareRow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "vendor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "architecture": {
+          "enum": [
+            "amd64",
+            "arm64",
+            "386",
+            "unknown"
+          ]
+        },
+        "scope": {
+          "enum": [
+            "machine",
+            "current_user"
+          ]
+        },
+        "source": {
+          "enum": [
+            "uninstall_registry"
+          ]
+        },
+        "registry_view": {
+          "enum": [
+            "32",
+            "64"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "scope",
+        "source",
+        "registry_view"
+      ],
+      "additionalProperties": false
+    },
+    "updatesRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "installed_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "source": {
+          "enum": [
+            "qfe"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "users_groupsRow": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "user",
+            "group",
+            "membership"
+          ]
+        },
+        "sid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 184,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "group_sid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 184,
+          "pattern": "^[^\\u0000-\\u001f\\u007f]+$"
+        },
+        "disabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "sid"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "user"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "group"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "membership"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "group_sid"
+            ]
+          }
+        }
+      ]
+    }
+  },
+  "$ref": "#/$defs/Observation"
+}

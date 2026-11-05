@@ -786,7 +786,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Матрица ОС/архитектуры/полей и privileges.
 - Проверка: Недоступные API не объявлены пустыми данными.
 - База оценки: Выбранные Windows versions и стандартные/админ права.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done (проектирование); decisions/C15-windows-capabilities.md и evidence/C15-cross-build.json; подготовка по R-023, native Windows unrun.
 
 ## C15.02 — Реализовать Windows-секции inventory
 
@@ -796,7 +796,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Оборудование, ПО/KB, службы, группы, сеть/диски/защита.
 - Проверка: Ошибка одной секции не уничтожает другие.
 - База оценки: Матрица §6.1 по поддержанным API; scripts policy C01.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress; draft C15 observation1.2,19 synthetic fixtures passed; runtime/Windows unrun.
 
 ## C15.03 — Оформить service lifecycle и update
 

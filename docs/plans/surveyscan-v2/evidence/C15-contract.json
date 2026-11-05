@@ -1,0 +1,21 @@
+{
+  "package": "C15",
+  "task": "C15.02",
+  "kind": "synthetic-contract-reference-check",
+  "schema": "contracts/C15/observation.schema.json",
+  "command": "python docs/plans/surveyscan-v2/contracts/C15/validate.py",
+  "fixtures": 19,
+  "positive": 7,
+  "negative": 12,
+  "matched": 19,
+  "exit_code": 0,
+  "runtime_enabled": false,
+  "windows_executed": false,
+  "immutable_C03_C09_changed": false,
+  "unrun": [
+    "Go runtime dispatch and capability negotiation",
+    "collector/server storage/projection/detail API",
+    "native Windows inventory",
+    "actual Windows lifecycle/reboot"
+  ]
+}
