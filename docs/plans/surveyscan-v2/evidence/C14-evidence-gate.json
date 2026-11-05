@@ -1,0 +1,44 @@
+{
+  "package": "C14",
+  "task": "C14.02 supporting evidence guard; task remainsin_progress",
+  "date": "2026-11-05 Europe/Moscow",
+  "status": "validator tested; actual run stillpending",
+  "synthetic_unit_tests": 10,
+  "test_scope": "fictional2020 ledgers/corruption fixtures exercise validator only; no fake runtime/24h acceptance claim",
+  "validator_sha256": "58c45ce6dc55888d30f6c00b7193ddde933199525ac5581c94711e833e64fa01",
+  "actual_prefix_review": {
+    "status": "pending",
+    "accepted_24h": false,
+    "checks": [
+      "pinned source/binaries/runner/config match start reference",
+      "complete bound sample/event ledgers and monotonic real timestamps",
+      "monitor gaps<=120s, freshness<=300s, bounded spools/readiness failures",
+      "observation/sequence counters do not regress; scheduled events ordered"
+    ],
+    "samples": 965,
+    "max_sample_gap_seconds": 32.027,
+    "recorded_elapsed_seconds": 30361.785,
+    "pending_gates": [
+      "real24h completion",
+      "finite final drain",
+      "both real leaf renewals",
+      "completion event"
+    ],
+    "package": "C14",
+    "task": "C14.02 evidence review",
+    "run_id": "10812e7a-8a6a-4dae-9dd5-b0583f503c83",
+    "scope": "read-only evidence consistency; live SQL UID/dedup/final conservation rely on pinned runner assertions; not a release approval"
+  },
+  "actual_review_recorded_at": "2026-11-05T09:03:56.441991+00:00",
+  "followup": {
+    "pid": 843094,
+    "status": "started detached, read-only with pinned checker/reference dependencies",
+    "output": "v2/.local/c14-soak/10812e7a-8a6a-4dae-9dd5-b0583f503c83/acceptance-review.json",
+    "actions": "writes only a private review after runner termination/staleness; no Git/plan/release/C15 mutations"
+  },
+  "limits": [
+    "runtime UID/dedup/final conservation and both-role leaf files rely on pinned runner assertions",
+    "evidence consistency is not a production security/availability attestation",
+    "following code stages require an active assistant session after actual24h result"
+  ]
+}

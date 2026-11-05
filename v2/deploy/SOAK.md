@@ -73,3 +73,34 @@ production backoff/ACK. Проверяются пустые обе очеред�
 Preflight, failed и stale marker не дают accepted_24h; source/binary hashes сохраняются.
 Для старых preflight, где некоторых метрик ещё не было, соответствующее значение остаётся null.
 Сводка не меняет plan status и не запускает следующий пакет до приёмки зависимостей.
+
+## Проверка полноты доказательств C14.02
+
+```sh
+python scripts/soak_acceptance.py <run-id>
+```
+
+Default reference — неизменяемый start record `evidence/C14-soak.json`; для другого нового
+прогона нужен его отдельный `--reference`. Сравниваются source/binary/runner/config fingerprints,
+согласованность status и завершённых JSONL записей, timestamps/counters, порядок всех faults,
+coverage≥24h, finite drain и реальные renewal receipts. Gap мониторинга≤120s соответствует
+существующему порогу stale у status helper; freshness≤300s — заданному профилю этого стенда.
+Это acceptance budgets данного запуска, не production SLA. При live append берётся только
+полностью опубликованный prefix; truncated final ledger не принимается.
+
+Exit0 — проверка завершённого24h evidence прошла; exit3 — ещёpending, полноценный24hPASS не выдан;
+exit2 — preflight/failed/stale/несогласованный результат отклонён. Проверка не меняет run/plan
+и не запускает следующий пакет. SQL UID/dedup/conservation и обновление leaf обеих ролей
+по-прежнему доказывает зафиксированный runner; здесь проверяется полнота его журналов.
+
+10 unit tests используют явно синтетические журналы2020 и повреждения evidence. Они проверяют
+сам валидатор и никогда не считаются настоящим суточным прогоном. Отдельный workflow
+`surveyscan-acceptance-evidence` выполняет только эти unit tests, без ожидания суток/доступа к данным.
+
+Для текущего run дополнительно запущен private detached follow-up: после завершения процесса
+он вызовет валидатор и сохранит `acceptance-review.json` в каталоге run с0600. Checker/status helper/
+reference hashes закреплены; при их изменении follow-up выдаёт отказ для ручного разбора.
+Marker `.local/c14-evidence-followup-process.json`, stdout `.local/c14-evidence-followup.log`.
+Follow-up не публикует Git, не закрывает план и не исполняет C15; кодовые этапы продолжаются
+в активной сессии после реального результата. Run завершить можно не раньше6 ноября2026
+в03:31:49 по Москве (00:31:49UTC), при всех успешных checks.

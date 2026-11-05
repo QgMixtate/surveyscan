@@ -1,0 +1,23 @@
+name: surveyscan-acceptance-evidence
+on:
+  push:
+    paths: ['v2/scripts/soak_acceptance.py', 'v2/scripts/test_soak_acceptance.py', '.github/workflows/acceptance.yml']
+  pull_request:
+    paths: ['v2/scripts/soak_acceptance.py', 'v2/scripts/test_soak_acceptance.py', '.github/workflows/acceptance.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: surveyscan-acceptance-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  evidence-guard:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Synthetic evidence counterexamples (never a real24h pass)
+        run: python -m unittest discover -s v2/scripts -p 'test_soak_acceptance.py' -v

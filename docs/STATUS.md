@@ -8,10 +8,15 @@ Main73ced7e не слит, production deployment и публикация нас�
 
 **Реальный24h прогон работает**: `10812e7a-8a6a-4dae-9dd5-b0583f503c83`, PID3505270.
 Чистый runtime source8560f57, frozen private copies/SHA256. Начало5 ноября00:31:49UTC;
-завершить можно не раньше **6 ноября00:31:49UTC** (03:31:49 Москва), при всех успешных checks.
+завершить можно не раньше **6 ноября03:31:49 по Москве** (00:31:49UTC), при всех успешных checks.
+Run жив уже≥8h; выполнены оба networkfault и запланированные restart collector/center.
 На [снимке](plans/surveyscan-v2/evidence/C14-soak-progress.json) пройдены оба настоящих разрыва
 связи, UID/sequence сохранены, очереди опустели; это **не** суточный PASS.
-Изv2: `python scripts/soak_status.py <run-id>` и `python scripts/soak_report.py <run-id>`.
+Изv2: `python scripts/soak_status.py <run-id>`, `python scripts/soak_report.py <run-id>`
+и `python scripts/soak_acceptance.py <run-id>` (exit3=pending, не24hPASS).
+[Evidence guard](plans/surveyscan-v2/evidence/C14-evidence-gate.json):10 synthetic tests passed;
+965 actual samples проверены, max gap32.027s, pending. Private follow-up PID843094 после
+завершения runner сохранит acceptance-review.json; plan/Git/C15 автоматически не меняет.
 Local state `.local/c14-soak/<run-id>/status.json`; stdout `.local/c14-actual-soak.log`.
 Проверять PID/run ID и свежий sample; marker running без процесса неPASS. Не останавливать/
 запечатывать общий dev PG/Bao. Runner отделён от жизни вызова/чата, но не переживает выключение машины.

@@ -201,3 +201,11 @@ Actualsoak10812e7a-8a6a-4dae-9dd5-b0583f503c83 ещёrunning; обе реаль�
 53done/C14.02IP. Final docs/evidence-only commit with[skip ci] не меняет validated code.
 Следующие C14.03/04→C15 после фактического86400s PASS без нового routine confirmation;
 private rawserial/keys/disks/custody/soakstate не опубликованы.
+
+Продолжение2026-11-05: actualrun10812e7a пережил≥8h, оба network cuts и restart collector/center;
+491+ observations/oneUID/no duplicates/queuesempty. Добавлен read-only evidence guard:
+10 synthetic unit tests passed (не actual24h);965 live samples согласованы соstart reference,
+maxmonitor gap32.027s, resultpending/accepted_24h=false. Проверяются fingerprint/ledgers/time/
+counters/faults/finaldrain/realrenewal. Private pinned follow-up PID843094 сохранитreview после
+терминального run, без Git/plan/release/C15 изменений. C14.02 ещёIP,53done; code stages после
+реального24h результата в активной сессии. Новые source/tests/workflow publicationpending.
