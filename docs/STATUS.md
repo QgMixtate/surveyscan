@@ -1,54 +1,26 @@
 # Текущее состояние surveyscan
 
-Продолжение C13: локальный checked updater18 passed (actual process/PG/TLS, rollback, SIGKILL/fence/recovery).
-Новые schema-catalog/schema-check и signed schema metadata, config/state preserved. Systemd update/boot
-и schema-changing updater ещё unrun. [Procedure](../v2/deploy/UPDATE.md); новый код пока не pushed.
+Обновлено2026-11-05 (Москва). C01–C13 done в bounded E1,52/200; C14.01 в работе.
+[C13 runtime evidence](plans/surveyscan-v2/evidence/C13-runtime.json), [handoff](plans/surveyscan-v2/handoffs/C13.md).
+Две независимо свежих Debian12/QEMU/systemd VM по9checks: real kernel reboot/autostart,
+nonroot/LoadCredential, sealedBao readonly→operatorunseal, preservedUID/session/pending→sequence3,
+actual verified combined server/collector/agent update, staticTLSedge/Web и CLI без guest Go/Node.
+Updater19: signature/catalog/checkpoint, actual SIGKILL/fence/rollback, compiled private schema34 fixture,
+committedDDL refuses old33, explicit recovery. Product SQL0000–0032/C03/C09 unchanged.
+40unit/50PG/58fixtures, release14/unitstatic0, PG18/Bao9/commoncheckpoint10/C11upgrade13 passed.
+Custody manualoperator; no auto-unseal/KMS/physicalpowerloss/HAgeoDR/100users/24h claim.
+Первыйservice-installpath DebianLinux; PG/Bao/TLS/custody operator prerequisites, guest.py synthetic testoperator.
 
-R-020, 2026-11-05: пользователь поручил продолжить и опубликовать всё сделанное в GitHub.
-Опубликовано: codex/v2-c13-operations@f1ea70f (вся история C04–C13), draft PR #4: https://github.com/QgMixtate/surveyscan/pull/4.
-Hosted Actions SUCCESS на коде215f10c: [v2](https://github.com/QgMixtate/surveyscan/actions/runs/41924907145), [Web/Chromium](https://github.com/QgMixtate/surveyscan/actions/runs/41924907471).
-[Точные hosted reports](plans/surveyscan-v2/evidence/C13-hosted.json): release14/staticverify0/PG18/Bao9/common10/upgrade13/Web16 плюс полная E1 regression.
-Финальная фиксация evidence меняет только документацию; [skip ci] не повторяет те же продуктовые тесты.
-Push успешен, PR создан; прежние no-push ограничения ниже исторические.
-Main не сливать, production deployment и перепубликация среды не поручены.
-Новые проверки C13: общий stopped-writer PG/Bao/files checkpoint10 и actual C11schema31→33 upgrade13 passed.
-Restore на других FS paths, original host/issuer fenced, pending replay exactly once/UID/sequence3,
-оба spool drained, прежняя session и новый leaf certificate через restored Transit CA.
-После upgrade все previous domain rows и31 applied hashes сохранены; migrate2→0, login/card/write/profile1 работают.
-Перед публикацией make verify39unit/58C03 и50 realPG integration passed. Workflow дополнен Node/Web build,
-release/static units/PG/Bao/common checkpoint/previous-version upgrade; hosted success подтверждён выше.
-48/200 done: C13.01–03 in_progress до systemd/live-update/two-clean-OS gates; C14 не начат.
+Следующийпакет C14: [план](plans/surveyscan-v2/packages/C14.md), draft15scenario matrix
+[evidence/C14-plan.json](plans/surveyscan-v2/evidence/C14-plan.json). Actual24h soak ещёне начат;
+его запускать detached/persistent, фиксировать running/elapsed, не blockchat/не заменять fakeclock.
+До фактических24h и всехобязательныхchecks нельзя объявлять принятыйSMB/начинатьC15.
 
-Обновлено: 2026-11-05 (Москва). GitHub refs повторно проверены fetch/ls-remote; main73ced7e, PR refs1–3 без изменений. Новые этапы опубликованы в PR4 по R-020, main не слит.
-
-C13.01–03 в работе: staged systemd units и подписанный Ed25519 directory bundle,
-SHA256/size/mode manifest, SPDX2.3 dependency inventory, verified atomic filesystem staging.
-14 release checks, make verify (39 unit/58 fixtures) и separate Web build passed.
-Все пять компонентов показывают version/revision/dirty; keys/configs не включаются в поставку.
-Actual systemd boot/reboot и live checked update/backup/restore остаются открытыми:
-host PID1 tail, нет QEMU/KVM/nspawn, Docker cgroup driver none. 48/200 done без изменения.
-Продолжение: [handoff C13](plans/surveyscan-v2/handoffs/C13.md), [release procedure](../v2/deploy/RELEASE.md).
-PG component backup/restore:18 actual pipeline+restore checks passed,46 table fingerprints identical,
-33 migrations verified without reapply, прежний admin login и UID/card доступны на восстановленном
-реальном TLS server; authorized PATCH создаёт ровно один audit/outbox и сохраняет UID. Full checkpoint/filesystem/previous-schema upgrade ещё не проверены;
-PG-only component не обновляет общий backup marker. [Runbook](../v2/deploy/BACKUP.md).
-Отдельный Bao Raft restore:9 checks passed на initially empty disposable node; cluster ID,
-KV/scoped policy сохранены, оба non-exportable Transit ключа подписывают проверяемые challenges,
-после actual Docker restart/unseal подпись работает. Source volume не восстанавливался/reset.
-Это component dev rehearsal, не единый PG/Bao/filesystem restore, production HTTPS/KMS или boot.
-
-
-Актуальная задача R-019 — выполнять этапы последовательно до лимита.
-C01–C12 завершены локально в ограниченном E1 scope:48/200 done.
-[C12 передача](plans/surveyscan-v2/handoffs/C12.md): CLI JSON/table, versioned central profiles,
-signed delivery/application ACK, sourceHB vsinventoryfreshness,tenant diagnostics/metrics/alerts,
-private offline snapshots и read-only Web profile panel. CLI/APIadmin меняет интервалы.
-39unit/50realPG/58fixtures,13operator/17CLI/16browser,8SIGKILLrecovery и10agent/10collector renewal passed.
-Реальный120→60с cadence проверен безfakeclock; collector TLSrace отдельно сtest scheduler clock.
-33migrations/45tables, prior SQL/C03/C09 bytes неизменны. Backup ageunknown безactualmarker,
-production/systemd/24h/DR/hardwareclone/100users не проверены. C11 identity limitations сохранены.
-Далее C13 установка/services/release artifacts/backup/restore; сначала проверить доступностьsystemd/cleanboot.
-C04–C13 опубликованы в PR4 по R-020, hosted regression success215f10c; no merge/deploy/env publication.
+Публикация: draftPR4 https://github.com/QgMixtate/surveyscan/pull/4; текущаяветка codex/v2-c13-operations.
+07adce1 published, hostedv2run41934091393 иWeb41934091411 SUCCESS для updater18/source40unit.
+Новые nativeVM/combinedcontroller/updated19 acceptance покаlocal, следующийpush поR020 разрешён.
+Ранее code215f10c тожеhostedsuccess: [evidence](plans/surveyscan-v2/evidence/C13-hosted.json).
+Main73ced7e не слит, productiondeploy/envpublication не поручены.
 
 ## Контекст архитектуры и история C01–C04
 

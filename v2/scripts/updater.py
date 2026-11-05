@@ -205,6 +205,11 @@ def launch(base, record, name, controller, phase):
 def apply(root, key, controller, recover=False):
     with locked(root) as base:
         record, old, new = validate_record(base, key)
+        if hasattr(controller, 'units'):
+            if recover:
+                require(record.get('units', controller.units) == controller.units, 'recovery must select the recorded service components')
+            else:
+                record['units'] = controller.units
         if record['schema_changed'] and not recover:
             from checkpoint import verify as verify_checkpoint
             backup = Path(record['checkpoint'])
@@ -253,30 +258,33 @@ def apply(root, key, controller, recover=False):
 
 
 class SystemdController:
-    def __init__(self, root, health_url, ca=None, dev_http=False):
+    def __init__(self, root, health_url, ca=None, dev_http=False, components=('server',)):
         require(root.resolve() == Path('/'), 'systemd controller supports only the explicitly selected live root')
         url = urllib.parse.urlsplit(health_url)
         require(not url.username and not url.password and not url.query and not url.fragment and url.path == '/health/ready', 'explicit ready URL required')
         require(url.scheme == 'https' or dev_http and url.scheme == 'http' and url.hostname in ('127.0.0.1', '::1'), 'HTTPS or explicit literal loopback development HTTP required')
         self.url = health_url
         self.tls = ssl.create_default_context(cafile=str(ca) if ca else None)
+        require('server' in components and set(components) <= {'server', 'collector', 'agent'}, 'selected server installation components required')
+        self.units = ['surveyscan-' + component + '.service' for component in dict.fromkeys(components)]
 
     def run(self, args):
         return subprocess.run(args, capture_output=True, timeout=180).returncode
 
     def stop(self):
-        require(self.run(['systemctl', 'stop', 'surveyscan-server.service', 'surveyscan-migrate.service']) == 0, 'stop failed')
+        require(self.run(['systemctl', 'stop', *self.units, 'surveyscan-migrate.service']) == 0, 'stop failed')
 
     def start(self):
-        require(self.run(['systemctl', 'start', 'surveyscan-server.service']) == 0, 'start failed')
+        require(self.run(['systemctl', 'start', *self.units]) == 0, 'start failed')
 
     def task(self, binary, command):
-        return self.run(['systemd-run', '--quiet', '--wait', '--collect', '--unit=surveyscan-update-' + uuid.uuid4().hex[:12],
+        unit = 'surveyscan-update-' + uuid.uuid4().hex[:12] + '.service'
+        return self.run(['systemd-run', '--quiet', '--wait', '--collect', '--unit=' + unit,
                          '--property=User=surveyscan-server', '--property=Group=surveyscan-server',
                          '--property=LoadCredential=pg_password:/etc/surveyscan-server/pg_password',
                          '--property=EnvironmentFile=/etc/surveyscan-server/server.env',
                          '--property=UMask=0077', '--property=NoNewPrivileges=yes', '--property=ProtectSystem=strict',
-                         '--property=ProtectHome=yes', '--setenv=SURVEYSCAN_V2_DATABASE_PASSWORD_FILE=%d/pg_password',
+                         '--property=ProtectHome=yes', '--setenv=SURVEYSCAN_V2_DATABASE_PASSWORD_FILE=/run/credentials/' + unit + '/pg_password',
                          str(binary), command])
 
     def migrate(self, binary):
@@ -292,7 +300,7 @@ class SystemdController:
         opener = urllib.request.build_opener(NoRedirect(), urllib.request.HTTPSHandler(context=self.tls))
         for _ in range(30):
             try:
-                if self.run(['systemctl', 'is-active', '--quiet', 'surveyscan-server.service']) == 0:
+                if all(self.run(['systemctl', 'is-active', '--quiet', unit]) == 0 for unit in self.units):
                     with opener.open(self.url, timeout=2) as response:
                         if response.status == 200:
                             return True
@@ -312,6 +320,7 @@ def main():
     p.add_argument('--health-url')
     p.add_argument('--ca-file', type=Path)
     p.add_argument('--dev-loopback-http', action='store_true')
+    p.add_argument('--components', nargs='+', choices=['server', 'collector', 'agent'], default=['server'])
     a = p.parse_args()
     if a.command == 'prepare':
         require(a.bundle is not None, 'bundle required')
@@ -323,7 +332,7 @@ def main():
                       'journal': read_json(base / 'update.json') if (base / 'update.json').exists() else None}
     else:
         require(a.health_url is not None, 'health URL required')
-        result = apply(a.root, a.public_key, SystemdController(a.root, a.health_url, a.ca_file, a.dev_loopback_http), a.command == 'recover')
+        result = apply(a.root, a.public_key, SystemdController(a.root, a.health_url, a.ca_file, a.dev_loopback_http, a.components), a.command == 'recover')
     print(json.dumps(result))
     return 0 if result.get('phase') not in ('rolled_back', 'recovery_required') else 1
 

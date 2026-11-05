@@ -5,6 +5,7 @@ Actual server processes, PG and TLS; no host systemd changes. Startup failure an
 explicit test injections. Production systemd controller/physical power-loss are not attested.
 """
 import hashlib
+import io
 import json
 import multiprocessing
 import os
@@ -13,11 +14,12 @@ import shutil
 import signal
 import subprocess
 import tempfile
+import tarfile
 import time
 
 import release
 import updater
-from dev import ROOT, STATE
+from dev import ROOT, STATE, DOCKER, ENV
 from machine_smoke import main as harness
 
 
@@ -29,7 +31,7 @@ def main():
         key.chmod(0o600)
         public.write_bytes(release.openssl('pkey', '-in', key, '-pubout'))
         base_version = json.loads(subprocess.check_output([str(ROOT / '.dist/surveyscan-server'), 'version']))['version']
-        versions = [base_version, '0.0.1-c13', '0.0.2-c13']
+        versions = [base_version, '0.0.1-c13', '0.0.2-c13', '0.0.3-c13']
         require_new = updater.version(versions[0]) < updater.version(versions[1])
         assert require_new, 'update test requires baseline0.0.0-c13'
         bundles = {}
@@ -38,6 +40,17 @@ def main():
         for number, version in enumerate(versions):
             distribution = ROOT / '.dist'
             if number:
+                source = ROOT
+                if number == 3:
+                    # A real compiled, append-only test migration in a private source copy, never product SQL.
+                    source = work / 'schema-fixture'
+                    source.mkdir()
+                    archive = subprocess.check_output(['git', 'archive', 'HEAD', 'v2'], cwd=ROOT.parent)
+                    with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
+                        tar.extractall(source, filter='data')
+                    source = source / 'v2'
+                    (source / 'internal/platform/messaging/schema/0033_c13_update_acceptance.sql').write_text(
+                        'CREATE TABLE messaging.c13_update_acceptance (row_id bigint PRIMARY KEY);\n')
                 distribution = work / ('dist-' + version)
                 distribution.mkdir()
                 shutil.copytree(ROOT / '.dist/contracts', distribution / 'contracts')
@@ -45,7 +58,7 @@ def main():
                     module = 'github.com/QgMixtate/surveyscan/v2/internal/platform/buildinfo.'
                     flags = f'-X {module}Version={version} -X {module}Revision={revision} -X {module}Dirty=true'
                     result = subprocess.run([go, 'build', '-mod=readonly', '-trimpath', '-p', '2', '-ldflags', flags,
-                                             '-o', str(distribution / name), './cmd/' + name], cwd=ROOT,
+                                             '-o', str(distribution / name), './cmd/' + name], cwd=source,
                                              env=dict(os.environ, CGO_ENABLED='0'), capture_output=True, timeout=120)
                     assert result.returncode == 0, 'candidate Go build failed'
             bundle = work / ('bundle-' + version)
@@ -98,7 +111,8 @@ def main():
                     if self.migration_failure:
                         raise RuntimeError('injected pre-migration failure')
                     result = subprocess.run([str(binary), 'migrate'], env=env, capture_output=True, timeout=30)
-                    assert result.returncode == 0 and b'applied_migrations=0' in result.stdout
+                    assert result.returncode == 0
+                    self.applied_migrations = int(result.stdout.decode().strip().split('=')[1])
                     if self.kill_after_migrate:
                         os.kill(os.getpid(), signal.SIGKILL)
                     if self.inject_drift:
@@ -209,12 +223,44 @@ def main():
                 result = updater.apply(root, public, controller, recover=True)
                 assert result['phase'] == 'complete' and controller.healthy()
                 checks.append('explicit recovery after fixing own drift fixture restores matching current release without deleting state or identities')
+                # Actual compiled schema33->34 fixture: require checkpoint, then refuse rollback after committed DDL.
+                from pg_backup import Client, backup
+                from checkpoint import pack
+                from bao_restore_fixture import call
+                refused(lambda: updater.prepare(root, bundles[versions[3]], public))
+                controller.stop()
+                s['collector_process'].terminate()
+                s['collector_process'].wait(timeout=8)
+                client = Client({tool: DOCKER + ['exec', '-T', '-e', 'PGUSER=surveyscan_v2', 'db', tool]
+                                 for tool in ('psql', 'pg_dump', 'pg_restore')}, env=ENV)
+                pg = work / 'schema-change-pg'
+                backup(client, s['sql']('SELECT current_database()'), pg)
+                custody = json.loads((STATE / 'bao-init.json').read_text())
+                status, raw = call('http://127.0.0.1:58200', 'sys/storage/raft/snapshot', token=custody['root_token'], binary=True)
+                assert status == 200
+                raft = work / 'schema-change-raft.snapshot'
+                raft.write_bytes(raw)
+                raft.chmod(0o600)
+                checkpoint = work / 'schema-change-checkpoint'
+                pack(checkpoint, pg, raft, {'server-config': config, 'server-state': root / 'var/lib', 'fixture-collector': s['directory']}, True)
+                updater.prepare(root, bundles[versions[3]], public, checkpoint)
+                controller.fail_version = versions[3]
+                result = updater.apply(root, public, controller)
+                assert controller.applied_migrations == 1 and result['phase'] == 'recovery_required'
+                assert updater.active(base) == versions[3] and (base / 'update.fence').exists()
+                assert s['sql']('SELECT count(*) FROM platform.schema_migrations') == '34'
+                assert not controller.check_schema(base / 'releases' / versions[2] / 'bin/surveyscan-server')
+                controller.fail_version = None
+                result = updater.apply(root, public, controller, recover=True)
+                assert result['phase'] == 'complete' and controller.healthy()
+                assert s['sql']('SELECT asset_uid::text FROM assets.assets') == s['asset']
+                checks.append('actual compiled test-only schema33→34 requires verified common checkpoint; committed DDL plus failed startup keeps fence, refuses schema33 rollback and explicitly recovers ready schema34')
                 with updater.locked(root):
                     refused(lambda: updater.prepare(root, bundles[base_version], public))
                 checks.append('installation-wide writer lock refuses a concurrent updater')
                 report = {'package': 'C13', 'task': 'C13.02', 'status': 'passed', 'count': len(checks), 'checks': checks,
-                          'target': 'actual signed ELF releases/server processes, PostgreSQL, TLS/login/registry, original UID; explicit bad listen startup and ledger drift fixtures',
-                          'unrun': ['production systemd controller', 'actual schema-changing update via updater', 'physical power loss', 'boot/reboot/two clean OS/production DR']}
+                          'target': 'actual signed ELF releases/server processes, PostgreSQL, TLS/login/registry, original UID; explicit bad listen/ledger drift and private compiled append-only migration34 fixtures (product SQL unchanged)',
+                          'unrun': ['production systemd controller', 'physical power loss', 'boot/reboot/two clean OS/production DR']}
                 (STATE / 'c13-update-smoke.json').write_text(json.dumps(report, indent=2) + '\n')
                 print(json.dumps(report))
             finally:

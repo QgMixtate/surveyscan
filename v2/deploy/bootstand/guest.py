@@ -1,0 +1,309 @@
+"""Test operator inside a disposable VM. Root custody here is not product auto-unseal."""
+import base64
+import hashlib
+import http.client
+import json
+import os
+from pathlib import Path
+import pwd
+import re
+import shutil
+import ssl
+import subprocess
+import time
+import uuid
+
+BIN = Path('/opt/surveyscan/current/bin')
+SEED = Path('/root/boot-seed')
+STATE = Path('/root/boot-phase.json')
+CHECKS = []
+
+
+def command(args, env=None, timeout=60):
+    result = subprocess.run([str(x) for x in args], env=env, capture_output=True, timeout=timeout)
+    if result.returncode:
+        print('TEST_COMMAND_STDERR ' + result.stderr.decode(errors='replace')[:2048], flush=True)
+        raise RuntimeError('test operation failed: ' + str(args[0]))
+    return result.stdout
+
+
+def save(path, data, mode=0o600):
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(data if isinstance(data, str) else json.dumps(data))
+    path.chmod(mode)
+    with path.open('rb') as stream:
+        os.fsync(stream.fileno())
+
+
+def until(predicate, message, seconds=120):
+    end = time.monotonic() + seconds
+    while time.monotonic() < end:
+        try:
+            value = predicate()
+            if value:
+                return value
+        except (OSError, http.client.HTTPException):
+            pass
+        time.sleep(.5)
+    raise RuntimeError(message)
+
+
+def request(port, tls, method, path, body=None, headers=None, timeout=10):
+    connection = http.client.HTTPSConnection('127.0.0.1', port, context=tls, timeout=timeout)
+    h = dict(headers or {})
+    if body is not None:
+        body = json.dumps(body).encode()
+        h['Content-Type'] = 'application/json'
+    try:
+        connection.request(method, path, body=body, headers=h)
+        response = connection.getresponse()
+        raw = response.read(1024 * 1024)
+        try:
+            value = json.loads(raw) if raw else None
+        except ValueError:
+            value = raw.decode(errors='replace')
+        return response.status, value, {k.lower(): v for k, v in response.getheaders()}
+    finally:
+        connection.close()
+
+
+def sql(query, db='surveyscan_v2'):
+    return command(['/usr/lib/postgresql/17/bin/psql', '-h', '/run/postgresql', '-U', 'surveyscan_v2', '-d', db,
+                    '-v', 'ON_ERROR_STOP=1', '-Atc', query]).decode().strip()
+
+
+def bao(path, body=None, token=None):
+    headers = {'X-Vault-Token': token} if token else {}
+    code, data, _ = request(8200, ssl.create_default_context(cafile='/etc/surveyscan-bao/ca.pem'),
+                            'GET' if body is None else 'POST', '/v1/' + path, body, headers, timeout=60 if path == 'sys/init' else 10)
+    if code not in (200, 204):
+        raise RuntimeError('test Bao operation failed: ' + path)
+    return data or {}
+
+
+def unseal(custody):
+    for key in custody['keys_base64']:
+        state = bao('sys/unseal', {'key': key})
+        if not state['sealed']:
+            return
+    raise RuntimeError('test operator unseal failed')
+
+
+def owned(path, user):
+    account = pwd.getpwnam(user)
+    os.chown(path, account.pw_uid, account.pw_gid)
+
+
+def as_agent(*args):
+    unit = 'c13-bootstrap-' + uuid.uuid4().hex[:12] + '.service'
+    return command(['systemd-run', '--quiet', '--wait', '--pipe', '--collect', '--unit=' + unit,
+                    '-p', 'User=surveyscan-agent', '-p', 'Group=surveyscan-agent', '-p', 'StateDirectory=surveyscan-agent',
+                    '-p', 'StateDirectoryMode=0700', '-p', 'LoadCredential=config:/etc/surveyscan-agent/config.json',
+                    str(BIN / 'surveyscan-agent'), *args, '--config', '/run/credentials/' + unit + '/config'])
+
+
+def first_boot(seed):
+    print('SURVEYSCAN_BOOT_PHASE first_boot_operator_setup', flush=True)
+    command(['python3', '/usr/local/lib/surveyscan-boot/updater.py', 'status', '--root', '/', '--public-key', str(SEED / 'release.pub')])
+    until(lambda: sql('SELECT 1', 'postgres') == '1', 'PG17 not ready')
+    sql('CREATE DATABASE surveyscan_v2', 'postgres')
+    until(lambda: not bao('sys/init')['initialized'], 'Bao not ready')
+    custody = bao('sys/init', {'secret_shares': 1, 'secret_threshold': 1})
+    save('/root/operator-custody.json', custody)
+    unseal(custody)
+    root_token = custody['root_token']
+    def admin(path, body=None):
+        return bao(path, body, root_token)
+    admin('sys/mounts/transit', {'type': 'transit'})
+    keys = {}
+    for name in ('ca', 'center'):
+        admin('transit/keys/' + name, {'type': 'ed25519', 'exportable': False, 'allow_plaintext_backup': False})
+        metadata = admin('transit/keys/' + name)['data']
+        keys[name] = {'name': name, 'version': 1, 'public_key': base64.urlsafe_b64encode(base64.b64decode(metadata['keys']['1']['public_key'])).rstrip(b'=').decode()}
+    paths = {'auth/token/lookup-self': ['read'], 'auth/token/renew-self': ['update']}
+    for name in keys:
+        paths['transit/keys/' + name] = ['read']
+        paths['transit/sign/' + name] = ['update']
+    policy = '\n'.join('path ' + json.dumps(path) + ' { capabilities=' + json.dumps(caps) + ' }' for path, caps in paths.items())
+    admin('sys/policies/acl/surveyscan-server', {'policy': policy})
+    token = admin('auth/token/create', {'policies': ['surveyscan-server'], 'no_default_policy': True, 'no_parent': True, 'period': '1h', 'renewable': True})['auth']['client_token']
+    save('/etc/surveyscan-server/bao_token', token + '\n')
+    bao_config = {'address': 'https://127.0.0.1:8200', 'tls_ca_file': '/etc/surveyscan-bao/ca.pem',
+                  'token_file': '/etc/surveyscan-server/bao_token', 'policy': 'surveyscan-server',
+                  'transit_mount': 'transit', 'kv_mount': 'kv', 'keys': keys, 'secrets': {}}
+    save('/root/issuer-config.json', bao_config)
+    command([BIN / 'surveyscan-server', 'bootstrap-issuer', '--config', '/root/issuer-config.json', '--output-directory', '/root/issuer'])
+    for name in ('ca.pem', 'server.pem', 'server.key'):
+        shutil.copyfile('/root/issuer/' + name, '/etc/surveyscan-server/' + name)
+        Path('/etc/surveyscan-server/' + name).chmod(0o600 if name.endswith('.key') else 0o644)
+    bao_config['token_file'] = '/run/credentials/surveyscan-server.service/bao_token'
+    save('/etc/surveyscan-server/bao.json', bao_config)
+    machine = {'listen': '127.0.0.1:8443', 'ca_certificate_file': '/etc/surveyscan-server/ca.pem',
+               'server_certificate_file': '/etc/surveyscan-server/server.pem',
+               'server_private_key_file': '/run/credentials/surveyscan-server.service/server_key',
+               'openbao_config_file': '/run/credentials/surveyscan-server.service/bao_config',
+               'center_signing_key_id': str(uuid.uuid4())}
+    save('/etc/surveyscan-server/machine.json', machine)
+    save('/etc/surveyscan-server/pg_password', seed['pg_password'] + '\n')
+    save('/etc/surveyscan-server/server.env', 'SURVEYSCAN_V2_DATABASE_URL=postgres://surveyscan_v2@127.0.0.1:5432/surveyscan_v2?sslmode=disable\nSURVEYSCAN_V2_LISTEN=127.0.0.1:8080\nSURVEYSCAN_V2_PUBLIC_ORIGIN=https://127.0.0.1:8444\nSURVEYSCAN_V2_BAO_ADDR=https://127.0.0.1:8200\n')
+    command(['systemctl', 'start', 'surveyscan-migrate.service'])
+    env = dict(os.environ, SURVEYSCAN_V2_DATABASE_URL='postgres://surveyscan_v2@127.0.0.1:5432/surveyscan_v2?sslmode=disable',
+               SURVEYSCAN_V2_DATABASE_PASSWORD_FILE='/etc/surveyscan-server/pg_password')
+    save('/root/admin-password', seed['admin_password'] + '\n')
+    command([BIN / 'surveyscan-server', 'bootstrap-admin', '--tenant', seed['tenant'], '--tenant-name', 'Boot synthetic', '--username', 'admin', '--password-file', '/root/admin-password'], env=env)
+    sql(f"INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES('{seed['tenant']}','{seed['subject']}','team','fallback','boot@example.invalid'); INSERT INTO scope.sites(tenant_id,site_id,name,fallback_subject_id) VALUES('{seed['tenant']}','{seed['site']}','boot','{seed['subject']}'); INSERT INTO scope.network_scopes(tenant_id,scope_id,site_id,namespace) VALUES('{seed['tenant']}','{seed['scope']}','{seed['site']}','default');")
+    command(['systemctl', 'enable', '--now', 'surveyscan-server.service'])
+    tls = ssl.create_default_context(cafile='/etc/surveyscan-server/ca.pem')
+    until(lambda: request(8443, tls, 'GET', '/health/ready')[0] == 200, 'systemd server not ready')
+    origin = 'https://127.0.0.1:8444'
+    status, session, headers = request(8443, tls, 'POST', '/api/v1/auth/sessions', {'username': 'admin', 'password': seed['admin_password']}, {'Origin': origin})
+    assert status == 201
+    cookie = headers['set-cookie'].split(';', 1)[0]
+    user_headers = {'Origin': origin, 'Cookie': cookie, 'X-CSRF-Token': session['csrf_token']}
+    collector = Path('/var/lib/surveyscan-collector')
+    collector.mkdir(exist_ok=True, mode=0o700)
+    command(['openssl', 'genpkey', '-algorithm', 'ED25519', '-out', collector / 'tls.key'])
+    command(['openssl', 'genpkey', '-algorithm', 'ED25519', '-out', collector / 'signing.key'])
+    command(['openssl', 'req', '-new', '-key', collector / 'tls.key', '-subj', '/CN=untrusted', '-out', collector / 'request.pem'])
+    public = command(['openssl', 'pkey', '-in', collector / 'signing.key', '-pubout', '-outform', 'DER'])[-32:]
+    der = command(['openssl', 'req', '-in', collector / 'request.pem', '-outform', 'DER'])
+    source = str(uuid.uuid4())
+    material = {'tenant_id': seed['tenant'], 'source_id': source, 'source_kind': 'collector', 'site_id': seed['site'], 'collector_id': None,
+                'ttl_seconds': 900, 'csr_sha256': hashlib.sha256(der).hexdigest(), 'signing_public_key': base64.urlsafe_b64encode(public).rstrip(b'=').decode()}
+    code, grant, _ = request(8443, tls, 'POST', '/api/v1/enrollments', material, user_headers)
+    assert code == 201
+    code, result, _ = request(8443, tls, 'POST', '/api/v1/machine/enroll', {'grant_id': grant['grant_id'], 'source_id': source,
+        'csr_pem': (collector / 'request.pem').read_text(), 'signing_public_key': material['signing_public_key']}, {'Authorization': 'Bearer ' + grant['enrollment_token']})
+    assert code == 201
+    save(collector / 'tls.pem', result['certificate_chain_pem'])
+    text = command(['openssl', 'x509', '-in', collector / 'tls.pem', '-noout', '-ext', 'subjectAltName']).decode()
+    collector_id = re.search(r'/kind/collector/collector/([0-9a-f-]{36})', text).group(1)
+    for path in collector.iterdir():
+        path.chmod(0o600)
+        owned(path, 'surveyscan-collector')
+    owned(collector, 'surveyscan-collector')
+    save('/etc/surveyscan-collector/config.json', {'source_id': source, 'credential_directory': str(collector / 'credentials'),
+        'signing_private_key_file': str(collector / 'signing.key'), 'listen': '127.0.0.1:8445', 'center_url': 'https://127.0.0.1:8443',
+        'certificate_file': str(collector / 'tls.pem'), 'private_key_file': str(collector / 'tls.key'),
+        'ca_certificate_file': '/etc/surveyscan-server/ca.pem', 'spool_directory': str(collector / 'spool'), 'spool_limit_bytes': 4194304})
+    command(['systemctl', 'enable', '--now', 'surveyscan-collector.service'])
+    save('/etc/surveyscan-agent/config.json', {'tenant_id': seed['tenant'], 'site_id': seed['site'], 'network_scope_id': seed['scope'],
+        'collector_url': 'https://127.0.0.1:8445', 'collector_source_id': source, 'ca_certificate_file': '/etc/surveyscan-server/ca.pem',
+        'state_directory': '/var/lib/surveyscan-agent', 'inventory_seconds': 60, 'heartbeat_seconds': 30, 'jitter_percent': 0, 'spool_limit_bytes': 4194304})
+    prep = json.loads(as_agent('prepare').decode().strip())
+    body = {'tenant_id': seed['tenant'], 'source_id': prep['source_id'], 'source_kind': 'agent', 'site_id': seed['site'],
+            'collector_id': collector_id, 'ttl_seconds': 900, 'csr_sha256': prep['csr_sha256'], 'signing_public_key': prep['signing_public_key']}
+    code, grant, _ = request(8443, tls, 'POST', '/api/v1/enrollments', body, user_headers)
+    assert code == 201
+    save('/var/lib/surveyscan-agent/grant.json', grant)
+    owned('/var/lib/surveyscan-agent/grant.json', 'surveyscan-agent')
+    as_agent('enroll', '--grant-file', '/var/lib/surveyscan-agent/grant.json')
+    Path('/var/lib/surveyscan-agent/grant.json').unlink()
+    command(['systemctl', 'enable', '--now', 'surveyscan-agent.service'])
+    until(lambda: sql('SELECT count(*) FROM inventory.observations') == '1', 'first systemd inventory missing')
+    until(lambda: not list(Path('/var/lib/surveyscan-agent/spool').glob('*.pending')) and not list((collector / 'spool').glob('*.pending')), 'first signed ACK missing')
+    asset = sql('SELECT asset_uid::text FROM assets.assets')
+    for name in ('edge.pem', 'edge.key'):
+        shutil.copyfile(SEED / name, '/etc/nginx/' + name)
+        Path('/etc/nginx/' + name).chmod(0o600 if name.endswith('.key') else 0o644)
+    for path in Path('/etc/nginx/sites-enabled').iterdir():
+        path.unlink()
+    save('/etc/nginx/sites-enabled/surveyscan', 'server { listen 127.0.0.1:8444 ssl; ssl_certificate /etc/nginx/edge.pem; ssl_certificate_key /etc/nginx/edge.key; root /opt/surveyscan/current/web; location /api/ { proxy_pass http://127.0.0.1:8080; } location /health/ { proxy_pass http://127.0.0.1:8080; } location /contracts/ { alias /opt/surveyscan/current/contracts/; } location / { try_files $uri /index.html; } }\n', 0o644)
+    command(['systemctl', 'enable', '--now', 'nginx.service'])
+    edge = ssl.create_default_context(cafile=str(SEED / 'infra-ca.pem'))
+    assert request(8444, edge, 'GET', '/')[0] == 200
+    # Leave a real packet durable on both hops, then reboot the kernel with all services enabled.
+    command(['systemctl', 'stop', 'surveyscan-server.service'])
+    command(['systemctl', 'restart', 'surveyscan-agent.service'])
+    until(lambda: list(Path('/var/lib/surveyscan-agent/spool').glob('*.pending')) and list((collector / 'spool').glob('*.pending')), 'pre-reboot pending missing')
+    pending = {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in Path('/var/lib/surveyscan-agent/spool').glob('*.pending')}
+    save(STATE, {'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip(), 'asset_uid': asset, 'source_id': prep['source_id'], 'cookie': cookie, 'pending': pending})
+    print('SURVEYSCAN_BOOT_PHASE actual_kernel_reboot_requested', flush=True)
+    command(['systemctl', 'reboot'])
+
+
+def second_boot(seed):
+    print('SURVEYSCAN_BOOT_PHASE second_boot_autostart', flush=True)
+    old = json.loads(STATE.read_text())
+    assert old['boot_id'] != Path('/proc/sys/kernel/random/boot_id').read_text().strip()
+    assert Path('/proc/1/comm').read_text().strip() == 'systemd'
+    CHECKS.append('real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init')
+    services = ('postgresql', 'surveyscan-bao', 'surveyscan-migrate', 'surveyscan-server', 'surveyscan-collector', 'surveyscan-agent', 'nginx')
+    for name in services:
+        until(lambda name=name: subprocess.run(['systemctl', 'is-active', '--quiet', name + '.service']).returncode == 0, 'service did not autostart: ' + name)
+        command(['systemctl', 'is-enabled', name + '.service']) if name != 'surveyscan-migrate' else None
+    CHECKS.append('actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot')
+    for name in ('server', 'collector', 'agent', 'bao'):
+        pid = int(command(['systemctl', 'show', '-p', 'MainPID', '--value', 'surveyscan-' + name + '.service']))
+        status = Path('/proc/' + str(pid) + '/status').read_text()
+        assert int(re.search(r'^Uid:\s+(\d+)', status, re.M).group(1)) == pwd.getpwnam('surveyscan-' + name).pw_uid != 0
+        assert re.search(r'^NoNewPrivs:\s+1', status, re.M)
+    CHECKS.append('all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential')
+    sealed = bao('sys/seal-status')
+    assert sealed['sealed']
+    tls = ssl.create_default_context(cafile='/etc/surveyscan-server/ca.pem')
+    until(lambda: request(8443, tls, 'GET', '/health/live')[0] == 200, 'autostarted server TLS listener not live')
+    assert request(8443, tls, 'GET', '/health/ready')[0] == 503
+    code, card, _ = request(8443, tls, 'GET', '/api/v1/assets/' + old['asset_uid'], headers={'Cookie': old['cookie']})
+    assert code == 200 and card['asset_uid'] == old['asset_uid']
+    CHECKS.append('cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session')
+    # Explicit test operator action, not an app service auto-unseal key.
+    unseal(json.loads(Path('/root/operator-custody.json').read_text()))
+    until(lambda: request(8443, tls, 'GET', '/health/ready')[0] == 200, 'operator unseal did not restore readiness')
+    until(lambda: int(sql('SELECT count(*) FROM inventory.observations')) >= 3, 'autostart did not continue source inventory')
+    until(lambda: not list(Path('/var/lib/surveyscan-agent/spool').glob('*.pending')) and not list(Path('/var/lib/surveyscan-collector/spool').glob('*.pending')), 'reboot queues did not drain')
+    assert sql('SELECT asset_uid::text FROM assets.assets') == old['asset_uid']
+    assert sql('SELECT count(*) FROM assets.assets') == '1'
+    assert int(sql('SELECT max(source_sequence)::text FROM inventory.observations')) >= 3
+    CHECKS.append('operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID')
+    env = dict(os.environ, SURVEYSCAN_V2_DATABASE_URL='postgres://surveyscan_v2@127.0.0.1:5432/surveyscan_v2?sslmode=disable', SURVEYSCAN_V2_DATABASE_PASSWORD_FILE='/etc/surveyscan-server/pg_password')
+    command([BIN / 'surveyscan-server', 'schema-check'], env=env)
+    assert sql('SELECT count(*) FROM platform.schema_migrations') == '33'
+    CHECKS.append('all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration')
+    script = '/usr/local/lib/surveyscan-boot/updater.py'
+    command(['python3', script, 'prepare', '--root', '/', '--public-key', str(SEED / 'release.pub'), '--bundle', '/root/candidate'])
+    command(['python3', script, 'apply', '--root', '/', '--public-key', str(SEED / 'release.pub'), '--health-url', 'https://127.0.0.1:8444/health/ready', '--ca-file', str(SEED / 'infra-ca.pem'), '--components', 'server', 'collector', 'agent'], timeout=180)
+    current = json.loads(command([BIN / 'surveyscan-server', 'version']))
+    assert current['version'] == '0.0.1-c13'
+    assert not Path('/opt/surveyscan/update.fence').exists()
+    assert json.loads(Path('/opt/surveyscan/update.json').read_text())['phase'] == 'complete'
+    for name in ('server', 'collector', 'agent'):
+        pid = int(command(['systemctl', 'show', '-p', 'MainPID', '--value', 'surveyscan-' + name + '.service']))
+        assert '/releases/0.0.1-c13/' in os.readlink('/proc/' + str(pid) + '/exe')
+    code, card, _ = request(8443, tls, 'GET', '/api/v1/assets/' + old['asset_uid'], headers={'Cookie': old['cookie']})
+    assert code == 200 and card['asset_uid'] == old['asset_uid']
+    CHECKS.append('actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID')
+    edge = ssl.create_default_context(cafile=str(SEED / 'infra-ca.pem'))
+    assert request(8444, edge, 'GET', '/')[0] == 200
+    CHECKS.append('separate static Web UI and TLS/API edge remain available after boot and verified server update')
+    assert shutil.which('go') is None and shutil.which('node') is None
+    context = '/root/cli-session.json'
+    cli = BIN / 'surveyscanctl'
+    command([cli, 'login', '--server', 'https://127.0.0.1:8444', '--username', 'admin', '--password-file', '/root/admin-password',
+             '--ca-file', str(SEED / 'infra-ca.pem'), '--context-file', context])
+    card = json.loads(command([cli, 'assets', 'get', '--id', old['asset_uid'], '--context-file', context]))
+    assert card['asset_uid'] == old['asset_uid']
+    command([cli, 'logout', '--context-file', context])
+    CHECKS.append('guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session')
+    return {'package': 'C13', 'status': 'passed', 'count': len(CHECKS), 'checks': CHECKS,
+            'target': 'actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI',
+            'custody': 'explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env',
+            'unrun': ['two independently clean OS installations', 'schema-changing update through updater', 'physical power loss', 'production KMS/split custody/DR/RPO/RTO/100users']}
+
+
+try:
+    seed = json.loads((SEED / 'seed.json').read_text())
+    if STATE.exists():
+        result = second_boot(seed)
+        print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(result), flush=True)
+        command(['systemctl', 'poweroff'])
+    else:
+        first_boot(seed)
+except Exception as error:
+    import traceback
+    traceback.print_exc()
+    debug = subprocess.run(['journalctl','-b','--no-pager','-n','100','-u','surveyscan-*'],capture_output=True)
+    print(debug.stdout.decode(errors='replace'), flush=True)
+    print('SURVEYSCAN_BOOT_RESULT ' + json.dumps({'status': 'failed', 'error_type': type(error).__name__, 'checks': CHECKS}), flush=True)
+    command(['systemctl', 'poweroff'])

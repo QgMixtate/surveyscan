@@ -1,0 +1,234 @@
+{
+  "package": "C13",
+  "status": "done bounded E1",
+  "date": "2026-11-05 Europe/Moscow",
+  "source_base": "07adce1 plus recorded working tree",
+  "scope": "Debian12/amd64/systemd252 Linux cloud VM, PG17.11, Bao2.7.2 HTTPS and manual operator custody; one chosen server installation path",
+  "unit_tests": 40,
+  "pg_integration_tests": 50,
+  "c03_fixtures": 58,
+  "applied_migrations": 33,
+  "tasks": {
+    "C13.01": "actual nonroot units/LoadCredential/PG notify readiness and real kernel reboot/autostart passed",
+    "C13.02": "release14/update19 with schema-safe rollback/SIGKILL/checkpoint, actual systemd server+collector+agent updater and separate CLI/Web passed",
+    "C13.03": "PG18/Bao9/common checkpoint10/C11 schema31→33 upgrade13; private compiled migration34 fixture through updater19 passed",
+    "C13.04": "two independently fresh VM factory runs, each9 checks; no guest Go/Node; restart/update and earlier clean-state restore rehearsal passed"
+  },
+  "stand1": {
+    "package": "C13",
+    "status": "passed",
+    "count": 9,
+    "checks": [
+      "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+      "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+      "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+      "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+      "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+      "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+      "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+      "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+      "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session"
+    ],
+    "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+    "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+    "unrun": [
+      "two independently clean OS installations",
+      "schema-changing update through updater",
+      "physical power loss",
+      "production KMS/split custody/DR/RPO/RTO/100users"
+    ]
+  },
+  "stand2": {
+    "package": "C13",
+    "status": "passed",
+    "count": 9,
+    "checks": [
+      "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+      "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+      "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+      "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+      "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+      "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+      "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+      "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+      "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session"
+    ],
+    "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+    "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+    "unrun": [
+      "two independently clean OS installations",
+      "schema-changing update through updater",
+      "physical power loss",
+      "production KMS/split custody/DR/RPO/RTO/100users"
+    ]
+  },
+  "update": {
+    "package": "C13",
+    "task": "C13.02",
+    "status": "passed",
+    "count": 19,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "synthetic agent enrollment traverses collector",
+      "durable collector transport receipt retains source data",
+      "center commit receipt verifies with pinned key and exact bindings",
+      "committed PG registry card visible through real authenticated API",
+      "collector trims only after verified center acknowledgement",
+      "exactly one durable observation in isolated PostgreSQL",
+      "installed signed baseline server actually serves existing PG registry with exact compiled schema",
+      "candidate signature/hashes/catalog verified and staged without switching current or stopping server",
+      "actual stop/migrate0/atomic switch/restart reaches readiness; new version, old credentials and same UID visible",
+      "all selected operator configs/private TLS keys and private artifact bytes preserved across update",
+      "implicit version downgrade refused",
+      "real candidate startup failure safely returns to previous ready server only after exact DB/schema check",
+      "actual updater SIGKILL after committed migrate leaves durable fence/journal; retry/recovery inspects DB and reaches ready candidate",
+      "actual DB ledger drift leaves persistent fence and no running server; incompatible old binary never auto-started",
+      "explicit recovery after fixing own drift fixture restores matching current release without deleting state or identities",
+      "actual compiled test-only schema33→34 requires verified common checkpoint; committed DDL plus failed startup keeps fence, refuses schema33 rollback and explicitly recovers ready schema34",
+      "installation-wide writer lock refuses a concurrent updater"
+    ],
+    "target": "actual signed ELF releases/server processes, PostgreSQL, TLS/login/registry, original UID; explicit bad listen/ledger drift and private compiled append-only migration34 fixtures (product SQL unchanged)",
+    "unrun": [
+      "production systemd controller",
+      "physical power loss",
+      "boot/reboot/two clean OS/production DR"
+    ]
+  },
+  "common_checkpoint": {
+    "package": "C13",
+    "task": "C13.03",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "actual Bao-issued continuous agent commits first inventory and leaves second durable on both hops; all application writers stopped",
+      "one private checkpoint contains stopped-agent/collector identity/counters/queues, server TLS/config, PG and Raft; operator recovery custody excluded",
+      "extraction preserves every selected byte and refuses unlisted corruption before target publication",
+      "PG restored into different initially empty DB with same asset UID and committed first observation",
+      "restored center is ready against restored Bao/PG and accepts pre-backup session; original host and issuer directories absent",
+      "restored relay applies exact saved second observation once and restored non-exportable center key signs ACK for original UID",
+      "relocated real agent retains source generation/signing identity, retransmits old packet without duplicates and continues sequence3; both queues drain",
+      "real agent certificate renewal succeeds through restored collector/PG and non-exportable Transit CA"
+    ],
+    "target": "common stopped-writer checkpoint; actual Linux agent/collector/server, PG17, restored Bao2.7.2 Raft, TLS/mTLS, separate filesystem paths, pending replay/receipt and leaf renewal",
+    "unrun": [
+      "previous-release schema upgrade",
+      "systemd boot/reboot",
+      "two clean OS systems",
+      "production HTTPS/KMS/custody/DR/RPO/RTO"
+    ],
+    "backup_marker_updated": false
+  },
+  "previous_upgrade": {
+    "package": "C13",
+    "task": "C13.03",
+    "status": "passed",
+    "count": 13,
+    "checks": [
+      "compiled center starts with explicit private loopback PKI",
+      "compiled collector enrolls and starts HTTPS daemon",
+      "synthetic agent enrollment traverses collector",
+      "durable collector transport receipt retains source data",
+      "center commit receipt verifies with pinned key and exact bindings",
+      "committed PG registry card visible through real authenticated API",
+      "collector trims only after verified center acknowledgement",
+      "exactly one durable observation in isolated PostgreSQL",
+      "actual previous C11 server/collector populate schema31 with inventory, UID, auth, history and outbox; previous writers stopped",
+      "current binary appends exactly2 migrations; every previous data table and all31 applied hashes preserved",
+      "second current migrate is a verified no-op; no edited SQL or duplicate upgrade effects",
+      "upgraded real TLS server authenticates previous admin and serves same previous asset UID/card",
+      "authorized write works after upgrade; newly introduced profiles expose unmanaged revision1 for existing source"
+    ],
+    "previous_ref": "b22efa2",
+    "previous_migrations": 31,
+    "current_migrations": 33,
+    "target": "archived actual C11 source compiled into previous server/collector; real PG, TLS and signed synthetic inventory; current migration and API",
+    "fixture_adapter": "only old test callback extended to expose SQL helper/processes/environment; previous application code/SQL not modified",
+    "unrun": [
+      "live service update/rollback",
+      "schema downgrade",
+      "systemd boot/reboot",
+      "two clean OS systems",
+      "production/DR"
+    ]
+  },
+  "release": {
+    "package": "C13",
+    "task": "C13.02 preparation",
+    "status": "passed",
+    "count": 14,
+    "checks": [
+      "unsigned candidate refused before staging",
+      "real Ed25519 signature and complete file/mode/size/hash inventory verified",
+      "four compiled binaries identify bundle version/revision; independent Web version records provenance and matches API contract hashes",
+      "SPDX2.3 inventory contains actual Go module metadata and npm lock/build graph with valid references",
+      "foreign trust anchor refused without creating installation root",
+      "tampered executable refused before target mutation",
+      "tampered signed manifest refused",
+      "extra/missing file, symlink and executable mode changes refused",
+      "even correctly signed traversal inventory refused without writes outside staging",
+      "group/world-readable signing key refused",
+      "verified copy published atomically, binaries executable under umask077, empty private state and no keys copied",
+      "live root and nonempty installation refused; existing receipt/state preserved",
+      "same signed bundle stages twice without rebuild or regenerated machine identity",
+      "duplicate JSON manifest keys refused"
+    ],
+    "target": "actual built ELF binaries/Web, OpenSSL Ed25519 and local empty filesystem roots",
+    "unrun": [
+      "systemd boot/reboot",
+      "live checked update and schema rollback",
+      "production signing custody",
+      "backup/restore",
+      "two independent installed systems"
+    ],
+    "host_services_modified": false
+  },
+  "static_units": {
+    "package": "C13",
+    "task": "C13.01",
+    "stage": {
+      "staged": true,
+      "files": 23,
+      "live_install_supported": false,
+      "services_started": false,
+      "scope": "development staging; unsigned, not a release"
+    },
+    "checked_units": [
+      "surveyscan-agent.service",
+      "surveyscan-collector.service",
+      "surveyscan-server.service",
+      "surveyscan-migrate.service"
+    ],
+    "verifier_exit": 0,
+    "scope": "real system-mode systemd-analyze parser in networkless disposable container, not a boot/start test",
+    "unrun": [
+      "realboot/reboot",
+      "PG/Bao dependency start",
+      "credential provisioning",
+      "signed release",
+      "backuprestore"
+    ]
+  },
+  "scope_limits": [
+    "individual reports list other tests as unrun; this aggregate links separately executed cases",
+    "schema34 is an explicit private source-copy fixture, product SQL remains0000–0032",
+    "Bao auto-start is sealed; permitted independent registry/spool continues, operator-owned unseal restores key operations",
+    "no production KMS/split custody, physical powerloss, HA/geo/DR/RPO/RTO/100users claim",
+    "guest.py is a synthetic test operator; production provisioning requires supplied PG/Bao/TLS/custody prerequisites"
+  ],
+  "publication": "latest local acceptance not yet pushed; previous07adce1 hosted v2/Web success",
+  "source_file_sha256": {
+    ".github/workflows/boot.yml": "278066e24725d0a8699893d382ae00571b6f5beb080e0c9e4d766797d363eed5",
+    "v2/deploy/bootstand/Dockerfile": "6ae2bbb518cb2e22d80e93f331a223c98dbe81c9293a723e3a1cbecbe839a0a6",
+    "v2/deploy/bootstand/README.md": "257acb99479dac3f6096e8eb98694ed5a6c3d8046065a41616b105ee3e2c779d",
+    "v2/deploy/bootstand/guest.py": "6e678c03c48d854bb2c08b71f34c10ee383598b63f3c3f9610ebd8e6b9c9eb1a",
+    "v2/deploy/bootstand/prepare.py": "f900c1a450029c1b820f8223b2ce5c1772abd02ac325a4ae7890ae4c0f228de3",
+    "v2/deploy/systemd/surveyscan-agent.service": "12e44b1ae848b9ba9458d65a446d422e5e24aa1949a366b955f8eca1d0575b3e",
+    "v2/deploy/systemd/surveyscan-collector.service": "85855a23cf01064fc23ae7a3f620868e26ca15fa0fecac9c4b6be7742cfdb3ee",
+    "v2/scripts/boot_smoke.py": "eb67048f262fdac92f0c29fadd22ddb5726df8dbc7d258479bea8f06c9d708f3",
+    "v2/scripts/update_smoke.py": "b6a412dbd5be37631f058dcaafb43ca0b973fda7c5d148cb24ccab25405fcf3f",
+    "v2/scripts/updater.py": "b51417743d27438c6b791d188ae26e23d6bd096777fd80ff2e24f233cc1449f9"
+  }
+}

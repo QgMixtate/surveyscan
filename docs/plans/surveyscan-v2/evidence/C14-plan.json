@@ -1,0 +1,265 @@
+{
+  "package": "C14",
+  "task": "C14.01 preparation",
+  "status": "draft until C13 acceptance",
+  "date": "2026-11-05 Europe/Moscow",
+  "source": "decisions/C01-acceptance.md",
+  "scenarios": [
+    {
+      "id": "E1-T01",
+      "input": "C04/C13; чистый поддержанный сервер",
+      "action": "Установить и запустить новую поставку",
+      "expected": "Go server/PG/Bao/edge воспроизводимы, версия видна; assets отдельно; отсутствие Python/Node runtime у Go и Web runtime",
+      "acceptance_criteria": [
+        "AC-01",
+        "AC-40"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-hosted.json",
+        "C13-progress.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T02",
+      "input": "C05/C06; две tenant",
+      "action": "Bootstrap/login; запросить свой и чужой asset/source",
+      "expected": "Роли и tenant проверены API, чужие UUID/артефакты не дают доступ; отсутствие заводского пароля",
+      "acceptance_criteria": [
+        "AC-09",
+        "AC-13"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-hosted.json",
+        "C12-runtime.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T03",
+      "input": "C07/C08; настоящий хост",
+      "action": "Enroll и выполнить минимум три inventory цикла",
+      "expected": "Наблюдения прошли agent→collector→center→PG; тот же UID, поля/источник/status/times верны",
+      "acceptance_criteria": [
+        "AC-06",
+        "AC-27",
+        "AC-46"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-hosted.json",
+        "C13-progress.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T04",
+      "input": "C06/C08; duplicate/late/partial fixtures",
+      "action": "Повторить batch; прислать поздний и частичный результат",
+      "expected": "Эффект не дублирован; история дополнена; новый факт/ручное поле не затёрто; unavailable не превращено в false/empty",
+      "acceptance_criteria": [
+        "AC-06",
+        "AC-16",
+        "AC-18",
+        "AC-27"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-hosted.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T05",
+      "input": "C06; новый asset",
+      "action": "Проверить назначение и atomic create",
+      "expected": "Есть fallback-команда tenant/site, история и outbox; rollback не оставляет половину изменения",
+      "acceptance_criteria": [
+        "AC-16",
+        "AC-28",
+        "AC-32"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-hosted.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T06",
+      "input": "C08/C10; связи разорваны",
+      "action": "Отдельно остановить agent, collector и center между send/receipt/commit/ACK",
+      "expected": "Spool/state восстановлены; receipt не удаляет неподтверждённые данные; центральный повтор идемпотентен",
+      "acceptance_criteria": [
+        "AC-18",
+        "AC-32",
+        "AC-47"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-hosted.json",
+        "C13-progress.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T07",
+      "input": "C10; малые квоты и несколько test agents",
+      "action": "Заполнить spool, восстановить сеть одновременно",
+      "expected": "Backpressure и disk-full видны; jitter/retries ограничены; unacked не удалены молча",
+      "acceptance_criteria": [
+        "AC-47",
+        "AC-50"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-hosted.json",
+        "C13-progress.json"
+      ],
+      "notes": "ENOSPC/admission/backpressure proven separately; multi-real-agent reconnect scenario still to run."
+    },
+    {
+      "id": "E1-T08",
+      "input": "C11; test PKI/Bao",
+      "action": "Wrong cert/tenant, expired/revoked identity, Bao unavailable",
+      "expected": "Неправомочные операции отклонены; зависимые от секретов явно ждут/ошибаются; разрешённые независимые функции продолжаются",
+      "acceptance_criteria": [
+        "AC-09",
+        "AC-13",
+        "AC-25",
+        "AC-49",
+        "AC-52"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C11-lifecycle-matrix.json",
+        "C13-hosted.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T09",
+      "input": "C08/C11; два identity fixtures",
+      "action": "Re-enroll, переустановка или клонирование agent state",
+      "expected": "Agent identity не равна asset UID; разные hosts не сливаются молча; revoke старого доступа проверен",
+      "acceptance_criteria": [
+        "AC-27",
+        "AC-49"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C11-lifecycle-matrix.json"
+      ],
+      "notes": "Different host machine-id binding/revoke covered; identical cloned key+machine-id cannot be attested as different hardware."
+    },
+    {
+      "id": "E1-T10",
+      "input": "C09/C12; Web+API+CLI",
+      "action": "Login, список/карточка, фильтр, source status, JSON/exit code",
+      "expected": "Клиенты используют API, показывают partial/stale/source health отдельно; ресурсы Web локальные",
+      "acceptance_criteria": [
+        "AC-06",
+        "AC-29",
+        "AC-40"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C12-runtime.json",
+        "C13-hosted.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T11",
+      "input": "C12; повторные inventory и source outage",
+      "action": "Изменить revision профиля, отключить source",
+      "expected": "Новые интервалы применены и аудированы; last contact и last inventory различаются; массового missing нет",
+      "acceptance_criteria": [
+        "AC-48",
+        "AC-52"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C12-runtime.json",
+        "C13-hosted.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T12",
+      "input": "C13; реальный service host/VM",
+      "action": "Install/start/logout/reboot/upgrade",
+      "expected": "Служба автоматически продолжает цикл с identity/spool; нет незаявленных privileged действий",
+      "acceptance_criteria": [
+        "AC-46",
+        "AC-49",
+        "AC-54"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-progress.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T13",
+      "input": "C13; backup и чистая restore-среда",
+      "action": "Сохранить и восстановить PG/artifacts/Bao state, обновить схему",
+      "expected": "UID/history/roles/jobs/outbox и ключевые операции доступны; источник может продолжить доставку",
+      "acceptance_criteria": [
+        "AC-54"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-progress.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    },
+    {
+      "id": "E1-T14",
+      "input": "C14; стабильный комплект",
+      "action": "24-часовой прогон с периодическими циклами и отказами",
+      "expected": "Есть timestamped observations/metrics за весь интервал, повторяемый recovery и измеренные ограничения",
+      "acceptance_criteria": [
+        "AC-53"
+      ],
+      "status": "not_started",
+      "evidence_candidates": [],
+      "notes": "At least24 real hours; outside-chat persistent runner required. Short smoke/fake clock never count as24h."
+    },
+    {
+      "id": "E1-T15",
+      "input": "C04/C06/C14; исходники и матрица",
+      "action": "Проверить границы модулей, контракт combined и полноту E1",
+      "expected": "Ownership не обходится чужими записями; невыполненные поля/E2+ явно deferred; UI совместимость определена",
+      "acceptance_criteria": [
+        "AC-42",
+        "AC-44",
+        "AC-55"
+      ],
+      "status": "evidence_review_pending",
+      "evidence_candidates": [
+        "C13-hosted.json"
+      ],
+      "notes": "Evidence coverage must be reviewed; a past package status is not a new test run."
+    }
+  ],
+  "release_gate": [
+    "C13 completed",
+    "all applicable E1 scenarios have actual scoped evidence",
+    "24h real soak completed",
+    "no unresolved mandatory failures"
+  ],
+  "unrun": [
+    "C14 consolidated acceptance",
+    "24h soak"
+  ],
+  "deferred": [
+    "Windows/agentless/discovery/topology/portable E2",
+    "merge-split/FTS/100users E3",
+    "geo/sharding/production multi-instance E5",
+    "lifecycle/store/ITSM later waves"
+  ]
+}

@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C12 done locally; C13.01-C13.03 in progress; C13.04-C50 planned",
+  "status": "C01-C13 done bounded E1; C14.01 in progress; C14.02-C50 planned",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1205,13 +1205,13 @@
           "output": "Systemd/Windows service по выбранной ОС, конфиги и data dirs",
           "verification": "После перезагрузки весь поддержанный контур стартует сам",
           "estimation_basis": "1 E1 платформа и 1 способ серверной установки",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Подготовка и проектирование",
           "evidence": [
             "handoffs/C13.md",
-            "evidence/C13-progress.json"
+            "evidence/C13-runtime.json"
           ],
-          "verification_status": "staging5checks+real systemd-analyze system-modeverify exit0; actualboot/reboot unrun"
+          "verification_status": "actual nonroot units/LoadCredential/PG notify readiness and real kernel reboot/autostart passed"
         },
         {
           "id": "C13.02",
@@ -1223,13 +1223,13 @@
           "output": "Release manifest/checksums/SBOM и ручное проверяемое обновление",
           "verification": "Артефакты проверяются до применения; версия видна оператору",
           "estimation_basis": "Server/agent/collector/UI/CLI; совместимость по C03",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Реализация",
           "evidence": [
             "handoffs/C13.md",
-            "evidence/C13-progress.json"
+            "evidence/C13-runtime.json"
           ],
-          "verification_status": "release14 and actual process/PG update18 (rollback+SIGKILL) passed; systemd controller/boot and schema-changing update pending"
+          "verification_status": "release14/update19 with schema-safe rollback/SIGKILL/checkpoint, actual systemd server+collector+agent updater and separate CLI/Web passed"
         },
         {
           "id": "C13.03",
@@ -1241,13 +1241,13 @@
           "output": "Backup PG/artifacts/Bao state, restore runbook и upgrade procedure",
           "verification": "На чистом стенде восстановлены UID, доступы, очередь и история",
           "estimation_basis": "1 round-trip restore и 1 последовательное обновление схемы",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Реализация",
           "evidence": [
             "handoffs/C13.md",
-            "evidence/C13-progress.json"
+            "evidence/C13-runtime.json"
           ],
-          "verification_status": "PG18/Bao9/common checkpoint10/previous C11schema31→33 upgrade13 passed; package gates systemd boot/live update/two clean OS pending"
+          "verification_status": "PG18/Bao9/common checkpoint10/C11 schema31→33 upgrade13; private compiled migration34 fixture through updater19 passed"
         },
         {
           "id": "C13.04",
@@ -1259,11 +1259,16 @@
           "output": "Чистая установка, restart и upgrade/restore отчёт",
           "verification": "Нет зависимости от build machine и потерянных локальных ключей",
           "estimation_basis": "2 чистых среды или восстановленные VM snapshots",
-          "status": "planned",
-          "work_group": "Проверка и передача"
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "handoffs/C13.md",
+            "evidence/C13-runtime.json"
+          ],
+          "verification_status": "two independently fresh VM factory runs, each9 checks; no guest Go/Node; restart/update and earlier clean-state restore rehearsal passed"
         }
       ],
-      "status": "in_progress",
+      "status": "done",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
     },
     {
@@ -1285,8 +1290,12 @@
           "output": "Матрица capabilities E1→AC→тесты и конфигурация стенда",
           "verification": "Отложенные поля и функции не названы реализованными",
           "estimation_basis": "AC E1 из §14; реальные host/collector/center",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "in_progress",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "evidence/C14-plan.json"
+          ],
+          "verification_status": "draft15scenario matrix; evidence review in progress after C13 acceptance"
         },
         {
           "id": "C14.02",
@@ -1328,7 +1337,7 @@
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
+      "status": "in_progress",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
     },
     {

@@ -132,3 +132,10 @@ systemd boot/livecheckedupdate/two clean OS остаются gates. Handoff C13 
 R-020 опубликован: draftPR4/codex/v2-c13-operations, hosted v2+Web SUCCESS на215f10c.
 Точный evidence plans/surveyscan-v2/evidence/C13-hosted.json; финальный docs-only [skip ci] не меняет source.
 C13boot/liveupdate/twoOS pending,48/200done; C14не начинать доC13acceptance. Mainне слит/deployне выполнялся.
+
+C13 DONE boundedE1(2026-11-05): evidence/C13-runtime.json, handoffC13. TwofreshnativeDebian12/systemdVM9+9
+actualkernelreboot/nonroot/LoadCredential/PGnotify/scopedBao/manualoperatorunseal/queues+UID/combinedupdate/CLI.
+Updater19(compiledprivateDDL34/checkpoint/rollback/SIGKILL),40unit/50PG/58C03/release14. SQLunchanged.
+52/200done. C14.01IP,24hsoaknotstarted; C14prompt explicitly nonblocking24h/persistentrecording, nofakepass.
+R021 asksautonextpackagesuntilquota; source fixes uncommittedpendingpush, R020 stillauthorizesGitHubPR/CI.
+07adce1hostedv2/Websuccess; latestnativeVM source notyetpublished. Main/deploy/envpublication notauthorized.

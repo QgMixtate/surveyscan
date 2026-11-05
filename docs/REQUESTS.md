@@ -366,3 +366,16 @@ Checked updater18 local passed: signed/schema-aware prepare, actual server stop/
 privateconfigs/TLSkeys/artifact/UID preserved, failed-start exact-schema rollback, actual SIGKILL+durable
 fence/journal/recovery, drift fixture refuses old writers. New CLI schema-catalog/schema-check, signed
 metadata, systemd gate. SQL/C03/C09 unchanged. New hosted CI pending; next actual systemd stand.
+
+## R-021 — Непрерывное последовательное выполнение
+Дата2026-11-05 (Москва). Запрос: «Сразу запускай следующие этапы как только закончишь, пока не упрешься в5часовойлимит».
+Продолжатьавтономно, безподтвержденияпакетов, приёмкунеподменятьожиданием/mock/fakeclock.
+C13 завершён boundedE1: two fresh nativeVM9+9 actualkernelreboot/nonrootautostart/scopedBao/LoadCredential,
+realcombinedserver+collector+agentupdate/CLI/Web, sourceUID/session/queues preserved. Updater19 включает
+actualprivatecompiled schema34 checkpoint/fencedfailure/no old33rollback/recover. ProductSQL не менялись.
+40unit/50PG/58fixtures/release14/static0; earlierPG18/Bao9/common10/C11upgrade13 сохраненыкак отдельныеruns.
+Failed fixture attempts corrected: PGready TypeNotify, transientcredentialpaths, RootTTY/operatorstart,
+HTTP liveness wait, Raftinit60timeout. Успешныonly финальные2independentVM reports.52/200done.
+Далее C14.01matrix/evidence review, C14.02actual24h persistentsoak. Until24h elapsed нельзяpass/release.
+07adce1 published hostedv2/Websuccess; latestnativeVM/codefixes ещёlocal, pushразрешёнR020.
+Main merge/deploy/envpublication не поручены.

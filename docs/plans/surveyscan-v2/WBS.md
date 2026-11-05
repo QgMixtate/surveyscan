@@ -676,7 +676,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Systemd/Windows service по выбранной ОС, конфиги и data dirs.
 - Проверка: После перезагрузки весь поддержанный контур стартует сам.
 - База оценки: 1 E1 платформа и 1 способ серверной установки.
-- Статус: in_progress; staging/static verify passed, boot/reboot unrun; handoffs/C13.md.
+- Статус: done (bounded E1); actual runtime evidence: handoffs/C13.md, evidence/C13-runtime.json.
 
 ## C13.02 — Подготовить подписываемые артефакты и версии
 
@@ -686,7 +686,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Release manifest/checksums/SBOM и ручное проверяемое обновление.
 - Проверка: Артефакты проверяются до применения; версия видна оператору.
 - База оценки: Server/agent/collector/UI/CLI; совместимость по C03.
-- Статус: in_progress; signed bundle/SBOM/verified staging 14 checks passed, live update pending; handoffs/C13.md.
+- Статус: done (bounded E1); actual runtime evidence: handoffs/C13.md, evidence/C13-runtime.json.
 
 ## C13.03 — Реализовать backup/restore и миграции
 
@@ -696,7 +696,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Backup PG/artifacts/Bao state, restore runbook и upgrade procedure.
 - Проверка: На чистом стенде восстановлены UID, доступы, очередь и история.
 - База оценки: 1 round-trip restore и 1 последовательное обновление схемы.
-- Статус: in_progress; PG restore18checks и отдельный BaoRaft/Transit/restart9checks passed; common checkpoint10 и previous schema upgrade13 passed; systemd/live-update/twoOS package gates pending. См. handoffs/C13.md.
+- Статус: done (bounded E1); actual runtime evidence: handoffs/C13.md, evidence/C13-runtime.json.
 
 ## C13.04 — Проверить повторяемость поставки
 
@@ -706,7 +706,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Чистая установка, restart и upgrade/restore отчёт.
 - Проверка: Нет зависимости от build machine и потерянных локальных ключей.
 - База оценки: 2 чистых среды или восстановленные VM snapshots.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done (bounded E1); actual runtime evidence: handoffs/C13.md, evidence/C13-runtime.json.
 
 ## Выход пакета
 

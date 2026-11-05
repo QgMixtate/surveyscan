@@ -1,0 +1,62 @@
+name: surveyscan-boot
+on:
+  push:
+    paths: ['v2/cmd/**', 'v2/internal/**', 'v2/go.*', 'v2/Makefile', 'v2/web/**', 'v2/contracts/**', 'v2/deploy/systemd/**', 'v2/deploy/bootstand/**', 'v2/scripts/boot_smoke.py', 'v2/scripts/release.py', 'v2/scripts/updater.py', '.github/workflows/boot.yml']
+  pull_request:
+    paths: ['v2/cmd/**', 'v2/internal/**', 'v2/go.*', 'v2/Makefile', 'v2/web/**', 'v2/contracts/**', 'v2/deploy/systemd/**', 'v2/deploy/bootstand/**', 'v2/scripts/boot_smoke.py', 'v2/scripts/release.py', 'v2/scripts/updater.py', '.github/workflows/boot.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: surveyscan-boot-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  two-clean-vms:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: v2
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.27.3'
+          cache-dependency-path: v2/go.sum
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: v2/web/package-lock.json
+      - name: Build independently shipped Go and static Web artifacts
+        run: |
+          python -m venv .contract-tools
+          .contract-tools/bin/pip install -r ../docs/plans/surveyscan-v2/contracts/C03/checks/requirements.txt
+          make build
+          cd web
+          npm ci --ignore-scripts --no-audit --no-fund
+          npm run build
+      - name: Public guest/kernel/QEMU tooling (no runtime credentials in image)
+        run: docker build --secret id=proxy_ca,src=/etc/ssl/certs/ca-certificates.crt -t surveyscan-c13-boot-tools:local deploy/bootstand
+      - name: First fresh private VM, real kernel reboot, autostart and systemd update
+        run: |
+          GO=go .contract-tools/bin/python scripts/boot_smoke.py
+          cp .local/c13-boot-smoke.json .local/c13-boot-stand1.json
+      - name: Second independently fresh VM and CLI without guest Go/Node tools
+        run: |
+          GO=go .contract-tools/bin/python scripts/boot_smoke.py
+          cp .local/c13-boot-smoke.json .local/c13-boot-stand2.json
+      - name: Retain sanitized proof only (no disk, seed, custody, keys or raw serial)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c13-boot-proof
+          include-hidden-files: true
+          path: |
+            v2/.local/c13-boot-smoke.json
+            v2/.local/c13-boot-stand1.json
+            v2/.local/c13-boot-stand2.json
+          if-no-files-found: ignore

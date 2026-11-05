@@ -1,5 +1,6 @@
 [Unit]
 Description=SurveyScan collector (Linux E1)
+ConditionPathExists=!/opt/surveyscan/update.fence
 Wants=network-online.target
 After=network-online.target
 StartLimitIntervalSec=120
