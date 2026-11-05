@@ -1,0 +1,12 @@
+{
+  "package": "C13",
+  "status": "failed",
+  "qemu_exit": 0,
+  "guest_result_present": true,
+  "phase": "first_bao_init",
+  "error_type": "RuntimeError",
+  "failed_guest_line": 92,
+  "completed_checks": 0,
+  "source": "e3fe449 clean binaries plus exact test operator source",
+  "private_trace": "guest first_boot→admin(sys/mounts/transit)→bao raised RuntimeError; no raw trace/journal published"
+}

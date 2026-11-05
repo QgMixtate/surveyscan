@@ -27,6 +27,12 @@ def phase(name):
     print('SURVEYSCAN_BOOT_PHASE ' + name, flush=True)
 
 
+class BaoFailure(RuntimeError):
+    def __init__(self, operation, status):
+        super().__init__('test Bao operation failed: ' + operation)
+        self.operation, self.status = operation, status
+
+
 def command(args, env=None, timeout=60):
     result = subprocess.run([str(x) for x in args], env=env, capture_output=True, timeout=timeout)
     if result.returncode:
@@ -89,7 +95,7 @@ def bao(path, body=None, token=None):
     code, data, _ = request(8200, ssl.create_default_context(cafile='/etc/surveyscan-bao/ca.pem'),
                             'GET' if body is None else 'POST', '/v1/' + path, body, headers, timeout=60 if path == 'sys/init' else 10)
     if code not in (200, 204):
-        raise RuntimeError('test Bao operation failed: ' + path)
+        raise BaoFailure(path, code)
     return data or {}
 
 
@@ -97,6 +103,13 @@ def unseal(custody):
     for key in custody['keys_base64']:
         state = bao('sys/unseal', {'key': key})
         if not state['sealed']:
+            # Unseal response precedes Raft active-node/post-unseal readiness.
+            # Do not retry provisioning writes or recreate storage/custody.
+            def active():
+                code, health, _ = request(8200, ssl.create_default_context(cafile='/etc/surveyscan-bao/ca.pem'),
+                                          'GET', '/v1/sys/health')
+                return code == 200 and health.get('initialized') is True and health.get('sealed') is False and health.get('standby') is False
+            until(active, 'unsealed Bao did not become an active ready node')
             return
     raise RuntimeError('test operator unseal failed')
 
@@ -277,8 +290,11 @@ def second_boot(seed):
     # Explicit test operator action, not an app service auto-unseal key.
     phase('second_unseal_replay')
     unseal(json.loads(Path('/root/operator-custody.json').read_text()))
+    phase('second_center_readiness')
     until(lambda: request(8443, tls, 'GET', '/health/ready')[0] == 200, 'operator unseal did not restore readiness')
+    phase('second_inventory_resume')
     until(lambda: int(sql('SELECT count(*) FROM inventory.observations')) >= 3, 'autostart did not continue source inventory')
+    phase('second_queue_drain')
     until(lambda: not list(Path('/var/lib/surveyscan-agent/spool').glob('*.pending')) and not list(Path('/var/lib/surveyscan-collector/spool').glob('*.pending')), 'reboot queues did not drain')
     assert sql('SELECT asset_uid::text FROM assets.assets') == old['asset_uid']
     assert sql('SELECT count(*) FROM assets.assets') == '1'
@@ -337,6 +353,9 @@ except Exception as error:
     print(debug.stdout.decode(errors='replace'), flush=True)
     frames = [f for f in traceback.extract_tb(error.__traceback__) if Path(f.filename).name == 'guest.py']
     diagnostic = {'status': 'failed', 'error_type': type(error).__name__, 'phase': PHASE,
-                  'failed_guest_line': frames[-1].lineno if frames else 0, 'completed_checks': len(CHECKS)}
+                  'failed_guest_line': frames[-1].lineno if frames else 0,
+                  'guest_call_lines': [f.lineno for f in frames], 'completed_checks': len(CHECKS)}
+    if isinstance(error, BaoFailure):
+        diagnostic.update(bao_operation=error.operation, bao_http_status=error.status)
     print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(diagnostic), flush=True)
     command(['systemctl', 'poweroff'])

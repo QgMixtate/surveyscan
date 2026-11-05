@@ -1,0 +1,63 @@
+{
+  "status": "passed local two fresh VM after Raft active health gate",
+  "stands": [
+    {
+      "package": "C13",
+      "status": "passed",
+      "count": 9,
+      "checks": [
+        "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+        "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+        "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+        "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+        "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+        "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+        "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+        "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+        "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session"
+      ],
+      "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+      "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+      "unrun": [
+        "two independently clean OS installations",
+        "schema-changing update through updater",
+        "physical power loss",
+        "production KMS/split custody/DR/RPO/RTO/100users"
+      ]
+    },
+    {
+      "package": "C13",
+      "status": "passed",
+      "count": 9,
+      "checks": [
+        "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+        "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+        "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+        "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+        "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+        "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+        "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+        "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+        "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session"
+      ],
+      "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+      "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+      "unrun": [
+        "two independently clean OS installations",
+        "schema-changing update through updater",
+        "physical power loss",
+        "production KMS/split custody/DR/RPO/RTO/100users"
+      ]
+    }
+  ],
+  "package": "C14",
+  "source_base": "e3fe449 plus recorded operator readiness patch",
+  "guest_sha256": "5d60aafde9464e10eec940c5a66213de7927900b2bdadd4d7a5dfc30029e9a76",
+  "supervisor_sha256": "1639b1dc653c7c601ef1fec3a036060db8d24b5ea15f005940d73ab7c4197942",
+  "scope": "two separately fresh native Debian12/systemd VM factory runs, each9 actual checks; no fake boot/clock; shared actual24h test not touched",
+  "hosted": "next code commit still requires hosted check",
+  "unrun": [
+    "actual24h acceptance",
+    "production/HA/geo/physical power loss"
+  ]
+}

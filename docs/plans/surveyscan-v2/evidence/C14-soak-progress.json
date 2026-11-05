@@ -1,0 +1,94 @@
+{
+  "package": "C14",
+  "run_id": "10812e7a-8a6a-4dae-9dd5-b0583f503c83",
+  "kind": "actual-soak",
+  "recorded_status": "running",
+  "runtime_observed": {
+    "pid_matches_run": true,
+    "sample_age_seconds": 3.921,
+    "state": "live"
+  },
+  "accepted_24h": false,
+  "source_revision": "8560f57b11e9ed0fecd5774942c4d616b3afddc6",
+  "source_dirty": false,
+  "binary_sha256": {
+    "surveyscan-agent": "2ccf66957e08f07c380e666f9b7c8482ad385a42124f6edb58507e3ae2392d68",
+    "surveyscan-server": "fe579e9fb20dca8f48dc8c6dffe153826d3d86fea88a06cc4ab9d4c5d1a10196",
+    "surveyscan-collector": "22e98a94330ca51d795ab2fce17ba274e666867cb779f8a68c437f62c5fd2244"
+  },
+  "runner_sha256": "97caffd509f3e5cf434f90d938d61d7e2ec89b327136ad528624dba4d232ece2",
+  "measured_started_at": "2026-11-05T00:31:49.765786Z",
+  "measured_ended_at": null,
+  "required_seconds": 86400,
+  "recorded_elapsed_seconds": 7502.375,
+  "complete_samples": 239,
+  "last_sample_at": "2026-11-05T02:36:52.824790Z",
+  "latest_observations": 124,
+  "end_observations": null,
+  "max_inventory_age_seconds": 184.439111,
+  "max_source_inventory_age_seconds": 184.981892,
+  "peak_rss_kib": {
+    "agent": 16528,
+    "collector": 17260,
+    "center": 156816
+  },
+  "latest_rss_kib": {
+    "center": 22300,
+    "collector": 16812,
+    "agent": 16324
+  },
+  "peak_pending_files": {
+    "agent": 3,
+    "collector": 2
+  },
+  "peak_pending_bytes": {
+    "agent": 6194,
+    "collector": 4611
+  },
+  "latest_pending_files": {
+    "agent": 0,
+    "collector": 0
+  },
+  "end_pending_drained": null,
+  "peak_outbox_unapplied": 2,
+  "latest_renewal_receipts": 0,
+  "events": [
+    {
+      "at": "2026-11-05T00:31:49.782114Z",
+      "event": "measured_window_started"
+    },
+    {
+      "at": "2026-11-05T01:32:12.453243Z",
+      "event": "agent_link_cut",
+      "elapsed_seconds": 3622.687
+    },
+    {
+      "at": "2026-11-05T01:32:12.459551Z",
+      "event": "agent_restart_while_disconnected",
+      "elapsed_seconds": 3622.687
+    },
+    {
+      "at": "2026-11-05T01:34:19.028234Z",
+      "event": "agent_link_restored",
+      "elapsed_seconds": 3749.262
+    },
+    {
+      "at": "2026-11-05T02:32:06.861137Z",
+      "event": "center_link_cut",
+      "elapsed_seconds": 7217.095
+    },
+    {
+      "at": "2026-11-05T02:32:06.873713Z",
+      "event": "agent_collect_while_center_disconnected",
+      "elapsed_seconds": 7217.095
+    },
+    {
+      "at": "2026-11-05T02:34:13.839015Z",
+      "event": "center_link_restored",
+      "elapsed_seconds": 7344.073
+    }
+  ],
+  "scope": "sampled acceptance measurements, not production capacity/SLA; running/stale/failed/preflight never count as24h acceptance",
+  "snapshot_recorded_at": "2026-11-05T02:37:52.418619+00:00",
+  "status_note": "running at snapshot; both planned network faults observed and recovered, not24h acceptance"
+}

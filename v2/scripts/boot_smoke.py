@@ -108,7 +108,7 @@ def main():
                 # No raw exception text, argv, journal, credentials or unseal material.
                 diagnostic = {'package': 'C13', 'status': 'failed', 'qemu_exit': result.returncode,
                               'guest_result_present': bool(records)}
-                for key in ('phase', 'error_type', 'failed_guest_line', 'completed_checks'):
+                for key in ('phase', 'error_type', 'failed_guest_line', 'guest_call_lines', 'completed_checks', 'bao_operation', 'bao_http_status'):
                     if key in guest:
                         diagnostic[key] = guest[key]
                 raise VMFailure(diagnostic)
