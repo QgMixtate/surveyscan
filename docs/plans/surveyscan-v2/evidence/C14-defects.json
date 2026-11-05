@@ -27,8 +27,8 @@
       "id": "C14-D03",
       "component": "architecture acceptance",
       "status": "guard implemented and local verify passed",
-      "finding": "source review met ownership today but no automatic architecture regression guard existed",
-      "change": "source AST/literal/import guard plus7 counterexamples, two dynamic read templates explicitly reviewed",
+      "finding": "existing import/contract guards did not check SQL table ownership or remote-client PG imports",
+      "change": "keep both original guards byte-identically; add separate AST/literal SQL ownership/client dependency checks and7 counterexamples",
       "evidence": "C14-architecture.json"
     },
     {
@@ -38,6 +38,14 @@
       "finding": "acknowledged pending file can disappear between existence check and stat",
       "change": "stat once, ignore only FileNotFoundError; other IO errors fail runner",
       "evidence": "scripts/soak.py pending_bytes; syntax verification; runtime sampling active"
+    },
+    {
+      "id": "C14-D05",
+      "component": "architecture acceptance implementation",
+      "status": "corrected; final verification in progress",
+      "finding": "extension initially replaced an existing test file, temporarily removing its two original guards",
+      "change": "restore original boundaries_test.go bytes from8560f57; place extension in sql_boundaries_test.go; verify all four guards together",
+      "evidence": "C14-architecture.json; git diff8560f57 -- original file is empty"
     }
   ],
   "remaining_gates": [

@@ -410,3 +410,9 @@ Guard меняет только тесты; исполняемый код сут
 Обновлены устаревшие RELEASE/systemd/UPDATE docs по реально принятому C13.
 C14.03/04 по-прежнему planned; C14-defects.json — журнал уже исправленных условий
 предварительной проверки, не заключение о ещё не закончившемся суточном прогоне.
+
+Уточнение architecture guard: исходные TestImportBoundaries и TestContractsUnchanged уже были.
+При расширении файл временно заменён; исходные bytes восстановлены из8560f57, расширение вынесено
+в sql_boundaries_test.go. Все4 architecture tests прошли вместе; final full verification выполняется.
+Новый guard добавляет SQL ownership и client/PG ограничения; старые проверки сохраняются.
+Реальные binaries8560f57 и работающий суточный прогон не менялись.

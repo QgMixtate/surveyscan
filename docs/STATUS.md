@@ -19,7 +19,7 @@ R-020 разрешает push/PR/CI, R-021 — автономное выполн
 [Reconnect5](plans/surveyscan-v2/evidence/C14-reconnect.json) прошёл на3 реальных agent процессах/
 одном хосте: quota/backpressure, сохранность pending/sequence, simultaneous reconnect,
 четыре очереди пусты, replay без новых эффектов. [Preflight](plans/surveyscan-v2/evidence/C14-preflight.json)
-прошёл121.597s; это явно не24h. Verify41 top-level unit +3 subtests/58C03 прошёл. [Архитектурный guard](plans/surveyscan-v2/evidence/C14-architecture.json)
+прошёл121.597s; это явно не24h. Verify43 top-level unit +3 subtests/58C03 прошёл. [Архитектурный guard](plans/surveyscan-v2/evidence/C14-architecture.json)
 проверил92 production Go files и7 негативных контрпримеров; его статические границы указаны явно.
 C14 source8560f57 опубликован, его новые hosted CI пока проверяются.
 

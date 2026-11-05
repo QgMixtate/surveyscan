@@ -2,7 +2,7 @@
   "package": "C14",
   "scenario": "E1-T15",
   "status": "passed bounded static architecture guard",
-  "unit_tests": 41,
+  "unit_tests": 43,
   "c03_fixtures": 58,
   "production_go_files_inspected": 92,
   "negative_counterexamples": 7,
@@ -14,7 +14,7 @@
     "new dynamic SQL in domain code fails without explicit review; two existing read templates documented",
     "quoted foreign schema/unqualified writes/dynamic SQL/import violations rejected by counterexamples"
   ],
-  "source_file": "v2/internal/architecture/boundaries_test.go",
+  "source_file": "v2/internal/architecture/sql_boundaries_test.go",
   "source_sha256": "cb946f7bb3c570887872eb7f2382401753a56474abddc1ee0a88018827521404",
   "verification": "make verify passed locally; go/parser source inspection + negative fixtures; no DB/machine fault; running8560f57 binaries unchanged",
   "limits": [
@@ -25,8 +25,9 @@
     "tests do not replace code review or schema commit guards"
   ],
   "unit_subtests": 3,
-  "passed_named_events": 44,
+  "passed_named_events": 46,
   "failed_named_tests": 0,
   "skipped_named_tests": 0,
-  "count_method": "actual go test -json -count=1:41 top-level pass events +3 child subtests;23 package skip events mean packages with no test files"
+  "count_method": "final Go JSON run to confirm43 top-level +3 child subtests; packages without tests counted separately",
+  "original_guards": "TestImportBoundaries/TestContractsUnchanged restored byte-identically from8560f57; SQL/import extension is a separate additional test file"
 }
