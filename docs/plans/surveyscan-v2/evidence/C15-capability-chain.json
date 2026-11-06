@@ -1,0 +1,61 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "status": "partial",
+  "implemented": [
+    "collector signed outer offer with unchanged center signed frame",
+    "role-specific signature domains, nonce/tenant/audience/generation/expiry bindings",
+    "Go agent request verifies TLS-attested collector and enrollment-pinned center keys, intersects three offers",
+    "quota-aware single-packet ceilings; no pending data mutation",
+    "role-specific public OpenAPI"
+  ],
+  "checks": {
+    "verify": "passed; C03 58 unchanged",
+    "postgres": 58,
+    "race": [
+      "wire",
+      "collector",
+      "agent"
+    ],
+    "windows_amd64_agent_crossbuild": "passed",
+    "compiled_relay": {
+      "count": 10,
+      "status": "passed",
+      "actual": [
+        "mTLS",
+        "compiled collector and center",
+        "nonexportable scoped OpenBao Transit",
+        "PostgreSQL",
+        "signed ACK and cold restart"
+      ],
+      "agent_data": "synthetic C15 fixtures; Python verifies chain before upload"
+    },
+    "go_agent_client": {
+      "status": "passed",
+      "actual": "mutual TLS both hops and production collector/agent methods",
+      "test_double": "center signed capability handler uses local Ed25519; not PG/Bao",
+      "negative": [
+        "center503",
+        "old center without12",
+        "forged center signature",
+        "agent lacks12"
+      ]
+    },
+    "wire_negative": [
+      "wrong role domain",
+      "wrong collector/center keys",
+      "nonce replay",
+      "wrong tenant/audiences/generations",
+      "expired/overextended expiry",
+      "forged nested frame under valid collector signature"
+    ]
+  },
+  "unrun": [
+    "daemon automatically invokes negotiation",
+    "Windows profile1.2 and independent scheduler",
+    "actual Windows continuous collection/delivery",
+    "DACL/locks/SCM/ordinary rights/reboot/provider complete coverage"
+  ],
+  "completed_global_tasks": 57
+}

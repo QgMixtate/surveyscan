@@ -701,3 +701,11 @@ hosted workflows SUCCESS, including fullv2 42227311999/relay9 and nativeboot4222
 Evidence C15-hosted-fbca.json; superseded cancelled runs retained explicitly. Global57done;
 manual opt-in relay does not close Windows daemon/three-hop negotiation. Next plan:
 decisions/C15-agent-capability-next.md. No main merge/deploy/env publication.
+
+Продолжение «Продолжай»: authenticated three-hop capability chain implemented locally.
+Collector signs nonce/tenant/issuer/audience/generation/expiry + unchanged center frame;
+Go agent verifies actualTLS attested key and own enrollment-pinned centerkey, intersects
+all3 offers. No daemon enable/profile/spool rewrite. Compiled actualmTLS/scopedTransit/PG
+relay10passed with Python syntheticagent; Go method separately realmutualTLS/production
+collector and center Ed25519 testdouble. verify/C03 58, PG58, race3packages/Winbuildpassed.
+Evidence C15-capability-chain.json; publication pending. Next Winprofile1.2/scheduler;57done.

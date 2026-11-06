@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Real compiled opt-in1.2 relay with synthetic enrolled agent/scoped Transit/PG.
 
-Explicit test configuration selects the protocol; agent capability negotiation
-and actual Windows collection/service are not exercised by this entry point.
+Explicit test configuration enables the protocol. An enrolled synthetic agent
+verifies both signed capability frames over actual mTLS before delivery; actual
+Windows collection/service and daemon automatic negotiation remain unrun.
 """
 from c15_center_smoke import main
 

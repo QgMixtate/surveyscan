@@ -1,6 +1,9 @@
 # Следующий C15.02 increment — authenticated three-hop negotiation
 
-Статус planned, НЕ implemented. Data relay12 с manualtestconfig уже проверен отдельно.
+Статус: implemented locally, verification passed; publication pending.
+Transport negotiation API is implemented separately from the daemon/profile.
+The numbered list below is the design; actual result and limits are in
+[capability-chain evidence](../evidence/C15-capability-chain.json).
 Нельзя объявлять finished Windowsagent/capability exchange по успешной доставке fixtures.
 
 1. Collector POSTinventory-capabilities принимает тот же boundednonce от verifiedmTLS
@@ -37,3 +40,17 @@ Implementation locations: contracts/inventory_capabilities.go, wire/capabilities
 collector/inventory_protocol.go (newcapability handler separate), agent/newrequestmethod,
 C15cap schema/OpenAPI, scripts/c15_relay_smoke.py. Do not mutate E1private/frozenreports;
 localtests reuseE1devmodulecredentials withC15binaries/ownDB/ports/scopedmounts.
+
+
+Результат 2026-11-06: collector handler и Go Client.NegotiateInventory12 реализованы.
+У collector offer batch <= min(768KiB, spoolLimit-AckReserve-4096); signed/canonical
+оставляют по64KiB carrier headroom. Занятость очереди не меняет постоянный offer.
+Outer frame lifetime <= inner, issuer/audience roles closed by schema; обе подписи,
+nonce/tenant/generation/expiry проверяются независимо. API OpenAPI описывает обе роли.
+makeverify/C03 58, PG58, agent/collector/wire race и Windows cross-build passed.
+Actual compiled collector+center/scoped Transit/PG relay10 passed; synthetic agent
+в Python проверяет обе подписи до upload. Go Client method проверен отдельно через
+настоящий mutual TLS к production collector; center test handler использует local
+Ed25519 и не объявляется OpenBao. 503, old center и forged inner подпись failclosed.
+Далее Windows profile1.2 + bounded independent collection/heartbeat; метод negotiation
+пока не вызывается daemon, не меняет C03 runtime/profile/spool и не закрывает C15.02.

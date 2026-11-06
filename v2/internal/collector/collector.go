@@ -246,6 +246,7 @@ func (c *Collector) post(ctx context.Context, path string, raw []byte, token str
 }
 func (c *Collector) Handler() http.Handler {
 	mux := http.NewServeMux()
+	mux.HandleFunc("POST /api/v1/machine/inventory-capabilities", c.inventoryCapabilities)
 	mux.HandleFunc("POST /api/v1/machine/profile", func(w http.ResponseWriter, r *http.Request) {
 		claims, e := c.peer(r)
 		if e != nil {

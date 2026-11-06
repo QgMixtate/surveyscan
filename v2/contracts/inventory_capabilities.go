@@ -1,6 +1,9 @@
 package contracts
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type InventoryLimits12 struct {
 	CanonicalBytes int `json:"canonical_bytes"`
@@ -28,4 +31,26 @@ type SignedInventoryCapabilities struct {
 	Digest    string                `json:"digest"`
 	KeyID     string                `json:"key_id"`
 	Signature string                `json:"signature"`
+}
+
+// CollectorInventoryCapabilities binds the unchanged center frame to one agent.
+type CollectorInventoryCapabilities struct {
+	Version       Version            `json:"schema_version"`
+	Issuer        Origin             `json:"issuer"`
+	Tenant        string             `json:"tenant_id"`
+	Audience      Origin             `json:"audience"`
+	Nonce         string             `json:"nonce"`
+	Issued        time.Time          `json:"issued_at"`
+	Expires       time.Time          `json:"expires_at"`
+	Observations  []Version          `json:"observation_versions"`
+	Batches       []Version          `json:"batch_versions"`
+	Limits12      *InventoryLimits12 `json:"inventory12_limits"`
+	SnapshotModes []string           `json:"inventory12_snapshot_modes"`
+	Center        json.RawMessage    `json:"center"`
+}
+type SignedCollectorInventoryCapabilities struct {
+	Payload   CollectorInventoryCapabilities `json:"payload"`
+	Digest    string                         `json:"digest"`
+	KeyID     string                         `json:"key_id"`
+	Signature string                         `json:"signature"`
 }

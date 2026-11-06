@@ -29,10 +29,14 @@ mTLS, scoped nonexportable OpenBao Transit, PostgreSQL и API. Данные аг
 Последний handoff: [C15](plans/surveyscan-v2/handoffs/C15.md),
 [relay evidence](plans/surveyscan-v2/evidence/C15-relay.json).
 
-**Следующий код — authenticated capability exchange agent→collector→center**:
+**Новый local increment — authenticated capability exchange agent→collector→center**:
 [точный план](plans/surveyscan-v2/decisions/C15-agent-capability-next.md).
-Center уже выдаёт подписанный nonce/audience/tenant/generation/expiry-bound ответ с pinned
-C11 key. Нельзя считать manual-config data relay завершённой трёхсторонней negotiation.
+Collector outer frame и Go agent method реализованы: обе подписи/ключи/nonce/tenant/
+audience/generation/expiry, quota-aware ceilings и intersection всех3offers.
+Actual compiled mTLS/scopedTransit/PG relay10 прошёл с Python syntheticagent; отдельно
+Go agent method через настоящий mTLS с production collector/center signing testdouble.
+verify/C03 58, PG58, race agent/collector/wire и Windows cross-build passed. Публикация
+нового increment pending; daemon метод ещё не вызывает. Next — Windows profile1.2.
 Далее — Windows profile 1.2, независимая bounded collection/heartbeat, DACL/locks/host
 binding, SCM/service/update, обычные права/Windows11/настоящий reboot и provider coverage.
 Native SDK 12 baseline секций ранее проверен на WindowsServer2022/elevated; это ещё не

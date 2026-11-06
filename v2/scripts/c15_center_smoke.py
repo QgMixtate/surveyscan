@@ -3,7 +3,8 @@
 
 Default mode uses the compiled collector for enrollment only. The optional relay
 mode also exercises1.2upload, durable replay and cold restart; actual Windows
-collection/service and authenticated agent negotiation are not claimed.
+collection/service are not claimed; relay mode verifies the signed three-hop
+capability chain with an enrolled synthetic agent before upload.
 """
 import base64
 import copy
@@ -19,6 +20,7 @@ import time
 import uuid
 
 import rfc8785
+from cryptography import x509
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
@@ -77,6 +79,32 @@ def scenario(relay12=False, **s):
         private = s['save']('c15-agent.key', agent_tls_key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption()))
         client = ssl.create_default_context(cafile=s['ca_file']);client.load_cert_chain(cert, private)
         port, sni = s['collector_port'], s['collector_source'] + '.collector.invalid'
+        nonce = b64(os.urandom(32))
+        code, chain, _ = request(port, client, 'POST', '/api/v1/machine/inventory-capabilities', {'nonce': nonce}, sni=sni)
+        assert code == 200
+        outer = chain['payload']; inner = outer['center']; cp = inner['payload']
+        # The signing key is CA-attested in the enrolled collector certificate,
+        # never supplied by either capability response.
+        certificate = x509.load_pem_x509_certificate(collector['certificate_chain_pem'].encode())
+        signing_uri, = [u for u in certificate.extensions.get_extension_for_class(x509.SubjectAlternativeName).value.get_values_for_type(x509.UniformResourceIdentifier) if u.startswith('spiffe://surveyscan/signing/')]
+        signing_key_id, signing_public = signing_uri.removeprefix('spiffe://surveyscan/signing/').split('/')
+        relay_public = Ed25519PublicKey.from_public_bytes(base64.urlsafe_b64decode(signing_public + '=='))
+        relay_public.verify(base64.urlsafe_b64decode(chain['signature'] + '=='), b'SURVEYSCAN-COLLECTOR-INVENTORY-CAPABILITIES-V1\n' + rfc8785.dumps(outer))
+        assert chain['digest'] == hashlib.sha256(rfc8785.dumps(outer)).hexdigest() and chain['key_id'] == signing_key_id
+        center_public.verify(base64.urlsafe_b64decode(inner['signature'] + '=='), b'SURVEYSCAN-INVENTORY-CAPABILITIES-V1\n' + rfc8785.dumps(cp))
+        assert inner['digest'] == hashlib.sha256(rfc8785.dumps(cp)).hexdigest() and inner['key_id'] == collector['center_result_key_id']
+        issuer = {'source_id': s['collector_source'], 'source_kind': 'collector', 'generation_id': collector['generation_id']}
+        assert outer['issuer'] == cp['audience'] == issuer
+        assert outer['audience'] == payload['origin'] and outer['tenant_id'] == cp['tenant_id'] == s['tenant']
+        assert outer['nonce'] == cp['nonce'] == nonce
+        assert outer['expires_at'] <= cp['expires_at']
+        for offer in [outer, cp]:
+            assert offer['observation_versions'] == offer['batch_versions'] == [{'major': 1, 'minor': 0}, {'major': 1, 'minor': 2}]
+            assert offer['inventory12_snapshot_modes'] == ['partial']
+        limits = {key: min(outer['inventory12_limits'][key], cp['inventory12_limits'][key], maximum) for key, maximum in {'canonical_bytes':524288, 'signed_bytes':589824, 'batch_bytes':786432, 'max_records':100}.items()}
+        assert len(canonical) <= limits['canonical_bytes'] and len(rfc8785.dumps(record)) <= limits['signed_bytes'] and len(rfc8785.dumps(batch)) <= limits['batch_bytes']
+        checks.append('actual agent mTLS to compiled collector verifies nested Transit-center and CA-attested collector signatures, nonce/tenant/audiences/generations; selects bounded three-hop1.2 before synthetic upload')
+
     code, receipt, _ = request(port, client, 'POST', '/api/v1/machine/observations', batch, sni=sni)
     assert code == 202, f"center1.2 response status={code} code={receipt.get('code', 'none')}"
     for _ in range(80):
@@ -171,7 +199,7 @@ def scenario(relay12=False, **s):
               'unrun': ['collector1.2upload relay/agent three-hop negotiation', 'actual Windows collection/delivery/service/rights/reboot', 'complete provider coverage/scoped deletion', 'independent collection/heartbeat']}
     if relay12:
         report['target'] = 'synthetic enrolled agent→actualmTLS compiledcollector1.2 durable spool/relay→compiledcenter/scopedTransit/PG/all12sections→typedAPI/verifiedACK/replay'
-        report['unrun'][0] = 'authenticated agent three-hop capability negotiation'
+        report['unrun'][0] = 'actual Windows runtime/profile/independent scheduler; Go agent negotiation not invoked by daemon yet'
         report['checks'] = [text.replace('courier forwards delegated', 'compiled collector relays delegated') for text in checks]
     name = 'c15-relay-smoke.json' if relay12 else 'c15-center-smoke.json'
     (STATE / name).write_text(json.dumps(report, indent=2) + '\n')

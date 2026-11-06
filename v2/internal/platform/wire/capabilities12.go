@@ -52,7 +52,7 @@ func compileCapabilities() (map[string]*jsonschema.Schema, error) {
 		return nil, err
 	}
 	out := map[string]*jsonschema.Schema{}
-	for _, name := range []string{"Request", "Capabilities", "SignedCapabilities"} {
+	for _, name := range []string{"Request", "Capabilities", "SignedCapabilities", "CollectorCapabilities", "SignedCollectorCapabilities"} {
 		out[name], err = c.Compile(id + "#/$defs/" + name)
 		if err != nil {
 			return nil, err
