@@ -14,6 +14,7 @@ import (
 	"strings"
 	"sync"
 	"syscall"
+	"time"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -296,9 +297,22 @@ func (r *Root) read(name string, max int64) ([]byte, error) {
 	if max < 1 || max > MaxBytes {
 		return nil, ErrPrivate
 	}
-	handle, err := r.open(name, windows.GENERIC_READ, windows.FILE_OPEN, windows.FILE_SHARE_READ|windows.FILE_SHARE_DELETE)
-	if err != nil {
-		return nil, err
+	// A published atomic writer can still hold its write handle while flushing
+	// and closing. Retry only that transient sharing window, never ACL/I/O or
+	// reparse failures, and keep read handles excluding in-place data writes.
+	deadline := time.Now().Add(time.Second)
+	var handle windows.Handle
+	var err error
+	for {
+		handle, err = r.open(name, windows.GENERIC_READ, windows.FILE_OPEN, windows.FILE_SHARE_READ|windows.FILE_SHARE_DELETE)
+		if err == nil {
+			break
+		}
+		var busy *stateError
+		if !errors.As(err, &busy) || busy.stage != "relative_open" || busy.code != uint32(windows.ERROR_SHARING_VIOLATION) || !time.Now().Before(deadline) {
+			return nil, err
+		}
+		time.Sleep(2 * time.Millisecond)
 	}
 	f := os.NewFile(uintptr(handle), "private-state")
 	defer f.Close()

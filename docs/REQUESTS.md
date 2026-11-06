@@ -777,3 +777,8 @@ DACL/reparse/hardlink/crossprocesslock/redaction cases. Nextlocal atomicreplacem
 writerlock, private stagedfsync, root-relativeNT rename, typedoptionalreads/whole snapshots,
 sharingfailurecleanup andbefore/after-process-crash tests prepared. Wincompile/vetpassed;
 nativepending, not runtime/cache adoption. C15-winstate-atomic.json,57done unchanged.
+
+Atomic6768d8f native42308645680 failedconcurrentreader code32 duringpublication; all
+lockedreplace/sharingfailurecleanup/before+afterprocesscrash/old+newwholedata/lockrelease
+andDACLbase casespassed. C15-D10 targeted bounded1s read-only sharing retry; write/rename
+not retried, ACL/I/O never treatedasabsence. Native repeatnext; module unadopted,57done.

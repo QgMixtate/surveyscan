@@ -88,6 +88,22 @@
       "change": "explicit FILE_READ_ATTRIBUTES on relative file opens, retaining read-control/ACL/reparse/hardlink checks",
       "verification": "Windows42306657936 native roundtrip/ACL drift+null+unprotected/reparse+hardlink/crossprocesslock/redaction passed; base57e failure preserved",
       "status": "fixed on c7e2f0a; all five workflows success"
+    },
+    {
+      "id": "C15-D10",
+      "scope": "new Windows atomic state reader test, module not adopted",
+      "source_revision": "6768d8f865ac2506dde3e0de150c7ac5b319b282",
+      "run_id": 42308645680,
+      "observed": "concurrent snapshot reader received relative_open ERROR_SHARING_VIOLATION32 while published atomic writer still flushed/closed its exclusive handle",
+      "passed_in_same_run": [
+        "locked replacement/unsafe target rejection",
+        "sharing-denied rename preserves old data and cleans stage",
+        "before/after rename process exits preserve whole old/new data and release OS lock",
+        "private ACL/reparse/hardlink/processlock/redaction base cases"
+      ],
+      "change": "bounded1s read-only retry for relative_open sharing violation only; no write/rename retries and no ACL/I/O errors swallowed; exclude in-place writes as before",
+      "verification": "Windowscrosscompile/vet passed; native repeatpending",
+      "status": "nativefix pending"
     }
   ],
   "windows_inventory_tested": true,
