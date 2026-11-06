@@ -16,7 +16,25 @@
       "observed": "Go regexp rejects backslash-u escapes accepted by Python regex",
       "fix": "JSON-escaped control characters decode to literal range in the pattern, compatible with both validators",
       "verification": "Windows hosted42126106107 and42127549414 passed; historical first failure preserved"
+    },
+    {
+      "id": "C15-D03",
+      "scope": "new COM worker stdout bound",
+      "run_id": 42191352349,
+      "source_revision": "3d680cbe639ff9bd862cec9cb5bff7927559bc12",
+      "observed": "oversized synthetic child returned INVALID_WORKER_RESPONSE instead of LIMIT_REACHED; promoted bytes.Buffer.ReadFrom bypassed Write through io.Copy",
+      "fix": "named private bytes.Buffer, no ReaderFrom promotion; Linux reader-only pipe regression test plus native child kill/reap/oversize repeat",
+      "verification": "Linux regression and cross-compile passed; native repeat pending"
     }
   ],
-  "windows_inventory_tested": false
+  "windows_inventory_tested": false,
+  "native_com_before_fix": {
+    "run_id": 42191352349,
+    "status": "partial_result_not_whole_job_success",
+    "QFE_records": 5,
+    "protection_records": 6,
+    "native_baseline": "passed12sections",
+    "worker_timeout_crash_malformed": "passed",
+    "worker_oversize": "failed"
+  }
 }

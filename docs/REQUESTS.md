@@ -633,3 +633,10 @@ availability; locale InstalledOn неугадывается. go-ole1.3.0MIT pinn
 Windows crosscompile/vet + makeverify/C03 58 passed; Section validation tests passedLinux.
 Windows native COM и synthetic helper failure/isolation tests ещёpendinghosted.
 FullC15.02wire/storage/API/fieldcoverage иC15.03/04неприняты,57done unchanged.
+
+Первый Windows COM job42191352349/source3d680cb: actualQFE5/protection6/native12baseline
+passed, ноwholejobFAILED наsyntheticoversize child. Причина: promotedbytes.Buffer.ReadFrom
+позволялio.Copy обходитьWrite bound. Fixed privatebuffer/noReaderFrom; Linuxreader-only
+regressionpassed, Winchildtestsrepeatpending. FailureC15-D03сохранён, не переименованвPASS.
+Проверено: текущийE1scheduler sequential, не independentheartbeat при долгойcollection.
+Это обязательныйC15gate передruntimeenable; draftNativeSDK всёещёизолирован.

@@ -243,7 +243,7 @@ func protectionRows() ([]map[string]any, error) {
 	rows = append(rows, antivirus...)
 	if len(rows) > 0 {
 		if firewallErr != nil || defenderErr != nil || avErr != nil {
-			return rows, errProviderData // Missing providers are not absent protection.
+			return rows, errors.Join(firewallErr, defenderErr, avErr) // Preserve classification, never export raw error.
 		}
 		return rows, nil
 	}

@@ -3,7 +3,6 @@
 package windowsinventory
 
 import (
-	"bytes"
 	"context"
 	"errors"
 	"io"
@@ -25,22 +24,6 @@ var workerCommand = func(ctx context.Context, name string) (*exec.Cmd, error) {
 		return nil, err
 	}
 	return exec.CommandContext(ctx, path, "inventory-worker", name), nil
-}
-
-type workerOutput struct {
-	bytes.Buffer
-	limit  int
-	over   bool
-	cancel context.CancelFunc
-}
-
-func (w *workerOutput) Write(b []byte) (int, error) {
-	if len(b) > w.limit-w.Len() {
-		w.over = true
-		w.cancel()
-		return 0, errors.New("worker output limit")
-	}
-	return w.Buffer.Write(b)
 }
 
 func failedSection(name, status, reason string) contracts.Section {
@@ -81,7 +64,7 @@ func workerSection(ctx context.Context, name string, timeout time.Duration) cont
 	if err != nil {
 		return failedSection(name, "unavailable", "CONTRACT_UNAVAILABLE")
 	}
-	section, err := validator.Section(output.Bytes())
+	section, err := validator.Section(output.buffer.Bytes())
 	if err != nil || section.Name != name || section.CollectedAt.After(time.Now().UTC().Add(time.Second)) {
 		return failedSection(name, "unavailable", "INVALID_WORKER_RESPONSE")
 	}

@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -89,6 +90,9 @@ func TestWorkerFailureDoesNotDiscardOtherSections(t *testing.T) {
 }
 
 func TestWorkerIsolationLimitsAndReaping(t *testing.T) {
+	if _, bypass := any(&workerOutput{}).(io.ReaderFrom); bypass {
+		t.Fatal("io.Copy fast path can bypass the output limit")
+	}
 	original := workerCommand
 	defer func() { workerCommand = original }()
 	for _, item := range []struct{ mode, status, reason string }{

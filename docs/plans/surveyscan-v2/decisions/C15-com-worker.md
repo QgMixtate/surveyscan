@@ -25,3 +25,12 @@ Tests distinguish actual Windows agent subprocess/COM from synthetic child
 hang/crash/oversize/canary/malformed probes. Ordinary-user/LocalService/Windows11
 и direct production service lifecycle пока unrun. Worker child inherits process
 account; принцип наименьших прав и Windows DACL — следующий lifecycle gate.
+
+Scheduling gate: существующий E1 Run() последовательно выполняет heartbeat и Inventory().
+WindowsSDK пока не подключён. Перед подключением длинногоCollect обязательны отдельный
+collection task и сериализованное применение результата/counters; worker kill сам по себе
+не доказывает независимость heartbeat. Это остаётсяC15 pipeline gate, не currentclaim.
+
+C15-D03: первое nativeCIпоказалообходлимита через bytes.Buffer.ReadFrom. Buffer теперь
+privatefield; io.ReaderFrom не promoted. Linux reader-only io.Copy regression и Windows
+oversize/kill/reap tests проверяют реальноеограничение, не только parser sizecheck.
