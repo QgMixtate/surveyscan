@@ -56,3 +56,10 @@ Chromium16, тестовый ключ удалён. C15 не подменяет 
 credentials/Compose переиспользуются без копирования private keys. Новые private reports —
 только C15/.local. Не запускать C15 dev up/down/reset с совпадающими E1 project/ports.
 История и подробности — docs/REQUESTS.md; 57done в plan/CSV не менять без приёмки задач.
+
+Новый scheduler localpassed: один read-only collection task вне actor; state/TLS/
+counters/spool остаются serial. Heartbeat при blocked collection, no overlap/late
+success discard проверены с HTTPS testdouble; compiled live Linux11 passed
+(3cycles+restart4th/sameUID/verifiedACK/lock/revoke). verify/build/C03 58/race/
+Winbuild passed. Publication pending; Windows daemon/новый24h unrun.
+[Доказательства](plans/surveyscan-v2/evidence/C15-independent-collection.json).

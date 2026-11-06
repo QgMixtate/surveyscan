@@ -1,0 +1,42 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "status": "partial",
+  "change": "single read-only collection task separated from serial agent state actor",
+  "deadline_seconds": 30,
+  "max_concurrent_collection": 1,
+  "checks": {
+    "verify_build_C03": "passed; unchanged58 fixtures",
+    "race_agent": "passed",
+    "windows_amd64_crossbuild": "passed",
+    "actor_with_https_test_double": [
+      "two signed challenge heartbeats while collection blocked",
+      "no overlapping collection",
+      "no unfinished snapshot queued",
+      "one inventory counter after completion",
+      "late success discarded after deadline",
+      "cooperative cancellation completes"
+    ],
+    "compiled_live_agent": {
+      "count": 11,
+      "status": "passed",
+      "actual": [
+        "Linux host read-only collection",
+        "compiled agent/collector/server",
+        "TLS/mTLS",
+        "PostgreSQL",
+        "three scheduled cycles and fourth after restart",
+        "same UID/counters/verified ACK/revoke/process lock"
+      ],
+      "report": "private C15/.local/agent-smoke.json"
+    }
+  },
+  "limits": [
+    "noncooperative in-process provider cannot be forcibly killed; only one slot retained",
+    "Windows daemon not enabled",
+    "network tasks still serial with existing bounded HTTP requests",
+    "new24h soak not run"
+  ],
+  "completed_global_tasks": 57
+}

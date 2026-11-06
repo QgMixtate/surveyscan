@@ -441,22 +441,37 @@ func (c *Client) signed(payload any, domain string) ([]byte, error) {
 	sum := sha256.Sum256(canonical)
 	return json.Marshal(contracts.SignedObservation{Payload: raw, Digest: hex.EncodeToString(sum[:]), KeyID: c.claims.KeyID, Signature: base64.RawURLEncoding.EncodeToString(ed25519.Sign(c.key, append([]byte(domain), canonical...)))})
 }
+func (c *Client) inventoryPreflight(ctx context.Context) error {
+	if err := ctx.Err(); err != nil {
+		return err
+	}
+	if err := verifyHostBinding(c.cfg, c.claims.Source, c.key); err != nil {
+		return err
+	}
+	return diskspool.Data(filepath.Join(c.cfg.State, "spool"), c.cfg.Limit-diskspool.AckReserve, 131072)
+}
 func (c *Client) Inventory(ctx context.Context) error {
-	if e := verifyHostBinding(c.cfg, c.claims.Source, c.key); e != nil {
-		return e
+	if err := c.inventoryPreflight(ctx); err != nil {
+		return err
 	}
-	if e := diskspool.Data(filepath.Join(c.cfg.State, "spool"), c.cfg.Limit-diskspool.AckReserve, 131072); e != nil {
-		return e
+	snapshot, err := Collect(ctx)
+	if err != nil {
+		return err
 	}
-	snapshot, e := Collect(ctx)
-	if e != nil {
-		return e
+	return c.queueSnapshot(ctx, snapshot, time.Now().UTC())
+}
+
+// Only the actor may assign sequence/signatures and mutate durable state.
+func (c *Client) queueSnapshot(ctx context.Context, snapshot Snapshot, collected time.Time) error {
+	if err := c.inventoryPreflight(ctx); err != nil {
+		return err
 	}
+
 	sequence, e := c.next(false)
 	if e != nil {
 		return e
 	}
-	o := contracts.Observation{Version: contracts.Version{Major: 1}, ID: identifier.New(), TenantID: c.claims.Tenant, Origin: contracts.Origin{SourceID: c.claims.Source, SourceKind: "agent", GenerationID: c.claims.Generation}, Record: contracts.SourceRecord{Namespace: "host", LocalID: "host"}, Scope: contracts.Scope{SiteID: c.cfg.Site, ScopeID: c.cfg.Scope}, Sequence: sequence, CollectedAt: time.Now().UTC(), Clock: "trusted", Candidates: snapshot.Candidates, Sections: snapshot.Sections}
+	o := contracts.Observation{Version: contracts.Version{Major: 1}, ID: identifier.New(), TenantID: c.claims.Tenant, Origin: contracts.Origin{SourceID: c.claims.Source, SourceKind: "agent", GenerationID: c.claims.Generation}, Record: contracts.SourceRecord{Namespace: "host", LocalID: "host"}, Scope: contracts.Scope{SiteID: c.cfg.Site, ScopeID: c.cfg.Scope}, Sequence: sequence, CollectedAt: collected, Clock: "trusted", Candidates: snapshot.Candidates, Sections: snapshot.Sections}
 	raw, e := c.signed(o, "SURVEYSCAN-OBSERVATION-V1\n")
 	if e != nil {
 		return e
@@ -638,6 +653,17 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 		return e
 	}
 	defer func() { client.http.CloseIdleConnections() }()
+	return runClientLoop(ctx, client, report, Collect, 30*time.Second)
+}
+
+func runClientLoop(ctx context.Context, client *Client, report func(string), collect func(context.Context) (Snapshot, error), collectionLimit time.Duration) error {
+	var e error
+	var collection *collectionTask
+	defer func() {
+		if collection != nil {
+			collection.cancel()
+		}
+	}()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
 	inventoryAt, heartbeatAt, renewalAt, profileAt := time.Time{}, time.Time{}, time.Time{}, time.Time{}
@@ -645,6 +671,27 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 	for {
 		if e = ctx.Err(); e != nil {
 			return nil
+		}
+
+		if collection != nil {
+			select {
+			case result := <-collection.done:
+				collection.cancel()
+				collection = nil
+				if result.err != nil {
+					report("inventory_failed")
+				} else if err := client.queueSnapshot(ctx, result.snapshot, result.at); err != nil {
+					report("inventory_failed")
+				} else {
+					report("inventory_queued")
+				}
+				inventoryAt = time.Now().Add(jitter(client.cfg.InventorySeconds, client.cfg.Jitter))
+			default:
+				if collection.ctx.Err() != nil && !collection.reported {
+					report("inventory_collection_deadline")
+					collection.reported = true
+				}
+			}
 		}
 		now := time.Now()
 		if !now.Before(profileAt) {
@@ -680,14 +727,16 @@ func Run(ctx context.Context, c Config, report func(string)) error {
 			}
 			heartbeatAt = time.Now().Add(jitter(client.cfg.HeartbeatSeconds, client.cfg.Jitter))
 		}
-		if !now.Before(inventoryAt) {
-			if e = client.Inventory(ctx); e != nil {
+
+		if collection == nil && !now.Before(inventoryAt) {
+			if err := client.inventoryPreflight(ctx); err != nil {
 				report("inventory_failed")
+				inventoryAt = time.Now().Add(jitter(client.cfg.InventorySeconds, client.cfg.Jitter))
 			} else {
-				report("inventory_queued")
+				collection = startCollection(ctx, collect, collectionLimit)
 			}
-			inventoryAt = time.Now().Add(jitter(client.cfg.InventorySeconds, client.cfg.Jitter))
 		}
+
 		if delivery.Ready(time.Now()) {
 			if e = client.Flush(ctx); e != nil {
 				delivery.Failed(time.Now())

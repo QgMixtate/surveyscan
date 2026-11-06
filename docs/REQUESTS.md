@@ -709,3 +709,10 @@ all3 offers. No daemon enable/profile/spool rewrite. Compiled actualmTLS/scopedT
 relay10passed with Python syntheticagent; Go method separately realmutualTLS/production
 collector and center Ed25519 testdouble. verify/C03 58, PG58, race3packages/Winbuildpassed.
 Evidence C15-capability-chain.json; publication pending. Next Winprofile1.2/scheduler;57done.
+
+Автоматическое продолжение: независимый collection worker без доступа к Client/
+keys/counters/spool; actor alone commits signed results. Deadline/late-result reject/
+no overlap иheartbeat progress passed with HTTPS testdouble. Actual compiled Linux
+agent+collector+server/mTLS/PG11 passed (3cycles+restart4th, sameUID/counters/ACK/lock/
+revocation), verify/build/C03 58/race/Winbuild passed. C15-independent-collection.json;
+publication pending. Windows daemon/SCM/provider termination/new24h not claimed,57done.

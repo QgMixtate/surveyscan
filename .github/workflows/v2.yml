@@ -39,6 +39,8 @@ jobs:
           .contract-tools/bin/pip install -r ../docs/plans/surveyscan-v2/contracts/C03/checks/requirements.txt
       - name: Format, architecture, unit tests, vet and C03 contracts
         run: make CONTRACT_PYTHON=.contract-tools/bin/python verify
+      - name: Agent collection ownership, heartbeat progress and capability chain race checks
+        run: go test -race -count=1 ./internal/agent ./internal/collector ./internal/platform/wire
       - name: Build server, collector, agent and CLI
         run: make build
       - name: Build separate Web UI
