@@ -751,3 +751,12 @@ andtwofreshVM9+9 reports, hashes C15-hosted-d4.json. PG58/relay10/center6/agent1
 reconnect5/restore9 andnativeall12/failureisolation passed. D07historicalcause still
 unproven; independentD08fix verified.57done/C15.02IP; nextWinprofile1.2/securestate,
 SCM03/04 remainsafter02acceptance. No merge/release/deploy/envpublication.
+
+2026-11-06 продолжение «Погнали»: реализован signedWindowsprofile1.2core — closedDTO/schema,
+отдельныедомены/nonce/tenant/generation/collector, commoncadence+fixedpartial12policy30s/420s.
+Sources0034 separate offered/appliedprogress/readAPI;35migrations/48tables. C12/freshness
+не изменяются. Go client read-only fetch requires freshthreehopproof, неapply/cache/ACK.
+verify/build/C0358/PG60/race3packages/Winbuild-vet/compiledrealmTLS/Transit/PGrelay11passed.
+Agentdata synthetic; Linuxfsync acceptancefixture explicit, Windowscacheunrun. NewSQL
+appendonly, privateupdate0035/schema35→36. Publicationpending; далееsecureWindowsstate/
+cache/runtime внутри02, SCM03/04 после02acceptance.57done. No merge/deploy/envpublish.

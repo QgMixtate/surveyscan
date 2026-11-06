@@ -10,7 +10,13 @@ import (
 )
 
 func TestC15AppendOnlyUpgradePreservesLegacyEvidence(t *testing.T) {
-	ctx, c, current := database(t)
+	ctx, c, catalog := database(t)
+	current := []migrate.Migration{}
+	for _, m := range catalog {
+		if m.ID <= "0033_records12" {
+			current = append(current, m)
+		}
+	}
 	old := []migrate.Migration{}
 	for _, m := range current {
 		if m.ID != "0033_records12" {

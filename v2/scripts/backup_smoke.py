@@ -43,7 +43,7 @@ def scenario(**s):
         def fingerprint(db, table):
             return client.sql(db, "SELECT encode(sha256(convert_to(coalesce(string_agg(row_to_json(t)::text,E'\\n' ORDER BY row_to_json(t)::text),''),'UTF8')),'hex') FROM " + table + ' t')
         before = {name: fingerprint(database, name) for name in tables}
-        assert len(tables) == 48  # 47 owned tables + migration ledger.
+        assert len(tables) == 49  # 48 owned tables + migration ledger.
         backup(client, database, directory)
         assert directory.stat().st_mode & 0o777 == 0o700
         assert all(path.stat().st_mode & 0o777 == 0o600 for path in directory.iterdir())

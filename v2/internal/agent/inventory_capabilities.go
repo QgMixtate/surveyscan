@@ -16,6 +16,8 @@ import (
 // InventoryNegotiation12 is a short-lived, authenticated selection, not a
 // command to collect and not permission to rewrite already queued observations.
 type InventoryNegotiation12 struct {
+	proof     []byte
+	own       wire.InventoryOffer12
 	Limits    wire.InventoryOffer12
 	Expires   time.Time
 	Collector contracts.Origin
@@ -74,5 +76,5 @@ func (c *Client) NegotiateInventory12(ctx context.Context, own wire.InventoryOff
 	if err != nil {
 		return empty, err
 	}
-	return InventoryNegotiation12{Limits: selected, Expires: collector.Expires, Collector: issuer}, nil
+	return InventoryNegotiation12{Limits: selected, Expires: collector.Expires, Collector: issuer, proof: append([]byte(nil), raw...), own: own}, nil
 }

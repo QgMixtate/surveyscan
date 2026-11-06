@@ -394,6 +394,100 @@
           }
         }
       }
+    },
+    "/api/v1/machine/inventory-profile": {
+      "post": {
+        "operationId": "pollWindowsInventoryProfile12",
+        "description": "Opt-in center+collector route for assigned agents. Fresh signed request/response use distinct inventory-profile1.2 domains. Common cadence revision and immutable baseline policy_id are separate; applied is origin-reported after durable acceptance, not remote attestation. Collector verifies and forwards unchanged frame. Windows runtime is not enabled by fetching this profile.",
+        "security": [
+          {
+            "MachineMTLS": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InventoryProfile12SignedRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed profile1.2,64KiB bound; partial baseline12/30s worker/420s sweep, source/generation/tenant/nonce/collector bound. No heartbeat/inventory-success side effects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InventoryProfile12SignedResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid content type/query"
+          },
+          "401": {
+            "description": "No verified/active machine identity"
+          },
+          "403": {
+            "description": "Wrong agent/collector relation or origin proof"
+          },
+          "413": {
+            "description": "Body exceeds64KiB"
+          },
+          "422": {
+            "description": "Invalid profile request/nonce/revision/policy"
+          },
+          "503": {
+            "description": "Inventory12 disabled or signing/dependency unavailable; no failed-Transit fallback"
+          }
+        }
+      }
+    },
+    "/api/v1/sources/{source_id}/inventory-profile": {
+      "get": {
+        "operationId": "getWindowsInventoryProfile12",
+        "description": "Separate profile12 application progress, scoped to current tenant/source/generation. Old C12 progress is unchanged. enabled=false preserves readable historical progress.",
+        "security": [
+          {
+            "Session": []
+          },
+          {
+            "CLIToken": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "source_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Effective Windows baseline and independently reported applied revision",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceInventoryProfile12"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credential missing/revoked"
+          },
+          "404": {
+            "description": "Unknown/foreign/non-agent source"
+          }
+        }
+      }
     }
   },
   "components": {
@@ -5386,6 +5480,446 @@
           "signature"
         ],
         "additionalProperties": false
+      },
+      "InventoryProfile12Revision": {
+        "type": "object",
+        "properties": {
+          "common_revision": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "policy_id": {
+            "const": "windows-amd64-partial-baseline-v1"
+          }
+        },
+        "required": [
+          "common_revision",
+          "policy_id"
+        ],
+        "additionalProperties": false
+      },
+      "InventoryProfile12Config": {
+        "type": "object",
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "collector_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "profile_revision": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$"
+          },
+          "policy_id": {
+            "const": "windows-amd64-partial-baseline-v1"
+          },
+          "platform": {
+            "const": "windows/amd64"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "identity",
+                "os",
+                "network",
+                "hardware",
+                "software",
+                "updates",
+                "services",
+                "users_groups",
+                "routes_ports",
+                "resources",
+                "protection",
+                "neighbors"
+              ]
+            },
+            "minItems": 12,
+            "maxItems": 12,
+            "uniqueItems": true
+          },
+          "heartbeat_seconds": {
+            "type": "integer",
+            "minimum": 30,
+            "maximum": 3600
+          },
+          "inventory_seconds": {
+            "type": "integer",
+            "minimum": 60,
+            "maximum": 86400
+          },
+          "jitter_percent": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 25
+          },
+          "spool_limit_bytes": {
+            "type": "integer",
+            "minimum": 524288,
+            "maximum": 1073741824
+          },
+          "worker_timeout_seconds": {
+            "const": 30
+          },
+          "collection_timeout_seconds": {
+            "const": 420
+          },
+          "snapshot_mode": {
+            "const": "partial"
+          },
+          "observation_version": {
+            "type": "object",
+            "properties": {
+              "major": {
+                "const": 1
+              },
+              "minor": {
+                "const": 2
+              }
+            },
+            "required": [
+              "major",
+              "minor"
+            ],
+            "additionalProperties": false
+          },
+          "batch_version": {
+            "type": "object",
+            "properties": {
+              "major": {
+                "const": 1
+              },
+              "minor": {
+                "const": 2
+              }
+            },
+            "required": [
+              "major",
+              "minor"
+            ],
+            "additionalProperties": false
+          },
+          "inventory12_limits": {
+            "type": "object",
+            "properties": {
+              "canonical_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 524288
+              },
+              "signed_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 589824
+              },
+              "batch_bytes": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 786432
+              },
+              "max_records": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 100
+              }
+            },
+            "required": [
+              "canonical_bytes",
+              "signed_bytes",
+              "batch_bytes",
+              "max_records"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "source_id",
+          "collector_id",
+          "profile_revision",
+          "policy_id",
+          "platform",
+          "sections",
+          "heartbeat_seconds",
+          "inventory_seconds",
+          "jitter_percent",
+          "spool_limit_bytes",
+          "worker_timeout_seconds",
+          "collection_timeout_seconds",
+          "snapshot_mode",
+          "observation_version",
+          "batch_version",
+          "inventory12_limits"
+        ],
+        "additionalProperties": false
+      },
+      "InventoryProfile12Request": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "object",
+            "properties": {
+              "major": {
+                "const": 1
+              },
+              "minor": {
+                "const": 2
+              }
+            },
+            "required": [
+              "major",
+              "minor"
+            ],
+            "additionalProperties": false
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "origin": {
+            "type": "object",
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "source_kind": {
+                "const": "agent"
+              },
+              "generation_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "source_id",
+              "source_kind",
+              "generation_id"
+            ],
+            "additionalProperties": false
+          },
+          "nonce": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "sent_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "platform": {
+            "const": "windows/amd64"
+          },
+          "applied": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/InventoryProfile12Revision"
+              }
+            ]
+          }
+        },
+        "required": [
+          "schema_version",
+          "tenant_id",
+          "origin",
+          "nonce",
+          "sent_at",
+          "platform",
+          "applied"
+        ],
+        "additionalProperties": false
+      },
+      "InventoryProfile12Response": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "object",
+            "properties": {
+              "major": {
+                "const": 1
+              },
+              "minor": {
+                "const": 2
+              }
+            },
+            "required": [
+              "major",
+              "minor"
+            ],
+            "additionalProperties": false
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "origin": {
+            "type": "object",
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "source_kind": {
+                "const": "agent"
+              },
+              "generation_id": {
+                "type": "string",
+                "format": "uuid"
+              }
+            },
+            "required": [
+              "source_id",
+              "source_kind",
+              "generation_id"
+            ],
+            "additionalProperties": false
+          },
+          "nonce": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "managed": {
+            "type": "boolean"
+          },
+          "config": {
+            "$ref": "#/components/schemas/InventoryProfile12Config"
+          }
+        },
+        "required": [
+          "schema_version",
+          "tenant_id",
+          "origin",
+          "nonce",
+          "issued_at",
+          "expires_at",
+          "managed",
+          "config"
+        ],
+        "additionalProperties": false
+      },
+      "InventoryProfile12SignedRequest": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/InventoryProfile12Request"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "key_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "signature": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{86}$"
+          }
+        },
+        "required": [
+          "payload",
+          "digest",
+          "key_id",
+          "signature"
+        ],
+        "additionalProperties": false
+      },
+      "InventoryProfile12SignedResponse": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/InventoryProfile12Response"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "key_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "signature": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{86}$"
+          }
+        },
+        "required": [
+          "payload",
+          "digest",
+          "key_id",
+          "signature"
+        ],
+        "additionalProperties": false
+      },
+      "SourceInventoryProfile12": {
+        "type": "object",
+        "properties": {
+          "enabled": {
+            "type": "boolean"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "generation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "config": {
+            "$ref": "#/components/schemas/InventoryProfile12Config"
+          },
+          "managed": {
+            "type": "boolean"
+          },
+          "applied": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/InventoryProfile12Revision"
+              }
+            ]
+          },
+          "last_profile_contact_at": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              }
+            ]
+          }
+        },
+        "additionalProperties": false,
+        "required": [
+          "enabled",
+          "tenant_id",
+          "source_id",
+          "generation_id",
+          "config",
+          "managed",
+          "applied",
+          "last_profile_contact_at"
+        ]
       }
     },
     "securitySchemes": {

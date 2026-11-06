@@ -380,8 +380,8 @@ def second_boot(seed):
     env = dict(os.environ, SURVEYSCAN_V2_DATABASE_URL='postgres://surveyscan_v2@127.0.0.1:5432/surveyscan_v2?sslmode=disable', SURVEYSCAN_V2_DATABASE_PASSWORD_FILE='/etc/surveyscan-server/pg_password')
     phase('second_schema_check')
     command([BIN / 'surveyscan-server', 'schema-check'], env=env)
-    assert sql('SELECT count(*) FROM platform.schema_migrations') == '34'
-    CHECKS.append('all34 applied SQL hashes verify after real boot without duplicate migration or identity regeneration')
+    assert sql('SELECT count(*) FROM platform.schema_migrations') == '35'
+    CHECKS.append('all35 applied SQL hashes verify after real boot without duplicate migration or identity regeneration')
     phase('second_checked_update')
     script = '/usr/local/lib/surveyscan-boot/updater.py'
     command(['python3', script, 'prepare', '--root', '/', '--public-key', str(SEED / 'release.pub'), '--bundle', '/root/candidate'])

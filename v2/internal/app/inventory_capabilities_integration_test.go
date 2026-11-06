@@ -58,6 +58,11 @@ func TestC15CenterCapabilitiesMTLSBindingRevocationAndSignerFailure(t *testing.T
 	signer := &capabilityTestSigner{key: key}
 	// Deliberately supply a local key too: failed Signer must never fall back.
 	uploads := &imports.UploadService{Pool: f.pool, Auth: machine, Wire: f.registry.Wire, Signer: signer, KeyID: machine.CenterKeyID, Key: key}
+	protocol, err := f.registry.ConfigureInventoryProtocol12(true)
+	if err != nil {
+		t.Fatal(err)
+	}
+	uploads.Registry = app.MachineRegistry{Registry: f.registry, Auth: machine}
 	f.registry.Machine = &app.MachineAPI{Sources: machine, Uploads: uploads}
 	auth, err := access.NewHTTP(f.users, "https://ui.example", false)
 	if err != nil {
@@ -144,6 +149,53 @@ func TestC15CenterCapabilitiesMTLSBindingRevocationAndSignerFailure(t *testing.T
 	code, _ = post(client, request)
 	expect(t, 503, code)
 	signer.fail.Store(false)
+
+	// Same real TLS/PG fixture, separately signed profile request for an assigned agent.
+	var collectorID string
+	if err = f.pool.QueryRow(f.ctx, "SELECT collector_id::text FROM sources.collectors WHERE tenant_id=$1 AND source_id=$2", tenant, source).Scan(&collectorID); err != nil {
+		t.Fatal(err)
+	}
+	agentPublic, agentKey, _ := ed25519.GenerateKey(rand.Reader)
+	agentCSR, agentHash, _, _ := csrTLSMaterial(t)
+	agentSource := identifier.New()
+	agentSigning := base64.RawURLEncoding.EncodeToString(agentPublic)
+	agentGrant, err := machine.Grant(f.ctx, f.identity, contracts.EnrollmentGrantRequest{TenantID: tenant, SourceID: agentSource, Kind: "agent", SiteID: siteID, CollectorID: &collectorID, TTL: 900, CSRHash: agentHash, PublicKey: agentSigning})
+	if err != nil {
+		t.Fatal(err)
+	}
+	agentIdentity, err := machine.Enroll(f.ctx, agentGrant.Token, contracts.EnrollmentRequest{GrantID: agentGrant.ID, SourceID: agentSource, CSR: agentCSR, PublicKey: agentSigning})
+	if err != nil {
+		t.Fatal(err)
+	}
+	agentOrigin := contracts.Origin{SourceID: agentSource, SourceKind: "agent", GenerationID: agentIdentity.GenerationID}
+	profileNonce, _ := wire.NewInventoryNonce()
+	profileRequest := contracts.InventoryProfileRequest12{Version: contracts.Version{Major: 1, Minor: 2}, Tenant: tenant, Origin: agentOrigin, Nonce: profileNonce, Sent: time.Now().UTC(), Platform: contracts.InventoryPlatform12}
+	profileRaw, _ := wire.SignInventoryProfile12(profileRequest, wire.InventoryProfileRequestDomain12, agentIdentity.KeyID, agentKey)
+	postProfile := func(raw []byte) (int, []byte) {
+		t.Helper()
+		res, err := client.Post(server.URL+"/api/v1/machine/inventory-profile", "application/json", bytes.NewReader(raw))
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer res.Body.Close()
+		b, _ := io.ReadAll(res.Body)
+		return res.StatusCode, b
+	}
+	code, _ = postProfile(profileRaw)
+	expect(t, 503, code)
+	uploads.Protocol = protocol
+	code, profileResponse := postProfile(profileRaw)
+	expect(t, 200, code)
+	if _, err = wire.VerifyInventoryProfile12(profileResponse, tenant, agentOrigin, collectorID, profileNonce, machine.CenterKeyID, public); err != nil {
+		t.Fatal(err)
+	}
+	signer.fail.Store(true)
+	code, _ = postProfile(profileRaw)
+	expect(t, 503, code)
+	signer.fail.Store(false)
+	forgedProfile, _ := wire.SignInventoryProfile12(profileRequest, wire.InventoryProfileRequestDomain12, agentIdentity.KeyID, key)
+	code, _ = postProfile(forgedProfile)
+	expect(t, 401, code)
 	if err = machine.Revoke(f.ctx, f.identity, source); err != nil {
 		t.Fatal(err)
 	}

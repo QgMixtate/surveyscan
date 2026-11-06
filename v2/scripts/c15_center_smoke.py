@@ -105,6 +105,37 @@ def scenario(relay12=False, **s):
         assert len(canonical) <= limits['canonical_bytes'] and len(rfc8785.dumps(record)) <= limits['signed_bytes'] and len(rfc8785.dumps(batch)) <= limits['batch_bytes']
         checks.append('actual agent mTLS to compiled collector verifies nested Transit-center and CA-attested collector signatures, nonce/tenant/audiences/generations; selects bounded three-hop1.2 before synthetic upload')
 
+    def profile_request(applied):
+        profile_nonce = b64(os.urandom(32))
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='microseconds').replace('+00:00', 'Z')
+        value = {'schema_version':{'major':1,'minor':2}, 'tenant_id':s['tenant'], 'origin':payload['origin'], 'nonce':profile_nonce, 'sent_at':now, 'platform':'windows/amd64', 'applied':applied}
+        body = rfc8785.dumps(value)
+        signed = {'payload':value, 'digest':hashlib.sha256(body).hexdigest(), 'key_id':identity['signing_key_id'], 'signature':b64(agent_sign.sign(b'SURVEYSCAN-INVENTORY-PROFILE-REQUEST-V1-2\n' + body))}
+        code, result, _ = request(port, client, 'POST', '/api/v1/machine/inventory-profile', signed, sni=sni)
+        assert code == 200, 'compiled inventory profile unavailable'
+        value = result['payload']; canonical_profile = rfc8785.dumps(value)
+        center_public.verify(base64.urlsafe_b64decode(result['signature'] + '=='), b'SURVEYSCAN-INVENTORY-PROFILE-RESPONSE-V1-2\n' + canonical_profile)
+        assert result['digest'] == hashlib.sha256(canonical_profile).hexdigest() and result['key_id'] == collector['center_result_key_id']
+        assert value['tenant_id'] == s['tenant'] and value['origin'] == payload['origin'] and value['nonce'] == profile_nonce
+        assert value['config']['collector_id'] == s['collector_id'] and value['config']['policy_id'] == 'windows-amd64-partial-baseline-v1'
+        assert value['config']['worker_timeout_seconds'] == 30 and value['config']['collection_timeout_seconds'] == 420
+        assert set(value['config']['sections']) == {section['name'] for section in payload['sections']}
+        return result
+    profile = profile_request(None)
+    assert sql("SELECT applied_revision IS NULL FROM sources.inventory_profile_progress12 WHERE source_id='" + source + "'") == 't'
+    # Synthetic Linux acceptance fixture: real file+directory fsync before ACK.
+    # This is not a Windows DACL/atomic-cache implementation or remote attestation.
+    cached = Path(s['save']('c15-profile.accepted.json', json.dumps(profile)))
+    with cached.open('rb') as stream: os.fsync(stream.fileno())
+    directory_fd = os.open(cached.parent, os.O_RDONLY)
+    try: os.fsync(directory_fd)
+    finally: os.close(directory_fd)
+    config = profile['payload']['config']
+    profile_request({'common_revision':config['profile_revision'], 'policy_id':config['policy_id']})
+    assert sql("SELECT applied_revision::text FROM sources.inventory_profile_progress12 WHERE source_id='" + source + "'") == config['profile_revision']
+    assert sql("SELECT count(*) FROM sources.profile_progress WHERE source_id='" + source + "'") == '0'
+    assert sql("SELECT count(*) FROM sources.sources WHERE source_id='" + source + "' AND last_contact_at IS NULL AND last_successful_inventory_at IS NULL") == '1'
+    checks.append('actual signed profile1.2 via mTLS/compiled relay/Transit:12sections and30s/420s policy, separate PG applied-progress only after synthetic durable file acceptance, C12/heartbeat/inventory freshness unchanged')
     code, receipt, _ = request(port, client, 'POST', '/api/v1/machine/observations', batch, sni=sni)
     assert code == 202, f"center1.2 response status={code} code={receipt.get('code', 'none')}"
     for _ in range(80):

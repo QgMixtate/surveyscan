@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Actual C11 binary/schema31 -> current binary/schema34; isolated DB, no schema edits or downgrade."""
+"""Actual C11 binary/schema31 -> current binary/schema35; isolated DB, no schema edits or downgrade."""
 import http.client
 import io
 import json
@@ -36,11 +36,11 @@ def fixture(old_root):
         env = s['server_environment']
         binary = str(CURRENT / '.dist/surveyscan-server')
         result = subprocess.run([binary, 'migrate'], env=env, capture_output=True, timeout=30)
-        assert result.returncode == 0 and b'applied_migrations=3' in result.stdout
+        assert result.returncode == 0 and b'applied_migrations=4' in result.stdout
         assert {table: fingerprint(table) for table in tables} == before
-        assert len(sql('SELECT id FROM platform.schema_migrations').splitlines()) == 34
+        assert len(sql('SELECT id FROM platform.schema_migrations').splitlines()) == 35
         assert set(ledger) <= set(sql('SELECT id||owner||sha256 FROM platform.schema_migrations ORDER BY id').splitlines())
-        checks.append('current binary appends exactly3 migrations; every previous data table and all31 applied hashes preserved')
+        checks.append('current binary appends exactly4 migrations; every previous data table and all31 applied hashes preserved')
         result = subprocess.run([binary, 'migrate'], env=env, capture_output=True, timeout=30)
         assert result.returncode == 0 and b'applied_migrations=0' in result.stdout
         checks.append('second current migrate is a verified no-op; no edited SQL or duplicate upgrade effects')
@@ -85,7 +85,7 @@ def fixture(old_root):
             assert code == 200 and not profile['managed'] and profile['config']['profile_revision'] == '1'
             checks.append('authorized write works after upgrade; newly introduced profiles expose unmanaged revision1 for existing source')
             report = {'package': 'C13', 'task': 'C13.03', 'status': 'passed', 'count': len(checks), 'checks': checks,
-                      'previous_ref': PREVIOUS, 'previous_migrations': 31, 'current_migrations': 34,
+                      'previous_ref': PREVIOUS, 'previous_migrations': 31, 'current_migrations': 35,
                       'target': 'archived actual C11 source compiled into previous server/collector; real PG, TLS and signed synthetic inventory; current migration and API',
                       'fixture_adapter': 'only old test callback extended to expose SQL helper/processes/environment; previous application code/SQL not modified',
                       'unrun': ['live service update/rollback', 'schema downgrade', 'systemd boot/reboot', 'two clean OS systems', 'production/DR']}

@@ -54,7 +54,7 @@ enterprise HA/geo/shards не блокируют его, основы не те�
 STATUS и [C15 handoff](docs/plans/surveyscan-v2/handoffs/C15.md), не архив checkpoints.
 
 C15 worktree /workspace/surveyscan-c15, branch codex/v2-c15-windows, draftPR5 на базеE1
-PR4. SQL catalog34/47ownedtables; applied0000–0033 immutable. New migration толькоappend;
+PR4. SQL catalog35/48ownedtables; applied0000–0034 immutable. New migration толькоappend;
 обновлять schema/table/backup/boot expectations и сдвигать private update fixture.
 Default inventory12_enabled false. C03/C09/C12 frozen; C15 partial12/schema/typed facts/
 capabilities/relay не означают complete/deletion или готовую Windows-службу. Native

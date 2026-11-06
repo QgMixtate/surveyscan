@@ -56,7 +56,7 @@ func TestAgentNegotiatesThroughRealMTLSCollector(t *testing.T) {
 	}
 	centerPub, centerKey, _ := ed25519.GenerateKey(rand.Reader)
 	relayPub, relayKey, _ := ed25519.GenerateKey(rand.Reader)
-	agentPub, _, _ := ed25519.GenerateKey(rand.Reader)
+	agentPub, agentKey, _ := ed25519.GenerateKey(rand.Reader)
 	claims := pki.Claims{Tenant: identifier.New(), Source: identifier.New(), Generation: identifier.New(), Kind: "collector", Collector: identifier.New(), KeyID: identifier.New(), SigningPublic: relayPub, CenterKeyID: identifier.New(), CenterPublic: centerPub}
 	issue := func(claims pki.Claims) (tls.Certificate, []byte, []byte) {
 		_, key, _ := ed25519.GenerateKey(rand.Reader)
@@ -119,6 +119,45 @@ func TestAgentNegotiatesThroughRealMTLSCollector(t *testing.T) {
 			w.WriteHeader(401)
 			return
 		}
+
+		if r.URL.Path == "/api/v1/machine/inventory-profile" {
+			if mode.Load() != 0 {
+				w.WriteHeader(503)
+				return
+			}
+			var frame contracts.ProfileFrame
+			if json.NewDecoder(r.Body).Decode(&frame) != nil {
+				w.WriteHeader(400)
+				return
+			}
+			if wire.VerifyProfileFrame12(frame, wire.InventoryProfileRequestDomain12, agentClaims.KeyID, agentPub) != nil {
+				t.Error("agent profile proof missing")
+				w.WriteHeader(401)
+				return
+			}
+			var request contracts.InventoryProfileRequest12
+			_ = json.Unmarshal(frame.Payload, &request)
+			if request.Applied != nil {
+				t.Error("read-only fetch claimed applied")
+			}
+			common := contracts.MachineConfig{SourceID: agentClaims.Source, CollectorID: &claims.Collector, Revision: "1", Heartbeat: 30, Inventory: 60, SpoolBytes: 1048576}
+			config, err := wire.InventoryConfigFromCommon12(common)
+			if err != nil {
+				t.Error(err)
+				w.WriteHeader(500)
+				return
+			}
+			now := time.Now().UTC()
+			value := contracts.InventoryProfile12{Version: contracts.Version{Major: 1, Minor: 2}, Tenant: claims.Tenant, Origin: request.Origin, Nonce: request.Nonce, Issued: now, Expires: now.Add(time.Minute), Config: config}
+			raw, err := wire.SignInventoryProfile12(value, wire.InventoryProfileResponseDomain12, claims.CenterKeyID, centerKey)
+			if err != nil {
+				t.Error(err)
+				w.WriteHeader(500)
+				return
+			}
+			_, _ = w.Write(raw)
+			return
+		}
 		if mode.Load() == 1 {
 			w.WriteHeader(503)
 			return
@@ -170,7 +209,7 @@ func TestAgentNegotiatesThroughRealMTLSCollector(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer httpClient.CloseIdleConnections()
-	client := &Client{cfg: agentCfg, claims: agentClaims, http: httpClient}
+	client := &Client{cfg: agentCfg, claims: agentClaims, key: agentKey, http: httpClient}
 	own := wire.InventoryMaximum12()
 	own.Records = 3
 	result, err := client.NegotiateInventory12(context.Background(), own)
@@ -180,6 +219,22 @@ func TestAgentNegotiatesThroughRealMTLSCollector(t *testing.T) {
 	if calls.Load() != 1 {
 		t.Fatal("negotiation retried")
 	}
+	profile, err := client.FetchInventoryProfile12(context.Background(), result)
+	if err != nil || profile.Profile.Config.CollectionSeconds != 420 || profile.Limits != result.Limits {
+		t.Fatal("fresh negotiated profile", err)
+	}
+	if client.profile != nil || client.cfg.InventorySeconds != 0 {
+		t.Fatal("read-only fetch applied runtime config")
+	}
+	forged := result
+	forged.Limits.BatchBytes++
+	if _, err = client.FetchInventoryProfile12(context.Background(), forged); err == nil {
+		t.Fatal("mutated negotiation accepted")
+	}
+	if _, err = client.FetchInventoryProfile12(context.Background(), InventoryNegotiation12{}); err == nil {
+		t.Fatal("profile fetched without negotiation proof")
+	}
+
 	for _, failure := range []int32{1, 2, 3} {
 		mode.Store(failure)
 		if _, err := client.NegotiateInventory12(context.Background(), own); err == nil {

@@ -1434,9 +1434,12 @@
             "decisions/C15-delivery-progress.md",
             "evidence/C15-delivery-progress.json",
             "evidence/C15-boot-5fb.json",
-            "evidence/C15-hosted-d4.json"
+            "evidence/C15-hosted-d4.json",
+            "decisions/C15-inventory-profile12.md",
+            "evidence/C15-inventory-profile12.json",
+            "contracts/C15/profile.schema.json"
           ],
-          "verification_status": "Published d4ae425 all5 exact-SHA hosted SUCCESS: PG58/C03 58/race3packages/compiled center6+relay10/scopedTransit/liveLinuxagent11/reconnect5/restore9/nativeWindows12provider processes+failureisolation/twofreshLinuxVM9+9. D06guard andD08progress verified; historicalD07cause unproven/notreproduced. Windowsprofile1.2/continuoussender/securestate/SCM/rights/Windows11/reboot/fullcoverage remain,57done."
+          "verification_status": "Published d4ae425 all5 exact-SHA hosted SUCCESS: PG58/C03 58/race3packages/compiled center6+relay10/scopedTransit/liveLinuxagent11/reconnect5/restore9/nativeWindows12provider processes+failureisolation/twofreshLinuxVM9+9. D06guard andD08progress verified; historicalD07cause unproven/notreproduced. Windowsprofile1.2/continuoussender/securestate/SCM/rights/Windows11/reboot/fullcoverage remain,57done.;newlocalprofile1.2core PG60/relay11/race/Winbuild passed, publicationpending; secureWindowsstate/cache/applyunrun"
         },
         {
           "id": "C15.03",

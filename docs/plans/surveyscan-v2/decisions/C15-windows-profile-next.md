@@ -1,6 +1,7 @@
 # Следующий блок C15.02 — Windows profile и подключение runtime
 
-Статус: planned, не реализовано. Порядок сохраняет текущий default-off режим и
+Статус: profile core реализован локально; durable cache/Windows state/runtime ещё planned.
+Точный scope — C15-inventory-profile12.md/evidence/C15-inventory-profile12.json. Порядок сохраняет текущий default-off режим и
 не меняет принятый Linux E1/candidate. Native SDK/подписи/relay/actor сами по себе
 ещё не являются работающей Windows-службой.
 

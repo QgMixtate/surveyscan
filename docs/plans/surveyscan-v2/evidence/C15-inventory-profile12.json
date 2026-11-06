@@ -1,0 +1,42 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "status": "partial",
+  "implemented": [
+    "closed profile1.2 schema/DTO and distinct signature domains",
+    "opt-in center and collector endpoint with origin proof, pinned signatures and source-generation scope",
+    "common cadence plus immutable12partial policy with30s/420s budgets",
+    "Sources0034 separate offered/applied progress and tenant-scoped read endpoint",
+    "read-only Go agent fetch bound to fresh private negotiation proof"
+  ],
+  "checks": {
+    "verify_build_C03": "passed;58 fixtures unchanged",
+    "postgres": 60,
+    "race": [
+      "wire",
+      "agent",
+      "collector"
+    ],
+    "windows_agent_crossbuild_vet": "passed",
+    "compiled_actual_mTLS_Transit_PG_relay": {
+      "status": "passed",
+      "count": 11,
+      "agent": "synthetic enrolled Python source",
+      "applied_acceptance_fixture": "explicit private Linux file+directory fsync before ACK; not Windows cache"
+    },
+    "go_agent_mutual_TLS": "passed; production collector and client, center signing testdouble"
+  },
+  "sql": {
+    "migrations": 35,
+    "owned_tables": 48,
+    "append": "0034_inventory_profile12",
+    "unchanged_applied": "0000–0033"
+  },
+  "unrun": [
+    "automatic Windows profile apply/cache/ACK",
+    "Windows DACL/reparse/atomicstate/locks/MachineGuid continuity",
+    "Windows continuous delivery/SCM/ordinaryrights/Windows11/reboot/fullcoverage"
+  ],
+  "completed_global_tasks": 57
+}
