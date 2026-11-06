@@ -231,3 +231,9 @@ C15 record projection checkpoint2026-11-06: independent tables0033_records12, cu
 LegacyProject rejectsunknownsections. Draftsoftware requiresregistry_key; HKCUprincipal_sid.
 Readdecisions/C15-record-projection.md/evidence/C15-record-projection.json forlatestverification/publication.
 Runtime1.2notenabled; C15.02stillIP/57done. AppliedSQL0000–0032immutable.
+
+C15 additive readAPI inventory/facts/{section} +publicC15OpenAPI: typed per-field JSON/evidence,
+100items/2MiB, tenant/asset/section/revision cursor; changes→409PROJECTION_CHANGED. OldC09unchanged.
+Evidence C15-record-api.json/decisionC15-record-read-api.md trackexactsource/verification.
+C15-D04bootfixture expected33→34 fixed; failedrun42197490003retained, repeatneededbeforegreen.
+Runtime1.2uploadstilldisabled, C15.02IP/57done.

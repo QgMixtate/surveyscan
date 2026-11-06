@@ -1,0 +1,37 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "date_utc": "2026-11-06T10:01:05.823604+00:00",
+  "task": "C15.02",
+  "status": "partial",
+  "endpoint": "GET /api/v1/assets/{asset_uid}/inventory/facts/{section}",
+  "contract": "GET /api/v1/contracts/c15",
+  "bounds": {
+    "max_items": 100,
+    "max_json_bytes": 2097152,
+    "max_cursor_bytes": 2048,
+    "request_timeout_seconds": 10
+  },
+  "local_checks": {
+    "postgres_full_suite": {
+      "named_pass": 56,
+      "failed": 0,
+      "skipped": 0
+    },
+    "http_auth": "actual TLS/PG/session viewer/foreign tenant/revocation, signed synthetic committed internal-store fixture, genuine history/audit/outbox and deferred guards",
+    "pagination": "1-field pages exhaust fields without duplicates; per-field evidence; uncollected-state; old cursor409PROJECTION_CHANGED; malformed/cross-section cursors rejected",
+    "schema": "typed fields correlated with section; closed JSON response; embedded/draft and compiled OpenAPI parity; count/byte bounds",
+    "verify": "unit/vet/architecture/C03 58 passed",
+    "build": "make build all4 binaries and Windowsagent cross-build/vet passed"
+  },
+  "boot_fixture_fix": "C15-D04 count34, full schema-check preserved; actual2freshVM repeat pending",
+  "unrun": [
+    "real1.2agent→collector→center→PG→API",
+    "full field coverage/scoped deletion",
+    "protocol capability/envelope/byte negotiation",
+    "concurrent collection/heartbeat",
+    "Windows ordinary rights/Win11/DACL/locks/SCM/reboot",
+    "Web rendering of new records"
+  ],
+  "completed_global_tasks": 57
+}

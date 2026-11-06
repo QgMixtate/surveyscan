@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "999c6e1d753a92583bc9fb216955ac2170b514c2",
+  "publication": "published feature branch codex/v2-c15-windows/PR5, not main",
   "date_utc": "2026-11-06T09:45:10.655067+00:00",
   "task": "C15.02",
   "status": "partial",
@@ -13,17 +13,35 @@
   "checks": {
     "make_verify": "passed; unit/vet/architecture/C03 58",
     "draft_python": "24/24 (8 positive,16 negative)",
-    "windows_crosscompile_vet": "passed; actual native new locator run pending",
+    "windows_crosscompile_vet": "local passed; actual Windows42197490157 passed including24fixtures/native baseline/locator schema",
     "postgres_full_suite": "53 top-level PASS before separately added upgrade test; zero fail/skip",
     "append_only_upgrade": "separate actual PG test PASS:33→34, old evidence/facts/assets/ledger unchanged, repeat0, old catalog rejected",
     "projection_fixture": "signed synthetic fixture/direct internal call/rolled-back transaction, real PG; not HTTP admission/delivery"
   },
   "unrun": [
-    "new native Windows locator hosted verification",
     "full field/coverage/deletion",
     "1.2 negotiation/signed delivery/API",
     "concurrent collection/heartbeat",
     "Windows DACL/locks/continuity/SCM/reboot"
   ],
-  "completed_global_tasks": 57
+  "completed_global_tasks": 57,
+  "hosted": {
+    "windows": {
+      "id": 42197490157,
+      "conclusion": "success"
+    },
+    "v2": {
+      "id": 42197490009,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42197490098,
+      "conclusion": "success"
+    },
+    "boot": {
+      "id": 42197490003,
+      "conclusion": "failure",
+      "reason": "C15-D04 stale expected migration count33 after actual reboot; pending repeat with34"
+    }
+  }
 }

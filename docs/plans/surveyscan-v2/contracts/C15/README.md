@@ -49,3 +49,8 @@ Hosted Windows первый запуск42125403759 на bb5c344 failed до Go/
 C15 draft software rows now require registry_key (Uninstall subkey); current_user also requires
 principal_sid from the current token. Machine rows cannot carry principal_sid. These are
 provider-local locators, not asset_uid. Historical 19-fixture evidence stays historical; current corpus24.
+
+Additive read API: records.schema.json / records.openapi.json; matching server embeds
+c15-records.schema.json / c15.openapi.json. GET /api/v1/contracts/c15 publishes the API.
+Typed per-field pages are independent from C03/C09 and do not enable observation1.2 upload.
+See decisions/C15-record-read-api.md for cursor revision/tenant scope and bounded response.

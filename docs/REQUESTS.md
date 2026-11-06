@@ -655,3 +655,10 @@ preservation; unknown legacy sections reject; registry locator + current token S
 Local makeverify/C03 58, Python24, Winbuild/vet, PG53 + отдельный upgrade33→34passed.
 Подписи в PGfixture синтетические; trusted internal primitive, rollback, не signed HTTP E2E.
 Публикация/новый hosted proofpending; C15.02IP/57done, дальше API/negotiation/scheduler gates.
+
+C15 продолжение2026-11-06: 999c6e1 publishedPR5, v2/Web/WindowsSUCCESS; boot42197490003
+FAILED наstale expected33 послеreboot, C15-D04fix34 preserveschecksumcheck/repeatpending.
+Добавлен additive paginated readAPI1.2 + OpenAPI, typedfields/per-fieldevidence/lastattempt,
+100items/2MiB, cursorboundtenant/asset/section/revision,409PROJECTION_CHANGED. ActualTLS/auth/
+PG56passed соsignedsynthetic internal-store setup иrealcommitguards; это не1.2machineE2E.
+ПубликацияAPIpending; C15.02IP/57done, negotiation/coverage/scheduler/lifecycle gates остаются.

@@ -54,3 +54,14 @@ Legacy unknown sections failclosed; C09 detail unchanged. PG53 + отдельн�
 passed; draft24/24, makeverify/C03 58, Windowscrosscompile/vet passed. Hosted новогоsource
 ещёpending. Runtime1.2 не включён; fullcoverage/negotiation/API/scheduler/SCM/reboot pending.
 Решение decisions/C15-record-projection.md;57done не изменяется.
+
+999c6e1 опубликованPR5: Windows42197490157SUCCESS, new HKCU/registry locator schema24
+проверен actualWindows. Linuxboot42197490003FAILED наstale fixture expected33 после
+успешных5checks/reboot/sameUID: catalog34. C15-D04, fixlocalpendingrepeat; wholeCIнеgreen.
+
+Следующий C15 increment local: GETinventory/facts/{section} + C15 OpenAPI, typedJSON/
+per-field evidence, lastattempt,100items/2MiB, scope+revision cursor и409наизменение.
+RealTLS/auth/PG56passed (synthetic internal committed projection, не machine admission).
+Unit/schema/OpenAPI/cursor checks passed; финальные verify/build4binaries/Winbuild+vet passed.
+999c6e1 завершил v242197490009/Web42197490098/Windows42197490157SUCCESS; bootfailed
+C15-D04fixturecount33→34 исправленлокально, repeatpending. C15.02IP/57done unchanged.

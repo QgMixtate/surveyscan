@@ -25,6 +25,15 @@
       "observed": "oversized synthetic child returned INVALID_WORKER_RESPONSE instead of LIMIT_REACHED; promoted bytes.Buffer.ReadFrom bypassed Write through io.Copy",
       "fix": "named private bytes.Buffer, no ReaderFrom promotion; Linux reader-only pipe regression test plus native child kill/reap/oversize repeat",
       "verification": "fixed: Linux io.Copy reader-only regression + Windows42192291716 oversize/kill/reap suite passed; all4 d9 hosted workflows success"
+    },
+    {
+      "id": "C15-D04",
+      "scope": "Linux boot fixture after new C15 migration0033",
+      "run_id": 42197490003,
+      "source_revision": "999c6e1d753a92583bc9fb216955ac2170b514c2",
+      "observed": "actual first VM completed5 checks including reboot/replay/sameUID; second_schema_check assertion still expected33 after catalog became34",
+      "fix": "update explicit count to34; full binary schema-check/checksum remains required; no productSQL edit",
+      "verification": "pending repeated two fresh VM hosted run; failed original retained"
     }
   ],
   "windows_inventory_tested": false,

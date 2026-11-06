@@ -23,6 +23,17 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 		w.Header().Set("Cache-Control", "no-store")
 		_, _ = w.Write(b)
 	})
+	mux.HandleFunc("GET /api/v1/contracts/c15", func(w http.ResponseWriter, req *http.Request) {
+		b, err := contracts.C15API12Files.ReadFile("c15.openapi.json")
+		if err != nil {
+			access.APIError(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set("Cache-Control", "no-store")
+		w.Header().Set("X-Content-Type-Options", "nosniff")
+		_, _ = w.Write(b)
+	})
 	implementations := map[string]http.Handler{}
 	if len(registry) > 0 && registry[0] != nil {
 		implementations = registry[0].Handlers()
@@ -34,6 +45,7 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 			mux.Handle("GET /api/v1/metrics", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.diagnostics)))
 		}
 		mux.Handle("GET /api/v1/assets/{asset_uid}/inventory", auth.Wrap("assets:read", false, registry[0].inventoryHandler()))
+		mux.Handle("GET /api/v1/assets/{asset_uid}/inventory/facts/{section}", auth.Wrap("assets:read", false, registry[0].inventoryRecordsHandler12()))
 		if registry[0].Machine != nil {
 			for operation, handler := range registry[0].Machine.human() {
 				implementations[operation] = handler
