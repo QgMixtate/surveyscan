@@ -115,7 +115,7 @@ func Collect(ctx context.Context) ([]contracts.Section, error) {
 	}{
 		{"identity", identity}, {"os", operatingSystem}, {"network", func() []map[string]any { return network(ctx) }},
 		{"hardware", hardware}, {"software", func() []map[string]any { return software(ctx) }}, {"updates", nil}, {"services", func() []map[string]any { return services(ctx) }},
-		{"users_groups", nil}, {"routes_ports", func() []map[string]any { return routes(ctx) }}, {"resources", func() []map[string]any { return resources(ctx) }}, {"protection", nil}, {"neighbors", nil},
+		{"users_groups", func() []map[string]any { return accounts(ctx) }}, {"routes_ports", func() []map[string]any { return routes(ctx) }}, {"resources", func() []map[string]any { return resources(ctx) }}, {"protection", nil}, {"neighbors", nil},
 	}
 	sections := make([]contracts.Section, 0, len(collectors))
 	for _, c := range collectors {
@@ -124,7 +124,9 @@ func Collect(ctx context.Context) ([]contracts.Section, error) {
 		}
 		rows := []map[string]any{}
 		status, reason := "unsupported", "ADAPTER_NOT_IMPLEMENTED"
-		if c.read != nil {
+		if c.name == "users_groups" && windows.RtlGetVersion().ProductType == 2 {
+			reason = "LOCAL_SAM_UNSUPPORTED_ON_DC"
+		} else if c.read != nil {
 			rows = c.read()
 			status, reason = "partial", "BASELINE_COVERAGE_ONLY"
 			if len(rows) == 0 {

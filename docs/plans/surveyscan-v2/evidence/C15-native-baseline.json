@@ -61,5 +61,24 @@
     "Windows DACL/spool lock/host continuity",
     "SCM lifecycle/update/actual reboot",
     "resource budgets"
-  ]
+  ],
+  "accounts_increment": {
+    "implementation": "native local users/groups/membership public SID metadata",
+    "local_windows_amd64_cross_compile": "passed",
+    "GOOS_windows_vet": "passed",
+    "hosted_result": "pending",
+    "domain_controller_policy": "LOCAL_SAM_UNSUPPORTED_ON_DC; never enumerate domain SAM",
+    "limits": {
+      "page_bytes": 65536,
+      "pages_per_call": 32,
+      "groups": 512,
+      "total_records": 10000
+    },
+    "remaining_unimplemented": [
+      "updates",
+      "protection",
+      "neighbors"
+    ],
+    "credentials_or_SAM_LSA_secrets_read": false
+  }
 }

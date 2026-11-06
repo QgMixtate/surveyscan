@@ -8,7 +8,8 @@ IPv4/IPv6 route table. Службы перечисляются с CONNECT/ENUMER
 command lines/config не запрашиваются. Блокированы remote/removable drive probes. Без shell/PowerShell, удалённых целей,
 секретов и пользовательских файлов. MachineGuid — только inventory candidate, не asset_uid.
 
-Восемь секций partial при наличии baseline facts, ещё четыре — unsupported с
+Девять секций реализованы как baseline partial; users/groups проходят первичную Windows CI проверку.
+Три секции — updates/protection/neighbors — unsupported. Восемь прежних секций уже проверены. с
 ADAPTER_NOT_IMPLEMENTED. Нет утверждения о полном Windows inventory; недоступная API-секция
 не маскируется пустым ok. Контекст проверяется между вызовами, но не прерывает синхронный Win32
 вызов посередине. До COM/QFE нужны отдельные конечные timeout/worker limits.
@@ -18,3 +19,11 @@ ADAPTER_NOT_IMPLEMENTED. Нет утверждения о полном Windows i
 нет HTTP/mTLS/БД/projection, host binding, DACL/spool/process lock, SCM, update/reboot.
 CI runner Windows Server 2022 имеет свои права; это не стандартный пользователь/LocalService
 и не Windows 11 compatibility proof. Полные C15.02–04 ещё не завершены.
+
+Local accounts: NetUserEnum0/FILTER_NORMAL_ACCOUNT, NetLocalGroupEnum0 и
+NetLocalGroupGetMembers0. Только локальный SAM, имена и публичные SID/member SID;
+32 bounded pages/64KiB buffer,512groups/10000totalrows, cancellation between calls.
+SID lookup квалифицирован локальным NetBIOS host или BUILTIN; group members не
+разрешаются через AD. На domaincontroller local SAM отсутствует: секция unsupported,
+API перечисления не вызываются. SAM/LSA secrets и пароли не запрашиваются.
+Обычные права/LocalService/DC и подробные safe reasoncodes ещё требуют полной матрицы C15.

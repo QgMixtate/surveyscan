@@ -606,3 +606,10 @@ measured24h8560f57 иauthdelta39e401f, сохраняет historicalfailures/res
 C15 continuation: C14 accepted/fa73e47 metadata merged,57done. Combined981f4e7 all5hosted
 SUCCESS (v242183377291/boot42183377336/Web42183377340/C15Windows42183377357/evidence42183368906).
 Продолжать C15.02 users/groups native; полнаяpipeline/ordinaryrights/SCM/reboot всё ещёunrun.
+
+C15.02 следующий increment после C14: native local users/groups/membership публичныеSID,
+NetUserEnum0 иNetLocalGroupEnum/GetMembers0; boundedpages/limits/cancellation; SIDlookup
+localNetBIOS/BUILTIN. DC исключён: LOCAL_SAM_UNSUPPORTED_ON_DC, без domainSAMenumeration.
+Windows cross-compile/vet + Linuxarchitecture/wire tests passed; native CIpending.
+NativeLocalAccountsAndMembership test проверяет users/groups/members/SID без вывода имён/SID.
+Триremainingсекцииupdates/protection/neighbors; C15.02fullpipeline/DACL/SCM/reboot ещёнеdone.

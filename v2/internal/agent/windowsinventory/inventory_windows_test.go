@@ -28,7 +28,7 @@ func TestNativeWindowsBaseline(t *testing.T) {
 		t.Fatal("native identity/OS baseline missing")
 	}
 	names := map[string]bool{}
-	implemented := map[string]bool{"identity": true, "os": true, "network": true, "hardware": true, "software": true, "services": true, "routes_ports": true, "resources": true}
+	implemented := map[string]bool{"identity": true, "os": true, "network": true, "hardware": true, "software": true, "services": true, "routes_ports": true, "resources": true, "users_groups": true}
 	for _, section := range sections {
 		if names[section.Name] || section.Complete || section.Count != len(section.Records) {
 			t.Fatal("incorrect section status or count")
@@ -74,7 +74,7 @@ func TestNativeWindowsBaseline(t *testing.T) {
 	if _, err = v.Payload(b); err != nil {
 		t.Fatal("native baseline violates draft payload contract")
 	}
-	t.Logf("native Windows eight-section baseline checked; four sections unsupported; token_elevated=%t; synthetic envelope; no delivery/service/reboot test", windows.GetCurrentProcessToken().IsElevated())
+	t.Logf("native Windows nine-section baseline checked; three sections unsupported; token_elevated=%t; synthetic envelope; no delivery/service/reboot test", windows.GetCurrentProcessToken().IsElevated())
 }
 
 func TestNativeWindowsCancellation(t *testing.T) {
@@ -109,4 +109,36 @@ func TestNativeMetadataBounds(t *testing.T) {
 	if serviceText(nil, buffer, 256) != "" || serviceText(pointer, nil, 256) != "" {
 		t.Fatal("invalid service buffer accepted")
 	}
+}
+
+func TestNativeLocalAccountsAndMembership(t *testing.T) {
+	if windows.RtlGetVersion().ProductType == 2 {
+		t.Skip("local SAM is explicitly unsupported on domain controllers")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	rows := accounts(ctx)
+	counts := map[string]int{}
+	for _, row := range rows {
+		kind, _ := row["kind"].(string)
+		id, ok := row["sid"].(string)
+		if !ok {
+			t.Fatal("account/membership SID missing")
+		}
+		sid, err := windows.StringToSid(id)
+		if err != nil || !sid.IsValid() {
+			t.Fatal("invalid public account SID")
+		}
+		if kind == "membership" {
+			group, ok := row["group_sid"].(string)
+			if !ok || group == "" {
+				t.Fatal("membership has no local group SID")
+			}
+		}
+		counts[kind]++
+	}
+	if windows.GetCurrentProcessToken().IsElevated() && (counts["user"] == 0 || counts["group"] == 0 || counts["membership"] == 0) {
+		t.Fatal("elevated local account enumeration unexpectedly empty")
+	}
+	t.Logf("native local SAM public metadata only: users=%d groups=%d memberships=%d; no account names/SIDs exported to test log", counts["user"], counts["group"], counts["membership"])
 }
