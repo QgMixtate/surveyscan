@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "aa58bd200f680cb77723137ad0865b5a946ae491",
+  "publication": "published PR5/all5hostedSUCCESS; C15-hosted-aa58.json",
   "task": "C15.02",
   "date_utc": "2026-11-06T13:23:08.576091+00:00",
   "configuration": "private machine inventory12_enabled=true; defaultfalse",

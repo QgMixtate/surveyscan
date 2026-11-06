@@ -689,3 +689,9 @@ mTLS/courier/delegatedsyntheticagent/scopedTransit/PG12sections/typedAPI/ACK/rep
 Downgrade retains stagedbytes withoutlease/retry; complete12notimplemented/rejected,
 committedACK remainsavailable. ExistingHTTPPOST202 preserved; tests/docs corrected.
 Collector12relay/threehopcapabilityforwarding andactualWindowsdaemon stillnext;57done.
+
+C15.02 next: aa58bd2all5hostedSUCCESS. Collectoroptin12(defaultoff/managedidentity),
+sameSourceTLS/crypto/scope andboundedspool; finalACK1.0boundtooriginalbatch12. Actual
+compiledmTLS/scopedTransit/PGAPIrelay9passed withsyntheticagent, includingowncenter
+outage +collector/centercoldrestart, originalsignedbytes/UID retained,2observations1asset,
+deleteonlyverifiedACK. Threehopcapabilityexchange/actualWindowsdaemon stillunrun.57done.

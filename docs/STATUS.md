@@ -91,3 +91,9 @@ b709eef capability discovery все5hostedSUCCESS; C15-hosted-b709.json. Нов�
 retained withoutclaims ondisable. PG58passed; compiled actualmTLS/delegatedsyntheticagent/
 scopedTransit/PG12sections/API/replay6checks passed. Collector usedenrollmentonly:12relay/
 threehopnegotiation и actualWindowsprofile/scheduler/lifecycle ещёunrun. C15.02IP/57done.
+
+aa58bd2optincenter все5hostedSUCCESS(C15-hosted-aa58.json), PG58/compiledcenter6.
+Newlocalcollectoroptin1.2(defaultoff/managedidentity): actualcompiledmTLS/Transit/PGAPI
+relay9passed inclofflinebatchretention+collector/centercoldrestart/reconnectseq2/sameUID/
+2observations1asset andverifiedACKbeforedelete. ActualWindows/agentcapabilityexchange
+stillunrun. C15.02IP/57done; C15-relay.json, finalverify/race/Winbuild running.

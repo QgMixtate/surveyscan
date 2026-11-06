@@ -72,6 +72,8 @@ jobs:
         run: .contract-tools/bin/python scripts/bao_pipeline.py
       - name: Opt-in inventory1.2 center, scoped Transit, projection and typed API
         run: .contract-tools/bin/python scripts/c15_center_smoke.py
+      - name: Opt-in inventory1.2 collector relay, offline spool and cold restart
+        run: .contract-tools/bin/python scripts/c15_relay_smoke.py
       - name: Live agent TLS key rotation and committed ACK loss
         run: .contract-tools/bin/python scripts/renewal_smoke.py
       - name: Collector TLS rotation, queues, committed ACK loss and race-checked hot reload
@@ -109,6 +111,7 @@ jobs:
             v2/.local/bao-smoke.json
             v2/.local/bao-pipeline.json
             v2/.local/c15-center-smoke.json
+            v2/.local/c15-relay-smoke.json
             v2/.local/renewal-smoke.json
             v2/.local/collector-renewal-smoke.json
             v2/.local/cli-smoke.json

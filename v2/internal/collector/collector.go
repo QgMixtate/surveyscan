@@ -35,6 +35,7 @@ import (
 )
 
 type Config struct {
+	Inventory12     bool   `json:"inventory12_enabled"`
 	SourceID        string `json:"source_id,omitempty"`
 	CredentialState string `json:"credential_directory,omitempty"`
 	SigningKey      string `json:"signing_private_key_file,omitempty"`
@@ -66,6 +67,7 @@ type Collector struct {
 	TLS         *tls.Config
 	client      *http.Client
 	wire        *wire.Validator
+	protocol    *wire.InventoryDecoder
 	mu          sync.Mutex
 	pump        sync.Mutex
 	retries     map[string]*retry.Backoff
@@ -89,6 +91,9 @@ func Load(path string) (*Collector, error) {
 	return New(cfg)
 }
 func New(cfg Config) (*Collector, error) {
+	if cfg.Inventory12 && cfg.CredentialState == "" {
+		return nil, errors.New("inventory1.2 requires managed collector signing identity")
+	}
 	if cfg.Listen == "" {
 		return nil, errors.New("explicit collector listen address required")
 	}
@@ -144,6 +149,12 @@ func New(cfg Config) (*Collector, error) {
 		return nil, e
 	}
 	out := &Collector{Config: cfg, Claims: claims, roots: roots, wire: v, clock: time.Now}
+	if cfg.Inventory12 {
+		out.protocol, e = wire.NewInventoryDecoder(v, true)
+		if e != nil {
+			return nil, e
+		}
+	}
 	pair.Leaf = leaf
 	out.certificate.Store(&pair)
 	if cfg.CredentialState != "" {
@@ -437,19 +448,19 @@ func (c *Collector) Handler() http.Handler {
 			failure(w, 413, "PAYLOAD_TOO_LARGE")
 			return
 		}
-		if e = c.wire.Validate("Batch", raw); e != nil {
+		decoded, e := c.decodeBatch(raw)
+		if e != nil {
 			failure(w, 422, "SCHEMA_INVALID")
 			return
 		}
-		var batch contracts.Batch
-		_ = json.Unmarshal(raw, &batch)
+		batch := decoded.Batch
 		if batch.TenantID != claims.Tenant {
 			failure(w, 403, "FORBIDDEN")
 			return
 		}
 		seen := map[string]bool{}
 		for _, record := range batch.Records {
-			signed, o, canonical, e := c.wire.Observation(record)
+			signed, o, canonical, e := c.observation(record)
 			if e != nil || o.TenantID != claims.Tenant || o.Origin.SourceID != claims.Source || o.Origin.GenerationID != claims.Generation || o.Origin.SourceKind != "agent" || signed.KeyID != claims.KeyID || seen[o.ID] {
 				failure(w, 422, "SCHEMA_INVALID")
 				return
@@ -534,6 +545,10 @@ func (c *Collector) Handler() http.Handler {
 	return mux
 }
 func (c *Collector) verify(p packet, raw []byte) (bool, error) {
+	if c.protocol != nil {
+		_, remove, e := c.protocol.VerifyCenterResult(raw, p.Batch, c.Claims.CenterKeyID, c.Claims.CenterPublic)
+		return remove, e
+	}
 	_, remove, e := c.wire.VerifyCenterResult(raw, p.Batch, c.Claims.CenterKeyID, c.Claims.CenterPublic)
 	return remove, e
 }

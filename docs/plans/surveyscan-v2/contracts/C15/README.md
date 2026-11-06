@@ -70,3 +70,8 @@ and readAPI. Machine inventory12_enabled defaultsfalse; capabilities advertise12
 when both admission and registry are configured. C15OpenAPI describes partial12 POST
 with existingHTTP202 semantics. Collector12relay/threehop/Windowsdaemon stillpending.
 See decisions/C15-optin-center.md and exactsource evidence.
+
+Collector optin inventory12_enabled(defaultfalse/managedidentity) now relays partial12 and
+verifies ACK1.0 against original batch before deletion. Compiled9-check case includes
+offline/coldrestart/reconnect/sameUID; syntheticdata, notactualWindows orcompletedagent
+capabilitynegotiation. See decisions/C15-relay.md/exactsource evidence.

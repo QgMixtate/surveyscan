@@ -1,0 +1,30 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "date_utc": "2026-11-06T13:39:12.805577+00:00",
+  "task": "C15.02",
+  "status": "partial",
+  "default_enabled": false,
+  "local_checks": {
+    "compiled_relay": {
+      "status": "passed",
+      "count": 9,
+      "target": "synthetic enrolled agent→actualmTLS compiledcollector1.2/durable spool→compiledcenter/scopedTransit/PG12sections→API/verifiedACK/replay",
+      "failure_cases": [
+        "owncenter offline retains canonical signedbatch12",
+        "owncollector+center coldrestart with sameconfig/keys/DB",
+        "automaticreconnect sequence2 to sameUID;2observations/1asset",
+        "pendingremoved only afterverifiedACK"
+      ]
+    },
+    "configuration": "managedidentityrequired/defaultoff; same C03scope/crypto/quotas/atomicspool remain",
+    "verify_race_windows": "makeverify/C03 58; wire+collector-race; Windowsagentcrossbuild/wire+nativevet passed"
+  },
+  "unrun": [
+    "authenticated threehopcapability exchange",
+    "actualWindows collection/delivery/profile/scheduler",
+    "completeprovidercoverage/scopeddeletion",
+    "WindowsDACL/locks/SCM/rights/reboot"
+  ],
+  "completed_global_tasks": 57
+}

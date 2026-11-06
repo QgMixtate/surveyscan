@@ -1,0 +1,29 @@
+{
+  "source_revision": "aa58bd200f680cb77723137ad0865b5a946ae491",
+  "workflows": {
+    "windows": {
+      "id": 42225235263,
+      "conclusion": "success"
+    },
+    "v2": {
+      "id": 42225235107,
+      "conclusion": "success"
+    },
+    "native_linux": {
+      "id": 42225235175,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42225235134,
+      "conclusion": "success"
+    },
+    "acceptance_evidence": {
+      "id": 42225235199,
+      "conclusion": "success"
+    }
+  },
+  "feature": "opt-in partial12center+admission/projection/ACK/readAPI; defaultoff",
+  "postgres_pass": 58,
+  "compiled_scoped_transit_center_checks": 6,
+  "completed_global_tasks": 57
+}

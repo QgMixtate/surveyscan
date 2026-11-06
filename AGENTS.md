@@ -253,3 +253,8 @@ partialprojection, normaltrust/replay/ACK1.0, stagedbytes retainedbeforeclaim if
 PG58+actualcompiledmTLS/delegatedsyntheticagent/scopedTransit/PGAPI6passed; noactualWin/
 collector12relay claim. ReadC15-optin-center.json/handoff forexactpublication/checks.
 57done/C15.02IP; sharedE1private reports preserved, SQL34/47unchanged.
+
+C15 collectoroptin12 localrelay9passed inclactualmTLS/scopedTransit/PGAPI/offline/coldrestart/
+sameUID/verifiedACK. defaultoff/managedidentity; testsource synthetic, agent3hopcapability
+exchange/actualWindowsdaemon stillunrun. Latestaa58all5hostedpassed; readC15-relay.json/
+handoff fornewpublication.57done/C15.02IP, SQL34/47unchanged.

@@ -14,7 +14,7 @@ def b64(b):return base64.urlsafe_b64encode(b).rstrip(b'=').decode()
 def rawpublic(key):return key.public_key().public_bytes(serialization.Encoding.Raw,serialization.PublicFormat.Raw)
 def freeport():
  with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
-def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=None,report_directory=None,inventory12=False):
+def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=None,report_directory=None,inventory12=False,collector_inventory12=False):
  initialize();db='ssv2machine_'+uuid.uuid4().hex;tenant,site,scope,subject=uid(),uid(),uid(),uid();processes=[];checks=[];created=False
  def sql(query,database='surveyscan_v2'):
   return compose('exec','-T','db','psql','-U','surveyscan_v2','-d',database,'-v','ON_ERROR_STOP=1','-Atc',query,capture=True).strip()
@@ -89,7 +89,10 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
    body={'grant_id':permission['grant_id'],'source_id':collector_source,'csr_pem':csr.public_bytes(serialization.Encoding.PEM).decode(),'signing_public_key':b64(rawpublic(collector_sign))};status,collector_result,_=request(tls_port,plain,'POST','/api/v1/machine/enroll',body,{'Authorization':'Bearer '+permission['enrollment_token']});assert status==201
    collector_cert=save('collector.pem',collector_result['certificate_chain_pem']);collector_private=save('collector.key',private(collector_key));cert=x509.load_pem_x509_certificate(collector_result['certificate_chain_pem'].encode());uris=cert.extensions.get_extension_for_class(x509.SubjectAlternativeName).value.get_values_for_type(x509.UniformResourceIdentifier);collector_id=next(u.rsplit('/',1)[1] for u in uris if '/kind/collector/' in u)
    collector_signing=save('collector-signing.key',private(collector_sign))
-   cfg=save('collector.json',json.dumps({'source_id':collector_source,'credential_directory':str(directory/'collector-credentials'),'signing_private_key_file':collector_signing,'listen':f'127.0.0.1:{collector_port}','center_url':origin,'certificate_file':collector_cert,'private_key_file':collector_private,'ca_certificate_file':ca_file,'spool_directory':str(directory/'spool'),'spool_limit_bytes':1048576}));collector_process=start('collector',[str(ROOT/'.dist/surveyscan-collector'),'run','--config',cfg]);collector_name=collector_source+'.collector.invalid';ready(collector_port,plain,collector_name);checks.append('compiled collector enrolls and starts HTTPS daemon')
+   cfg=save('collector.json',json.dumps({'source_id':collector_source,'credential_directory':str(directory/'collector-credentials'),'signing_private_key_file':collector_signing,'listen':f'127.0.0.1:{collector_port}','center_url':origin,'certificate_file':collector_cert,'private_key_file':collector_private,'ca_certificate_file':ca_file,'spool_directory':str(directory/'spool'),'spool_limit_bytes':1048576}))
+   if collector_inventory12:
+    collector_settings=json.loads(Path(cfg).read_text());collector_settings['inventory12_enabled']=True;Path(cfg).write_text(json.dumps(collector_settings))
+   collector_process=start('collector',[str(ROOT/'.dist/surveyscan-collector'),'run','--config',cfg]);collector_name=collector_source+'.collector.invalid';ready(collector_port,plain,collector_name);checks.append('compiled collector enrolls and starts HTTPS daemon')
    if agent_scenario is not None:
     agent_scenario(command=command,checks=checks,save=save,request=request,sql=lambda query:sql(query,db),start=start,tenant=tenant,site=site,scope=scope,collector_port=collector_port,collector_source=collector_source,collector_id=collector_id,ca_file=ca_file,directory=directory,tls_port=tls_port,plain=plain,origin=origin,cookie=cookie,session=session,subject=subject,center_process=center_process,collector_process=collector_process,collector_config=cfg,server_environment=dict(env),collector_result=collector_result,collector_client=context(collector_cert,collector_private),grant=grant,enroll_material=enroll_material)
     return
