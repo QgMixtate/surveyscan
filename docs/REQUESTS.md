@@ -739,3 +739,8 @@ onlyon actualprogress, publicFlush contract unchanged. Mixedpacket regression/ra
 verify/C03 58/Winbuild passed; actual3agents reconnect/quota/network/replay5passed,
 drain21.347s. Not claimedasprovenD07cause. AGENTS checkpoint history preservedwhole
 in AGENTS_HISTORY.md; currentrules keptconcise toreduce nextchat context.57done.
+
+D08fix published asd4ae425130fab36f80ff58dd4de08ace41052e9e inPR5; exact-SHA five
+workflows launched (v242237739720/boot42237740069/Windows42237739729/Web42237739727/
+evidence42237739732). Localverify/build/race/Wincompile/mixedACK/real3agent5 passed;
+newhostedpending. Prior5fb twoVM9+9 confirmed;57done. No merge/release/deploy/envpublish.

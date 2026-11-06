@@ -73,7 +73,7 @@
       "change": "private flushProgress reports true only after verified remove ACK and durable pending unlink; actor resets backoff on that progress even if another packet remains pending; public Flush behavior unchanged",
       "local_verification": "mixed two-packet test uses signed cached old ACK and schema-valid fresh transport retain: old removed, new bytes untouched, progress true; second transport-only pass reports no progress. Agent race/verify/build/Wincompile passed; actual3agent reconnect/quota/network/cached replay5 passed (21.347s drain)",
       "historical_boot_cause_proven": false,
-      "publication": "pending"
+      "publication": "published d4ae425 in PR5; hosted CI pending"
     }
   ],
   "windows_inventory_tested": true,

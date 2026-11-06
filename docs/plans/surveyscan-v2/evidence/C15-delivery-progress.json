@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "d4ae425130fab36f80ff58dd4de08ace41052e9e",
+  "publication": "published PR5; exact-SHA hosted CI pending",
   "task": "C15.02",
   "status": "partial",
   "change": "reset delivery backoff on verified durable ACK progress despite fresh pending work",

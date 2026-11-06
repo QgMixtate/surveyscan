@@ -5,7 +5,7 @@ C15.01 — проектирование done; C15.03/04 и C16–C50 не при
 
 Рабочая ветка codex/v2-c15-windows, /workspace/surveyscan-c15,
 [draft PR5](https://github.com/QgMixtate/surveyscan/pull/5), base E1 изPR4.
-Последний product code —2fe4b93: частичный inventory1.2 center+collector relay,
+Последний product code —d4ae425 (published, hostedCI pending): частичный inventory1.2 center+collector relay,
 две подписанные capabilities роли/Go agent negotiation, независимый read-only
 collection worker и serial state actor, все12Windowsproviders через bounded ownbinary
 процессы. Default inventory12_enabled у центра/коллектора false; Windows daemon ещё
@@ -48,9 +48,9 @@ source8560f57; отдельный authdelta39e401f (5→8s без ослабле
 read-only; не запускать C15dev up/down/reset с общими E1project/ports.57done не увеличивать
 без фактической приёмки. История — REQUESTS, подробные proof/ограничения — handoff/evidence.
 
-Новый локальный fix: backoff учитывает durable delivery progress даже при новом
+Опубликованный fix d4ae425: backoff учитывает durable delivery progress даже при новом
 transport-pending пакете. MixedACK/retain regression +agent race/verify/build/C03 58/
 Winbuild passed; real3agent reconnect/quota/replay5passed, drain21.347s. D08 независимо
-подтверждён; связь с историческим D07 не доказана. Publication pending; читать
-C15-delivery-progress.json. AGENTS сокращён, вся прежняя история сохранена отдельно
+подтверждён; связь с историческим D07 не доказана. Новые workflows: v242237739720/boot42237740069/Windows42237739729/
+Web42237739727/evidence42237739732; latest proof — C15-delivery-progress.json. AGENTS сокращён, вся прежняя история сохранена отдельно
 в AGENTS_HISTORY.md для экономии контекста следующих чатов.
