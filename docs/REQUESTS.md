@@ -530,3 +530,10 @@ C14-D09 fixture change Q35 hpet=off pending freshVM. Controlled PGlock test pass
 503/5004ms, passwordverify121ms, stageuser_recheck, zero credentials; explicit recoverycreates1.
 Optional CPUpressure probe in disposable VM added (runtime quota only; host unaffected); expected
 5s deadline after slow Argon2 requires actualVM verification. No product timeouts/crypto changes yet.
+
+C14.03 controlled native probe039af35:10checks PASS, Q35hpet=off actualboot/reboot;48%serverCPUquota
+→ passwordverify6464ms, elapsed6528ms, session_begin/deadline_exceeded, HTTP503, no credential minted.
+Afterquota restore explicitlogin succeeds. Confirms post-hash requestdeadline class; historical503
+exactcause stillunprovable without originalbackendtrace. Fix currentGo:login budget5→8s, below
+serverWrite10s/CLI15s; Argon2/rate/hashslots2 unchanged, no implicitretries. Same48% after-testpending.
+Controlled PGlock stillmusttimeout/rollback/no-cookie/no-session at8s; targetedtest rerunning.

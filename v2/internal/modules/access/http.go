@@ -20,6 +20,11 @@ type HTTP struct {
 	secure  bool
 }
 
+// Password verification has fixed Argon2 cost and is not context-interruptible.
+// Leave room for it under bounded CPU contention, while staying below the
+// public server's 10s write timeout and the shipped CLI's 15s request timeout.
+const loginRequestTimeout = 8 * time.Second
+
 func NewHTTP(s *Service, origin string, insecureLocal bool) (*HTTP, error) {
 	u, e := url.Parse(origin)
 	if e != nil || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.Path != "" || (u.Scheme != "https" && u.Scheme != "http") {
@@ -157,7 +162,7 @@ func (h *HTTP) Wrap(action string, sessionOnly bool, next http.Handler) http.Han
 }
 func (h *HTTP) Register(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/auth/sessions", func(w http.ResponseWriter, r *http.Request) {
-		ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+		ctx, cancel := context.WithTimeout(r.Context(), loginRequestTimeout)
 		defer cancel()
 		r = r.WithContext(ctx)
 		if !h.originOK(r) {

@@ -56,7 +56,9 @@ def main():
             save(name+'.pem',certificate.public_bytes(serialization.Encoding.PEM))
             save(name+'.key',key.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()))
         save('seed.json',json.dumps({'tenant':str(uuid.uuid4()),'site':str(uuid.uuid4()),'scope':str(uuid.uuid4()),'subject':str(uuid.uuid4()),'pg_password':secrets.token_urlsafe(30),'admin_password':secrets.token_urlsafe(30),
-                                    'login_pressure_probe':os.environ.get('SURVEYSCAN_BOOT_LOGIN_PRESSURE_PROBE')=='1'}).encode())
+                                    'login_pressure_probe':os.environ.get('SURVEYSCAN_BOOT_LOGIN_PRESSURE_PROBE')=='1',
+                                    'login_pressure_expect_status':201 if os.environ.get('SURVEYSCAN_BOOT_LOGIN_PRESSURE_EXPECT_STATUS')=='201' else 503,
+                                    'login_pressure_quota_percent':int(os.environ.get('SURVEYSCAN_BOOT_LOGIN_PRESSURE_QUOTA_PERCENT','0'))}).encode())
         sign_key = ed25519.Ed25519PrivateKey.generate()
         signing = save('release.key',sign_key.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()))
         public = save('release.pub',sign_key.public_key().public_bytes(serialization.Encoding.PEM,serialization.PublicFormat.SubjectPublicKeyInfo))
@@ -126,7 +128,7 @@ def main():
                     diagnostic['auth_diagnostics'] = auth
                 pressure = guest.get('login_pressure')
                 if isinstance(pressure, dict):
-                    diagnostic['login_pressure'] = {k:pressure[k] for k in ('kind','vm_cpu_quota_percent','http_status','credential_count_unchanged','auth_diagnostics','historical_cause_proven') if k in pressure}
+                    diagnostic['login_pressure'] = {k:pressure[k] for k in ('kind','vm_cpu_quota_percent','http_status','expected_http_status','elapsed_ms','credential_count_unchanged','credential_count_delta','created_session_revoked','auth_diagnostics','historical_cause_proven') if k in pressure}
                 raise VMFailure(diagnostic)
             (STATE/'c13-boot-smoke.json').write_text(json.dumps(records[-1],indent=2)+'\n')
             print(json.dumps(records[-1]))

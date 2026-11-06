@@ -387,12 +387,12 @@ def second_boot(seed):
         phase('controlled_login_cpu_pressure')
         login_seconds = next(x['elapsed_seconds'] for x in CLI_TIMINGS if x['operation']=='login')
         matched, LOGIN_PRESSURE = login_pressure.probe(command, request, auth_diagnostics, sql, tls, seed, login_seconds)
-        assert matched, 'controlled CPU profile did not establish the expected deadline counterexample'
+        assert matched, 'controlled CPU profile did not establish the expected bounded login result'
         phase('controlled_login_cpu_recovery')
         command([cli, 'login', '--server', 'https://127.0.0.1:8444', '--username', 'admin', '--password-file', '/root/admin-password',
                  '--ca-file', str(SEED / 'infra-ca.pem'), '--context-file', context])
         command([cli, 'logout', '--context-file', context])
-        CHECKS.append('opt-in CPU pressure reproduces post-hash deadline503 without minting session; explicit new login recovers after quota restore')
+        CHECKS.append('opt-in CPU pressure matches the declared login result and credential conservation; test session revoked and explicit recovery succeeds')
     return {'package': 'C13', 'status': 'passed', 'count': len(CHECKS), 'checks': CHECKS, 'cli_timings': CLI_TIMINGS,
             'login_pressure': LOGIN_PRESSURE,
             'target': 'actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI',
