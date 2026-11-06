@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "57e305b8b1a465b1727c02508afe5a95709a8783",
+  "publication": "published PR5; native42306359060 FAILED, D09 correction localpending",
   "task": "C15.02",
   "status": "partial",
   "implemented": [
@@ -14,7 +14,7 @@
     "windows_amd64_test_crosscompile": "passed",
     "windows_cross_vet": "passed"
   },
-  "native_execution": "pending; not executed locally",
+  "native_execution": "first failed file_type on write-only handle; cross-process lock and diagnostic redaction passed; whole suite not passed",
   "runtime_adoption": false,
   "unrun": [
     "atomic replacement/crash recovery",

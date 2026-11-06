@@ -766,3 +766,8 @@ boot42304020084/evidence42304019982. Downloaded sanitizedreports:relay11/center7
 PG60/backup49tables/privateupdate35→36passed. Далееlocalunadopted winstate module:
 protectedDACL/localroot/finalpath+relativeNTfiles/bounds/nooverwrite/exclusiveprocesslock,
 Wincompile/vetpassed, nativeexecutionpending. Неatomiccache/hostbinding/runtime;57done.
+
+Winstate57e305b published; firstnative42306359060 FAILED atCreateNew file_type validation.
+Lock acrossprocesses andredactionpassed, wholesuite notpassed. C15-D09: writer handle
+lackedFILE_READ_ATTRIBUTES forGetFileInformationByHandle; added explicitright, no guard
+relaxation. Crosscompile/vetpassed; native repeatnext. Runtime stillnotadopted,57done.

@@ -77,6 +77,17 @@
       "publication": "published d4ae425 PR5",
       "status": "fixed; independently verified progress class, not proven historicalD07cause",
       "hosted_verification": "all5 d4 hosted SUCCESS; v2 agent mixedACK/race/reconnect5 and boot twofreshVM9+9"
+    },
+    {
+      "id": "C15-D09",
+      "scope": "new isolated Windows private-state primitive; not adopted by runtime",
+      "source_revision": "57e305b8b1a465b1727c02508afe5a95709a8783",
+      "run_id": 42306359060,
+      "observed": "CreateNew failed closed during same-handle file-type check; cross-process Lock (read+write handle) passed",
+      "cause": "GENERIC_WRITE did not include FILE_READ_ATTRIBUTES required by GetFileInformationByHandle; the writer handle lacked the validation right",
+      "change": "explicit FILE_READ_ATTRIBUTES on relative file opens, retaining read-control/ACL/reparse/hardlink checks",
+      "verification": "Windows test crosscompile/vet passed; native repeat pending",
+      "status": "native fix pending"
     }
   ],
   "windows_inventory_tested": true,
