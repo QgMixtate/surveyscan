@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "fbca7ace494c511df5cb366cf6eb63447b91f251",
+  "publication": "published PR5; all five hosted workflows success",
   "date_utc": "2026-11-06T13:39:12.805577+00:00",
   "task": "C15.02",
   "status": "partial",
@@ -26,5 +26,6 @@
     "completeprovidercoverage/scopeddeletion",
     "WindowsDACL/locks/SCM/rights/reboot"
   ],
-  "completed_global_tasks": 57
+  "completed_global_tasks": 57,
+  "hosted_evidence": "C15-hosted-fbca.json"
 }

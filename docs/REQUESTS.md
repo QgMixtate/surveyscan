@@ -695,3 +695,9 @@ sameSourceTLS/crypto/scope andboundedspool; finalACK1.0boundtooriginalbatch12. A
 compiledmTLS/scopedTransit/PGAPIrelay9passed withsyntheticagent, includingowncenter
 outage +collector/centercoldrestart, originalsignedbytes/UID retained,2observations1asset,
 deleteonlyverifiedACK. Threehopcapabilityexchange/actualWindowsdaemon stillunrun.57done.
+
+C15.02 continuation «Продолжай»: fbca7ac published in draftPR5; all five exact-SHA
+hosted workflows SUCCESS, including fullv2 42227311999/relay9 and nativeboot42227312025.
+Evidence C15-hosted-fbca.json; superseded cancelled runs retained explicitly. Global57done;
+manual opt-in relay does not close Windows daemon/three-hop negotiation. Next plan:
+decisions/C15-agent-capability-next.md. No main merge/deploy/env publication.

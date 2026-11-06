@@ -1,0 +1,35 @@
+{
+  "source_revision": "fbca7ace494c511df5cb366cf6eb63447b91f251",
+  "workflows": {
+    "windows": {
+      "id": 42227312056,
+      "conclusion": "success"
+    },
+    "v2": {
+      "id": 42227311999,
+      "conclusion": "success"
+    },
+    "native_linux": {
+      "id": 42227312025,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42227312039,
+      "conclusion": "success"
+    },
+    "acceptance_evidence": {
+      "id": 42227312023,
+      "conclusion": "success"
+    }
+  },
+  "feature": "opt-in partial12 collector relay with verified ACK, offline retention and cold recovery",
+  "compiled_scoped_transit_relay_checks": 9,
+  "synthetic_agent_data": true,
+  "authenticated_three_hop_negotiation": "not implemented",
+  "completed_global_tasks": 57,
+  "superseded_cancelled_runs": [
+    42227302847,
+    42227302880,
+    42227302894
+  ]
+}
