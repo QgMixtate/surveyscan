@@ -247,3 +247,9 @@ C15 centercap discovery nowimplementedlocal: signednonce/audience/expiry, mTLS/a
 existingC11signer/pinnedkey/newdomain. PG57 +actualscopedTransitpipeline20passed.
 Truthfuloffer[1.0]untilruntime12wired; nofullthreehopnegotiationyet. Readlatesthandoff/
 C15-center-capabilities.json forpublication. NoE1historicalreportoverwrite/privatekeycopies.
+
+C15 optincenter1.2 nowlocal(defaultmachineflagfalse): matchingRegistry+Upload decoder,
+partialprojection, normaltrust/replay/ACK1.0, stagedbytes retainedbeforeclaim ifdisabled.
+PG58+actualcompiledmTLS/delegatedsyntheticagent/scopedTransit/PGAPI6passed; noactualWin/
+collector12relay claim. ReadC15-optin-center.json/handoff forexactpublication/checks.
+57done/C15.02IP; sharedE1private reports preserved, SQL34/47unchanged.

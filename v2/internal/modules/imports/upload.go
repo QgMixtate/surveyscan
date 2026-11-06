@@ -29,39 +29,27 @@ type UploadService struct {
 	Auth     sourceport.MachineAuthorizer
 	Registry port.Registry
 	Wire     *wire.Validator
+	Protocol *wire.InventoryDecoder
 	KeyID    string
 	Key      ed25519.PrivateKey
 }
 
 func (s *UploadService) Stage(ctx context.Context, fingerprint string, raw []byte) (contracts.TransportReceipt, error) {
 	var result contracts.TransportReceipt
-	if len(raw) > 1048576 {
-		return result, domain.Invalid
+	decoder := s.Protocol
+	if decoder == nil {
+		var err error
+		decoder, err = wire.NewInventoryDecoder(s.Wire, false)
+		if err != nil {
+			return result, err
+		}
 	}
-	if e := s.Wire.Validate("Batch", raw); e != nil {
+	decoded, e := decoder.Batch(raw)
+	if e != nil {
 		return result, e
 	}
-	var batch contracts.Batch
-	_ = json.Unmarshal(raw, &batch)
-	if batch.Version.Major != 1 || batch.Version.Minor != 0 {
-		return result, domain.Invalid
-	}
-	seen := map[string]bool{}
-	observations := []contracts.Observation{}
-	for _, record := range batch.Records {
-		signed, o, canonical, e := s.Wire.Observation(record)
-		if e != nil {
-			return result, e
-		}
-		digest := sha256.Sum256(canonical)
-		if hex.EncodeToString(digest[:]) != signed.Digest || o.TenantID != batch.TenantID || seen[o.ID] {
-			return result, domain.Invalid
-		}
-		seen[o.ID] = true
-		observations = append(observations, o)
-	}
-	canonical, e := wire.Canonical(raw)
-	if e != nil || len(canonical) > 1048576 {
+	batch, canonical, observations := decoded.Batch, decoded.Canonical, decoded.Observations
+	if batch.Version.Minor == 2 && !s.Inventory12Enabled() {
 		return result, domain.Invalid
 	}
 	sum := sha256.Sum256(canonical)
@@ -145,6 +133,9 @@ func (s *UploadService) load(ctx context.Context, tx pgx.Tx, fingerprint, id str
 	}
 	if e = json.Unmarshal(raw, &d.Batch); e != nil {
 		return d, e
+	}
+	if d.Batch.Version.Major == 1 && d.Batch.Version.Minor == 2 && len(d.Receipt) == 0 && !s.Inventory12Enabled() {
+		return d, wire.ErrInventory12Unavailable
 	}
 	return d, nil
 }

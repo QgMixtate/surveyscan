@@ -30,6 +30,12 @@ func (v *Validator) VerifyCenterResult(raw, batchRaw []byte, keyID string, publi
 	if e := json.Unmarshal(batchRaw, &batch); e != nil {
 		return signed, false, e
 	}
+	return verifyCenterResult(signed, batch, batchRaw, keyID, public)
+}
+
+// Both callers validate the receipt and their own versioned batch first. The
+// signed center-result1.0 contract/binding rules remain shared and unchanged.
+func verifyCenterResult(signed contracts.SignedCenterResult, batch contracts.Batch, batchRaw []byte, keyID string, public ed25519.PublicKey) (contracts.SignedCenterResult, bool, error) {
 	payload, _ := json.Marshal(signed.Payload)
 	canonical, e := Canonical(payload)
 	if e != nil {

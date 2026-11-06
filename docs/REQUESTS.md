@@ -682,3 +682,10 @@ newsignaturedomain. Current[1.0]truthfuloffer; no false12advertisement. PG57pass
 scopedOpenBao/nonexportableTransit compiledpipeline20passed inclcap200/seal503/unseal200,
 no privatefallback. NewreportsC15only; E1sharedcredentials reusedread-only, no keycopies.
 Publicationpending, thenopt-in1.2dispatch/admission/projection/ACK andcollectorforwarding.
+
+C15.02: b709eef all5hostedSUCCESS. Optincenter1.2 implemented(defaultoff), advertised
+onlywhenadmission+registry agree; frozenC03/C09 preserved. PG58passed; realcompiled
+mTLS/courier/delegatedsyntheticagent/scopedTransit/PG12sections/typedAPI/ACK/replay6passed.
+Downgrade retains stagedbytes withoutlease/retry; complete12notimplemented/rejected,
+committedACK remainsavailable. ExistingHTTPPOST202 preserved; tests/docs corrected.
+Collector12relay/threehopcapabilityforwarding andactualWindowsdaemon stillnext;57done.

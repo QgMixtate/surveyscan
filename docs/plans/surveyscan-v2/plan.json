@@ -1415,9 +1415,12 @@
             "evidence/C15-transport.json",
             "evidence/C15-hosted-7ce.json",
             "decisions/C15-center-capabilities.md",
-            "evidence/C15-center-capabilities.json"
+            "evidence/C15-center-capabilities.json",
+            "evidence/C15-hosted-b709.json",
+            "decisions/C15-optin-center.md",
+            "evidence/C15-optin-center.json"
           ],
-          "verification_status": "native12 baseline Windows2022/elevated passed;QFE5/protection6; worker timeout/crash/overflow/isolation + all4hosted d9 passed; fullcoverage/negotiated pipeline/scheduler/SCM/reboot unrun; local record projection12/PG53+upgrade33→34 passed; new hosted pending; runtime1.2 disabled; read API localTLS/PG56+schema+cursor passed; C15-D04bootfixture fixed pendinghostedrepeat; f6all5hosted success/boot9+9; local isolated transport12+collector codec mTLS/race passed, runtime1.2disabled; center authenticated signedcaps localPG57/liveBao20 passed, runtime12stilloff, hostedpending"
+          "verification_status": "native12 baseline Windows2022/elevated passed;QFE5/protection6; worker timeout/crash/overflow/isolation + all4hosted d9 passed; fullcoverage/negotiated pipeline/scheduler/SCM/reboot unrun; local record projection12/PG53+upgrade33→34 passed; new hosted pending; runtime1.2 disabled; read API localTLS/PG56+schema+cursor passed; C15-D04bootfixture fixed pendinghostedrepeat; f6all5hosted success/boot9+9; local isolated transport12+collector codec mTLS/race passed, runtime1.2disabled; center authenticated signedcaps localPG57/liveBao20 passed, runtime12stilloff, hostedpending; b709all5hosted success; localoptincenter PG58+actualcompiledmTLS/Transit/PGAPI6passed; collectorrelay/Winpipeline unrun"
         },
         {
           "id": "C15.03",

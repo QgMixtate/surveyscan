@@ -66,8 +66,14 @@ func (m *MachineAPI) inventoryCapabilities(w http.ResponseWriter, req *http.Requ
 	}
 	now := time.Now().UTC()
 	payload := contracts.InventoryCapabilities{Version: contracts.Version{Major: 1}, Issuer: "center", Tenant: actor.Tenant, Audience: contracts.Origin{SourceID: actor.Source, SourceKind: actor.Kind, GenerationID: actor.Generation}, Nonce: nonce, Issued: now, Expires: now.Add(wire.InventoryCapabilitiesLifetime), Observations: []contracts.Version{{Major: 1}}, Batches: []contracts.Version{{Major: 1}}, SnapshotModes: []string{}}
-	// Advertise the handlers actually available, not the draft codec. This is
-	// deliberately legacy-only until 1.2 admission/projection is wired together.
+	// Both admission and the transactional registry must actually implement12.
+	if m.Uploads != nil && m.Uploads.Inventory12Enabled() {
+		payload.Observations = append(payload.Observations, contracts.Version{Major: 1, Minor: 2})
+		payload.Batches = append(payload.Batches, contracts.Version{Major: 1, Minor: 2})
+		limits := wire.InventoryMaximum12()
+		payload.Limits12 = &contracts.InventoryLimits12{CanonicalBytes: limits.CanonicalBytes, SignedBytes: limits.SignedBytes, BatchBytes: limits.BatchBytes, Records: limits.Records}
+		payload.SnapshotModes = []string{"partial"}
+	}
 	raw, err := wire.RecordJSON(payload)
 	if err != nil {
 		m.fail(w, err)

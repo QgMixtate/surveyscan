@@ -85,3 +85,9 @@ ActualscopedOpenBaoTransit/compiledserver+collector/mTLS/PG20checks passed, incl
 cap200→seal503→unseal200. OwnDB/ports/mounts cleaned; E1private reports unchanged.
 Currentlytruthful[1.0]advertisement; optin12handlers+collectorforwarding stillnext.
 Newsourcepublicationpending; C15.02IP/57done, seeC15-center-capabilities.json.
+
+b709eef capability discovery все5hostedSUCCESS; C15-hosted-b709.json. Новый localoptin
+центр1.2 defaultoff: matchingadmission+registry, partialonly, exactreplay/ACK1.0, staging
+retained withoutclaims ondisable. PG58passed; compiled actualmTLS/delegatedsyntheticagent/
+scopedTransit/PG12sections/API/replay6checks passed. Collector usedenrollmentonly:12relay/
+threehopnegotiation и actualWindowsprofile/scheduler/lifecycle ещёunrun. C15.02IP/57done.

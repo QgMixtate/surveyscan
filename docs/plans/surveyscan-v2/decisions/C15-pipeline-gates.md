@@ -1,6 +1,6 @@
 # C15.02 — следующие gates постоянной доставки
 
-Native12baseline и worker проверки не завершают C15.02. До runtime enable: 
+Native12baseline и worker проверки не завершают C15.02. До включения постоянного Windows agent→collector→center цикла; отдельный opt-in центр для испытаний не означает его приёмку:
 
 1. Согласовать observation1.2 и batch/ACK/profile versions отдельно. Старые C03 schemas
    immutable; новые signed payload/batch contracts добавляются рядом. Collector+center

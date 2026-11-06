@@ -64,3 +64,9 @@ capabilities.schema.json/c15-capabilities.schema.json: center discovery contract
 POST /api/v1/machine/inventory-capabilities; signednonce/audience/expiry/pinnedkey.
 Current response advertises1.0 only until actual12handlers are connected; see
 decisions/C15-center-capabilities.md. This is separate from payload/batch/profile versions.
+
+Opt-in center1.2 nowconnects admission, transactional partial projection, replay/ACK1.0
+and readAPI. Machine inventory12_enabled defaultsfalse; capabilities advertise12 only
+when both admission and registry are configured. C15OpenAPI describes partial12 POST
+with existingHTTP202 semantics. Collector12relay/threehop/Windowsdaemon stillpending.
+See decisions/C15-optin-center.md and exactsource evidence.

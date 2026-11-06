@@ -17,12 +17,14 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/bao"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/pki"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
 	"io"
 	"net"
 	"os"
 )
 
 type MachineConfig struct {
+	Inventory12       bool   `json:"inventory12_enabled"`
 	BaoConfig         string `json:"openbao_config_file"`
 	CenterKeyID       string `json:"center_signing_key_id"`
 	DevMode           bool   `json:"dev_mode"`
@@ -184,8 +186,15 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 		centerID = center.ID
 		public = privateKey.Public().(ed25519.PublicKey)
 	}
+	var inventoryProtocol *wire.InventoryDecoder
+	if cfg.Inventory12 {
+		inventoryProtocol, e = r.ConfigureInventoryProtocol12(true)
+		if e != nil {
+			return "", nil, e
+		}
+	}
 	machine := &sources.MachineService{Pool: r.Pool, Auth: auth, Audit: audit.Store{}, Issuer: issuer, Wire: r.Wire, CenterKeyID: centerID, CenterPublicKey: base64.RawURLEncoding.EncodeToString(public)}
-	uploads := &imports.UploadService{Pool: r.Pool, Auth: machine, Registry: MachineRegistry{Registry: r, Auth: machine}, Wire: r.Wire, KeyID: centerID, Key: privateKey}
+	uploads := &imports.UploadService{Pool: r.Pool, Auth: machine, Registry: MachineRegistry{Registry: r, Auth: machine}, Wire: r.Wire, Protocol: inventoryProtocol, KeyID: centerID, Key: privateKey}
 	if remote != nil {
 		uploads.Signer = bao.Operation{Client: remote, Alias: "center"}
 	}

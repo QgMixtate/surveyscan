@@ -327,6 +327,65 @@
           }
         }
       }
+    },
+    "/api/v1/machine/observations": {
+      "post": {
+        "operationId": "submitObservationBatch",
+        "security": [
+          {
+            "MachineMTLS": []
+          }
+        ],
+        "description": "C03/1.0 remains default. inventory12_enabled opts matching admission+registry into partial-only1.2; new senders must confirm signed capabilities first. No silent downgrade or re-sign of queued data.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/LegacyBatch"
+                  },
+                  {
+                    "$ref": "#/components/schemas/InventoryBatch12"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "HTTP acceptance alone never authorizes removal. Body is either retain/processing transport receipt or final signed center result1.0; verify original batch/digest and pinned signature before removal.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "$ref": "#/components/schemas/LegacySignedCenterResult"
+                    },
+                    {
+                      "$ref": "#/components/schemas/LegacyTransportReceipt"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid/inactive machine principal."
+          },
+          "422": {
+            "description": "Invalid/unsupported observation version or complete1.2snapshot."
+          },
+          "429": {
+            "description": "Staging quota; retain source bytes and retry."
+          },
+          "503": {
+            "description": "Dependency/processing unavailable; retain source bytes."
+          }
+        }
+      }
     }
   },
   "components": {
@@ -2742,6 +2801,2242 @@
         },
         "required": [
           "nonce"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12Candidate": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "machine_uuid",
+              "bios_uuid",
+              "serial",
+              "hostname",
+              "ipv4",
+              "ipv6",
+              "mac"
+            ]
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "kind",
+          "namespace",
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12JobReference": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attempt_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lease_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "job_id",
+          "attempt_id",
+          "lease_version"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12Observation": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "$ref": "#/components/schemas/Inventory12Version"
+          },
+          "observation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/Inventory12Origin"
+          },
+          "source_record": {
+            "$ref": "#/components/schemas/Inventory12SourceRecord"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/Inventory12Scope"
+          },
+          "source_sequence": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$",
+            "maxLength": 20
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+          },
+          "clock_quality": {
+            "enum": [
+              "trusted",
+              "estimated",
+              "unknown",
+              "skewed"
+            ]
+          },
+          "identity_candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Inventory12Candidate"
+            },
+            "minItems": 0,
+            "maxItems": 16
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Inventory12Section"
+            },
+            "minItems": 12,
+            "maxItems": 12
+          },
+          "asserted_asset_uid": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job": {
+            "$ref": "#/components/schemas/Inventory12JobReference"
+          },
+          "extensions": {
+            "type": "object",
+            "maxProperties": 8,
+            "patternProperties": {
+              "^x-[a-z0-9.-]+$": {
+                "type": [
+                  "string",
+                  "boolean",
+                  "null"
+                ],
+                "maxLength": 1024
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema_version",
+          "observation_id",
+          "tenant_id",
+          "origin",
+          "source_record",
+          "scope",
+          "source_sequence",
+          "collected_at",
+          "clock_quality",
+          "identity_candidates",
+          "sections"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12Origin": {
+        "type": "object",
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_kind": {
+            "enum": [
+              "agent",
+              "collector",
+              "portable"
+            ]
+          },
+          "generation_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "source_id",
+          "source_kind",
+          "generation_id"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12Scope": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "network_scope_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "site_id",
+          "network_scope_id"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12Section": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "enum": [
+              "identity",
+              "os",
+              "network",
+              "hardware",
+              "software",
+              "updates",
+              "services",
+              "users_groups",
+              "routes_ports",
+              "resources",
+              "protection",
+              "neighbors"
+            ]
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+          },
+          "status": {
+            "enum": [
+              "partial",
+              "unavailable",
+              "unsupported",
+              "not_requested"
+            ]
+          },
+          "collection_complete": {
+            "const": false
+          },
+          "reason_code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+          },
+          "record_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100000
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "minItems": 0,
+            "maxItems": 100000
+          },
+          "coverage": {
+            "type": "object",
+            "properties": {
+              "scope": {
+                "enum": [
+                  "local_host",
+                  "machine_and_current_user",
+                  "local_accounts",
+                  "local_cache",
+                  "qfe_subset"
+                ]
+              },
+              "providers": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "minLength": 1,
+                  "maxLength": 128,
+                  "pattern": "^[^\u0000-\u001f]+$"
+                },
+                "maxItems": 16,
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "scope"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "name",
+          "collected_at",
+          "status",
+          "collection_complete",
+          "reason_code",
+          "record_count",
+          "records"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "identity"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12identityRow"
+                  },
+                  "maxItems": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "os"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12osRow"
+                  },
+                  "maxItems": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "network"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12networkRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "hardware"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12hardwareRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "software"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12softwareRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "updates"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12updatesRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "services"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12servicesRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "users_groups"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12users_groupsRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "routes_ports"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12routes_portsRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "resources"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12resourcesRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "protection"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12protectionRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "neighbors"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "items": {
+                    "$ref": "#/components/schemas/Inventory12neighborsRow"
+                  },
+                  "maxItems": 100000
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "unavailable",
+                    "unsupported",
+                    "not_requested"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "collection_complete": {
+                  "const": false
+                },
+                "record_count": {
+                  "const": 0
+                },
+                "records": {
+                  "maxItems": 0
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "partial"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "collection_complete": {
+                  "const": false
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "const": "ok"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "collection_complete": {
+                  "const": true
+                }
+              }
+            }
+          }
+        ]
+      },
+      "Inventory12SourceRecord": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9._:-]{0,63}$"
+          },
+          "source_local_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "namespace",
+          "source_local_id"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12Version": {
+        "type": "object",
+        "properties": {
+          "major": {
+            "const": 1
+          },
+          "minor": {
+            "const": 2
+          }
+        },
+        "required": [
+          "major",
+          "minor"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12hardwareRow": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "cpu",
+              "memory",
+              "bios",
+              "disk"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "vendor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "model": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "serial": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "logical_processors": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "kind",
+          "name"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "cpu"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "logical_processors"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "memory"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "bytes"
+              ]
+            }
+          }
+        ]
+      },
+      "Inventory12identityRow": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "fqdn": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "domain": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "machine_uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "serial": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          }
+        },
+        "required": [
+          "hostname"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12neighborsRow": {
+        "type": "object",
+        "properties": {
+          "family": {
+            "enum": [
+              "ipv4",
+              "ipv6"
+            ]
+          },
+          "address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "mac": {
+            "type": "string",
+            "pattern": "^([0-9a-f]{2}:){5}[0-9a-f]{2}$"
+          },
+          "interface_index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[^\u0000-\u001f]+$"
+          }
+        },
+        "required": [
+          "family",
+          "address",
+          "interface_index"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12networkRow": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "mac": {
+            "type": "string",
+            "pattern": "^([0-9a-f]{2}:){5}[0-9a-f]{2}$"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ip": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "type": "string",
+                      "format": "ipv6"
+                    }
+                  ]
+                },
+                "prefix": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 128
+                }
+              },
+              "required": [
+                "ip",
+                "prefix"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 64
+          },
+          "dns_servers": {
+            "type": "array",
+            "maxItems": 32,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          "gateways": {
+            "type": "array",
+            "maxItems": 32,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "maxLength": 128
+            }
+          },
+          "dhcp_enabled": {
+            "type": "boolean"
+          },
+          "mtu": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "interface_index": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4294967295
+          }
+        },
+        "required": [
+          "name",
+          "addresses"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12osRow": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "build": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "architecture": {
+            "enum": [
+              "amd64",
+              "arm64",
+              "386"
+            ]
+          },
+          "boot_time": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "boot_time_quality": {
+            "enum": [
+              "estimated",
+              "trusted",
+              "unknown"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "version",
+          "architecture"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12protectionRow": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "firewall",
+              "antivirus",
+              "defender",
+              "privileges"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "enabled": {
+            "type": "boolean"
+          },
+          "provider": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          }
+        },
+        "required": [
+          "kind",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12resourcesRow": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "volume",
+              "share",
+              "usb"
+            ]
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "filesystem": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "total_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "free_bytes": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "device_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^[^\u0000-\u001f]+$"
+          }
+        },
+        "required": [
+          "kind",
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12routes_portsRow": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "route",
+              "tcp",
+              "udp"
+            ]
+          },
+          "family": {
+            "enum": [
+              "ipv4",
+              "ipv6"
+            ]
+          },
+          "destination": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "gateway": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "metric": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
+          "local_address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "local_port": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "remote_address": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "remote_port": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 65535
+          },
+          "state": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 64,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "interface_index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "kind",
+          "family"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "route"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "destination",
+                "interface_index"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "tcp"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "local_address",
+                "local_port",
+                "state"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "udp"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "local_address",
+                "local_port"
+              ]
+            }
+          }
+        ]
+      },
+      "Inventory12servicesRow": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "display_name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "state": {
+            "enum": [
+              "stopped",
+              "start_pending",
+              "stop_pending",
+              "running",
+              "continue_pending",
+              "pause_pending",
+              "paused",
+              "unknown"
+            ]
+          },
+          "start_mode": {
+            "enum": [
+              "boot",
+              "system",
+              "auto",
+              "demand",
+              "disabled",
+              "unknown"
+            ]
+          },
+          "account": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "executable": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2048,
+            "pattern": "^[^\u0000-\u001f]+$"
+          }
+        },
+        "required": [
+          "name",
+          "state"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12softwareRow": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "vendor": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "architecture": {
+            "enum": [
+              "amd64",
+              "arm64",
+              "386",
+              "unknown"
+            ]
+          },
+          "scope": {
+            "enum": [
+              "machine",
+              "current_user"
+            ]
+          },
+          "source": {
+            "enum": [
+              "uninstall_registry"
+            ]
+          },
+          "registry_view": {
+            "enum": [
+              "32",
+              "64"
+            ]
+          },
+          "registry_key": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "principal_sid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 184,
+            "pattern": "^S-1-[0-9]+(?:-[0-9]+)+$"
+          }
+        },
+        "required": [
+          "name",
+          "scope",
+          "source",
+          "registry_view",
+          "registry_key"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "scope": {
+                  "const": "current_user"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "principal_sid"
+              ]
+            },
+            "else": {
+              "not": {
+                "required": [
+                  "principal_sid"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "Inventory12updatesRow": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "installed_on": {
+            "type": "string",
+            "format": "date"
+          },
+          "source": {
+            "enum": [
+              "qfe"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "source"
+        ],
+        "additionalProperties": false
+      },
+      "Inventory12users_groupsRow": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "user",
+              "group",
+              "membership"
+            ]
+          },
+          "sid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 184,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "group_sid": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 184,
+            "pattern": "^[^\u0000-\u001f]+$"
+          },
+          "disabled": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "kind",
+          "sid"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "user"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "name"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "group"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "name"
+              ]
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "kind": {
+                  "const": "membership"
+                }
+              }
+            },
+            "then": {
+              "required": [
+                "group_sid"
+              ]
+            }
+          }
+        ]
+      },
+      "Observation12": {
+        "$comment": "Draft C15.02 contract; not enabled in runtime. C03/C09 remain immutable.",
+        "$ref": "#/components/schemas/Inventory12Observation"
+      },
+      "SignedObservation12": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/Observation12"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "key_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "signature": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{86}$"
+          }
+        },
+        "required": [
+          "payload",
+          "digest",
+          "key_id",
+          "signature"
+        ],
+        "additionalProperties": false
+      },
+      "InventoryBatch12": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "type": "object",
+            "properties": {
+              "major": {
+                "const": 1
+              },
+              "minor": {
+                "const": 2
+              }
+            },
+            "required": [
+              "major",
+              "minor"
+            ],
+            "additionalProperties": false
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "delivery_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SignedObservation12"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "schema_version",
+          "tenant_id",
+          "delivery_id",
+          "records"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyBatch": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "$ref": "#/components/schemas/LegacyVersion"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "delivery_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegacySignedObservation"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "schema_version",
+          "tenant_id",
+          "delivery_id",
+          "records"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyVersion": {
+        "type": "object",
+        "properties": {
+          "major": {
+            "const": 1
+          },
+          "minor": {
+            "const": 0
+          }
+        },
+        "required": [
+          "major",
+          "minor"
+        ],
+        "additionalProperties": false
+      },
+      "LegacySignedObservation": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/LegacyObservation"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "key_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "signature": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{86}$"
+          }
+        },
+        "required": [
+          "payload",
+          "digest",
+          "key_id",
+          "signature"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyObservation": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "$ref": "#/components/schemas/LegacyVersion"
+          },
+          "observation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "origin": {
+            "$ref": "#/components/schemas/LegacyOrigin"
+          },
+          "source_record": {
+            "$ref": "#/components/schemas/LegacySourceRecord"
+          },
+          "scope": {
+            "$ref": "#/components/schemas/LegacyScope"
+          },
+          "source_sequence": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$",
+            "maxLength": 20
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+          },
+          "clock_quality": {
+            "enum": [
+              "trusted",
+              "estimated",
+              "unknown",
+              "skewed"
+            ]
+          },
+          "identity_candidates": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegacyCandidate"
+            },
+            "minItems": 0,
+            "maxItems": 16
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegacySection"
+            },
+            "minItems": 1,
+            "maxItems": 3
+          },
+          "asserted_asset_uid": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "job": {
+            "$ref": "#/components/schemas/LegacyJobReference"
+          },
+          "extensions": {
+            "type": "object",
+            "maxProperties": 8,
+            "patternProperties": {
+              "^x-[a-z0-9.-]+$": {
+                "type": [
+                  "string",
+                  "boolean",
+                  "null"
+                ],
+                "maxLength": 1024
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "schema_version",
+          "observation_id",
+          "tenant_id",
+          "origin",
+          "source_record",
+          "scope",
+          "source_sequence",
+          "collected_at",
+          "clock_quality",
+          "identity_candidates",
+          "sections"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyOrigin": {
+        "type": "object",
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "source_kind": {
+            "enum": [
+              "agent",
+              "collector",
+              "portable"
+            ]
+          },
+          "generation_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "source_id",
+          "source_kind",
+          "generation_id"
+        ],
+        "additionalProperties": false
+      },
+      "LegacySourceRecord": {
+        "type": "object",
+        "properties": {
+          "namespace": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9._:-]{0,63}$"
+          },
+          "source_local_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "namespace",
+          "source_local_id"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyScope": {
+        "type": "object",
+        "properties": {
+          "site_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "network_scope_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "site_id",
+          "network_scope_id"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyCandidate": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "enum": [
+              "machine_uuid",
+              "bios_uuid",
+              "serial",
+              "hostname",
+              "ipv4",
+              "ipv6",
+              "mac"
+            ]
+          },
+          "namespace": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "value": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 512
+          }
+        },
+        "required": [
+          "kind",
+          "namespace",
+          "value"
+        ],
+        "additionalProperties": false
+      },
+      "LegacySection": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "enum": [
+              "identity",
+              "os",
+              "network"
+            ]
+          },
+          "collected_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+          },
+          "status": {
+            "enum": [
+              "ok",
+              "partial",
+              "unavailable",
+              "unsupported",
+              "not_requested",
+              "unknown"
+            ]
+          },
+          "collection_complete": {
+            "type": "boolean"
+          },
+          "reason_code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+          },
+          "record_count": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 512
+          },
+          "records": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "minItems": 0,
+            "maxItems": 512
+          }
+        },
+        "required": [
+          "name",
+          "collected_at",
+          "status",
+          "collection_complete",
+          "reason_code",
+          "record_count",
+          "records"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "identity"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LegacyIdentityRow"
+                  },
+                  "minItems": 0,
+                  "maxItems": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "os"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LegacyOSRow"
+                  },
+                  "minItems": 0,
+                  "maxItems": 1
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "name": {
+                  "const": "network"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LegacyNetworkRow"
+                  },
+                  "minItems": 0,
+                  "maxItems": 512
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "status": {
+                  "enum": [
+                    "unavailable",
+                    "unsupported",
+                    "not_requested"
+                  ]
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "records": {
+                  "maxItems": 0
+                },
+                "record_count": {
+                  "const": 0
+                },
+                "collection_complete": {
+                  "const": false
+                }
+              }
+            }
+          }
+        ]
+      },
+      "LegacyIdentityRow": {
+        "type": "object",
+        "properties": {
+          "hostname": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 255
+          },
+          "machine_uuid": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bios_uuid": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "hostname"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyOSRow": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "architecture": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 32
+          }
+        },
+        "required": [
+          "name",
+          "version",
+          "architecture"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyNetworkRow": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128
+          },
+          "mac": {
+            "type": "string",
+            "pattern": "^([0-9a-f]{2}:){5}[0-9a-f]{2}$"
+          },
+          "addresses": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ip": {
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "format": "ipv4"
+                    },
+                    {
+                      "type": "string",
+                      "format": "ipv6"
+                    }
+                  ]
+                },
+                "prefix": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 128
+                }
+              },
+              "required": [
+                "ip",
+                "prefix"
+              ],
+              "additionalProperties": false
+            },
+            "minItems": 0,
+            "maxItems": 64
+          }
+        },
+        "required": [
+          "name",
+          "addresses"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyJobReference": {
+        "type": "object",
+        "properties": {
+          "job_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "attempt_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "lease_version": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$",
+            "maxLength": 20
+          }
+        },
+        "required": [
+          "job_id",
+          "attempt_id",
+          "lease_version"
+        ],
+        "additionalProperties": false
+      },
+      "LegacySignedCenterResult": {
+        "type": "object",
+        "properties": {
+          "payload": {
+            "$ref": "#/components/schemas/LegacyCenterResult"
+          },
+          "digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "key_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "signature": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{86}$"
+          }
+        },
+        "required": [
+          "payload",
+          "digest",
+          "key_id",
+          "signature"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyCenterResult": {
+        "type": "object",
+        "properties": {
+          "schema_version": {
+            "$ref": "#/components/schemas/LegacyVersion"
+          },
+          "receipt_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "delivery_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "batch_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "committed_at": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+          },
+          "result_revision": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,19}$",
+            "maxLength": 20
+          },
+          "status": {
+            "enum": [
+              "completed",
+              "completed_with_errors"
+            ]
+          },
+          "results": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LegacyRecordResult"
+            },
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "schema_version",
+          "receipt_id",
+          "tenant_id",
+          "delivery_id",
+          "batch_digest",
+          "committed_at",
+          "result_revision",
+          "status",
+          "results"
+        ],
+        "additionalProperties": false
+      },
+      "LegacyRecordResult": {
+        "type": "object",
+        "properties": {
+          "origin_source_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "observation_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "observation_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "disposition": {
+            "enum": [
+              "applied",
+              "recorded_pending_resolution",
+              "rejected"
+            ]
+          },
+          "asset_uid": {
+            "oneOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reason_code": {
+            "type": "string",
+            "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+          },
+          "spool_action": {
+            "enum": [
+              "remove",
+              "retain"
+            ]
+          }
+        },
+        "required": [
+          "origin_source_id",
+          "observation_id",
+          "observation_digest",
+          "disposition",
+          "asset_uid",
+          "reason_code",
+          "spool_action"
+        ],
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "disposition": {
+                  "const": "applied"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "asset_uid": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "spool_action": {
+                  "const": "remove"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "disposition": {
+                  "const": "recorded_pending_resolution"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "asset_uid": {
+                  "type": "null"
+                },
+                "spool_action": {
+                  "const": "remove"
+                }
+              }
+            }
+          },
+          {
+            "if": {
+              "properties": {
+                "disposition": {
+                  "const": "rejected"
+                }
+              }
+            },
+            "then": {
+              "properties": {
+                "asset_uid": {
+                  "type": "null"
+                },
+                "spool_action": {
+                  "const": "retain"
+                }
+              }
+            }
+          }
+        ]
+      },
+      "LegacyTransportReceipt": {
+        "type": "object",
+        "properties": {
+          "receipt_type": {
+            "const": "transport"
+          },
+          "tenant_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "delivery_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "batch_digest": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{64}$"
+          },
+          "stage": {
+            "enum": [
+              "collector_received",
+              "center_received",
+              "processing"
+            ]
+          },
+          "spool_action": {
+            "const": "retain"
+          },
+          "request_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "receipt_type",
+          "tenant_id",
+          "delivery_id",
+          "batch_digest",
+          "stage",
+          "spool_action",
+          "request_id"
         ],
         "additionalProperties": false
       }

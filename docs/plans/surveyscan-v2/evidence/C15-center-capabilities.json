@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "b709eef213ed021b800418ffccae94b05e9b50ce",
+  "publication": "published PR5, all5hostedSUCCESS; C15-hosted-b709.json",
   "task": "C15.02",
   "date_utc": "2026-11-06T12:47:20.904794+00:00",
   "endpoint": "POST /api/v1/machine/inventory-capabilities",

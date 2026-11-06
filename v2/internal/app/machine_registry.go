@@ -36,7 +36,7 @@ func (a MachineRegistry) Apply(ctx context.Context, fingerprint string, raw []by
 
 func (a MachineRegistry) recorded(ctx context.Context, fingerprint string, raw []byte) (contracts.RecordResult, bool, error) {
 	var out contracts.RecordResult
-	signed, o, canonical, e := a.Registry.Wire.Observation(raw)
+	signed, o, canonical, e := a.Registry.observation(raw)
 	if e != nil {
 		return out, false, e
 	}

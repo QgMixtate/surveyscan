@@ -1,0 +1,29 @@
+{
+  "source_revision": "b709eef213ed021b800418ffccae94b05e9b50ce",
+  "workflows": {
+    "windows": {
+      "id": 42220473071,
+      "conclusion": "success"
+    },
+    "v2": {
+      "id": 42220473095,
+      "conclusion": "success"
+    },
+    "native_linux": {
+      "id": 42220473027,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42220473423,
+      "conclusion": "success"
+    },
+    "acceptance_evidence": {
+      "id": 42220473422,
+      "conclusion": "success"
+    }
+  },
+  "feature": "authenticated signed center capabilities; default runtime1.0",
+  "local_postgres_pass": 57,
+  "live_bao_checks": 20,
+  "completed_global_tasks": 57
+}

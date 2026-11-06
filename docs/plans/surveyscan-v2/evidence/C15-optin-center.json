@@ -1,0 +1,35 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "date_utc": "2026-11-06T13:23:08.576091+00:00",
+  "configuration": "private machine inventory12_enabled=true; defaultfalse",
+  "local_checks": {
+    "postgres_suite": {
+      "passed": 58,
+      "failed": 0,
+      "skipped": 0
+    },
+    "direct_service": "realPG/enrolledcourierfingerprint/Ed25519; partial12project/ACK/API/replay; complete rejected; downgrade retains staged bytes withoutclaim/retryconsumption; cachedACK served",
+    "compiled_flow": {
+      "status": "passed",
+      "count": 6,
+      "target": "actualmTLS courier/delegatedsyntheticagent→compiled optincenter→scopednonexportableTransit/PG/all12sections→typedAPI/ACK/replay",
+      "collector_scope": "compiledcollector used for enrollment only; inventory12 upload relay unrun",
+      "report": "v2/.local/c15-center-smoke.json (privateignored/sanitizedsummaryonly)"
+    },
+    "receipt": "CenterResult1.0 unchanged; HTTPPOST202 preserved; canonical cache/replay equality, notJSONBwhitespace",
+    "verify_race_windows": "makeverify/C03 58 passed; wire+collector-race passed; Windowswiretestcrosscompile/vet and build4binaries passed"
+  },
+  "initial_harness_notes": [
+    "local test expectedHTTP200, corrected to existingPOST202/final signedbody semantics; server HTTPstatus unchanged",
+    "cachedJSONBreceipt checked bycanonical signedframe instead ofouter whitespace"
+  ],
+  "unrun": [
+    "collector12uploadrelay/threehopcapabilities",
+    "actualWindows agentprofile/scheduler/data delivery",
+    "completeprovidercoverage/scopeddeletion",
+    "WindowsDACL/locks/SCM/rights/reboot"
+  ],
+  "completed_global_tasks": 57
+}

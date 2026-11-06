@@ -26,16 +26,17 @@ type EventSink interface {
 	Emit(context.Context, pgx.Tx, messaging.Event) error
 }
 type Registry struct {
-	Machine   *MachineAPI
-	Pool      *pgxpool.Pool
-	Auth      access.Authorizer
-	Sources   sourceport.Reader
-	Assets    assets.Store
-	Inventory inventory.Store
-	Owners    responsibility.Store
-	Audit     audit.Store
-	Events    EventSink
-	Wire      *wire.Validator
+	inventoryProtocol *wire.InventoryDecoder
+	Machine           *MachineAPI
+	Pool              *pgxpool.Pool
+	Auth              access.Authorizer
+	Sources           sourceport.Reader
+	Assets            assets.Store
+	Inventory         inventory.Store
+	Owners            responsibility.Store
+	Audit             audit.Store
+	Events            EventSink
+	Wire              *wire.Validator
 }
 
 func NewRegistry(pool *pgxpool.Pool, auth access.Authorizer) (*Registry, error) {
@@ -69,7 +70,7 @@ func (r *Registry) Ingest(ctx context.Context, tenant, source string, raw []byte
 	return r.IngestAuthorized(ctx, tenant, source, raw, nil)
 }
 func (r *Registry) IngestAuthorized(ctx context.Context, tenant, source string, raw []byte, authorize func(context.Context, pgx.Tx, contracts.Observation) error) (inventory.Result, error) {
-	signed, o, canonical, e := r.Wire.Observation(raw)
+	signed, o, canonical, e := r.observation(raw)
 	if e != nil {
 		return inventory.Result{}, e
 	}
@@ -133,7 +134,12 @@ func (r *Registry) IngestAuthorized(ctx context.Context, tenant, source string, 
 		if e != nil {
 			return result, e
 		}
-		changed, e := r.Inventory.Project(ctx, tx, o, resolved.AssetID, link, resolved.RecordKey, trust.Priority)
+		var changed bool
+		if o.Version.Minor == 2 {
+			changed, e = r.Inventory.ProjectPartial12(ctx, tx, o, resolved.AssetID, link, resolved.RecordKey, trust.Priority)
+		} else {
+			changed, e = r.Inventory.Project(ctx, tx, o, resolved.AssetID, link, resolved.RecordKey, trust.Priority)
+		}
 		if e != nil {
 			return result, e
 		}
