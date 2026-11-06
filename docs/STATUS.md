@@ -35,8 +35,8 @@ Collector outer frame и Go agent method реализованы: обе подп
 audience/generation/expiry, quota-aware ceilings и intersection всех3offers.
 Actual compiled mTLS/scopedTransit/PG relay10 прошёл с Python syntheticagent; отдельно
 Go agent method через настоящий mTLS с production collector/center signing testdouble.
-verify/C03 58, PG58, race agent/collector/wire и Windows cross-build passed. Публикация
-нового increment pending; daemon метод ещё не вызывает. Next — Windows profile1.2.
+verify/C03 58, PG58, race agent/collector/wire и Windows cross-build passed. Публикация44803bf подтверждена:4hosted passed, fullv2 failed on isolatedBao restore
+(C15-D06); chain/relay10 passed beforefailure. Daemon метод ещё не вызывает. Next — Windows profile1.2.
 Далее — Windows profile 1.2, независимая bounded collection/heartbeat, DACL/locks/host
 binding, SCM/service/update, обычные права/Windows11/настоящий reboot и provider coverage.
 Native SDK 12 baseline секций ранее проверен на WindowsServer2022/elevated; это ещё не
@@ -63,3 +63,9 @@ success discard проверены с HTTPS testdouble; compiled live Linux11 pa
 (3cycles+restart4th/sameUID/verifiedACK/lock/revoke). verify/build/C03 58/race/
 Winbuild passed. Publication pending; Windows daemon/новый24h unrun.
 [Доказательства](plans/surveyscan-v2/evidence/C15-independent-collection.json).
+
+C15-D06: readiness guard before single snapshot-force, numericHTTPstatus diagnostics;
+actual local isolatedrestore9passed, hostedrepeatpending/causeoldfailureunconfirmed.
+All12Windowsprovider process isolation implementedlocal; crossbuild/testcompile
+passed, nativeCIpending. Read C15-all-provider-workers.json. Scheduler bf6c9a8 local
+commit; next publication includes scheduler/provider isolation/readiness regression.

@@ -716,3 +716,10 @@ no overlap иheartbeat progress passed with HTTPS testdouble. Actual compiled Li
 agent+collector+server/mTLS/PG11 passed (3cycles+restart4th, sameUID/counters/ACK/lock/
 revocation), verify/build/C03 58/race/Winbuild passed. C15-independent-collection.json;
 publication pending. Windows daemon/SCM/provider termination/new24h not claimed,57done.
+
+44803bf: fourhostedSUCCESS but fullv2 42231190362 failed at isolatedBao snapshot-force.
+C15-D06 preserves failure; original numericstatus lost/causeunconfirmed. Added active
+leader readiness before singlewrite and safe numericstatus; actual localrestore9passed,
+no write retry/source reset. Native Windows newincrement isolates all12providers in
+ownbinary bounded processes; Winbuild/testcompile passed, native executionpending.
+C15-all-provider-workers.json; scheduler bf6c9a8 committedlocalnotyetpushed.57done.

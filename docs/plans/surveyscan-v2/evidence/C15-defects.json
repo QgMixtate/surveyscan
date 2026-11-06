@@ -42,6 +42,16 @@
       "fix": "non-HTML-expanding JSON encoder, explicit post-serialization maxPacketBytes guard on pending and receipt writes; reader bound unchanged",
       "local_verification": "actual mTLS C03 admission202 +disk canonical/digest roundtrip +sender replay202; new packet479799bytes; old escaped small packets readable; oversize rejected; race wire/collector passed",
       "hosted_verification": "fixed7ce0fda all5hostedSUCCESS; v242201674257/native42201674277/Windows42201674112/Web42201674383/evidence42201674420"
+    },
+    {
+      "id": "C15-D06",
+      "scope": "existing isolated OpenBao Raft restore harness during hosted44803bf",
+      "run_id": 42231190362,
+      "source_revision": "44803bfa151d356364c71688c9ea774ee12a326d",
+      "observed": "snapshot-force returned non200/204 immediately after fresh-node unseal; old assertion did not retain numeric HTTPstatus",
+      "cause": "unconfirmed; independent readiness hazard identified: unseal response is not active Raft leader readiness",
+      "change": "wait for health200 initialized=true,sealed=false,standby=false before a single force-restore write; retain allowlisted numeric HTTPstatus on failure; no write retries/custody reset",
+      "local_verification": "actual separate disposable Raft restore9 passed; source untouched; hosted repeat pending"
     }
   ],
   "windows_inventory_tested": true,

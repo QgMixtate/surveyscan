@@ -57,9 +57,15 @@ func TestWorkerHelperProcess(t *testing.T) {
 }
 
 func TestWorkerFailureDoesNotDiscardOtherSections(t *testing.T) {
+	if os.Getenv("SURVEYSCAN_C15_TEST_AGENT") == "" {
+		t.Skip("requires built agent worker executable; configured in Windows CI")
+	}
 	original := workerCommand
 	defer func() { workerCommand = original }()
 	workerCommand = func(ctx context.Context, name string) (*exec.Cmd, error) {
+		if name != "updates" && name != "protection" {
+			return original(ctx, name)
+		}
 		path, err := os.Executable()
 		if err != nil {
 			return nil, err
@@ -183,5 +189,49 @@ func TestProviderFailureClassificationsAreSafe(t *testing.T) {
 		if status != item.status || reason != item.reason || strings.Contains(reason, "canary") {
 			t.Fatal("unsafe or inaccurate provider error")
 		}
+	}
+}
+
+// Previously only the two COM providers were isolated. A native registry/NetAPI
+// crash must now be represented as one failed section, preserving later data.
+func TestNonCOMWorkerFailureKeepsOtherNativeSections(t *testing.T) {
+	if os.Getenv("SURVEYSCAN_C15_TEST_AGENT") == "" {
+		t.Skip("requires built agent worker executable")
+	}
+	original := workerCommand
+	defer func() { workerCommand = original }()
+	workerCommand = func(ctx context.Context, name string) (*exec.Cmd, error) {
+		if name != "software" {
+			return original(ctx, name)
+		}
+		path, err := os.Executable()
+		if err != nil {
+			return nil, err
+		}
+		cmd := exec.CommandContext(ctx, path, "-test.run=^TestWorkerHelperProcess$")
+		cmd.Env = append(os.Environ(), "SURVEYSCAN_TEST_WORKER_MODE=crash")
+		return cmd, nil
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
+	defer cancel()
+	sections, err := Collect(ctx)
+	if err != nil || len(sections) != 12 {
+		t.Fatal("native provider crash discarded snapshot", err)
+	}
+	if sections[0].Count != 1 || sections[1].Count != 1 {
+		t.Fatal("earlier identity/OS discarded")
+	}
+	failed := false
+	later := false
+	for _, section := range sections {
+		if section.Name == "software" {
+			failed = section.Status == "unavailable" && section.Reason == "WORKER_FAILED" && section.Count == 0
+		}
+		if section.Name == "services" {
+			later = section.Status == "partial" && section.Count > 0
+		}
+	}
+	if !failed || !later {
+		t.Fatal("non-COM failure was not isolated from later native collection")
 	}
 }

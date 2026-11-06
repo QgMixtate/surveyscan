@@ -18,6 +18,9 @@ import (
 )
 
 func TestNativeWindowsBaseline(t *testing.T) {
+	if os.Getenv("SURVEYSCAN_C15_TEST_AGENT") == "" {
+		t.Skip("requires built agent worker executable; configured in Windows CI")
+	}
 	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	sections, err := Collect(ctx)

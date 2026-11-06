@@ -30,8 +30,9 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
-def main():
-    STATE.mkdir(exist_ok=True)
+def main(report_directory=None):
+    report_state = Path(report_directory) if report_directory is not None else STATE
+    report_state.mkdir(exist_ok=True)
     checks = []
     name = 'surveyscan-c13-restore-' + uuid.uuid4().hex[:16]
     created = False
@@ -67,7 +68,7 @@ def main():
         for _ in range(150):
             try:
                 status, result = request(address, 'sys/health')
-                if status == 200:
+                if status == 200 and result.get('initialized') is True and result.get('sealed') is False and result.get('standby') is False:
                     return result
             except OSError:
                 pass
@@ -75,7 +76,7 @@ def main():
         raise AssertionError('unsealed restored node did not become active')
     try:
         with contextlib.ExitStack() as cleanup:
-            directory = Path(cleanup.enter_context(tempfile.TemporaryDirectory(prefix='c13-bao-restore-', dir=STATE)))
+            directory = Path(cleanup.enter_context(tempfile.TemporaryDirectory(prefix='c13-bao-restore-', dir=report_state)))
             with fixture(directory) as source:
                 source_address = 'http://127.0.0.1:58200'
                 custody = json.loads((STATE / 'bao-init.json').read_text())
@@ -123,8 +124,11 @@ def main():
                     status, state = request(destination, 'sys/unseal', {'key': share})
                 assert status == 200 and not state['sealed']
                 checks.append('separate initially empty Raft node initialized/unsealed with temporary independent custody')
+                # Unseal response is not an active-leader readiness assertion.
+                # Do not retry a force-restore write or recreate custody on error.
+                healthy(destination)
                 status, _ = request(destination, 'sys/storage/raft/snapshot-force', snapshot, fresh['root_token'])
-                assert status in (200, 204), 'restore into own clean node failed'
+                assert status in (200, 204), f'restore into own clean node failed: HTTP{status}'
                 # Force restore changes barrier/root custody. It must use source recovery material.
                 for _ in range(150):
                     try:
@@ -195,7 +199,7 @@ def main():
                           'unrun': ['complete PG/Bao/filesystem checkpoint', 'production HTTPS/KMS/split custody',
                                     'CA leaf issuance plus application replay after full restore', 'systemd/clean OS boot', 'DR/RPO/RTO']}
                 source['assert_redacted'](json.dumps(report))
-                (STATE / 'c13-bao-restore-smoke.json').write_text(json.dumps(report, indent=2) + '\n')
+                (report_state / 'c13-bao-restore-smoke.json').write_text(json.dumps(report, indent=2) + '\n')
                 print(json.dumps(report))
     finally:
         remove()

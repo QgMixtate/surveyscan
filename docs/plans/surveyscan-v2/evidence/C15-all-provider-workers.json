@@ -1,0 +1,21 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "status": "partial",
+  "change": "all12 native providers execute in bounded own-binary child processes",
+  "local_checks": {
+    "linux_verify_C03": "passed;58 fixtures",
+    "windows_amd64_agent_crossbuild": "passed",
+    "windows_native_tests_crosscompile": "passed"
+  },
+  "native_execution": "pending hosted Windows; not locally executed",
+  "existing_safety": "closed section names,30s child deadline,1s WaitDelay, bounded stdout, discarded stderr, cancellation/kill/wait; no config/keys in child",
+  "new_test": "crashed software provider retains earlier identity/OS and later services",
+  "unrun": [
+    "Windows runtime/profile1.2",
+    "DACL/locks/SCM stop/reboot/rights matrix",
+    "provider complete coverage"
+  ],
+  "completed_global_tasks": 57
+}

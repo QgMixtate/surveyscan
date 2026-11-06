@@ -31,7 +31,7 @@ func failedSection(name, status, reason string) contracts.Section {
 }
 
 func workerSection(ctx context.Context, name string, timeout time.Duration) contracts.Section {
-	if name != "updates" && name != "protection" {
+	if !contracts.InventorySection12(name) {
 		return failedSection(name, "unsupported", "SECTION_UNSUPPORTED")
 	}
 	if timeout <= 0 || timeout > 30*time.Second {

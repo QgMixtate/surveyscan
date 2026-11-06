@@ -99,9 +99,46 @@ func network(ctx context.Context) []map[string]any {
 	return rows
 }
 
-// Collect returns all section statuses; baseline sections remain partial because
-// full C15 coverage is not implemented. Unsupported sections never imply absence.
-// Only local APIs are called, with no shell, external targets or user file reads.
+// nativeSection runs only inside the dedicated read-only worker process.
+// COM providers use their own branch in WriteWorkerSection.
+func nativeSection(ctx context.Context, name string) contracts.Section {
+	var rows []map[string]any
+	switch name {
+	case "identity":
+		rows = identity()
+	case "os":
+		rows = operatingSystem()
+	case "network":
+		rows = network(ctx)
+	case "hardware":
+		rows = hardware()
+	case "software":
+		rows = software(ctx)
+	case "services":
+		rows = services(ctx)
+	case "users_groups":
+		if windows.RtlGetVersion().ProductType == 2 {
+			return failedSection(name, "unsupported", "LOCAL_SAM_UNSUPPORTED_ON_DC")
+		}
+		rows = accounts(ctx)
+	case "routes_ports":
+		rows = routes(ctx)
+	case "resources":
+		rows = resources(ctx)
+	case "neighbors":
+		rows = neighbors(ctx)
+	default:
+		return failedSection(name, "unsupported", "SECTION_UNSUPPORTED")
+	}
+	if len(rows) == 0 {
+		return failedSection(name, "unavailable", "API_DATA_UNAVAILABLE")
+	}
+	return contracts.Section{Name: name, CollectedAt: time.Now().UTC(), Status: "partial", Complete: false, Reason: "BASELINE_COVERAGE_ONLY", Count: len(rows), Records: rows}
+}
+
+// Collect isolates every native provider in our own bounded worker process.
+// A failed/timed-out provider cannot discard other section results or strand
+// an in-process registry/NetAPI call in the future daemon collection goroutine.
 func Collect(ctx context.Context) ([]contracts.Section, error) {
 	if err := ctx.Err(); err != nil {
 		return nil, err
@@ -109,36 +146,13 @@ func Collect(ctx context.Context) ([]contracts.Section, error) {
 	if runtime.GOARCH != "amd64" {
 		return nil, errors.New("Windows baseline currently targets amd64")
 	}
-	collectors := []struct {
-		name string
-		read func() []map[string]any
-	}{
-		{"identity", identity}, {"os", operatingSystem}, {"network", func() []map[string]any { return network(ctx) }},
-		{"hardware", hardware}, {"software", func() []map[string]any { return software(ctx) }}, {"updates", nil}, {"services", func() []map[string]any { return services(ctx) }},
-		{"users_groups", func() []map[string]any { return accounts(ctx) }}, {"routes_ports", func() []map[string]any { return routes(ctx) }}, {"resources", func() []map[string]any { return resources(ctx) }}, {"protection", nil}, {"neighbors", func() []map[string]any { return neighbors(ctx) }},
-	}
-	sections := make([]contracts.Section, 0, len(collectors))
-	for _, c := range collectors {
+	names := []string{"identity", "os", "network", "hardware", "software", "updates", "services", "users_groups", "routes_ports", "resources", "protection", "neighbors"}
+	sections := make([]contracts.Section, 0, len(names))
+	for _, name := range names {
 		if err := ctx.Err(); err != nil {
 			return sections, err
 		}
-		if c.name == "updates" || c.name == "protection" {
-			sections = append(sections, workerSection(ctx, c.name, 30*time.Second))
-			continue
-		}
-		rows := []map[string]any{}
-		status, reason := "unsupported", "ADAPTER_NOT_IMPLEMENTED"
-		if c.name == "users_groups" && windows.RtlGetVersion().ProductType == 2 {
-			reason = "LOCAL_SAM_UNSUPPORTED_ON_DC"
-		} else if c.read != nil {
-			rows = c.read()
-			status, reason = "partial", "BASELINE_COVERAGE_ONLY"
-			if len(rows) == 0 {
-				rows = []map[string]any{}
-				status, reason = "unavailable", "API_DATA_UNAVAILABLE"
-			}
-		}
-		sections = append(sections, contracts.Section{Name: c.name, CollectedAt: time.Now().UTC(), Status: status, Complete: false, Reason: reason, Count: len(rows), Records: rows})
+		sections = append(sections, workerSection(ctx, name, 30*time.Second))
 	}
 	return sections, nil
 }

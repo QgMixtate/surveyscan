@@ -3,8 +3,10 @@
 package windowsinventory
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"github.com/QgMixtate/surveyscan/v2/contracts"
 	"io"
 	"runtime"
 	"strconv"
@@ -258,8 +260,11 @@ func protectionRows() ([]map[string]any, error) {
 // WriteWorkerSection is a local read-only command. It does not read agent
 // configuration, keys, enrollment grants, target credentials or user files.
 func WriteWorkerSection(name string, output io.Writer) error {
-	if name != "updates" && name != "protection" {
+	if !contracts.InventorySection12(name) {
 		return ErrWorkerArguments
+	}
+	if name != "updates" && name != "protection" {
+		return json.NewEncoder(output).Encode(nativeSection(context.Background(), name))
 	}
 	runtime.LockOSThread()
 	defer runtime.UnlockOSThread()

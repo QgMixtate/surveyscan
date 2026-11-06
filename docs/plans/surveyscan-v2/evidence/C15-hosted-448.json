@@ -1,0 +1,36 @@
+{
+  "source_revision": "44803bfa151d356364c71688c9ea774ee12a326d",
+  "workflows": {
+    "windows": {
+      "id": 42231190370,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42231190602,
+      "conclusion": "success"
+    },
+    "native_linux": {
+      "id": 42231190389,
+      "conclusion": "success"
+    },
+    "acceptance_evidence": {
+      "id": 42231190392,
+      "conclusion": "success"
+    },
+    "v2": {
+      "id": 42231190362,
+      "conclusion": "failure",
+      "failed_step": "Isolated OpenBao Raft restore, non-exportable keys and restart",
+      "passed_before_failure": [
+        "center capabilities",
+        "partial12center6",
+        "signed chain/relay10",
+        "PG58 and live agent",
+        "rotation/profile/recovery checks"
+      ]
+    }
+  },
+  "defect": "C15-D06",
+  "all_workflows_success": false,
+  "completed_global_tasks": 57
+}

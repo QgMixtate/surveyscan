@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "44803bfa151d356364c71688c9ea774ee12a326d",
+  "publication": "published PR5;4 workflows passed/fullv2 failed at isolated Bao restore",
   "task": "C15.02",
   "status": "partial",
   "implemented": [
@@ -57,5 +57,6 @@
     "actual Windows continuous collection/delivery",
     "DACL/locks/SCM/ordinary rights/reboot/provider complete coverage"
   ],
-  "completed_global_tasks": 57
+  "completed_global_tasks": 57,
+  "hosted_evidence": "C15-hosted-448.json"
 }
