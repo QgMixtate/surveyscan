@@ -1,0 +1,30 @@
+{
+  "package": "C14",
+  "scope": "exact39e401f candidate browser acceptance; staticWeb8560f57 independent provenance",
+  "status": "passed",
+  "count": 16,
+  "checks": [
+    "production static bundle renders with strict CSP and no Node/CDN",
+    "invalid credentials rejected by real backend",
+    "real authenticated tenant asset list from PostgreSQL",
+    "explicit page filter and cursor boundaries",
+    "real asset detail and keyboard close/focus path",
+    "1440 and 800 responsive layouts render without document overflow",
+    "explicit mocked C03 partial/stale/unknown fixture matrix rendered distinctly",
+    "source registration and missing contact displayed separately",
+    "source profile shows unmanaged/applied revision and separates configuration contact from successful inventory",
+    "real published central profile revision is visible in source UI without changing inventory freshness",
+    "no tokens or credentials in web storage",
+    "real expired session clears old card and tenant workspace cache",
+    "real logout revokes browser session",
+    "new UI rejects old API deployment without C09 extension",
+    "version mismatch blocks login before API usage",
+    "zero runtime errors or external requests"
+  ],
+  "target": "Chromium + C09 detail API + production bundle + real compiled server/collector + synthetic signed source + PostgreSQL; strict CSP; no mocked auth/assets",
+  "unrun": [
+    "production/100-user load/24h soak"
+  ],
+  "source_revision": "39e401f6f0d5564ea132c8ad8accab84f4ff6a3e",
+  "candidate_proof": "C14-candidate-39.json"
+}

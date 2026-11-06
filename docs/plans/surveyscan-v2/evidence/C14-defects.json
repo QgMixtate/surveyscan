@@ -1,6 +1,6 @@
 {
   "package": "C14",
-  "status": "pre-soak findings recorded; C14.03 not complete",
+  "status": "triage complete for bounded E1; remediated reproduced cases and residual limitations recorded",
   "findings": [
     {
       "id": "C14-D01",
@@ -71,27 +71,31 @@
     {
       "id": "C14-D08",
       "component": "native CLI acceptance",
-      "status": "same CLI-login phase reproduced in hosted42126656841; HTTP503 in5.741s established; internal root cause still unconfirmed; C14.03 open",
+      "status": "remediated reproduced CPU-deadline class; native same48%CPU returns201/6336ms/exactly1session+revoke; PG lock still503/no session; full39e401f regression passed",
       "finding": "e7a07fe hosted first VM passed8checks then shipped CLI login command failed",
       "evidence": "C14-native-cli-failure.json",
-      "change": "safe exit/program/duration/allowlisted CLI error diagnostics plus successful operation timings; no retries/default timeout/production code changes",
+      "change": "login request budget5→8s within Write10/CLI15; unchanged Argon2/rates/hashslots2; safe diagnostics retained; controlled PGlock still fails closed at8s",
       "diagnostic_unit_tests": 5,
       "reproduction_campaign": "C14-hosted-802.json: fixed-size one extra two-VM campaign, no VM-internal retry/runtime changes",
-      "recurrence_evidence": "C14-native-cli-recurrence.json"
+      "recurrence_evidence": "C14-native-cli-recurrence.json",
+      "remediation_evidence": "C14-auth-budget.json",
+      "causality": "controlled native hash6464ms proves post-hash5s deadline counterexample; original historical failure lacked backend trace and its exact internal cause cannot be established",
+      "regression_evidence": "C14-hosted-39.json"
     },
     {
       "id": "C14-D09",
       "component": "native VM acceptance fixture, before application startup",
-      "status": "local secondVM kernel stall after HPET switch; proposed hpet=off pending actual fresh VM",
-      "evidence": "C14-diagnostic-campaign.json",
-      "change": "Q35 hpet=off; alternate clock selected by guest; no forced clocksource/time/certificate shortcut",
-      "causality": "kernel trace stopped immediately after HPET switch; underlying emulator mechanism unproven, repeat required"
+      "status": "fixture remediation verified: hpet=off native before/after10+10 and hosted39e401f twofreshVM9+9 passed; original stalled run remains failed",
+      "evidence": "C14-auth-budget.json",
+      "change": "disable emulated HPET only in test fixture; guest selects alternate clock, no fake time/forced watchdog bypass",
+      "causality": "kernel trace stopped immediately after HPET switch; underlying emulator mechanism unproven, repeat required",
+      "regression_evidence": "C14-hosted-39.json"
     }
   ],
-  "remaining_gates": [
-    "complete actual>=86400s soak and inspect all faults/real leaf renewals",
-    "triage any actual soak findings and repeat affected acceptance",
-    "acceptance report/release notes/artifact final review",
-    "classify/resolve C14-D08 recurring CLI503 before final acceptance"
+  "remaining_gates": [],
+  "residual_limitations": [
+    "Exact internal cause of historical CLI503 cannot be proved without its original backend trace; reproduced CPU deadline class fixed and PG contention remains fail-closed.",
+    "No guarantee of login under arbitrary CPU/dependency saturation; diagnostics remain available.",
+    "Virtual HPET is disabled only in disposable acceptance VMs, not on production hosts."
   ]
 }

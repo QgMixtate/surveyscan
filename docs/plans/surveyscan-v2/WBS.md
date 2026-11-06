@@ -751,7 +751,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Исправления в рамках E1 и протокол регрессии.
 - Проверка: Нерешённые обязательные дефекты блокируют release claim.
 - База оценки: Только выявленные дефекты, не расширение в E2.
-- Статус: in_progress; recurring native CLI HTTP503/D08, root cause investigation.
+- Статус: done; D08 CPU deadline remediated, PG51/hosted/native/CPU regression passed; evidence/C14-auth-budget.json и C14-hosted-39.json.
 
 
 ## C14.04 — Выпустить проверяемую SMB-поставку
@@ -762,7 +762,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Release notes, ограничения, install/operations и приёмочный отчёт.
 - Проверка: Публикация/деплой только при соответствующем поручении.
 - База оценки: 1 релизный кандидат; все AC E1 с фактами passed/failed/unrun.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done; internal candidate27 files/test-sign/verify/stage/browser16; evidence/C14-acceptance.json. Official release/main merge/deploy не выполнялись.
 
 ## Выход пакета
 
@@ -772,6 +772,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 mock-vs-live, blockers и следующий готовый пакет. До фактической записи в GitHub результат локальный.
 Обновить статусы в plan.json/TASK_INDEX и краткий STATUS/REQUESTS. При частичном выполнении
 не помечать весь пакет done; следующий чат продолжает оставшиеся task IDs.
+
 
 
 # C15 — Постоянный Windows-агент (E2)
@@ -787,7 +788,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Матрица ОС/архитектуры/полей и privileges.
 - Проверка: Недоступные API не объявлены пустыми данными.
 - База оценки: Выбранные Windows versions и стандартные/админ права.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: done (design), Windows capabilities/rights matrix в PR5.
 
 ## C15.02 — Реализовать Windows-секции inventory
 
@@ -797,7 +798,8 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Оборудование, ПО/KB, службы, группы, сеть/диски/защита.
 - Проверка: Ошибка одной секции не уничтожает другие.
 - База оценки: Матрица §6.1 по поддержанным API; scripts policy C01.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress, eight native partial sections/isolated1.2validator; four sections and pipeline/SCM/reboot pending, PR5.
+
 
 ## C15.03 — Оформить service lifecycle и update
 

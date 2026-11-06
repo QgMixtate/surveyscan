@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C13 done bounded E1; C14.01/02 done; C14.03 in_progress; C14.04 planned; independent C15 branch54design+1soak=55done",
+  "status": "C01-C14 done bounded E1; C15.01 design done; C15.02 in_progress in separate Windows branch;57/200 done",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1325,13 +1325,14 @@
           "output": "Исправления в рамках E1 и протокол регрессии",
           "verification": "Нерешённые обязательные дефекты блокируют release claim",
           "estimation_basis": "Только выявленные дефекты, не расширение в E2",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Реализация",
           "evidence": [
+            "evidence/C14-auth-budget.json",
             "evidence/C14-defects.json",
-            "evidence/C14-native-cli-recurrence.json"
+            "evidence/C14-hosted-39.json"
           ],
-          "verification_status": "D08 recurring CLI503 root cause investigation; no timeout/auth weakening or retries"
+          "verification_status": "reproduced CPU deadline fixed; PG51/hosted all4/native twoVM9+9/pressure10/browser16 passed; exact historical cause retained as limitation"
         },
         {
           "id": "C14.04",
@@ -1343,11 +1344,18 @@
           "output": "Release notes, ограничения, install/operations и приёмочный отчёт",
           "verification": "Публикация/деплой только при соответствующем поручении",
           "estimation_basis": "1 релизный кандидат; все AC E1 с фактами passed/failed/unrun",
-          "status": "planned",
-          "work_group": "Проверка и передача"
+          "status": "done",
+          "work_group": "Проверка и передача",
+          "evidence": [
+            "evidence/C14-acceptance.json",
+            "evidence/C14-candidate-39.json",
+            "evidence/C14-candidate-browser-39.json",
+            "../../releases/surveyscan-v2-e1-candidate.md"
+          ],
+          "verification_status": "internal Linux E1 candidate27 files signed/verified/staged, test key deleted, exact artifacts Chromium16; no official release/main merge/deploy claim"
         }
       ],
-      "status": "in_progress",
+      "status": "done",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
     },
     {
@@ -1369,8 +1377,13 @@
           "output": "Матрица ОС/архитектуры/полей и privileges",
           "verification": "Недоступные API не объявлены пустыми данными",
           "estimation_basis": "Выбранные Windows versions и стандартные/админ права",
-          "status": "planned",
-          "work_group": "Подготовка и проектирование"
+          "status": "done",
+          "work_group": "Подготовка и проектирование",
+          "evidence": [
+            "https://github.com/QgMixtate/surveyscan/blob/981f4e7/docs/plans/surveyscan-v2/decisions/C15-windows-capabilities.md",
+            "https://github.com/QgMixtate/surveyscan/blob/981f4e7/docs/plans/surveyscan-v2/evidence/C15-cross-build.json"
+          ],
+          "verification_status": "document-reviewed matrix of 12 sections and rights; cross-build and architecture guards passed; native Windows unrun"
         },
         {
           "id": "C15.02",
@@ -1382,8 +1395,14 @@
           "output": "Оборудование, ПО/KB, службы, группы, сеть/диски/защита",
           "verification": "Ошибка одной секции не уничтожает другие",
           "estimation_basis": "Матрица §6.1 по поддержанным API; scripts policy C01",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "in_progress",
+          "work_group": "Реализация",
+          "evidence": [
+            "https://github.com/QgMixtate/surveyscan/blob/981f4e7/docs/plans/surveyscan-v2/contracts/C15/README.md",
+            "https://github.com/QgMixtate/surveyscan/blob/981f4e7/docs/plans/surveyscan-v2/contracts/C15/observation.schema.json",
+            "https://github.com/QgMixtate/surveyscan/blob/981f4e7/docs/plans/surveyscan-v2/evidence/C15-contract.json"
+          ],
+          "verification_status": "draft schema/Python19 and isolated Go payload validator corpus19+semantic7+malformed3 passed; make verify passed/C03 58; hosted repeat pending; pipeline/native Windows unrun"
         },
         {
           "id": "C15.03",
@@ -1412,8 +1431,9 @@
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "in_progress",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "preparation_authorization": "R-023: independent C15.01 preparation while actual C14.02 continues; no C14 acceptance bypass"
     },
     {
       "id": "C16",

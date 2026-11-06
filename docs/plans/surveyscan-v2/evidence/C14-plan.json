@@ -1,7 +1,7 @@
 {
   "package": "C14",
   "task": "C14.01",
-  "status": "actual24h accepted; D08/D09 triage open; release incomplete",
+  "status": "accepted bounded Linux E1; frozen24h baseline plus explicit auth/fixture delta regression",
   "date": "2026-11-06",
   "source": "decisions/C01-acceptance.md",
   "scenarios": [
@@ -31,7 +31,7 @@
         "AC-09",
         "AC-13"
       ],
-      "status": "passed scoped tests; native D08 under investigation",
+      "status": "passed scoped tests; reproduced D08 class remediated and regression passed",
       "evidence_candidates": [
         "C13-hosted.json",
         "C14-diagnostic-campaign.json"
@@ -172,7 +172,7 @@
         "AC-29",
         "AC-40"
       ],
-      "status": "passed scoped API/CLI/Web; native D08 under investigation",
+      "status": "passed scoped API/CLI/Web; reproduced D08 class remediated and regression passed",
       "evidence_candidates": [
         "C12-runtime.json",
         "C14-diagnostic-campaign.json"
@@ -211,7 +211,7 @@
         "C13-runtime.json",
         "C13-native-hosted.json"
       ],
-      "notes": "actual PID1/reboot, distinct nonroot UIDs/LoadCredential, queued source replay, server+collector+agent checked update; physical power failure unrun;4a589d2 hosted twoVM9+9 passed; localsecondVM pre-PID1 HPET stall retained as D09, replacement hpet=off pending",
+      "notes": "actual PID1/reboot, distinct nonroot UIDs/LoadCredential, queued source replay, server+collector+agent checked update; physical power failure unrun;4a589d2 hosted twoVM9+9 passed; localsecondVM pre-PID1 HPET stall retained as D09, replacement hpet=off verified local10+10 and hosted9+9",
       "command": "GO=go python scripts/boot_smoke.py (two fresh stands)"
     },
     {
@@ -256,7 +256,7 @@
         "AC-44",
         "AC-55"
       ],
-      "status": "passed bounded E1 architecture guard; release still gated",
+      "status": "passed bounded E1 architecture and candidate acceptance",
       "evidence_candidates": [
         "C14-architecture.json",
         "C14-plan.json"
