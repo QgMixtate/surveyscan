@@ -90,7 +90,7 @@ func network(ctx context.Context) []map[string]any {
 			ones, _ := prefix.Mask.Size()
 			addresses = append(addresses, map[string]any{"ip": ip.String(), "prefix": ones})
 		}
-		row := map[string]any{"name": nic.Name, "addresses": addresses}
+		row := map[string]any{"name": nic.Name, "addresses": addresses, "interface_index": nic.Index}
 		if len(nic.HardwareAddr) == 6 {
 			row["mac"] = strings.ToLower(nic.HardwareAddr.String())
 		}
@@ -115,7 +115,7 @@ func Collect(ctx context.Context) ([]contracts.Section, error) {
 	}{
 		{"identity", identity}, {"os", operatingSystem}, {"network", func() []map[string]any { return network(ctx) }},
 		{"hardware", hardware}, {"software", func() []map[string]any { return software(ctx) }}, {"updates", nil}, {"services", func() []map[string]any { return services(ctx) }},
-		{"users_groups", func() []map[string]any { return accounts(ctx) }}, {"routes_ports", func() []map[string]any { return routes(ctx) }}, {"resources", func() []map[string]any { return resources(ctx) }}, {"protection", nil}, {"neighbors", nil},
+		{"users_groups", func() []map[string]any { return accounts(ctx) }}, {"routes_ports", func() []map[string]any { return routes(ctx) }}, {"resources", func() []map[string]any { return resources(ctx) }}, {"protection", nil}, {"neighbors", func() []map[string]any { return neighbors(ctx) }},
 	}
 	sections := make([]contracts.Section, 0, len(collectors))
 	for _, c := range collectors {

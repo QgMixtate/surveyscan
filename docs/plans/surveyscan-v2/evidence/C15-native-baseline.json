@@ -66,7 +66,7 @@
     "implementation": "native local users/groups/membership public SID metadata",
     "local_windows_amd64_cross_compile": "passed",
     "GOOS_windows_vet": "passed",
-    "hosted_result": "pending",
+    "hosted_result": "success",
     "domain_controller_policy": "LOCAL_SAM_UNSUPPORTED_ON_DC; never enumerate domain SAM",
     "limits": {
       "page_bytes": 65536,
@@ -79,6 +79,27 @@
       "protection",
       "neighbors"
     ],
-    "credentials_or_SAM_LSA_secrets_read": false
+    "credentials_or_SAM_LSA_secrets_read": false,
+    "run_id": 42186520226,
+    "source_revision": "f32a755606b70a8002b6c28e9b1df3ee85048b56",
+    "token_elevated": true,
+    "native_users": 5,
+    "native_groups": 27,
+    "native_memberships": 8
+  },
+  "neighbor_increment": {
+    "implementation": "read-only local ARP/NDP cache via GetIpNetTable2",
+    "local_windows_amd64_cross_compile": "passed",
+    "GOOS_windows_vet": "passed",
+    "Go_wire_and_architecture": "passed",
+    "Python_schema_fixtures": 19,
+    "hosted_result": "pending",
+    "active_discovery": false,
+    "complete_topology_claim": false,
+    "remaining_unimplemented": [
+      "updates",
+      "protection"
+    ],
+    "network_interface_index": "optional draft1.2 field only; frozen C03/C09 untouched"
   }
 }

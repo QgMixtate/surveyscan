@@ -28,7 +28,7 @@ func TestNativeWindowsBaseline(t *testing.T) {
 		t.Fatal("native identity/OS baseline missing")
 	}
 	names := map[string]bool{}
-	implemented := map[string]bool{"identity": true, "os": true, "network": true, "hardware": true, "software": true, "services": true, "routes_ports": true, "resources": true, "users_groups": true}
+	implemented := map[string]bool{"identity": true, "os": true, "network": true, "hardware": true, "software": true, "services": true, "routes_ports": true, "resources": true, "users_groups": true, "neighbors": true}
 	for _, section := range sections {
 		if names[section.Name] || section.Complete || section.Count != len(section.Records) {
 			t.Fatal("incorrect section status or count")
@@ -74,7 +74,7 @@ func TestNativeWindowsBaseline(t *testing.T) {
 	if _, err = v.Payload(b); err != nil {
 		t.Fatal("native baseline violates draft payload contract")
 	}
-	t.Logf("native Windows nine-section baseline checked; three sections unsupported; token_elevated=%t; synthetic envelope; no delivery/service/reboot test", windows.GetCurrentProcessToken().IsElevated())
+	t.Logf("native Windows ten-section baseline checked; two sections unsupported; token_elevated=%t; synthetic envelope; no delivery/service/reboot test", windows.GetCurrentProcessToken().IsElevated())
 }
 
 func TestNativeWindowsCancellation(t *testing.T) {
@@ -141,4 +141,22 @@ func TestNativeLocalAccountsAndMembership(t *testing.T) {
 		t.Fatal("elevated local account enumeration unexpectedly empty")
 	}
 	t.Logf("native local SAM public metadata only: users=%d groups=%d memberships=%d; no account names/SIDs exported to test log", counts["user"], counts["group"], counts["membership"])
+}
+
+func TestNativeNeighborABIAndRows(t *testing.T) {
+	if unsafe.Sizeof(neighborRow{}) != 88 || unsafe.Offsetof(neighborTable{}.Rows) != 8 || unsafe.Offsetof(neighborRow{}.Flags) != 80 {
+		t.Fatal("native neighbor ABI layout mismatch")
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+	rows, err := neighborSnapshot(ctx)
+	if err != nil {
+		t.Fatal("native local neighbor API failed")
+	}
+	for _, row := range rows {
+		if row["interface_index"] == nil || row["address"] == "" || row["family"] == "" {
+			t.Fatal("native neighbor missing identity")
+		}
+	}
+	t.Logf("local ARP/NDP cache baseline rows=%d; no active probes or complete-topology claim", len(rows))
 }

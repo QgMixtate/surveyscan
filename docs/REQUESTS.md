@@ -613,3 +613,10 @@ localNetBIOS/BUILTIN. DC исключён: LOCAL_SAM_UNSUPPORTED_ON_DC, без d
 Windows cross-compile/vet + Linuxarchitecture/wire tests passed; native CIpending.
 NativeLocalAccountsAndMembership test проверяет users/groups/members/SID без вывода имён/SID.
 Триremainingсекцииupdates/protection/neighbors; C15.02fullpipeline/DACL/SCM/reboot ещёнеdone.
+
+Windows42186520226 наf32a755 SUCCESS: native9baseline/elevated, localSAM users5/groups27/
+memberships8; names/SIDs невыводились. Следующийnative increment — GetIpNetTable2 local
+ARP/NDPcache, max10000rows, ABItest, noactiveprobes/notcompletetopology. Optional interface_index
+добавленвdraft1.2networkRow (дляNIC/routes/neighborsjoin, неpersistentUID); C03/C09 unchanged.
+Crosscompile/vet/wire/architecture/Python19passed; новаяWindowsCIpending. Updates/protection
+иfullcoverage/signeddelivery/storage/API/DACL/SCM/standarduser/reboot остаютсянепринятыми.
