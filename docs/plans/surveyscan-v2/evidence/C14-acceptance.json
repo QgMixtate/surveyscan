@@ -1,0 +1,146 @@
+{
+  "package": "C14",
+  "status": "accepted bounded Linux E1 internal candidate",
+  "source_revision": "39e401f6f0d5564ea132c8ad8accab84f4ff6a3e",
+  "candidate": "C14-candidate-39.json",
+  "candidate_browser": "C14-candidate-browser-39.json",
+  "soak_baseline": "C14-soak-result.json",
+  "delta_regression": "C14-hosted-39.json",
+  "defect_disposition": "C14-defects.json",
+  "scenarios": [
+    {
+      "id": "E1-T01",
+      "status": "passed bounded Debian12 Linux",
+      "evidence": [
+        "C13-runtime.json",
+        "C13-native-hosted.json"
+      ]
+    },
+    {
+      "id": "E1-T02",
+      "status": "passed scoped tests; reproduced D08 class remediated and regression passed",
+      "evidence": [
+        "C13-hosted.json",
+        "C14-diagnostic-campaign.json"
+      ]
+    },
+    {
+      "id": "E1-T03",
+      "status": "passed actual24h frozen8560f57",
+      "evidence": [
+        "C13-runtime.json",
+        "C14-soak-result.json"
+      ]
+    },
+    {
+      "id": "E1-T04",
+      "status": "passed scoped tests",
+      "evidence": [
+        "C13-hosted.json"
+      ]
+    },
+    {
+      "id": "E1-T05",
+      "status": "passed scoped tests",
+      "evidence": [
+        "C13-hosted.json"
+      ]
+    },
+    {
+      "id": "E1-T06",
+      "status": "passed actual24h frozen8560f57",
+      "evidence": [
+        "C13-hosted.json",
+        "C14-soak-result.json"
+      ]
+    },
+    {
+      "id": "E1-T07",
+      "status": "passed bounded three-agent reconnect",
+      "evidence": [
+        "C14-reconnect.json",
+        "C13-hosted.json"
+      ]
+    },
+    {
+      "id": "E1-T08",
+      "status": "passed bounded PKI/Bao",
+      "evidence": [
+        "C11-lifecycle-matrix.json"
+      ]
+    },
+    {
+      "id": "E1-T09",
+      "status": "passed bounded identity fixtures",
+      "evidence": [
+        "C11-lifecycle-matrix.json"
+      ]
+    },
+    {
+      "id": "E1-T10",
+      "status": "passed scoped API/CLI/Web; reproduced D08 class remediated and regression passed",
+      "evidence": [
+        "C12-runtime.json",
+        "C14-diagnostic-campaign.json"
+      ]
+    },
+    {
+      "id": "E1-T11",
+      "status": "passed live bounded profile change",
+      "evidence": [
+        "C12-runtime.json"
+      ]
+    },
+    {
+      "id": "E1-T12",
+      "status": "passed native systemd",
+      "evidence": [
+        "C13-runtime.json",
+        "C13-native-hosted.json"
+      ]
+    },
+    {
+      "id": "E1-T13",
+      "status": "passed bounded checkpoint/upgrade",
+      "evidence": [
+        "C13-runtime.json"
+      ]
+    },
+    {
+      "id": "E1-T14",
+      "status": "passed actual24h frozen8560f57",
+      "evidence": [
+        "C14-soak.json",
+        "C14-preflight.json",
+        "C14-soak-result.json"
+      ]
+    },
+    {
+      "id": "E1-T15",
+      "status": "passed bounded E1 architecture and candidate acceptance",
+      "evidence": [
+        "C14-architecture.json",
+        "C14-plan.json"
+      ]
+    }
+  ],
+  "scope": [
+    "Linux/amd64 bounded E1 three-section inventory",
+    "continuous agent/collector/center and scoped OpenBao",
+    "separate static Web and CLI",
+    "actual24h measured8560f57 plus explicit auth/fixture regression on39e401f"
+  ],
+  "limitations": [
+    "Exact internal cause of historical CLI503 cannot be proved without its original backend trace; reproduced CPU deadline class fixed and PG contention remains fail-closed.",
+    "No guarantee of login under arbitrary CPU/dependency saturation; diagnostics remain available.",
+    "Virtual HPET is disabled only in disposable acceptance VMs, not on production hosts.",
+    "Windows/C15 full inventory, standard-user/SCM/reboot and productionKMS/HA/geo/100users/physicalpowerloss unrun"
+  ],
+  "publication": {
+    "source": "PR4 feature branch",
+    "official_release": false,
+    "main_merge": false,
+    "production_deploy": false
+  },
+  "global_completed_tasks": 57
+}

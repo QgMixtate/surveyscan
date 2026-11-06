@@ -1,6 +1,6 @@
 # Индекс чатов surveyscan v2
 
-Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07 — локальный collector/upload; C08 — live Linux host agent/heartbeat; C09 — отдельный Web UI/detail API; C10 recovery готов локально; C11 OpenBao/renewal принят локально, C12 CLI/profiles/diagnostics/operator готов локально; C13 done bounded E1; C14.01 done; C14.02 actual24h passed; C14.03 in_progress/C14.04 planned; C15.01 design done по R-023; C15.02 contract preparation in_progress; C15.03–C50 planned.
+Архитектура 0.5, 50 пакетов / 200 подзадач. C01–C03 — документы/контракты; C04 — локальный Go-каркас, PG/Bao/proxy и проверки. C05 — локальный auth/tenant scope; C06 — локальный реестр/outbox; C07 — локальный collector/upload; C08 — live Linux host agent/heartbeat; C09 — отдельный Web UI/detail API; C10 recovery готов локально; C11 OpenBao/renewal принят локально, C12 CLI/profiles/diagnostics/operator готов локально; C13 done bounded E1; C14.01 done; C14 done bounded E1; C15.01 design done/C15.02 in_progress в отдельной Windows-ветке.
 Один пакет ≈ один чат с возможным продолжением .a/.b. Вход — указанные зависимости с evidence.
 Не читать все 50 подробных файлов: выберите текущий ID и его spec sections.
 
@@ -19,8 +19,8 @@
 | [C11](packages/C11.md) | E1 | OpenBao и жизненный цикл машинных доступов | C10 | [Запрос](prompts/C11.md) | done (bounded E1) |
 | [C12](packages/C12.md) | E1 | CLI, управление циклом и наблюдаемость | C09, C11 | [Запрос](prompts/C12.md) | done (local E1) |
 | [C13](packages/C13.md) | E1 | Установка, сервисы, обновление и backup | C12 | [Запрос](prompts/C13.md) | done bounded E1 (two native VM9 + updater19) |
-| [C14](packages/C14.md) | E1 | Приёмка и выпуск первого рабочего SMB | C13 | [Запрос](prompts/C14.md) | in_progress (01/02 done;03 D08 triage) |
-| [C15](packages/C15.md) | E2 | Постоянный Windows-агент | C14 | [Запрос](prompts/C15.md) | in_progress (01 design done,02 contract draft; R-023/C14 pending) |
+| [C14](packages/C14.md) | E1 | Приёмка и выпуск первого рабочего SMB | C13 | [Запрос](prompts/C14.md) | done (bounded E1 candidate; 24h+delta evidence) |
+| [C15](packages/C15.md) | E2 | Постоянный Windows-агент | C14 | [Запрос](prompts/C15.md) | in_progress (01 done;02 native8 partial, PR5) |
 | [C16](packages/C16.md) | E2 | Постоянный Linux-агент и platform parity | C14 | [Запрос](prompts/C16.md) | planned |
 | [C17](packages/C17.md) | E2 | Безагентный SSH-сбор Linux | C14 | [Запрос](prompts/C17.md) | planned |
 | [C18](packages/C18.md) | E2 | Безагентный WinRM-сбор Windows | C14 | [Запрос](prompts/C18.md) | planned |

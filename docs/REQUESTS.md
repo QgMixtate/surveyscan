@@ -577,3 +577,32 @@ Controlled PGlock stillmusttimeout/rollback/no-cookie/no-session at8s; targetedt
 
 C15 sync: E1 parent39e401f merged, C14.02done and C15.01done preserved;55/200global.
 Login budget8s/diagnostics and testfixture HPET fixes included; combined CI pending.
+
+
+39e401f native after-test10checks PASS: same48%CPUquota→HTTP201/6336ms, exactly1credential
+created andexplicitlyrevoked; no implicitretries; explicit recoveryCLI also succeeds.
+Old5s source039af35 at48% gave503/verify6464ms/session_begin; controlleddeadlineclass nowremediated.
+Historicalinstance rootcause not retrospectivelyclaimed. RealPGlocknew8s→503/8007ms/verify119ms,
+zero credentials; explicitafterunlocklogincreates1. Both Q35hpet=off before/after freshVM10checks pass.
+Final realPG/fullhosted regression39e401f pending; C14.03 remainsIP until requiredregressionpasses.
+
+C14.04 preparation: clean39e401f candidate27files/test-Ed25519-sign/verify/stage passed;
+temporary private signingkeydeleted. Exactcandidate server/collector/contracts/staticWeb
+(Go39e401f/Webclean8560f57 independentversion) passedChromium16 withrealPG/API;
+synthetic signed source andexplicitmockdisplaycases declared. Notwholecandidate24hproof:
+24h baseline8560f57 + authdeltaPG/nativeCPU/hostedregression remain separate.
+Native39e401f hosted42183074101 twofreshVM9+9 SUCCESS; fullv242183074129 stillrunning.
+Local fullPGintegration51 passed, post-fix blockeduser stillfailsclosedat8s.
+
+C14 завершение:39e401f all4hosted SUCCESS;21 sanitized E1 reports и2freshVM9+9 сохранены/хешированы
+вC14-hosted-39.json. LocalPG51 иcandidate27files/sign/verify/stage/exactChromium16passed.
+C14.03/04done вbounded LinuxE1;57/200global сC15.01design. C14-acceptance.json явно разделяет
+measured24h8560f57 иauthdelta39e401f, сохраняет historicalfailures/residualunknowns.
+Внутреннийкандидат не является productiontrust/officialGitHubRelease; main/deploy/envpublication нет.
+Следующий шаг по автопродолжению — C15.02 в /workspace/surveyscan-c15/PR5:4native sections
+иnegotiated signedpipeline, затемDACL/SCM/reboot. Не считать8partial sections полноценным C15.
+
+
+C15 continuation: C14 accepted/fa73e47 metadata merged,57done. Combined981f4e7 all5hosted
+SUCCESS (v242183377291/boot42183377336/Web42183377340/C15Windows42183377357/evidence42183368906).
+Продолжать C15.02 users/groups native; полнаяpipeline/ordinaryrights/SCM/reboot всё ещёunrun.

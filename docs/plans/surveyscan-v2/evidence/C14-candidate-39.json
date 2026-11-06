@@ -1,0 +1,74 @@
+{
+  "package": "C14",
+  "task": "C14.04 preparation; gated on C14.03 regression",
+  "source": "39e401f6f0d5564ea132c8ad8accab84f4ff6a3e",
+  "version": "0.0.0-c13",
+  "files": 27,
+  "manifest_sha256": "b182d28dafae3f95beb30d678bdcc85fa3c9ab881f16927ea261d30a30b299ed",
+  "components": {
+    "surveyscan-agent": {
+      "component": "agent",
+      "go_version": "go1.27.3",
+      "inventory_implemented": true,
+      "revision": "39e401f6f0d5564ea132c8ad8accab84f4ff6a3e",
+      "source_dirty": "false",
+      "stage": "C12 Linux agent with profiles and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscan-collector": {
+      "component": "collector",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "39e401f6f0d5564ea132c8ad8accab84f4ff6a3e",
+      "source_dirty": "false",
+      "stage": "C12 durable HTTPS relay with profiles and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscan-server": {
+      "component": "server",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "39e401f6f0d5564ea132c8ad8accab84f4ff6a3e",
+      "source_dirty": "false",
+      "stage": "C12 scoped OpenBao, machine lifecycle and diagnostics",
+      "version": "0.0.0-c13"
+    },
+    "surveyscanctl": {
+      "component": "cli",
+      "go_version": "go1.27.3",
+      "inventory_implemented": false,
+      "revision": "39e401f6f0d5564ea132c8ad8accab84f4ff6a3e",
+      "source_dirty": "false",
+      "stage": "C12 human API client",
+      "version": "0.0.0-c13"
+    },
+    "web": {
+      "api_contract": "C03+C09+C12",
+      "c09_sha256": "620c32285a9cdb4aed9594908bd88d0323b62680a137bf77dbddb0c7b9e5d910",
+      "c09_version": "1.0",
+      "c12_sha256": "35fd764ec9f8282f4a75d97887d6318165a2835ebefe31dea5d0dc29a6ffde7f",
+      "component": "surveyscan-web",
+      "openapi_sha256": "d59b26ccbd6c9ec54135f082143f31ae820e2b57ff396ac886ceec04b4d11147",
+      "revision": "b8743028d870fbfbcebc5a77f53416fef09049a5",
+      "runtime": "static; no Node or CDN",
+      "source_dirty": "true",
+      "version": "0.1.0-c13-web",
+      "wire": {
+        "major": 1,
+        "minor": 0
+      }
+    }
+  },
+  "status": "test-signed/verified/staged internal candidate; not production trust or published release",
+  "same_three_binary_hashes_as_24h": false,
+  "delta_since_measured8560f57": "login8s headroom+safe diagnostics; actual24h evidence remains frozen baseline, delta tested separately",
+  "test_private_key_deleted": true,
+  "public_anchor_sha256": "303372c2e0f2b38b3bdebd4f3e786355d80cb71a807e0c28c980ee5cec0a0c75",
+  "browser": {
+    "status": "passed",
+    "checks": 16,
+    "target": "exact candidate payload binaries/contracts/static Web via isolated harness root",
+    "db": "real isolated PG/compiled server+collector",
+    "mocked": "explicit partial/stale/unknown display fixtures; synthetic signed source, not native host inventory"
+  }
+}
