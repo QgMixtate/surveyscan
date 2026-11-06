@@ -32,7 +32,7 @@ Status unknown остаётся только в старом import формат
 python docs/plans/surveyscan-v2/contracts/C15/validate.py
 ```
 
-Зависимости зафиксированы в requirements.txt (jsonschema + RFC3339 validator). Fixtures синтетические: 7 положительных, 12 отрицательных, включая
+Зависимости зафиксированы в requirements.txt (jsonschema + RFC3339 validator). Fixtures синтетические: 8 положительных, 16 отрицательных, включая
 independent section failure, старую версию, missing/duplicate section, count mismatch,
 несовместимые status/complete/records, raw command line, неизвестное поле и unsafe integer.
 Нет Windows API, HTTP, подписи/JCS, БД, SCM, reboot или проверки реальных привилегий.
@@ -45,3 +45,7 @@ independent section failure, старую версию, missing/duplicate sectio
 Hosted Windows первый запуск42125403759 на bb5c344 failed до Go/version: Python
 прочитал UTF-8 fixtures через cp1252. Исправлено явным UTF-8; repeat требуется.
 Это дефект нового checker, а не пройденная проверка native inventory.
+
+C15 draft software rows now require registry_key (Uninstall subkey); current_user also requires
+principal_sid from the current token. Machine rows cannot carry principal_sid. These are
+provider-local locators, not asset_uid. Historical 19-fixture evidence stays historical; current corpus24.

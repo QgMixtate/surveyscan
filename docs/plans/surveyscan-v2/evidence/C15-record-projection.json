@@ -1,0 +1,29 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "date_utc": "2026-11-06T09:45:10.655067+00:00",
+  "task": "C15.02",
+  "status": "partial",
+  "migration": {
+    "id": "0033_records12",
+    "catalog_count": 34,
+    "owned_tables": 47,
+    "old_migrations_unchanged": true
+  },
+  "checks": {
+    "make_verify": "passed; unit/vet/architecture/C03 58",
+    "draft_python": "24/24 (8 positive,16 negative)",
+    "windows_crosscompile_vet": "passed; actual native new locator run pending",
+    "postgres_full_suite": "53 top-level PASS before separately added upgrade test; zero fail/skip",
+    "append_only_upgrade": "separate actual PG test PASS:33→34, old evidence/facts/assets/ledger unchanged, repeat0, old catalog rejected",
+    "projection_fixture": "signed synthetic fixture/direct internal call/rolled-back transaction, real PG; not HTTP admission/delivery"
+  },
+  "unrun": [
+    "new native Windows locator hosted verification",
+    "full field/coverage/deletion",
+    "1.2 negotiation/signed delivery/API",
+    "concurrent collection/heartbeat",
+    "Windows DACL/locks/continuity/SCM/reboot"
+  ],
+  "completed_global_tasks": 57
+}

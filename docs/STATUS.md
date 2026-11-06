@@ -47,3 +47,10 @@ Worker30s/1MiB/typedJSON/kill+reap; C15-D03 io.Copy обход bounds испра
 57done сохраняется: C15.02 не закрыт. Следующий блок — protocol negotiation, корректная
 проекция/identity/coverage новых rows, совместимый detail API и отдельная collectiontask
 в scheduler. Нельзя просто включить1.2: старый flatten() молча игнорирует новые sections.
+
+C15.02 новый локальный increment: отдельные record_facts12/record_section_state12,
+append-only0033 (34migrations/47tables), field provenance/partial preservation/ranking.
+Legacy unknown sections failclosed; C09 detail unchanged. PG53 + отдельный upgrade33→34
+passed; draft24/24, makeverify/C03 58, Windowscrosscompile/vet passed. Hosted новогоsource
+ещёpending. Runtime1.2 не включён; fullcoverage/negotiation/API/scheduler/SCM/reboot pending.
+Решение decisions/C15-record-projection.md;57done не изменяется.

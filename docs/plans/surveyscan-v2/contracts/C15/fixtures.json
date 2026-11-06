@@ -828,7 +828,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -1037,7 +1038,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -1252,7 +1254,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -1467,7 +1470,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -1667,7 +1671,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -1881,7 +1886,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -2096,7 +2102,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -2311,7 +2318,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -2526,7 +2534,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -2741,7 +2750,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -2957,7 +2967,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -3173,7 +3184,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -3387,7 +3399,8 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
-              "registry_view": "64"
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
             }
           ]
         },
@@ -3602,7 +3615,1090 @@
               "name": "Sample",
               "scope": "machine",
               "source": "uninstall_registry",
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
+            }
+          ]
+        },
+        {
+          "name": "updates",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "id": "KB0000000",
+              "source": "qfe"
+            }
+          ]
+        },
+        {
+          "name": "services",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Example",
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "name": "users_groups",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "membership",
+              "sid": "S-1-5-21-1",
+              "group_sid": "S-1-5-32-545"
+            }
+          ]
+        },
+        {
+          "name": "routes_ports",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "route",
+              "family": "ipv6",
+              "destination": "::/0",
+              "interface_index": 1
+            }
+          ]
+        },
+        {
+          "name": "resources",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "volume",
+              "name": "C:\\",
+              "free_bytes": 0
+            }
+          ]
+        },
+        {
+          "name": "protection",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "firewall",
+              "name": "Domain",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "neighbors",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "family": "ipv6",
+              "address": "fe80::1",
+              "interface_index": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "software-current-user",
+    "expected_valid": true,
+    "payload": {
+      "schema_version": {
+        "major": 1,
+        "minor": 2
+      },
+      "observation_id": "00000000-0000-4000-8000-000000000006",
+      "tenant_id": "00000000-0000-4000-8000-000000000001",
+      "origin": {
+        "source_id": "00000000-0000-4000-8000-000000000002",
+        "source_kind": "agent",
+        "generation_id": "00000000-0000-4000-8000-000000000003"
+      },
+      "source_record": {
+        "namespace": "host",
+        "source_local_id": "host-record-001"
+      },
+      "scope": {
+        "site_id": "00000000-0000-4000-8000-000000000004",
+        "network_scope_id": "00000000-0000-4000-8000-000000000005"
+      },
+      "source_sequence": "10",
+      "collected_at": "2026-11-03T07:00:00Z",
+      "clock_quality": "trusted",
+      "identity_candidates": [
+        {
+          "kind": "hostname",
+          "namespace": "hostname.raw",
+          "value": "тестовый-хост"
+        }
+      ],
+      "sections": [
+        {
+          "name": "identity",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "hostname": "хост-01",
+              "domain": "example.invalid"
+            }
+          ]
+        },
+        {
+          "name": "os",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Windows Server",
+              "version": "2022",
+              "architecture": "amd64"
+            }
+          ]
+        },
+        {
+          "name": "network",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Ethernet",
+              "addresses": []
+            }
+          ]
+        },
+        {
+          "name": "hardware",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "memory",
+              "name": "RAM",
+              "bytes": 8589934592
+            }
+          ]
+        },
+        {
+          "name": "software",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Sample",
+              "scope": "current_user",
+              "source": "uninstall_registry",
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0",
+              "principal_sid": "S-1-5-21-100-200-300-1001"
+            }
+          ]
+        },
+        {
+          "name": "updates",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "id": "KB0000000",
+              "source": "qfe"
+            }
+          ]
+        },
+        {
+          "name": "services",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Example",
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "name": "users_groups",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "membership",
+              "sid": "S-1-5-21-1",
+              "group_sid": "S-1-5-32-545"
+            }
+          ]
+        },
+        {
+          "name": "routes_ports",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "route",
+              "family": "ipv6",
+              "destination": "::/0",
+              "interface_index": 1
+            }
+          ]
+        },
+        {
+          "name": "resources",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "volume",
+              "name": "C:\\",
+              "free_bytes": 0
+            }
+          ]
+        },
+        {
+          "name": "protection",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "firewall",
+              "name": "Domain",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "neighbors",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "family": "ipv6",
+              "address": "fe80::1",
+              "interface_index": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "software-missing-registry-key",
+    "expected_valid": false,
+    "payload": {
+      "schema_version": {
+        "major": 1,
+        "minor": 2
+      },
+      "observation_id": "00000000-0000-4000-8000-000000000006",
+      "tenant_id": "00000000-0000-4000-8000-000000000001",
+      "origin": {
+        "source_id": "00000000-0000-4000-8000-000000000002",
+        "source_kind": "agent",
+        "generation_id": "00000000-0000-4000-8000-000000000003"
+      },
+      "source_record": {
+        "namespace": "host",
+        "source_local_id": "host-record-001"
+      },
+      "scope": {
+        "site_id": "00000000-0000-4000-8000-000000000004",
+        "network_scope_id": "00000000-0000-4000-8000-000000000005"
+      },
+      "source_sequence": "10",
+      "collected_at": "2026-11-03T07:00:00Z",
+      "clock_quality": "trusted",
+      "identity_candidates": [
+        {
+          "kind": "hostname",
+          "namespace": "hostname.raw",
+          "value": "тестовый-хост"
+        }
+      ],
+      "sections": [
+        {
+          "name": "identity",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "hostname": "хост-01",
+              "domain": "example.invalid"
+            }
+          ]
+        },
+        {
+          "name": "os",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Windows Server",
+              "version": "2022",
+              "architecture": "amd64"
+            }
+          ]
+        },
+        {
+          "name": "network",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Ethernet",
+              "addresses": []
+            }
+          ]
+        },
+        {
+          "name": "hardware",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "memory",
+              "name": "RAM",
+              "bytes": 8589934592
+            }
+          ]
+        },
+        {
+          "name": "software",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Sample",
+              "scope": "machine",
+              "source": "uninstall_registry",
               "registry_view": "64"
+            }
+          ]
+        },
+        {
+          "name": "updates",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "id": "KB0000000",
+              "source": "qfe"
+            }
+          ]
+        },
+        {
+          "name": "services",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Example",
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "name": "users_groups",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "membership",
+              "sid": "S-1-5-21-1",
+              "group_sid": "S-1-5-32-545"
+            }
+          ]
+        },
+        {
+          "name": "routes_ports",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "route",
+              "family": "ipv6",
+              "destination": "::/0",
+              "interface_index": 1
+            }
+          ]
+        },
+        {
+          "name": "resources",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "volume",
+              "name": "C:\\",
+              "free_bytes": 0
+            }
+          ]
+        },
+        {
+          "name": "protection",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "firewall",
+              "name": "Domain",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "neighbors",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "family": "ipv6",
+              "address": "fe80::1",
+              "interface_index": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "software-user-missing-principal",
+    "expected_valid": false,
+    "payload": {
+      "schema_version": {
+        "major": 1,
+        "minor": 2
+      },
+      "observation_id": "00000000-0000-4000-8000-000000000006",
+      "tenant_id": "00000000-0000-4000-8000-000000000001",
+      "origin": {
+        "source_id": "00000000-0000-4000-8000-000000000002",
+        "source_kind": "agent",
+        "generation_id": "00000000-0000-4000-8000-000000000003"
+      },
+      "source_record": {
+        "namespace": "host",
+        "source_local_id": "host-record-001"
+      },
+      "scope": {
+        "site_id": "00000000-0000-4000-8000-000000000004",
+        "network_scope_id": "00000000-0000-4000-8000-000000000005"
+      },
+      "source_sequence": "10",
+      "collected_at": "2026-11-03T07:00:00Z",
+      "clock_quality": "trusted",
+      "identity_candidates": [
+        {
+          "kind": "hostname",
+          "namespace": "hostname.raw",
+          "value": "тестовый-хост"
+        }
+      ],
+      "sections": [
+        {
+          "name": "identity",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "hostname": "хост-01",
+              "domain": "example.invalid"
+            }
+          ]
+        },
+        {
+          "name": "os",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Windows Server",
+              "version": "2022",
+              "architecture": "amd64"
+            }
+          ]
+        },
+        {
+          "name": "network",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Ethernet",
+              "addresses": []
+            }
+          ]
+        },
+        {
+          "name": "hardware",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "memory",
+              "name": "RAM",
+              "bytes": 8589934592
+            }
+          ]
+        },
+        {
+          "name": "software",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Sample",
+              "scope": "current_user",
+              "source": "uninstall_registry",
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0"
+            }
+          ]
+        },
+        {
+          "name": "updates",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "id": "KB0000000",
+              "source": "qfe"
+            }
+          ]
+        },
+        {
+          "name": "services",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Example",
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "name": "users_groups",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "membership",
+              "sid": "S-1-5-21-1",
+              "group_sid": "S-1-5-32-545"
+            }
+          ]
+        },
+        {
+          "name": "routes_ports",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "route",
+              "family": "ipv6",
+              "destination": "::/0",
+              "interface_index": 1
+            }
+          ]
+        },
+        {
+          "name": "resources",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "volume",
+              "name": "C:\\",
+              "free_bytes": 0
+            }
+          ]
+        },
+        {
+          "name": "protection",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "firewall",
+              "name": "Domain",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "neighbors",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "family": "ipv6",
+              "address": "fe80::1",
+              "interface_index": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "software-machine-with-principal",
+    "expected_valid": false,
+    "payload": {
+      "schema_version": {
+        "major": 1,
+        "minor": 2
+      },
+      "observation_id": "00000000-0000-4000-8000-000000000006",
+      "tenant_id": "00000000-0000-4000-8000-000000000001",
+      "origin": {
+        "source_id": "00000000-0000-4000-8000-000000000002",
+        "source_kind": "agent",
+        "generation_id": "00000000-0000-4000-8000-000000000003"
+      },
+      "source_record": {
+        "namespace": "host",
+        "source_local_id": "host-record-001"
+      },
+      "scope": {
+        "site_id": "00000000-0000-4000-8000-000000000004",
+        "network_scope_id": "00000000-0000-4000-8000-000000000005"
+      },
+      "source_sequence": "10",
+      "collected_at": "2026-11-03T07:00:00Z",
+      "clock_quality": "trusted",
+      "identity_candidates": [
+        {
+          "kind": "hostname",
+          "namespace": "hostname.raw",
+          "value": "тестовый-хост"
+        }
+      ],
+      "sections": [
+        {
+          "name": "identity",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "hostname": "хост-01",
+              "domain": "example.invalid"
+            }
+          ]
+        },
+        {
+          "name": "os",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Windows Server",
+              "version": "2022",
+              "architecture": "amd64"
+            }
+          ]
+        },
+        {
+          "name": "network",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Ethernet",
+              "addresses": []
+            }
+          ]
+        },
+        {
+          "name": "hardware",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "memory",
+              "name": "RAM",
+              "bytes": 8589934592
+            }
+          ]
+        },
+        {
+          "name": "software",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Sample",
+              "scope": "machine",
+              "source": "uninstall_registry",
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0",
+              "principal_sid": "S-1-5-21-100-200-300-1001"
+            }
+          ]
+        },
+        {
+          "name": "updates",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "id": "KB0000000",
+              "source": "qfe"
+            }
+          ]
+        },
+        {
+          "name": "services",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Example",
+              "state": "running"
+            }
+          ]
+        },
+        {
+          "name": "users_groups",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "membership",
+              "sid": "S-1-5-21-1",
+              "group_sid": "S-1-5-32-545"
+            }
+          ]
+        },
+        {
+          "name": "routes_ports",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "route",
+              "family": "ipv6",
+              "destination": "::/0",
+              "interface_index": 1
+            }
+          ]
+        },
+        {
+          "name": "resources",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "volume",
+              "name": "C:\\",
+              "free_bytes": 0
+            }
+          ]
+        },
+        {
+          "name": "protection",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "firewall",
+              "name": "Domain",
+              "enabled": true
+            }
+          ]
+        },
+        {
+          "name": "neighbors",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "family": "ipv6",
+              "address": "fe80::1",
+              "interface_index": 1
+            }
+          ]
+        }
+      ]
+    }
+  },
+  {
+    "id": "software-invalid-principal",
+    "expected_valid": false,
+    "payload": {
+      "schema_version": {
+        "major": 1,
+        "minor": 2
+      },
+      "observation_id": "00000000-0000-4000-8000-000000000006",
+      "tenant_id": "00000000-0000-4000-8000-000000000001",
+      "origin": {
+        "source_id": "00000000-0000-4000-8000-000000000002",
+        "source_kind": "agent",
+        "generation_id": "00000000-0000-4000-8000-000000000003"
+      },
+      "source_record": {
+        "namespace": "host",
+        "source_local_id": "host-record-001"
+      },
+      "scope": {
+        "site_id": "00000000-0000-4000-8000-000000000004",
+        "network_scope_id": "00000000-0000-4000-8000-000000000005"
+      },
+      "source_sequence": "10",
+      "collected_at": "2026-11-03T07:00:00Z",
+      "clock_quality": "trusted",
+      "identity_candidates": [
+        {
+          "kind": "hostname",
+          "namespace": "hostname.raw",
+          "value": "тестовый-хост"
+        }
+      ],
+      "sections": [
+        {
+          "name": "identity",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "hostname": "хост-01",
+              "domain": "example.invalid"
+            }
+          ]
+        },
+        {
+          "name": "os",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Windows Server",
+              "version": "2022",
+              "architecture": "amd64"
+            }
+          ]
+        },
+        {
+          "name": "network",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Ethernet",
+              "addresses": []
+            }
+          ]
+        },
+        {
+          "name": "hardware",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "kind": "memory",
+              "name": "RAM",
+              "bytes": 8589934592
+            }
+          ]
+        },
+        {
+          "name": "software",
+          "collected_at": "2026-11-03T07:00:00Z",
+          "status": "ok",
+          "collection_complete": true,
+          "reason_code": "COLLECTED",
+          "record_count": 1,
+          "records": [
+            {
+              "name": "Sample",
+              "scope": "current_user",
+              "source": "uninstall_registry",
+              "registry_view": "64",
+              "registry_key": "synthetic-uninstall-0",
+              "principal_sid": "not-a-sid"
             }
           ]
         },

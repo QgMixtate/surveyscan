@@ -648,3 +648,10 @@ C15-D03 fixed privatebuffer +Linux/Windows io.Copy regression. makeverify/C03 58
 Не считатьЭтоготовымWindowsagent: fullfieldcoverage, signed1.2pipeline, PGprojection/API,
 independentcollection scheduler, DACL/locks/SCM/reboot/ordinaryrights ещёнеприняты.57done.
 Следующее — C15.02 backendintegration по decisions/C15-pipeline-gates.md.
+
+R-020/R-022/R-023 продолжение2026-11-06: C15.02 server projection foundation.
+Новая миграция0033 (34/47), отдельные typed record facts с per-field provenance и partial
+preservation; unknown legacy sections reject; registry locator + current token SID для HKCU.
+Local makeverify/C03 58, Python24, Winbuild/vet, PG53 + отдельный upgrade33→34passed.
+Подписи в PGfixture синтетические; trusted internal primitive, rollback, не signed HTTP E2E.
+Публикация/новый hosted proofpending; C15.02IP/57done, дальше API/negotiation/scheduler gates.

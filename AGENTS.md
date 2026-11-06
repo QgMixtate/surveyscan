@@ -225,3 +225,9 @@ C14-hosted-802.json:21 v2 reports/Web16/дваprimaryVM9+9+дваextraVM9+9;15 P
 сохранён дляC14.03, auth/timeouts не менялись, VM retry нет. Actualsoak уже≥9h, все4fault/restart
 действия выполнены, queuesempty, evidence audit pending.53done/C14.02IP. Private pinnedfollow-up
 843094 запишетreview автоматически послеfinish; не меняетGit/plan/C15 и не запускает чат.
+
+C15 record projection checkpoint2026-11-06: independent tables0033_records12, currentC15catalog34/47ownedtables
+(E1baseline33/45 unchanged). Internal ProjectPartial12 only partial+no deletion; old C09 tables unchanged.
+LegacyProject rejectsunknownsections. Draftsoftware requiresregistry_key; HKCUprincipal_sid.
+Readdecisions/C15-record-projection.md/evidence/C15-record-projection.json forlatestverification/publication.
+Runtime1.2notenabled; C15.02stillIP/57done. AppliedSQL0000–0032immutable.

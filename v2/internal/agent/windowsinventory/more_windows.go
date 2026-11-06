@@ -71,10 +71,18 @@ func hardware() []map[string]any {
 
 func software(ctx context.Context) []map[string]any {
 	rows := []map[string]any{}
+	// The current token identifies HKCU; never load another profile hive.
+	principal := ""
+	if user, err := windows.GetCurrentProcessToken().GetTokenUser(); err == nil {
+		principal = user.User.Sid.String()
+	}
 	for _, root := range []struct {
 		key   registry.Key
 		scope string
 	}{{registry.LOCAL_MACHINE, "machine"}, {registry.CURRENT_USER, "current_user"}} {
+		if root.scope == "current_user" && principal == "" {
+			continue
+		}
 		for _, view := range []struct {
 			flag uint32
 			name string
@@ -97,8 +105,11 @@ func software(ctx context.Context) []map[string]any {
 					continue
 				}
 				name := registryText(entry, "DisplayName", 256)
-				if name != "" {
-					row := map[string]any{"name": name, "scope": root.scope, "source": "uninstall_registry", "registry_view": view.name}
+				if name != "" && safeText(subkey, 256) != "" {
+					row := map[string]any{"name": name, "scope": root.scope, "source": "uninstall_registry", "registry_view": view.name, "registry_key": subkey}
+					if root.scope == "current_user" {
+						row["principal_sid"] = principal
+					}
 					for property, valueName := range map[string]string{"version": "DisplayVersion", "vendor": "Publisher"} {
 						if value := registryText(entry, valueName, 256); value != "" {
 							row[property] = value

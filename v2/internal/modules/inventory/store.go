@@ -96,6 +96,9 @@ func existingRank(ctx context.Context, tx pgx.Tx, tenant, obs, section string) (
 }
 func flatten(s contracts.Section) (map[string]string, error) {
 	out := map[string]string{}
+	if s.Name != "identity" && s.Name != "os" && s.Name != "network" {
+		return nil, domain.Invalid
+	}
 	for _, row := range s.Records {
 		switch s.Name {
 		case "identity":
@@ -125,6 +128,12 @@ func flatten(s contracts.Section) (map[string]string, error) {
 	return out, nil
 }
 func (Store) Project(ctx context.Context, tx pgx.Tx, o contracts.Observation, asset, link, record string, priority int) (bool, error) {
+	// Reject unsupported sections before any projection writes, including empty ones.
+	for _, section := range o.Sections {
+		if section.Name != "identity" && section.Name != "os" && section.Name != "network" {
+			return false, domain.Invalid
+		}
+	}
 	changed := false
 	for _, section := range o.Sections {
 		next := rank{o.Origin.SourceID, o.Origin.GenerationID, record, o.Sequence, o.Clock, priority, section.CollectedAt}

@@ -49,7 +49,7 @@ def main():
                     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
                         tar.extractall(source, filter='data')
                     source = source / 'v2'
-                    (source / 'internal/platform/messaging/schema/0033_c13_update_acceptance.sql').write_text(
+                    (source / 'internal/platform/messaging/schema/0034_c13_update_acceptance.sql').write_text(
                         'CREATE TABLE messaging.c13_update_acceptance (row_id bigint PRIMARY KEY);\n')
                 distribution = work / ('dist-' + version)
                 distribution.mkdir()
@@ -223,7 +223,7 @@ def main():
                 result = updater.apply(root, public, controller, recover=True)
                 assert result['phase'] == 'complete' and controller.healthy()
                 checks.append('explicit recovery after fixing own drift fixture restores matching current release without deleting state or identities')
-                # Actual compiled schema33->34 fixture: require checkpoint, then refuse rollback after committed DDL.
+                # Actual compiled schema34->35 fixture: require checkpoint, then refuse rollback after committed DDL.
                 from pg_backup import Client, backup
                 from checkpoint import pack
                 from bao_restore_fixture import call
@@ -248,18 +248,18 @@ def main():
                 result = updater.apply(root, public, controller)
                 assert controller.applied_migrations == 1 and result['phase'] == 'recovery_required'
                 assert updater.active(base) == versions[3] and (base / 'update.fence').exists()
-                assert s['sql']('SELECT count(*) FROM platform.schema_migrations') == '34'
+                assert s['sql']('SELECT count(*) FROM platform.schema_migrations') == '35'
                 assert not controller.check_schema(base / 'releases' / versions[2] / 'bin/surveyscan-server')
                 controller.fail_version = None
                 result = updater.apply(root, public, controller, recover=True)
                 assert result['phase'] == 'complete' and controller.healthy()
                 assert s['sql']('SELECT asset_uid::text FROM assets.assets') == s['asset']
-                checks.append('actual compiled test-only schema33→34 requires verified common checkpoint; committed DDL plus failed startup keeps fence, refuses schema33 rollback and explicitly recovers ready schema34')
+                checks.append('actual compiled test-only schema34→35 requires verified common checkpoint; committed DDL plus failed startup keeps fence, refuses schema34 rollback and explicitly recovers ready schema35')
                 with updater.locked(root):
                     refused(lambda: updater.prepare(root, bundles[base_version], public))
                 checks.append('installation-wide writer lock refuses a concurrent updater')
                 report = {'package': 'C13', 'task': 'C13.02', 'status': 'passed', 'count': len(checks), 'checks': checks,
-                          'target': 'actual signed ELF releases/server processes, PostgreSQL, TLS/login/registry, original UID; explicit bad listen/ledger drift and private compiled append-only migration34 fixtures (product SQL unchanged)',
+                          'target': 'actual signed ELF releases/server processes, PostgreSQL, TLS/login/registry, original UID; explicit bad listen/ledger drift and private compiled append-only migration35 fixtures (product SQL unchanged)',
                           'unrun': ['production systemd controller', 'physical power loss', 'boot/reboot/two clean OS/production DR']}
                 (STATE / 'c13-update-smoke.json').write_text(json.dumps(report, indent=2) + '\n')
                 print(json.dumps(report))

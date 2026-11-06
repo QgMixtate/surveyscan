@@ -43,7 +43,7 @@ def scenario(**s):
         def fingerprint(db, table):
             return client.sql(db, "SELECT encode(sha256(convert_to(coalesce(string_agg(row_to_json(t)::text,E'\\n' ORDER BY row_to_json(t)::text),''),'UTF8')),'hex') FROM " + table + ' t')
         before = {name: fingerprint(database, name) for name in tables}
-        assert len(tables) == 46  # 45 owned tables + migration ledger.
+        assert len(tables) == 48  # 47 owned tables + migration ledger.
         backup(client, database, directory)
         assert directory.stat().st_mode & 0o777 == 0o700
         assert all(path.stat().st_mode & 0o777 == 0o600 for path in directory.iterdir())
@@ -73,7 +73,7 @@ def scenario(**s):
         restore(client, directory, destination)
         after = {name: fingerprint(destination, name) for name in tables}
         assert after == before
-        checks.append('all46 table fingerprints identical: UID, access/session/hash, history, observations, receipt, retry queue/outbox and migration ledger')
+        checks.append('all48 table fingerprints identical: UID, access/session/hash, history, observations, receipt, retry queue/outbox and migration ledger')
         assert client.sql(destination, 'SELECT asset_uid::text FROM assets.assets') == s['asset']
         assert int(client.sql(destination, "SELECT count(*) FROM messaging.consumer_checkpoints WHERE state='retry'")) > 0
         env = dict(s['server_environment'])
@@ -81,7 +81,7 @@ def scenario(**s):
         binary = str(ROOT / '.dist/surveyscan-server')
         result = subprocess.run([binary, 'migrate'], env=env, capture_output=True, timeout=30)
         assert result.returncode == 0 and b'applied_migrations=0' in result.stdout
-        checks.append('current binary verifies restored33 migration hashes and applies zero duplicate migrations')
+        checks.append('current binary verifies restored34 migration hashes and applies zero duplicate migrations')
         with (s['directory'] / 'restored-server.log').open('ab') as log:
             restored_process = subprocess.Popen([binary, 'serve'], env=env, stdout=log, stderr=log)
         context = ssl.create_default_context(cafile=s['ca_file'])
