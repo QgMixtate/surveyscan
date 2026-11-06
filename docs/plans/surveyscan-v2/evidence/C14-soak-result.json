@@ -1,0 +1,140 @@
+{
+  "package": "C14",
+  "task": "C14.02",
+  "status": "passed",
+  "report": {
+    "package": "C14",
+    "run_id": "10812e7a-8a6a-4dae-9dd5-b0583f503c83",
+    "kind": "actual-soak",
+    "recorded_status": "passed",
+    "runtime_observed": null,
+    "accepted_24h": true,
+    "source_revision": "8560f57b11e9ed0fecd5774942c4d616b3afddc6",
+    "source_dirty": false,
+    "binary_sha256": {
+      "surveyscan-agent": "2ccf66957e08f07c380e666f9b7c8482ad385a42124f6edb58507e3ae2392d68",
+      "surveyscan-server": "fe579e9fb20dca8f48dc8c6dffe153826d3d86fea88a06cc4ab9d4c5d1a10196",
+      "surveyscan-collector": "22e98a94330ca51d795ab2fce17ba274e666867cb779f8a68c437f62c5fd2244"
+    },
+    "runner_sha256": "97caffd509f3e5cf434f90d938d61d7e2ec89b327136ad528624dba4d232ece2",
+    "measured_started_at": "2026-11-05T00:31:49.765786Z",
+    "measured_ended_at": "2026-11-06T00:31:51.080861Z",
+    "required_seconds": 86400,
+    "recorded_elapsed_seconds": 86400.914,
+    "complete_samples": 2740,
+    "last_sample_at": "2026-11-06T00:31:19.402124Z",
+    "latest_observations": 1417,
+    "end_observations": 1419,
+    "max_inventory_age_seconds": 184.439111,
+    "max_source_inventory_age_seconds": 184.981892,
+    "peak_rss_kib": {
+      "agent": 17888,
+      "collector": 18468,
+      "center": 156816
+    },
+    "latest_rss_kib": {
+      "center": 22608,
+      "collector": 17184,
+      "agent": 16972
+    },
+    "peak_pending_files": {
+      "agent": 3,
+      "collector": 2
+    },
+    "peak_pending_bytes": {
+      "agent": 6194,
+      "collector": 4611
+    },
+    "latest_pending_files": {
+      "agent": 0,
+      "collector": 0
+    },
+    "end_pending_drained": true,
+    "peak_outbox_unapplied": 2,
+    "latest_renewal_receipts": 2,
+    "events": [
+      {
+        "at": "2026-11-05T00:31:49.782114Z",
+        "event": "measured_window_started"
+      },
+      {
+        "at": "2026-11-05T01:32:12.453243Z",
+        "event": "agent_link_cut",
+        "elapsed_seconds": 3622.687
+      },
+      {
+        "at": "2026-11-05T01:32:12.459551Z",
+        "event": "agent_restart_while_disconnected",
+        "elapsed_seconds": 3622.687
+      },
+      {
+        "at": "2026-11-05T01:34:19.028234Z",
+        "event": "agent_link_restored",
+        "elapsed_seconds": 3749.262
+      },
+      {
+        "at": "2026-11-05T02:32:06.861137Z",
+        "event": "center_link_cut",
+        "elapsed_seconds": 7217.095
+      },
+      {
+        "at": "2026-11-05T02:32:06.873713Z",
+        "event": "agent_collect_while_center_disconnected",
+        "elapsed_seconds": 7217.095
+      },
+      {
+        "at": "2026-11-05T02:34:13.839015Z",
+        "event": "center_link_restored",
+        "elapsed_seconds": 7344.073
+      },
+      {
+        "at": "2026-11-05T03:31:59.523995Z",
+        "event": "collector_restart",
+        "elapsed_seconds": 10809.754
+      },
+      {
+        "at": "2026-11-05T04:32:19.179732Z",
+        "event": "center_restart",
+        "elapsed_seconds": 14429.405
+      },
+      {
+        "at": "2026-11-06T00:31:50.230335Z",
+        "event": "final_drain_started",
+        "elapsed_seconds": 86400.465,
+        "inventory_seconds": 86400
+      },
+      {
+        "at": "2026-11-06T00:31:51.208594Z",
+        "event": "measured_window_completed",
+        "accepted_24h": true
+      }
+    ],
+    "scope": "sampled acceptance measurements, not production capacity/SLA; running/stale/failed/preflight never count as24h acceptance"
+  },
+  "independent_review": {
+    "status": "passed",
+    "accepted_24h": true,
+    "checks": [
+      "pinned source/binaries/runner/config match start reference",
+      "complete bound sample/event ledgers and monotonic real timestamps",
+      "monitor gaps<=120s, freshness<=300s, bounded spools/readiness failures",
+      "observation/sequence counters do not regress; scheduled events ordered",
+      "real>=24h covered, all faults, final drain and real renewals recorded"
+    ],
+    "samples": 2740,
+    "max_sample_gap_seconds": 32.712,
+    "recorded_elapsed_seconds": 86400.914,
+    "package": "C14",
+    "task": "C14.02 evidence review",
+    "run_id": "10812e7a-8a6a-4dae-9dd5-b0583f503c83",
+    "scope": "read-only evidence consistency; live SQL UID/dedup/final conservation rely on pinned runner assertions; not a release approval"
+  },
+  "detached_review_exit": 0,
+  "private_evidence_sha256": {
+    "status.json": "fcd86845d81642db18a0526643a22b2918a573e90ec4b8ba5c026ef60edb17f2",
+    "samples.jsonl": "5f52f85d4a7cc3b6d7373d7b5af8d6773ca3411b2f7530d8015145d6eb961341",
+    "events.jsonl": "3682dc9011e3dcf1f510f12e9945e54168a7b974518f0c1281b09b27b1d0b6e3",
+    "acceptance-review.json": "bfaa5816f7e870e16ea628141ab307871a6dc7b1cd7a4a7a26f8c498d58f7842"
+  },
+  "scope": "frozen8560f57 real Linux E1; not whole C14/release acceptance; D08 CLI regression still open"
+}

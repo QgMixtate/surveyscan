@@ -42,5 +42,22 @@ class BootDiagnosticsTests(unittest.TestCase):
         self.assertIsNone(error.cli_error)
         self.assertNotIn('private-canary',str(error.__dict__))
 
+    def test_backend_diagnostic_allowlist_drops_private_fields(self):
+        raw = json.dumps({'component':'access','event':'login_unavailable','stage':'session_begin',
+                          'reason':'deadline_exceeded','elapsed_ms':5741,'verify_ms':5500,
+                          'password':'canary-private','error':'raw-sensitive-sql'}).encode()
+        safe = guest.auth_diagnostics(raw)
+        self.assertEqual(safe,[{'stage':'session_begin','reason':'deadline_exceeded','elapsed_ms':5741,'verify_ms':5500}])
+        self.assertNotIn('canary',json.dumps(safe))
+        self.assertNotIn('sql',json.dumps(safe))
+
+    def test_backend_diagnostic_rejects_untrusted_shapes_and_limits_tail(self):
+        item = {'component':'access','event':'login_unavailable','stage':'session_begin',
+                'reason':'deadline_exceeded','elapsed_ms':5741,'verify_ms':5500}
+        for key,value in [('stage','canary'),('reason','raw-sql'),('elapsed_ms',True),('verify_ms',-1)]:
+            self.assertEqual(guest.auth_diagnostics(json.dumps(dict(item,**{key:value}))),[])
+        self.assertEqual(guest.auth_diagnostics('[]\nnull\nprivate-stderr'),[])
+        self.assertEqual(len(guest.auth_diagnostics('\n'.join([json.dumps(item)]*20))),3)
+
 
 if __name__ == '__main__':unittest.main()

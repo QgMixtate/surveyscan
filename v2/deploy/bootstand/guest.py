@@ -20,6 +20,7 @@ STATE = Path('/root/boot-phase.json')
 CHECKS = []
 CLI_TIMINGS = []
 PHASE = 'initializing'
+LOGIN_PRESSURE = None
 
 
 def phase(name):
@@ -66,6 +67,27 @@ def command(args, env=None, timeout=60):
         operation = str(args[1]) if len(args)>1 and args[1] in ('login','assets','logout') else 'other'
         CLI_TIMINGS.append({'operation':operation,'elapsed_seconds':round(time.monotonic()-started,3)})
     return result.stdout
+
+
+def auth_diagnostics(raw):
+    """Only a fixed backend event vocabulary and bounded numbers reach proof."""
+    safe = []
+    stages = {'rate','user_lookup','password_verify','session_begin','user_recheck',
+              'active_sessions','session_insert','audit','commit','unknown'}
+    reasons = {'deadline_exceeded','request_cancelled','dependency_unavailable'}
+    for line in raw.splitlines():
+        try:
+            item = json.loads(line)
+            if item.get('component') != 'access' or item.get('event') != 'login_unavailable':
+                continue
+            if item.get('stage') not in stages or item.get('reason') not in reasons:
+                continue
+            if any(type(item.get(key)) is not int or not 0 <= item[key] <= 3600000 for key in ('elapsed_ms','verify_ms')):
+                continue
+            safe.append({key:item[key] for key in ('stage','reason','elapsed_ms','verify_ms')})
+        except (ValueError,TypeError,AttributeError):
+            continue
+    return safe[-3:]
 
 
 def save(path, data, mode=0o600):
@@ -288,6 +310,7 @@ def first_boot(seed):
 
 
 def second_boot(seed):
+    global LOGIN_PRESSURE
     phase('second_autostart')
     old = json.loads(STATE.read_text())
     assert old['boot_id'] != Path('/proc/sys/kernel/random/boot_id').read_text().strip()
@@ -359,7 +382,19 @@ def second_boot(seed):
     assert card['asset_uid'] == old['asset_uid']
     command([cli, 'logout', '--context-file', context])
     CHECKS.append('guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session')
+    if seed.get('login_pressure_probe'):
+        import login_pressure
+        phase('controlled_login_cpu_pressure')
+        login_seconds = next(x['elapsed_seconds'] for x in CLI_TIMINGS if x['operation']=='login')
+        matched, LOGIN_PRESSURE = login_pressure.probe(command, request, auth_diagnostics, sql, tls, seed, login_seconds)
+        assert matched, 'controlled CPU profile did not establish the expected bounded login result'
+        phase('controlled_login_cpu_recovery')
+        command([cli, 'login', '--server', 'https://127.0.0.1:8444', '--username', 'admin', '--password-file', '/root/admin-password',
+                 '--ca-file', str(SEED / 'infra-ca.pem'), '--context-file', context])
+        command([cli, 'logout', '--context-file', context])
+        CHECKS.append('opt-in CPU pressure matches the declared login result and credential conservation; test session revoked and explicit recovery succeeds')
     return {'package': 'C13', 'status': 'passed', 'count': len(CHECKS), 'checks': CHECKS, 'cli_timings': CLI_TIMINGS,
+            'login_pressure': LOGIN_PRESSURE,
             'target': 'actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI',
             'custody': 'explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env',
             'unrun': ['two independently clean OS installations', 'schema-changing update through updater', 'physical power loss', 'production KMS/split custody/DR/RPO/RTO/100users']}
@@ -388,6 +423,12 @@ def main():
         if isinstance(error, CommandFailure):
             diagnostic.update(command_program=error.program, command_exit=error.code,
                               command_elapsed_seconds=error.elapsed, cli_error=error.cli_error)
+            if error.program == 'surveyscanctl' and error.cli_error == 'HTTP_503':
+                logs = subprocess.run(['journalctl','-b','--no-pager','-n','100','-o','cat',
+                                       '-u','surveyscan-server.service'],capture_output=True)
+                diagnostic['auth_diagnostics'] = auth_diagnostics(logs.stdout)
+        if LOGIN_PRESSURE is not None:
+            diagnostic['login_pressure'] = LOGIN_PRESSURE
         print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(diagnostic), flush=True)
         command(['systemctl', 'poweroff'])
 

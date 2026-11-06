@@ -1,0 +1,82 @@
+{
+  "package": "C14",
+  "task": "C14.03",
+  "defect": "C14-D08",
+  "before_source": "039af359ebbba818ac177ebc1996afe813fd64ac",
+  "before_vm_report": {
+    "package": "C13",
+    "status": "passed",
+    "count": 10,
+    "checks": [
+      "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+      "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+      "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+      "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+      "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+      "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+      "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+      "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+      "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session",
+      "opt-in CPU pressure reproduces post-hash deadline503 without minting session; explicit new login recovers after quota restore"
+    ],
+    "cli_timings": [
+      {
+        "operation": "login",
+        "elapsed_seconds": 4.136
+      },
+      {
+        "operation": "assets",
+        "elapsed_seconds": 0.317
+      },
+      {
+        "operation": "logout",
+        "elapsed_seconds": 0.323
+      },
+      {
+        "operation": "login",
+        "elapsed_seconds": 3.48
+      },
+      {
+        "operation": "logout",
+        "elapsed_seconds": 0.583
+      }
+    ],
+    "login_pressure": {
+      "kind": "controlled-native-CPU-pressure",
+      "vm_cpu_quota_percent": 48,
+      "http_status": 503,
+      "credential_count_unchanged": true,
+      "auth_diagnostics": [
+        {
+          "stage": "session_begin",
+          "reason": "deadline_exceeded",
+          "elapsed_ms": 6528,
+          "verify_ms": 6464
+        }
+      ],
+      "historical_cause_proven": false
+    },
+    "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+    "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+    "unrun": [
+      "two independently clean OS installations",
+      "schema-changing update through updater",
+      "physical power loss",
+      "production KMS/split custody/DR/RPO/RTO/100users"
+    ]
+  },
+  "confirmed_reproduced_class": "valid password verification6464ms under48% server CPU quota exceeds whole-login5s budget; session_begin observes deadline; no credential minted",
+  "historical_cause_proven": false,
+  "change": {
+    "login_request_timeout_seconds_before": 5,
+    "login_request_timeout_seconds_after": 8,
+    "server_write_timeout_seconds": 10,
+    "cli_request_timeout_seconds": 15,
+    "argon2_parameters_changed": false,
+    "hash_slots_changed": false,
+    "login_rate_limits_changed": false,
+    "implicit_login_retries_added": false
+  },
+  "after_vm_same48percent_profile": "pending",
+  "real_pg_lock_rollback_after8s": "pending"
+}

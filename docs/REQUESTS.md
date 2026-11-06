@@ -543,3 +543,37 @@ Windows11/fullinventory/SCM/reboot/delivery не приняты. Original E1 run
 
 Синхронизация C15 с E1 parent9e880ed: сохранены журналы обеих веток;
 новые C15 runtime libraries остаются изолированными от измеряемого E1 checkout.
+
+
+
+R-023 продолжение2026-11-06 («Дальше»): actualC14.02 завершён, независимыйread-only acceptance
+exit0 и pinnedfollow-up exit0:86400.914s/2740samples/1419observations/2renewals/queuesdrained.
+Публичный sanitized C14-soak-result.json создан; pinned startreference C14-soak.json не менялся.
+C14.02done, C14.03in_progress/D08 investigation, C14.04planned. E1done54 + C15.01design=55global.
+13702a8 fullv2 42127549066 иnative42127549126 SUCCESS; D08 failure не закрыт успешным повтором.
+Следующее — безопасная backenddiagnostic stage/reason, воспроизведение и исправление по фактам.
+
+C14.03 checkpoint: добавлена fixed-vocabulary backend login diagnostic(stage/reason/elapsed_ms/verify_ms),
+без username/password/SQL/rawerror; API response/error policy/5s budget/Argon2 unchanged.
+Guest/supervisor экспортируют только allowlisted fields.2Go redaction tests +17Python tests passed;
+make verify/C03 58 passed. Это диагностическое изменение после measured8560f57, не новый24hproof.
+Следующее — fresh nativeVM и hosted CI с диагностикой; D08 покаopen.
+
+C14.03 checkpoint:4a589d2 all4hosted SUCCESS (v2 42180569553/native42180569494/Web42180569517/evidence42180569485).
+Local firstVM9passed/login3.886s; secondVMkernelstalled beforePID1 afterHPET clocksource,
+173%QEMU CPU/no kernelprogress >=8min. Owned supervisor interrupted; campaign failed, notPASS.
+C14-D09 fixture change Q35 hpet=off pending freshVM. Controlled PGlock test passed:
+503/5004ms, passwordverify121ms, stageuser_recheck, zero credentials; explicit recoverycreates1.
+Optional CPUpressure probe in disposable VM added (runtime quota only; host unaffected); expected
+5s deadline after slow Argon2 requires actualVM verification. No product timeouts/crypto changes yet.
+
+C14.03 controlled native probe039af35:10checks PASS, Q35hpet=off actualboot/reboot;48%serverCPUquota
+→ passwordverify6464ms, elapsed6528ms, session_begin/deadline_exceeded, HTTP503, no credential minted.
+Afterquota restore explicitlogin succeeds. Confirms post-hash requestdeadline class; historical503
+exactcause stillunprovable without originalbackendtrace. Fix currentGo:login budget5→8s, below
+serverWrite10s/CLI15s; Argon2/rate/hashslots2 unchanged, no implicitretries. Same48% after-testpending.
+Controlled PGlock stillmusttimeout/rollback/no-cookie/no-session at8s; targetedtest rerunning.
+
+
+C15 sync: E1 parent39e401f merged, C14.02done and C15.01done preserved;55/200global.
+Login budget8s/diagnostics and testfixture HPET fixes included; combined CI pending.

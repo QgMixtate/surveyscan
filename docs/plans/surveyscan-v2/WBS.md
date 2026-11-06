@@ -741,7 +741,7 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Периодический сбор плюс restart/network outage с журналом.
 - Проверка: Наблюдены реальные циклы, recovery, freshness, отсутствие дублей.
 - База оценки: Минимум 24ч; конфигурация интервалов и точек отказа зафиксирована.
-- Статус: in_progress; actual24h running10812e7a-8a6a-4dae-9dd5-b0583f503c83, evidence/C14-soak.json; notpassed.
+- Статус: done; actual86400.914s/2740samples/1419observations/2renewals, evidence/C14-soak-result.json.
 
 ## C14.03 — Разобрать дефекты и повторить затронутое
 
@@ -751,7 +751,8 @@ mock-vs-live, blockers и следующий готовый пакет. До ф�
 - Результат: Исправления в рамках E1 и протокол регрессии.
 - Проверка: Нерешённые обязательные дефекты блокируют release claim.
 - База оценки: Только выявленные дефекты, не расширение в E2.
-- Статус: planned; evidence отсутствует до исполнения.
+- Статус: in_progress; recurring native CLI HTTP503/D08, root cause investigation.
+
 
 ## C14.04 — Выпустить проверяемую SMB-поставку
 

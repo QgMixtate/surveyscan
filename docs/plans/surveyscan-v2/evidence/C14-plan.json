@@ -1,8 +1,8 @@
 {
   "package": "C14",
   "task": "C14.01",
-  "status": "reviewed executable plan; acceptance incomplete",
-  "date": "2026-11-05 Europe/Moscow",
+  "status": "actual24h accepted; D08/D09 triage open; release incomplete",
+  "date": "2026-11-06",
   "source": "decisions/C01-acceptance.md",
   "scenarios": [
     {
@@ -31,9 +31,10 @@
         "AC-09",
         "AC-13"
       ],
-      "status": "passed scoped tests",
+      "status": "passed scoped tests; native D08 under investigation",
       "evidence_candidates": [
-        "C13-hosted.json"
+        "C13-hosted.json",
+        "C14-diagnostic-campaign.json"
       ],
       "notes": "real PG/API two-tenant isolation/roles/CSRF/revoke; no default credentials",
       "command": "make integration; python scripts/auth_smoke.py; python scripts/cli_smoke.py"
@@ -48,11 +49,12 @@
         "AC-27",
         "AC-46"
       ],
-      "status": "passed live short run; soak pending",
+      "status": "passed actual24h frozen8560f57",
       "evidence_candidates": [
-        "C13-runtime.json"
+        "C13-runtime.json",
+        "C14-soak-result.json"
       ],
-      "notes": "real Linux read-only adapter, >=3 live cycles/reboot same UID; hardware absence reported as unavailable/unsupported",
+      "notes": "real Linux read-only adapter, >=3 live cycles/reboot same UID; hardware absence reported as unavailable/unsupported;86400.914s/2740samples/1419observations/2realrenewals/finaldrain; independent review exit0",
       "command": "python scripts/agent_smoke.py; python scripts/boot_smoke.py; python scripts/soak.py --hours 24"
     },
     {
@@ -100,11 +102,12 @@
         "AC-32",
         "AC-47"
       ],
-      "status": "passed scoped recovery; soak pending",
+      "status": "passed actual24h frozen8560f57",
       "evidence_candidates": [
-        "C13-hosted.json"
+        "C13-hosted.json",
+        "C14-soak-result.json"
       ],
-      "notes": "compiled source/relay/center crash windows and exact ACK replay; real outages scheduled again during soak",
+      "notes": "compiled source/relay/center crash windows and exact ACK replay; real outages scheduled again during soak;86400.914s/2740samples/1419observations/2realrenewals/finaldrain; independent review exit0",
       "command": "python scripts/recovery_smoke.py; python scripts/soak.py --hours 24"
     },
     {
@@ -169,9 +172,10 @@
         "AC-29",
         "AC-40"
       ],
-      "status": "passed scoped API/CLI/Web",
+      "status": "passed scoped API/CLI/Web; native D08 under investigation",
       "evidence_candidates": [
-        "C12-runtime.json"
+        "C12-runtime.json",
+        "C14-diagnostic-campaign.json"
       ],
       "notes": "16 Chromium checks; partial/stale/unknown display matrix uses explicit mocked API; auth/assets/profiles use real API; no claim complete future OpenAPI surface",
       "command": "python scripts/cli_smoke.py; npm run build; separate Web Playwright workflow"
@@ -207,7 +211,7 @@
         "C13-runtime.json",
         "C13-native-hosted.json"
       ],
-      "notes": "actual PID1/reboot, distinct nonroot UIDs/LoadCredential, queued source replay, server+collector+agent checked update; physical power failure unrun",
+      "notes": "actual PID1/reboot, distinct nonroot UIDs/LoadCredential, queued source replay, server+collector+agent checked update; physical power failure unrun;4a589d2 hosted twoVM9+9 passed; localsecondVM pre-PID1 HPET stall retained as D09, replacement hpet=off pending",
       "command": "GO=go python scripts/boot_smoke.py (two fresh stands)"
     },
     {
@@ -233,12 +237,13 @@
       "acceptance_criteria": [
         "AC-53"
       ],
-      "status": "running actual24h, notpassed",
+      "status": "passed actual24h frozen8560f57",
       "evidence_candidates": [
         "C14-soak.json",
-        "C14-preflight.json"
+        "C14-preflight.json",
+        "C14-soak-result.json"
       ],
-      "notes": "actual clean8560f57 started2026-11-05T00:31:49Z; earliestcomplete2026-11-06T00:31:49Z; inspectdurablestatus; shortpreflightnot24h",
+      "notes": "actual clean8560f57 started2026-11-05T00:31:49Z; earliestcomplete2026-11-06T00:31:49Z; inspectdurablestatus; shortpreflightnot24h;86400.914s/2740samples/1419observations/2realrenewals/finaldrain; independent review exit0",
       "command": "python scripts/soak.py --hours 24"
     },
     {
