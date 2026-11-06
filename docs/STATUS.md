@@ -2,8 +2,7 @@
 
 6 ноября 2026.57/200done; C15.02 in_progress. Ветка codex/v2-c15-windows,
 worktree /workspace/surveyscan-c15, draftPR5/baseE1PR4. Последний проверенный published
-productd4ae425 — all5hostedSUCCESS; C15-hosted-d4.json. Новый profile increment localpassed,
-publicationpending. Main/release/deploy/cloudsettings не выполнялись.
+product4ff977f — all5hostedSUCCESS; C15-hosted-profile.json. Profile core опубликован. Main/release/deploy/cloudsettings не выполнялись.
 
 Новый profile1.2 core: отдельные schema/DTO/signatures и center+collector endpoint,
 common cadence +fixed12partial policy/30sworker/420ssweep, отдельный applied-progress
@@ -30,3 +29,8 @@ E1frozen24h/candidate preserved:source8560f57/86400.914s, authdelta39e401f/inter
 No new24h or100user/productionSLA claim. Use C15binaries/ownDB/ports/scopedmounts/reports
 with E1devcredentials read-only; nevercopyprivatekeys/overwriteE1reports/resetshared
 PG/Bao blindly. AppliedSQL0000–0034 immutable; continueautomatically R020/022/023.
+
+Следующий localincrement — isolated platform/winstate: protected privateDACL/root-relative
+NtCreateFile/bounds/no-overwrite/exclusive process lock. Crosscompile/vet passed; native
+Windows execution pending. Не подключён к runtime; atomic replace/cache/hostbinding
+ещёне реализованы. Proof C15-winstate-primitives.json иновыйWindowsCIstep.

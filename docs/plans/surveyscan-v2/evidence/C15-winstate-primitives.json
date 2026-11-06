@@ -1,0 +1,26 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "status": "partial",
+  "implemented": [
+    "private protected DACL creation/handle validation",
+    "local canonical root with final-path reparse rejection",
+    "root-relative NtCreateFile, bounded private file read/create without overwrite",
+    "exclusive share-mode lock with cross-process native test",
+    "closed phase/numeric diagnostics"
+  ],
+  "local_checks": {
+    "windows_amd64_test_crosscompile": "passed",
+    "windows_cross_vet": "passed"
+  },
+  "native_execution": "pending; not executed locally",
+  "runtime_adoption": false,
+  "unrun": [
+    "atomic replacement/crash recovery",
+    "integrated Windows agent private files/host continuity",
+    "durable signed offline cache/apply/ACK",
+    "SCM/ordinaryrights/Windows11/realreboot"
+  ],
+  "completed_global_tasks": 57
+}

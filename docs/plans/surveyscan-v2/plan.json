@@ -1437,9 +1437,12 @@
             "evidence/C15-hosted-d4.json",
             "decisions/C15-inventory-profile12.md",
             "evidence/C15-inventory-profile12.json",
-            "contracts/C15/profile.schema.json"
+            "contracts/C15/profile.schema.json",
+            "evidence/C15-hosted-profile.json",
+            "decisions/C15-winstate-primitives.md",
+            "evidence/C15-winstate-primitives.json"
           ],
-          "verification_status": "Published d4ae425 all5 exact-SHA hosted SUCCESS: PG58/C03 58/race3packages/compiled center6+relay10/scopedTransit/liveLinuxagent11/reconnect5/restore9/nativeWindows12provider processes+failureisolation/twofreshLinuxVM9+9. D06guard andD08progress verified; historicalD07cause unproven/notreproduced. Windowsprofile1.2/continuoussender/securestate/SCM/rights/Windows11/reboot/fullcoverage remain,57done.;newlocalprofile1.2core PG60/relay11/race/Winbuild passed, publicationpending; secureWindowsstate/cache/applyunrun"
+          "verification_status": "Published d4ae425 all5 exact-SHA hosted SUCCESS: PG58/C03 58/race3packages/compiled center6+relay10/scopedTransit/liveLinuxagent11/reconnect5/restore9/nativeWindows12provider processes+failureisolation/twofreshLinuxVM9+9. D06guard andD08progress verified; historicalD07cause unproven/notreproduced. Windowsprofile1.2/continuoussender/securestate/SCM/rights/Windows11/reboot/fullcoverage remain,57done.;newlocalprofile1.2core PG60/relay11/race/Winbuild passed, publicationpending; secureWindowsstate/cache/applyunrun;4ffprofileall5hostedgreen/PG60/relay11/center7/twoVM9+9; newisolatedwinstatecompile/vetonly,nativepending/notadopted"
         },
         {
           "id": "C15.03",

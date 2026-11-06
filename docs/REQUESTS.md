@@ -760,3 +760,9 @@ verify/build/C0358/PG60/race3packages/Winbuild-vet/compiledrealmTLS/Transit/PGre
 Agentdata synthetic; Linuxfsync acceptancefixture explicit, Windowscacheunrun. NewSQL
 appendonly, privateupdate0035/schema35→36. Publicationpending; далееsecureWindowsstate/
 cache/runtime внутри02, SCM03/04 после02acceptance.57done. No merge/deploy/envpublish.
+
+4ff977f profilecore all5hostedSUCCESS: v242304020057/Windows42304020149/Web42304020116/
+boot42304020084/evidence42304019982. Downloaded sanitizedreports:relay11/center7/twoVM9+9;
+PG60/backup49tables/privateupdate35→36passed. Далееlocalunadopted winstate module:
+protectedDACL/localroot/finalpath+relativeNTfiles/bounds/nooverwrite/exclusiveprocesslock,
+Wincompile/vetpassed, nativeexecutionpending. Неatomiccache/hostbinding/runtime;57done.

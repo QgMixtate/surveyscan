@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "4ff977ff1fae3da1b20823cc688062e1155c11a9",
+  "publication": "published PR5; all five exact-SHA workflows success",
   "task": "C15.02",
   "status": "partial",
   "implemented": [
@@ -38,5 +38,6 @@
     "Windows DACL/reparse/atomicstate/locks/MachineGuid continuity",
     "Windows continuous delivery/SCM/ordinaryrights/Windows11/reboot/fullcoverage"
   ],
-  "completed_global_tasks": 57
+  "completed_global_tasks": 57,
+  "hosted_evidence": "C15-hosted-profile.json"
 }
