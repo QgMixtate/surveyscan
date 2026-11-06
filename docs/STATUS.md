@@ -65,3 +65,11 @@ RealTLS/auth/PG56passed (synthetic internal committed projection, не machine a
 Unit/schema/OpenAPI/cursor checks passed; финальные verify/build4binaries/Winbuild+vet passed.
 999c6e1 завершил v242197490009/Web42197490098/Windows42197490157SUCCESS; bootfailed
 C15-D04fixturecount33→34 исправленлокально, repeatpending. C15.02IP/57done unchanged.
+
+f6e3047 API/bootfix: все5hosted SUCCESS, Windows42199513841/v242199513647/
+boot42199513709/Web42199513708/evidence42199513646; двеfreshVM9+9, C15-D04fixed.
+Новый локальный increment: opt-in signed/batch12validator и all-hop limits helper
+512/576/768KiB (HTTPstillC03), authoritativebinding/crypto/bytebounds tests passed.
+C15-D05collectorJSON: actualmTLS/C03 batch479558→oldpacket2324798>2MiB, fixed479799;
+disk/replay202/race wire+collector/verify/C03 58/build/Winwirecrosscompile+vet passed.
+Cap/profile1.2networkexchange и machine runtime ещёнеподключены; C15.02IP/57done.

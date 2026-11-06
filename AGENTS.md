@@ -237,3 +237,8 @@ C15 additive readAPI inventory/facts/{section} +publicC15OpenAPI: typed per-fiel
 Evidence C15-record-api.json/decisionC15-record-read-api.md trackexactsource/verification.
 C15-D04bootfixture expected33→34 fixed; failedrun42197490003retained, repeatneededbeforegreen.
 Runtime1.2uploadstilldisabled, C15.02IP/57done.
+
+C15 f6e3047 all5hostedpassed; D04boot2freshVM9+9fixed. Newlocaltransport12parser/crypto/
+allhoplimits512/576/768KiB andcollectorJSONcodecD05 recordedC15-transport.json. Sharedhelper
+notauthenticatednetworkcapabilities. HTTP/relay/centerstillC03; noprofile12/runtimeenable.
+57done/C15.02IP; SQLcatalog34/47unchanged. Use latest handoff/publication pointers.

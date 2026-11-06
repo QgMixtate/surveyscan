@@ -43,5 +43,14 @@
       "conclusion": "failure",
       "reason": "C15-D04 stale expected migration count33 after actual reboot; pending repeat with34"
     }
+  },
+  "followup_boot_fix": {
+    "source_revision": "f6e3047a26e9cbc75e7b1c726fa0e3e7c9a71f38",
+    "run_id": 42199513709,
+    "conclusion": "success",
+    "fresh_vm_checks": [
+      9,
+      9
+    ]
   }
 }

@@ -42,7 +42,8 @@ func compileRecordPage12() (*jsonschema.Schema, error) {
 }
 
 // RecordJSON preserves JSON string data without HTML expansion. This output is
-// served as application/json with nosniff, never interpolated into an HTML page.
+// stored as JSON or served as application/json with nosniff, never interpolated
+// into an HTML page.
 func RecordJSON(v any) ([]byte, error) {
 	var b bytes.Buffer
 	encoder := json.NewEncoder(&b)

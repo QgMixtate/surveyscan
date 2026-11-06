@@ -54,3 +54,8 @@ Additive read API: records.schema.json / records.openapi.json; matching server e
 c15-records.schema.json / c15.openapi.json. GET /api/v1/contracts/c15 publishes the API.
 Typed per-field pages are independent from C03/C09 and do not enable observation1.2 upload.
 See decisions/C15-record-read-api.md for cursor revision/tenant scope and bounded response.
+
+transport.schema.json/c15-transport.schema.json define opt-in SignedObservation/Batch1.2.
+Only the shared parser/crypto/limit-selection helper exists; machine handlers stillC03.
+Initial effective ceilings512/576/768KiB (payload/envelope/batch),100records; draftpayload
+1MiB remains an isolated validation ceiling. See decisions/C15-transport.md.

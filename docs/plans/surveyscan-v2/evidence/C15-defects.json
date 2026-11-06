@@ -33,10 +33,18 @@
       "source_revision": "999c6e1d753a92583bc9fb216955ac2170b514c2",
       "observed": "actual first VM completed5 checks including reboot/replay/sameUID; second_schema_check assertion still expected33 after catalog became34",
       "fix": "update explicit count to34; full binary schema-check/checksum remains required; no productSQL edit",
-      "verification": "pending repeated two fresh VM hosted run; failed original retained"
+      "verification": "fixed onf6e3047:boot42199513709 success, twofreshVM9+9; historical42197490003 stillfailed"
+    },
+    {
+      "id": "C15-D05",
+      "scope": "collector durable JSON encoding",
+      "observed": "actual mTLS/Ed25519/C03-valid synthetic10-record batch479558bytes would become2324798byte packet under default HTML escaping, beyond2097152byte reader limit",
+      "fix": "non-HTML-expanding JSON encoder, explicit post-serialization maxPacketBytes guard on pending and receipt writes; reader bound unchanged",
+      "local_verification": "actual mTLS C03 admission202 +disk canonical/digest roundtrip +sender replay202; new packet479799bytes; old escaped small packets readable; oversize rejected; race wire/collector passed",
+      "hosted_verification": "pending nextsource"
     }
   ],
-  "windows_inventory_tested": false,
+  "windows_inventory_tested": true,
   "native_com_before_fix": {
     "run_id": 42191352349,
     "status": "partial_result_not_whole_job_success",
@@ -45,5 +53,6 @@
     "native_baseline": "passed12sections",
     "worker_timeout_crash_malformed": "passed",
     "worker_oversize": "failed"
-  }
+  },
+  "windows_inventory_scope": "native12 baseline elevated Windows2022, not complete Windows agent acceptance"
 }

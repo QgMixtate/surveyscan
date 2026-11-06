@@ -662,3 +662,12 @@ FAILED наstale expected33 послеreboot, C15-D04fix34 preserveschecksumchec
 100items/2MiB, cursorboundtenant/asset/section/revision,409PROJECTION_CHANGED. ActualTLS/auth/
 PG56passed соsignedsynthetic internal-store setup иrealcommitguards; это не1.2machineE2E.
 ПубликацияAPIpending; C15.02IP/57done, negotiation/coverage/scheduler/lifecycle gates остаются.
+
+C15.02 продолжение: f6e3047 все5hostedSUCCESS; boot2freshVM9+9 подтвердилC15-D04fix.
+Следующийlocalincrement: isolatedsigned/batch12 contract+parser, trustedbindingEd25519,
+all-hop effective limits512/576/768KiB/100records; C03handlersstillunchanged.
+НайденC15-D05JSONHTMLexpansion incollector: mTLS/C03-valid479558bytebatch becomes
+2324798byteoldpacket>2MiBreader; nonexpandingcodec+finalsizeguard fixed479799. Actual
+mTLS/admission/signature/disk/replay202 +race+verify/build/Wincompile/vet passedlocal.
+Документы decisions/C15-transport.md/evidenceC15-transport.json, pendingpublication.
+No1.2machinepipeline/capabilityHTTP/profileimplemented,57done/C15.02IP unchanged.

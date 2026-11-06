@@ -156,13 +156,24 @@ func New(cfg Config) (*Collector, error) {
 	out.TLS = &tls.Config{MinVersion: tls.VersionTLS12, GetCertificate: func(*tls.ClientHelloInfo) (*tls.Certificate, error) { return out.certificate.Load(), nil }, ClientCAs: roots, ClientAuth: tls.VerifyClientCertIfGiven}
 	return out, nil
 }
+
+const maxPacketBytes = 2 * 1048576
+
+func marshalPacket(p packet) ([]byte, error) {
+	body, err := wire.RecordJSON(p)
+	if err != nil || len(body) > maxPacketBytes {
+		return nil, errors.New("collector packet exceeds bounded storage")
+	}
+	return body, nil
+}
+
 func atomicWrite(path string, b []byte) error { return diskspool.Atomic(path, b) }
 func (c *Collector) path(id, suffix string) string {
 	return filepath.Join(c.Config.Spool, strings.ToLower(id)+suffix)
 }
 func readPacket(path string) (packet, error) {
 	var p packet
-	raw, e := privatefile.Read(path, 2*1048576)
+	raw, e := privatefile.Read(path, maxPacketBytes)
 	if e != nil {
 		return p, e
 	}
@@ -470,7 +481,11 @@ func (c *Collector) Handler() http.Handler {
 				return
 			}
 		}
-		body, _ := json.Marshal(p)
+		body, e := marshalPacket(p)
+		if e != nil {
+			failure(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
 		if e = diskspool.Data(c.Config.Spool, c.Config.Limit-diskspool.AckReserve, int64(len(body))); e != nil {
 			w.Header().Set("Retry-After", "30")
 			failure(w, 429, "SPOOL_FULL")
@@ -595,7 +610,10 @@ func (c *Collector) Pump(ctx context.Context) error {
 		cached := p
 		cached.Batch = nil
 		cached.Receipt = raw
-		body, _ := json.Marshal(cached)
+		body, e := marshalPacket(cached)
+		if e != nil {
+			return e
+		}
 		c.mu.Lock()
 		e = diskspool.Capacity(c.Config.Spool, c.Config.Limit, int64(len(body)))
 		if e == nil {

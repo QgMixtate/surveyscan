@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "f6e3047a26e9cbc75e7b1c726fa0e3e7c9a71f38",
+  "publication": "published feature branch/PR5; all5 workflows success; evidence/C15-hosted-f6.json",
   "date_utc": "2026-11-06T10:01:05.823604+00:00",
   "task": "C15.02",
   "status": "partial",
@@ -24,7 +24,7 @@
     "verify": "unit/vet/architecture/C03 58 passed",
     "build": "make build all4 binaries and Windowsagent cross-build/vet passed"
   },
-  "boot_fixture_fix": "C15-D04 count34, full schema-check preserved; actual2freshVM repeat pending",
+  "boot_fixture_fix": "C15-D04 fixed:42199513709 success, two fresh actual VM9+9, catalog34/full checksum guard",
   "unrun": [
     "real1.2agent→collector→center→PG→API",
     "full field coverage/scoped deletion",

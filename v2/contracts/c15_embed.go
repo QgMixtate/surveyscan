@@ -12,3 +12,8 @@ var C15Files embed.FS
 //
 //go:embed c15-records.schema.json c15.openapi.json
 var C15API12Files embed.FS
+
+// Transport12Files is an opt-in draft; existing ingest still uses frozen C03.
+//
+//go:embed c15-transport.schema.json
+var Transport12Files embed.FS

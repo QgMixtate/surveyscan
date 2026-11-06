@@ -1,0 +1,47 @@
+{
+  "source_revision": "f6e3047a26e9cbc75e7b1c726fa0e3e7c9a71f38",
+  "workflows": {
+    "windows": {
+      "id": 42199513841,
+      "conclusion": "success"
+    },
+    "v2": {
+      "id": 42199513647,
+      "conclusion": "success"
+    },
+    "native_linux": {
+      "id": 42199513709,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42199513708,
+      "conclusion": "success"
+    },
+    "acceptance_evidence": {
+      "id": 42199513646,
+      "conclusion": "success"
+    }
+  },
+  "native_linux": {
+    "fresh_vm_counts": [
+      9,
+      9
+    ],
+    "actual_reboot": true,
+    "schema_count": 34,
+    "historical_failure": "C15-D04/42197490003 retained; stale fixture count fixed, full checksum guard kept"
+  },
+  "api": "actual TLS/PG/auth with committed signed synthetic internal setup; not1.2machine ingest",
+  "local_postgres_suite": {
+    "passed": 56,
+    "failed": 0,
+    "skipped": 0
+  },
+  "unrun": [
+    "1.2 signed machine pipeline/capability exchange",
+    "complete provider coverage/deletion",
+    "concurrent collection/heartbeat",
+    "Windows ordinary rights/DACL/locks/SCM/reboot"
+  ],
+  "completed_global_tasks": 57
+}

@@ -1,0 +1,33 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "status": "partial",
+  "transport12_runtime_enabled": false,
+  "ceilings": {
+    "canonical_bytes": 524288,
+    "signed_bytes": 589824,
+    "batch_bytes": 786432,
+    "records": 100
+  },
+  "local_checks": {
+    "transport_unit": "passed: signatures/bindings/digest/oldpeer/schema/exactbounds/allhopintersection",
+    "collector_c03_actual_mtls": "passed:10signedsyntheticrecords/300NICrows each;durableread+replay202",
+    "batch_bytes": 479558,
+    "old_packet_bytes": 2324798,
+    "new_packet_bytes": 479799,
+    "packet_reader_max_bytes": 2097152,
+    "race_wire_collector": "passed",
+    "make_verify": "passed, C03 58",
+    "build_windows": "makebuild4binaries/Windowswiretestcrosscompile+vet passed"
+  },
+  "unrun": [
+    "authenticated capabilities exchange",
+    "profile1.2",
+    "1.2 machine dispatch/admission/replay/PGAPI",
+    "full fieldcoverage/scopeddeletion",
+    "independent collection/heartbeat",
+    "Windowslifecycle/rights/reboot"
+  ],
+  "completed_global_tasks": 57
+}

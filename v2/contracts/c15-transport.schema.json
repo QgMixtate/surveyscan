@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:surveyscan:c15:transport:1:2",
+  "$defs": {
+    "SignedObservation": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "urn:surveyscan:c15:observation:1:2"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "key_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      },
+      "required": [
+        "payload",
+        "digest",
+        "key_id",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "Batch": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "object",
+          "properties": {
+            "major": {
+              "const": 1
+            },
+            "minor": {
+              "const": 2
+            }
+          },
+          "required": [
+            "major",
+            "minor"
+          ],
+          "additionalProperties": false
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "delivery_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SignedObservation"
+          },
+          "minItems": 1,
+          "maxItems": 100
+        }
+      },
+      "required": [
+        "schema_version",
+        "tenant_id",
+        "delivery_id",
+        "records"
+      ],
+      "additionalProperties": false
+    }
+  }
+}
