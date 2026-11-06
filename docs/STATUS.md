@@ -1,71 +1,47 @@
 # Текущее состояние surveyscan
 
-Обновлено: 6 ноября 2026. **C14 принят в пределах Linux E1; 57/200 задач выполнены.**
-C15.01 завершён как проектирование, C15.02 — in_progress; C15.03/04 и C16–C50 ещё не приняты.
+6 ноября 2026. **57/200 done; C15.02 in_progress.** C14 принят в bounded Linux E1,
+C15.01 — проектирование done; C15.03/04 и C16–C50 не приняты.
 
-Текущая ветка — `codex/v2-c15-windows`, worktree `/workspace/surveyscan-c15`,
-[draft PR №5](https://github.com/QgMixtate/surveyscan/pull/5), база — ветка E1 из
-[PR №4](https://github.com/QgMixtate/surveyscan/pull/4). Main не слит, официальный release,
-production deployment и повторная публикация настроек среды не выполнялись.
+Рабочая ветка codex/v2-c15-windows, /workspace/surveyscan-c15,
+[draft PR5](https://github.com/QgMixtate/surveyscan/pull/5), base E1 изPR4.
+Последний product code —2fe4b93: частичный inventory1.2 center+collector relay,
+две подписанные capabilities роли/Go agent negotiation, независимый read-only
+collection worker и serial state actor, все12Windowsproviders через bounded ownbinary
+процессы. Default inventory12_enabled у центра/коллектора false; Windows daemon ещё
+не включён. Complete/deletion1.2 отклоняется. C03/C09/C12 неизменны; SQL34/47ownedtables.
 
-**Последний код — fbca7ac: collector relay 1.2.** Отдельный private-флаг
-`inventory12_enabled` у центра и коллектора выключен по умолчанию. Новый режим связывает
-admission, проверку origin/signature/scope, транзакционную проекцию всех 12 частичных секций,
-историю/audit/outbox, версионированное чтение и проверку прежнего signed ACK 1.0.
-Снимки complete/ok 1.2 отклоняются до реализации provider-scoped deletion.
-Старые C03/C09 контракты неизменны. Каталог SQL: 34 миграции / 47 owned tables;
-применённые SQL не редактировались, новые таблицы добавлены миграцией 0033.
+Фактические проверки на2fe4b93: fullv2 42233416953 SUCCESS, Windows42233417128 SUCCESS,
+Web42233417240/evidence42233417031 SUCCESS. PG58, scopedBao20, center6/relay10,
+realcompiledLinuxagent11 (3cycles+restart4th/UID/counters/verifiedACK/lock/revoke),
+wire/collector/agent race. Native Windows2022/elevated: all12processes, COM+software
+crash isolation и kill/reap passed. Данные relay синтетические; native SDK проверен
+отдельно. [Exact runs/reports](plans/surveyscan-v2/evidence/C15-hosted-2fe.json).
 
-Фактически проверено локально: PG58; verify/C03 58; wire/collector race; Windows cross-build/vet.
-Скомпилированный center-only case: 6 проверок. Полный data relay: 9 проверок с настоящими
-mTLS, scoped nonexportable OpenBao Transit, PostgreSQL и API. Данные агента синтетические,
-соответствуют Windows schema 1.2. Отключение своего центра, cold restart collector+center,
-повторная отправка sequence2 сохраняют исходный batch и один UID (2 observations / 1 asset).
-Удаление pending — только после проверки подписанного ACK. Конфигурационный downgrade
-сохраняет staged bytes до lease/retry; уже committed ACK остаётся доступен.
+**Boot42233416959 FAILED**: firstVM после reboot, second_queue_drain,4checks.
+Причина C15-D07 неизвестна. Добавлена безопасная диагностика counts/closedreasoncodes,
+8redaction tests passed; product behavior/timeout не менялись по догадке. Одна свежая
+localVM с тем же Linuxproductcode прошла9checks/reboot/update/CLI (login4.938s).
+Две instrumented hostedVM ещё pending. Не выдавать четыре green workflows за all5.
+C15-D06 isolatedBao restore: activeleader readiness перед единственным force-write;
+local9 и новый hostedrestore9 passed. HTTPstatus старого failure не сохранился,
+его точная причина не доказана. Исторические failures сохранены в C15-defects.json.
 
-Публикация fbca7ac подтверждена: все пять hosted workflows — SUCCESS, включая полный v2
-42227311999 и две fresh Linux VM. [Точные runs](plans/surveyscan-v2/evidence/C15-hosted-fbca.json).
-Последний handoff: [C15](plans/surveyscan-v2/handoffs/C15.md),
-[relay evidence](plans/surveyscan-v2/evidence/C15-relay.json).
+Следующий Windows runtime блок — [точный план](plans/surveyscan-v2/decisions/C15-windows-profile-next.md):
+отдельный profile1.2/overall budget/appliedprogress/offlinecache, затем secure Windows
+state/DACL/reparse/locks/hostcontinuity, SCM/update/ordinaryrights/Windows11/actualreboot.
+Новый actor удерживает один provider slot при noncooperative cancel; это не обещание
+убить произвольный in-process call. Windows SDK использует отдельные child processes.
+[Handoff](plans/surveyscan-v2/handoffs/C15.md), [scheduler](plans/surveyscan-v2/evidence/C15-independent-collection.json),
+[providers](plans/surveyscan-v2/evidence/C15-all-provider-workers.json).
 
-**Новый local increment — authenticated capability exchange agent→collector→center**:
-[точный план](plans/surveyscan-v2/decisions/C15-agent-capability-next.md).
-Collector outer frame и Go agent method реализованы: обе подписи/ключи/nonce/tenant/
-audience/generation/expiry, quota-aware ceilings и intersection всех3offers.
-Actual compiled mTLS/scopedTransit/PG relay10 прошёл с Python syntheticagent; отдельно
-Go agent method через настоящий mTLS с production collector/center signing testdouble.
-verify/C03 58, PG58, race agent/collector/wire и Windows cross-build passed. Публикация44803bf подтверждена:4hosted passed, fullv2 failed on isolatedBao restore
-(C15-D06); chain/relay10 passed beforefailure. Daemon метод ещё не вызывает. Next — Windows profile1.2.
-Далее — Windows profile 1.2, независимая bounded collection/heartbeat, DACL/locks/host
-binding, SCM/service/update, обычные права/Windows11/настоящий reboot и provider coverage.
-Native SDK 12 baseline секций ранее проверен на WindowsServer2022/elevated; это ещё не
-постоянная служба Windows и не полная приёмка C15. Продолжать автоматически по R-020/022/023.
+E1 frozen: actualsoak86400.914s/2740samples/1419observations/двеrenewals, одинUID/queuesempty,
+source8560f57; отдельный authdelta39e401f (5→8s без ослабленияArgon2/rates/slots) all4hosted
+иVM9+9. Candidate27files/Chromium16 — внутренний, не официальныйrelease. C15 binaries
+не подменяют этот candidate или24hproof; нового24h прогона нет.
 
-C15-D03 (COM stdout bound), D04 (boot fixture33→34) и D05 (JSON HTML expansion в spool)
-исправлены; исторические failed runs сохранены в [журнале](plans/surveyscan-v2/evidence/C15-defects.json).
-
-E1: реальный soak86400,914с,2740 измерений,1419 observations,два продления сертификатов,
-пустые очереди/один UID/без дублей — frozen source8560f57. Auth5→8с проверен отдельно
-на39e401f (Argon2/лимиты попыток/hashslots не ослаблялись), all4 hosted SUCCESS и VM9+9.
-[Приёмка](plans/surveyscan-v2/evidence/C14-acceptance.json),
-[кандидат](plans/surveyscan-v2/evidence/C14-candidate-39.json):27 файлов, verify/staging,
-Chromium16, тестовый ключ удалён. C15 не подменяет frozen24h или этот внутренний candidate.
-
-Локальные C15 стенды используют C15 binaries и свои DB/порты/scoped mounts; общие E1 dev
-credentials/Compose переиспользуются без копирования private keys. Новые private reports —
-только C15/.local. Не запускать C15 dev up/down/reset с совпадающими E1 project/ports.
-История и подробности — docs/REQUESTS.md; 57done в plan/CSV не менять без приёмки задач.
-
-Новый scheduler localpassed: один read-only collection task вне actor; state/TLS/
-counters/spool остаются serial. Heartbeat при blocked collection, no overlap/late
-success discard проверены с HTTPS testdouble; compiled live Linux11 passed
-(3cycles+restart4th/sameUID/verifiedACK/lock/revoke). verify/build/C03 58/race/
-Winbuild passed. Publication pending; Windows daemon/новый24h unrun.
-[Доказательства](plans/surveyscan-v2/evidence/C15-independent-collection.json).
-
-C15-D06: readiness guard before single snapshot-force, numericHTTPstatus diagnostics;
-actual local isolatedrestore9passed, hostedrepeatpending/causeoldfailureunconfirmed.
-All12Windowsprovider process isolation implementedlocal; crossbuild/testcompile
-passed, nativeCIpending. Read C15-all-provider-workers.json. Scheduler bf6c9a8 local
-commit; next publication includes scheduler/provider isolation/readiness regression.
+Продолжать автоматически по R020/022/023; mainmerge/officialrelease/productiondeploy/
+повторная cloud settings publication не выполнялись. E1 private keys/reports не копировать
+и не перезаписывать. C15 stand — свои DB/ports/scopedmounts/processes, E1devcredentials
+read-only; не запускать C15dev up/down/reset с общими E1project/ports.57done не увеличивать
+без фактической приёмки. История — REQUESTS, подробные proof/ограничения — handoff/evidence.

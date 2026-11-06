@@ -2,6 +2,8 @@
 import importlib.util
 import json
 import unittest
+import tempfile
+from pathlib import Path
 
 from dev import ROOT
 
@@ -11,6 +13,21 @@ spec.loader.exec_module(guest)
 
 
 class BootDiagnosticsTests(unittest.TestCase):
+    def test_queue_diagnostics_never_exports_frame_values_or_unknown_reasons(self):
+        with tempfile.TemporaryDirectory() as directory:
+            agent = Path(directory) / 'agent'; agent.mkdir()
+            collector = Path(directory) / 'collector'; collector.mkdir()
+            (agent / 'canary-private.pending').write_text('private payload')
+            frame = {'payload': {'results': [
+                {'spool_action': 'retain', 'reason_code': 'SEQUENCE_CONFLICT', 'password': 'canary-private'},
+                {'spool_action': 'retain', 'reason_code': 'canary-private'}]}}
+            (collector / 'canary-private.receipt').write_text(json.dumps({'receipt': frame}))
+            safe = guest.queue_diagnostics(agent, collector)
+            self.assertEqual(safe['agent_pending'], 1)
+            self.assertEqual(safe['retained_SEQUENCE_CONFLICT'], 1)
+            self.assertEqual(safe['retained_other'], 1)
+            self.assertNotIn('canary', json.dumps(safe))
+
     def test_known_error_keeps_only_safe_category(self):
         error = guest.CommandFailure('surveyscanctl',5,15.12345,
             b'{"error":"NETWORK_OR_TLS_UNAVAILABLE","password":"canary-private","body":"sensitive-body"}')

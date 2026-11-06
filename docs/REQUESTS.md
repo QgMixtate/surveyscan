@@ -723,3 +723,11 @@ leader readiness before singlewrite and safe numericstatus; actual localrestore9
 no write retry/source reset. Native Windows newincrement isolates all12providers in
 ownbinary bounded processes; Winbuild/testcompile passed, native executionpending.
 C15-all-provider-workers.json; scheduler bf6c9a8 committedlocalnotyetpushed.57done.
+
+2fe4b93 publication: fullv2/Windows/Web/evidence SUCCESS; actual Windows all12 child
+providers inclsoftware crash/later services passed; hosted restore9 confirmsD06guard.
+Boot42233416959 failedfirstVM afterrebootsecond_queue_drain/4checks, D07causeunknown.
+SameLinuxproductcode freshlocalVM9/reboot/update/CLI passed(login4.938s). Added safe
+queue counts/closed reasons and8privacytests, no product/timeout change onguess.
+Two instrumented hostedVM repeat next; all5 not yetgreen. Windows profile nextplan
+prepared; notimplemented, global57done/C15.02IP. Exactevidence C15-hosted-2fe.json.

@@ -1,43 +1,52 @@
-# Изолированный native Windows baseline
+# Native Windows inventory baseline
 
-Пакет C15.02 пока не вызывается agent.Collect/scheduler/enrollment и не отправляет observations.
-Windows/amd64: GetComputerNameEx, ограниченное чтение MachineGuid (HKLM64,258bytes),
-RtlGetVersion и локальные интерфейсы Go/Windows. Добавлены CPU/RAM/BIOS,
-Uninstall HKLM32/64 + current-user, read-only SCM service states, fixed volumes/free space,
-IPv4/IPv6 route table. Службы перечисляются с CONNECT/ENUMERATE, без ALL_ACCESS;
-command lines/config не запрашиваются. Блокированы remote/removable drive probes. Без shell/PowerShell, удалённых целей,
-секретов и пользовательских файлов. MachineGuid — только inventory candidate, не asset_uid.
+Windows/amd64 SDK собирает12partialsections. Он ещё не подключён к enrollment,
+постоянной Windows-службе и доставке observations. Native WindowsServer2022/elevated
+на2fe4b93 проверен workflow42233417128; это не Windows11/ordinary rights/SCM/reboot.
 
-Базовые адаптеры всех12секций реализованы. Native Windows CI d9e6206 прошёл;
-partial/provider unavailable не выдаются за полное покрытие или отсутствие объектов. с
-ADAPTER_NOT_IMPLEMENTED. Нет утверждения о полном Windows inventory; недоступная API-секция
-не маскируется пустым ok. Контекст проверяется между вызовами, но не прерывает синхронный Win32
-вызов посередине. До COM/QFE нужны отдельные конечные timeout/worker limits.
+Каждая секция запускается отдельным child того же agent binary через закрытый
+inventory-worker <section>:30s context deadline,1s WaitDelay,1MiB stdout, schema/
+semantic validation, cancellation/kill/wait. Raw stderr не экспортируется. Worker
+не читает config/keys/grants и не принимает executable/query/remote target. Сбой
+одного provider сохраняет остальные sections. Это process isolation; sandbox или
+отдельный Windows security token не заявлен. Общий12-section sweep имеет отдельный
+parent deadline и может длиться дольше30s.
 
-`go test -v ./internal/agent/windowsinventory` запускается только на Windows. Native facts
-проверяются через отдельный payload validator с синтетическим origin/scope/sequence;
-нет HTTP/mTLS/БД/projection, host binding, DACL/spool/process lock, SCM, update/reboot.
-CI runner Windows Server 2022 имеет свои права; это не стандартный пользователь/LocalService
-и не Windows 11 compatibility proof. Полные C15.02–04 ещё не завершены.
+Read-only источники:
 
-Local accounts: NetUserEnum0/FILTER_NORMAL_ACCOUNT, NetLocalGroupEnum0 и
-NetLocalGroupGetMembers0. Только локальный SAM, имена и публичные SID/member SID;
-32 bounded pages/64KiB buffer,512groups/10000totalrows, cancellation between calls.
-SID lookup квалифицирован локальным NetBIOS host или BUILTIN; group members не
-разрешаются через AD. На domaincontroller local SAM отсутствует: секция unsupported,
-API перечисления не вызываются. SAM/LSA secrets и пароли не запрашиваются.
-Обычные права/LocalService/DC и подробные safe reasoncodes ещё требуют полной матрицы C15.
+- Identity/OS/network: GetComputerNameEx, ограниченный HKLM64 MachineGuid, RtlGetVersion,
+  локальные NIC/IPv4/IPv6. MachineGuid — candidate/continuity input, не asset_uid.
+- Hardware/resources: CPU/RAM/BIOS, fixed volumes/free space. Remote/removable probes
+  запрещены; full hardware coverage не заявлен.
+- Software: Uninstall HKLM32/64 и HKCU текущего token, registry_key/provider scope/view,
+  current-token SID дляHKCU. Другие user hives не загружаются; Win32_Product не используется.
+- Services: read-only SCM CONNECT/ENUMERATE; command lines/config/ALL_ACCESS не запрашиваются.
+- Accounts: local SAM NetUserEnum/NetLocalGroupEnum/NetLocalGroupGetMembers, публичные
+  SID/membership; bounded pages/rows/buffers. AD resolution иSAM/LSA secrets отсутствуют.
+  На domaincontroller local SAM unsupported, API перечисления не вызываются.
+- Routes/neighbors: локальные IPv4/IPv6 route tables иARP/NDP cache, без discovery packets,
+  neighbor resolution/LLDP/CDP. Interface index связывает текущий снимок, не постоянный NICUID.
+- Updates/protection: QFE subset/ISO dates, firewall INetFwPolicy2, Defender boolean
+  properties, opaque SecurityCenter2 productState. COM references освобождаются в child.
 
-Соседи: GetIpNetTable2/FreeMibTable читает только локальный ARP/NDP cache, без
-пакетов discovery/neighbor resolution/LLDP/CDP. ABI MIB_IPNET_ROW2 проверяется на
-Windows/amd64:88bytes/row, table row offset8; максимум10000rows. Interface_index
-добавлен в draft networkRow для связи NIC/routes/neighbors внутри текущего снимка,
-это не постоянный NICUID. Полнота топологии не заявлена.
+Все baseline sections остаются partial/complete=false. Недоступный provider не означает
+пустой ok; authoritative scoped deletion не реализовано. Worker output1MiB не расширяет
+transport: canonical512KiB/envelope576KiB/batch768KiB и negotiated lower ceilings.
 
-Updates/protection теперь собираются через COM/WMI в отдельном child того жеagentbinary:
-30sdeadline,1MiBstdout,validation,kill+reap. QFEsubset иISOdatesonly; firewall enabled читается
-черезINetFwPolicy2, Defender черезboolean properties, AVproductStateостаётсяopaque.
-COMreferences освобождаются; worker не читает configs/keys и не принимаетtarget/query.
-`SURVEYSCAN_C15_TEST_AGENT` используется толькоtestmain; productionpath — os.Executable.
-Синтетические childfailuretests отделеныотnativeAPI. СуществующийE1schedulersequential:
-independentheartbeat при подключенииWindowsдолжен быть реализован отдельно.
+Проверка на Windows из v2:
+
+```powershell
+go build -o surveyscan-agent.exe ./cmd/surveyscan-agent
+$env:SURVEYSCAN_C15_TEST_AGENT = (Resolve-Path .\surveyscan-agent.exe).Path
+go test -count=1 -v ./internal/agent/windowsinventory
+```
+
+Built binary обязателен для native worker tests; без него они явно skip. Override
+SURVEYSCAN_C15_TEST_AGENT используется только testmain, production — os.Executable.
+Native tests и synthetic timeout/crash/invalid/overflow/canary/kill-reap тесты различаются.
+Новый software crash test сохраняет identity/OS и последующие services.
+
+На C15 ветке Linux agent scheduler уже разделяет read-only collection и serial state
+actor. Windows profile1.2/overall budget, secure DACL/reparse/atomic files, host binding,
+exclusive process lock, SCM/update/ordinary rights/actual reboot ещё gates. Старые E1
+soak/candidate относятся к frozen Linux binaries и не подтверждают новый Windows runtime.

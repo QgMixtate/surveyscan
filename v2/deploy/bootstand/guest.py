@@ -99,6 +99,33 @@ def save(path, data, mode=0o600):
         os.fsync(stream.fileno())
 
 
+def queue_diagnostics(agent=Path('/var/lib/surveyscan-agent/spool'), collector=Path('/var/lib/surveyscan-collector/spool')):
+    # Counts and a closed reason vocabulary only; never IDs, raw frames or logs.
+    out = {}
+    reasons = {k: 0 for k in ('SCHEMA_INVALID', 'SEQUENCE_CONFLICT', 'SOURCE_NOT_AUTHORIZED', 'other')}
+    for role, directory in (('agent', agent), ('collector', collector)):
+        for suffix in ('pending', 'receipt'):
+            files = list(directory.glob('*.' + suffix))
+            out[role + '_' + suffix] = min(len(files), 1000000)
+            if suffix != 'receipt':
+                continue
+            for path in files[:100]:
+                try:
+                    if path.is_symlink() or path.stat().st_size > 2097152:
+                        continue
+                    value = json.loads(path.read_text())
+                    if role == 'collector':
+                        value = value.get('receipt', {})
+                    for result in value.get('payload', {}).get('results', [])[:100]:
+                        if result.get('spool_action') == 'retain':
+                            key = result.get('reason_code')
+                            reasons[key if key in reasons else 'other'] += 1
+                except (OSError, ValueError, AttributeError, TypeError):
+                    pass
+    out.update({'retained_' + k: v for k, v in reasons.items()})
+    return out
+
+
 def until(predicate, message, seconds=120):
     end = time.monotonic() + seconds
     while time.monotonic() < end:
@@ -418,6 +445,8 @@ def main():
         diagnostic = {'status': 'failed', 'error_type': type(error).__name__, 'phase': PHASE,
                       'failed_guest_line': frames[-1].lineno if frames else 0,
                       'guest_call_lines': [f.lineno for f in frames], 'completed_checks': len(CHECKS)}
+        if PHASE == 'second_queue_drain':
+            diagnostic['queue_diagnostics'] = queue_diagnostics()
         if isinstance(error, BaoFailure):
             diagnostic.update(bao_operation=error.operation, bao_http_status=error.status)
         if isinstance(error, CommandFailure):

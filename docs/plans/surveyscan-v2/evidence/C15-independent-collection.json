@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "2fe4b938869b7752c1a75f0af2c4a03a7ed47fb4",
+  "publication": "published PR5; v2/Windows/Web/evidence passed, Linux boot failure D07",
   "task": "C15.02",
   "status": "partial",
   "change": "single read-only collection task separated from serial agent state actor",
@@ -38,5 +38,6 @@
     "network tasks still serial with existing bounded HTTP requests",
     "new24h soak not run"
   ],
-  "completed_global_tasks": 57
+  "completed_global_tasks": 57,
+  "hosted_evidence": "C15-hosted-2fe.json"
 }

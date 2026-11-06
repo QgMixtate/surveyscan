@@ -115,6 +115,10 @@ def main():
                             'command_program', 'command_exit', 'command_elapsed_seconds', 'cli_error'):
                     if key in guest:
                         diagnostic[key] = guest[key]
+                queue = guest.get('queue_diagnostics', {})
+                if isinstance(queue, dict):
+                    keys = {'agent_pending', 'agent_receipt', 'collector_pending', 'collector_receipt', 'retained_SCHEMA_INVALID', 'retained_SEQUENCE_CONFLICT', 'retained_SOURCE_NOT_AUTHORIZED', 'retained_other'}
+                    diagnostic['queue_diagnostics'] = {k:v for k,v in queue.items() if k in keys and type(v) is int and 0 <= v <= 1000000}
                 auth = []
                 for item in guest.get('auth_diagnostics', [])[:3]:
                     if not isinstance(item, dict) or item.get('stage') not in {'rate','user_lookup','password_verify','session_begin','user_recheck','active_sessions','session_insert','audit','commit','unknown'}:

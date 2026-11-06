@@ -1,0 +1,53 @@
+{
+  "source_revision": "2fe4b938869b7752c1a75f0af2c4a03a7ed47fb4",
+  "workflows": {
+    "windows": {
+      "id": 42233417128,
+      "conclusion": "success"
+    },
+    "v2": {
+      "id": 42233416953,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42233417240,
+      "conclusion": "success"
+    },
+    "acceptance_evidence": {
+      "id": 42233417031,
+      "conclusion": "success"
+    },
+    "native_linux": {
+      "id": 42233416959,
+      "conclusion": "failure",
+      "phase": "second_queue_drain",
+      "completed_checks": 4
+    }
+  },
+  "reports": {
+    "agent-smoke.json": {
+      "status": "passed",
+      "count": 11,
+      "sha256": "cb2227691f590a4793a45c56f36e76a20e94634c58952fa61ddf85af13406951"
+    },
+    "c15-relay-smoke.json": {
+      "status": "passed",
+      "count": 10,
+      "sha256": "58b239f505697857ec8215facf0e8a1dd78a9459f5e2ec481facd3b9b55183b9"
+    },
+    "c15-center-smoke.json": {
+      "status": "passed",
+      "count": 6,
+      "sha256": "1b0cacbcfa969a859815f691823ea9d3def6374d801ef22d52aab8c397c7965d"
+    },
+    "c13-bao-restore-smoke.json": {
+      "status": "passed",
+      "count": 9,
+      "sha256": "3c2651b4006d299aa54f13329378766a6c2b83912095b1c9cc3e944c0f4c12bd"
+    }
+  },
+  "windows_native_providers": "all12 child processes; baseline+COM and non-COM failure isolation+kill/reap passed elevated Windows2022",
+  "native_failure": "C15-D07, cause unconfirmed; one fresh local VM9 passed with same product code and new safe queue diagnostics",
+  "completed_global_tasks": 57,
+  "all_workflows_success": false
+}

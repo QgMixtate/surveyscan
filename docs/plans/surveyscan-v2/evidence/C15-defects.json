@@ -51,7 +51,19 @@
       "observed": "snapshot-force returned non200/204 immediately after fresh-node unseal; old assertion did not retain numeric HTTPstatus",
       "cause": "unconfirmed; independent readiness hazard identified: unseal response is not active Raft leader readiness",
       "change": "wait for health200 initialized=true,sealed=false,standby=false before a single force-restore write; retain allowlisted numeric HTTPstatus on failure; no write retries/custody reset",
-      "local_verification": "actual separate disposable Raft restore9 passed; source untouched; hosted repeat pending"
+      "local_verification": "actual separate disposable Raft restore9 passed; source untouched; hosted repeat pending",
+      "hosted_verification": "2fe4b93 v2 42233416953 SUCCESS; actual isolatedrestore9 report verified; historical HTTPstatus/rootcause still unknown"
+    },
+    {
+      "id": "C15-D07",
+      "scope": "first hosted fresh Linux VM with new scheduler after actual reboot",
+      "source_revision": "2fe4b938869b7752c1a75f0af2c4a03a7ed47fb4",
+      "run_id": 42233416959,
+      "observed": "second_queue_drain timed out after4 completed checks; no prior queue diagnostics",
+      "cause": "unconfirmed; no timeout increase or product change based on guess",
+      "new_evidence": "same Linux product source passed one fresh local QEMU/systemd reboot/update9; login4.938s; source dirty metadata/new test diagnostics distinguish from clean hostedrun",
+      "change": "safe pending/receipt counts and closed retained-reason counters in guest+supervisor;8 diagnostic redaction tests passed",
+      "status": "open; two fresh hosted instrumented VMs pending"
     }
   ],
   "windows_inventory_tested": true,

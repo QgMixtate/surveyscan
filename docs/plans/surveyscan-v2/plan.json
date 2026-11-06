@@ -1426,9 +1426,13 @@
             "evidence/C15-capability-chain.json",
             "evidence/C15-hosted-fbca.json",
             "decisions/C15-independent-collection.md",
-            "evidence/C15-independent-collection.json"
+            "evidence/C15-independent-collection.json",
+            "decisions/C15-all-provider-workers.md",
+            "evidence/C15-all-provider-workers.json",
+            "evidence/C15-hosted-2fe.json",
+            "decisions/C15-windows-profile-next.md"
           ],
-          "verification_status": "native12 Windows2022/elevated and COM failure isolation previously passed; opt-in center+collector partial12 relay fbca all5hosted success. Capability-chain44803bf published, local relay10/PG58/race/Winbuild passed, hosted pending. Independent collection actor local race+compiled real Linux11 passed, publication pending. Windows profile/runtime/provider coverage/DACL/SCM/reboot still unrun. Global57done."
+          "verification_status": "Published2fe4b93:fullv2/Windows/Web/evidence success, Linuxboot failedsecond_queue_drain(C15-D07unknowncause). PG58/relay10/scopedBao20/realLinuxagent11, native12 allprocesses/COM+nonCOMfailure/killreap passed. LocalfreshVM9 passed; instrumented twohostedrepeat pending. D06restore readiness guard hostedpassed. Windowsprofile/runtime/DACL/SCM/rights/reboot/completecoverage remain,57done."
         },
         {
           "id": "C15.03",

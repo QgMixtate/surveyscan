@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "2fe4b938869b7752c1a75f0af2c4a03a7ed47fb4",
+  "publication": "published PR5; v2/Windows/Web/evidence passed, Linux boot failure D07",
   "task": "C15.02",
   "status": "partial",
   "change": "all12 native providers execute in bounded own-binary child processes",
@@ -9,7 +9,7 @@
     "windows_amd64_agent_crossbuild": "passed",
     "windows_native_tests_crosscompile": "passed"
   },
-  "native_execution": "pending hosted Windows; not locally executed",
+  "native_execution": "hosted Windows42233417128 SUCCESS; all12 baseline and new software crash/later services test passed",
   "existing_safety": "closed section names,30s child deadline,1s WaitDelay, bounded stdout, discarded stderr, cancellation/kill/wait; no config/keys in child",
   "new_test": "crashed software provider retains earlier identity/OS and later services",
   "unrun": [
@@ -17,5 +17,6 @@
     "DACL/locks/SCM stop/reboot/rights matrix",
     "provider complete coverage"
   ],
-  "completed_global_tasks": 57
+  "completed_global_tasks": 57,
+  "hosted_evidence": "C15-hosted-2fe.json"
 }
