@@ -522,3 +522,11 @@ C14.03 checkpoint: добавлена fixed-vocabulary backend login diagnostic(
 Guest/supervisor экспортируют только allowlisted fields.2Go redaction tests +17Python tests passed;
 make verify/C03 58 passed. Это диагностическое изменение после measured8560f57, не новый24hproof.
 Следующее — fresh nativeVM и hosted CI с диагностикой; D08 покаopen.
+
+C14.03 checkpoint:4a589d2 all4hosted SUCCESS (v2 42180569553/native42180569494/Web42180569517/evidence42180569485).
+Local firstVM9passed/login3.886s; secondVMkernelstalled beforePID1 afterHPET clocksource,
+173%QEMU CPU/no kernelprogress >=8min. Owned supervisor interrupted; campaign failed, notPASS.
+C14-D09 fixture change Q35 hpet=off pending freshVM. Controlled PGlock test passed:
+503/5004ms, passwordverify121ms, stageuser_recheck, zero credentials; explicit recoverycreates1.
+Optional CPUpressure probe in disposable VM added (runtime quota only; host unaffected); expected
+5s deadline after slow Argon2 requires actualVM verification. No product timeouts/crypto changes yet.

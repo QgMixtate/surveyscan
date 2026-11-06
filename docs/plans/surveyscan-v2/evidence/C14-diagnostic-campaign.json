@@ -1,0 +1,89 @@
+{
+  "source_revision": "4a589d23d8cc35cc6da13ba1394c8c85b16303e2",
+  "local_campaign": {
+    "source": "4a589d23d8cc35cc6da13ba1394c8c85b16303e2",
+    "planned_fresh_vms": 2,
+    "runs": [
+      {
+        "vm": 1,
+        "exit_code": 0,
+        "report": {
+          "package": "C13",
+          "status": "passed",
+          "count": 9,
+          "checks": [
+            "real QEMU kernel reboot changes boot_id; PID1 is systemd, not a static parser/container init",
+            "actual PG17/Bao/migrate/server/collector/agent/TLS static edge start automatically after reboot",
+            "all four application/Bao services run as distinct static nonroot users with NoNewPrivileges and real LoadCredential",
+            "cold Bao is sealed: actual restarted center reports degraded readiness and still serves preserved registry/session",
+            "operator-owned unseal restores key ops; actual enabled daemons replay pre-reboot pending and continue >=sequence3 to one unchanged UID",
+            "all33 applied SQL hashes verify after real boot without duplicate migration or identity regeneration",
+            "actual systemd updater uses transient LoadCredential schema/migrate tasks, switches verified release and restarts healthy server with same session/UID",
+            "separate static Web UI and TLS/API edge remain available after boot and verified server update",
+            "guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session"
+          ],
+          "cli_timings": [
+            {
+              "operation": "login",
+              "elapsed_seconds": 3.886
+            },
+            {
+              "operation": "assets",
+              "elapsed_seconds": 0.37
+            },
+            {
+              "operation": "logout",
+              "elapsed_seconds": 0.351
+            }
+          ],
+          "target": "actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI",
+          "custody": "explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env",
+          "unrun": [
+            "two independently clean OS installations",
+            "schema-changing update through updater",
+            "physical power loss",
+            "production KMS/split custody/DR/RPO/RTO/100users"
+          ]
+        }
+      },
+      {
+        "vm": 2,
+        "exit_code": 1,
+        "report": {
+          "status": "failed",
+          "error_type": "InterruptedError"
+        }
+      }
+    ],
+    "status": "failed",
+    "current_vm": 2
+  },
+  "controlled_pg_lock": {
+    "test": "TestC14LoginDeadlineDoesNotMintSession",
+    "status": "passed",
+    "elapsed_ms": 5004,
+    "verify_ms": 121,
+    "reason": "deadline_exceeded",
+    "stage": "user_recheck",
+    "minted_credentials": 0,
+    "explicit_recovery_minted": 1,
+    "historical_vm_cause_proven": false
+  },
+  "hosted": {
+    "v2": 42180569553,
+    "boot_two_vm": 42180569494,
+    "web": 42180569517,
+    "evidence": 42180569485,
+    "all_conclusions": "success"
+  },
+  "kernel_stall": {
+    "vm": 2,
+    "app_started": false,
+    "last_kernel_time_seconds": 0.951273,
+    "last_event": "clocksource switched to HPET",
+    "qemu_cpu_percent_sample": 173,
+    "operator_interrupt_after_stall": true,
+    "result": "failed/InterruptedError; not pass"
+  },
+  "next": "test Q35 hpet=off and opt-in controlled CPU login probe; do not infer historical cause without trace"
+}

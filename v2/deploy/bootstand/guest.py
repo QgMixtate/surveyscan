@@ -20,6 +20,7 @@ STATE = Path('/root/boot-phase.json')
 CHECKS = []
 CLI_TIMINGS = []
 PHASE = 'initializing'
+LOGIN_PRESSURE = None
 
 
 def phase(name):
@@ -309,6 +310,7 @@ def first_boot(seed):
 
 
 def second_boot(seed):
+    global LOGIN_PRESSURE
     phase('second_autostart')
     old = json.loads(STATE.read_text())
     assert old['boot_id'] != Path('/proc/sys/kernel/random/boot_id').read_text().strip()
@@ -380,7 +382,19 @@ def second_boot(seed):
     assert card['asset_uid'] == old['asset_uid']
     command([cli, 'logout', '--context-file', context])
     CHECKS.append('guest has no Go/Node build tools; separately shipped CLI logs in over TLS edge, reads preserved UID and revokes its session')
+    if seed.get('login_pressure_probe'):
+        import login_pressure
+        phase('controlled_login_cpu_pressure')
+        login_seconds = next(x['elapsed_seconds'] for x in CLI_TIMINGS if x['operation']=='login')
+        matched, LOGIN_PRESSURE = login_pressure.probe(command, request, auth_diagnostics, sql, tls, seed, login_seconds)
+        assert matched, 'controlled CPU profile did not establish the expected deadline counterexample'
+        phase('controlled_login_cpu_recovery')
+        command([cli, 'login', '--server', 'https://127.0.0.1:8444', '--username', 'admin', '--password-file', '/root/admin-password',
+                 '--ca-file', str(SEED / 'infra-ca.pem'), '--context-file', context])
+        command([cli, 'logout', '--context-file', context])
+        CHECKS.append('opt-in CPU pressure reproduces post-hash deadline503 without minting session; explicit new login recovers after quota restore')
     return {'package': 'C13', 'status': 'passed', 'count': len(CHECKS), 'checks': CHECKS, 'cli_timings': CLI_TIMINGS,
+            'login_pressure': LOGIN_PRESSURE,
             'target': 'actual private QEMU TCG Debian/systemd VM with PG17/Bao2.7.2/nonroot app units, kernel reboot, HTTPS/mTLS and scoped non-exportable Transit PKI',
             'custody': 'explicit development test operator unseal after cold reboot; recovery keys never in app UID/unit/env',
             'unrun': ['two independently clean OS installations', 'schema-changing update through updater', 'physical power loss', 'production KMS/split custody/DR/RPO/RTO/100users']}
@@ -413,6 +427,8 @@ def main():
                 logs = subprocess.run(['journalctl','-b','--no-pager','-n','100','-o','cat',
                                        '-u','surveyscan-server.service'],capture_output=True)
                 diagnostic['auth_diagnostics'] = auth_diagnostics(logs.stdout)
+        if LOGIN_PRESSURE is not None:
+            diagnostic['login_pressure'] = LOGIN_PRESSURE
         print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(diagnostic), flush=True)
         command(['systemctl', 'poweroff'])
 

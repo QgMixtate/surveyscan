@@ -78,6 +78,14 @@
       "diagnostic_unit_tests": 5,
       "reproduction_campaign": "C14-hosted-802.json: fixed-size one extra two-VM campaign, no VM-internal retry/runtime changes",
       "recurrence_evidence": "C14-native-cli-recurrence.json"
+    },
+    {
+      "id": "C14-D09",
+      "component": "native VM acceptance fixture, before application startup",
+      "status": "local secondVM kernel stall after HPET switch; proposed hpet=off pending actual fresh VM",
+      "evidence": "C14-diagnostic-campaign.json",
+      "change": "Q35 hpet=off; alternate clock selected by guest; no forced clocksource/time/certificate shortcut",
+      "causality": "kernel trace stopped immediately after HPET switch; underlying emulator mechanism unproven, repeat required"
     }
   ],
   "remaining_gates": [

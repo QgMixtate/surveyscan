@@ -55,7 +55,8 @@ def main():
             certificate = x509.CertificateBuilder().subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,name)])).issuer_name(ca_name).public_key(key.public_key()).serial_number(x509.random_serial_number()).not_valid_before(now-datetime.timedelta(minutes=5)).not_valid_after(now+datetime.timedelta(days=1)).add_extension(x509.SubjectAlternativeName([x509.IPAddress(ipaddress.ip_address('127.0.0.1'))]),False).add_extension(x509.ExtendedKeyUsage([ExtendedKeyUsageOID.SERVER_AUTH]),False).sign(ca_key,None)
             save(name+'.pem',certificate.public_bytes(serialization.Encoding.PEM))
             save(name+'.key',key.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()))
-        save('seed.json',json.dumps({'tenant':str(uuid.uuid4()),'site':str(uuid.uuid4()),'scope':str(uuid.uuid4()),'subject':str(uuid.uuid4()),'pg_password':secrets.token_urlsafe(30),'admin_password':secrets.token_urlsafe(30)}).encode())
+        save('seed.json',json.dumps({'tenant':str(uuid.uuid4()),'site':str(uuid.uuid4()),'scope':str(uuid.uuid4()),'subject':str(uuid.uuid4()),'pg_password':secrets.token_urlsafe(30),'admin_password':secrets.token_urlsafe(30),
+                                    'login_pressure_probe':os.environ.get('SURVEYSCAN_BOOT_LOGIN_PRESSURE_PROBE')=='1'}).encode())
         sign_key = ed25519.Ed25519PrivateKey.generate()
         signing = save('release.key',sign_key.private_bytes(serialization.Encoding.PEM,serialization.PrivateFormat.PKCS8,serialization.NoEncryption()))
         public = save('release.pub',sign_key.public_key().public_bytes(serialization.Encoding.PEM,serialization.PublicFormat.SubjectPublicKeyInfo))
@@ -98,7 +99,7 @@ def main():
             assert result.returncode==0 and export.returncode==0,'VM filesystem preparation failed; inspect private log'
             with (STATE/'c13-vm-serial.log').open('wb') as log:
                 result=subprocess.run(DOCKER+['run','--rm','--name',runner,'--network=none','--mount','type=bind,src='+str(out)+',dst=/vm','--entrypoint','qemu-system-x86_64',IMAGE,
-                    '-accel','tcg,thread=multi','-machine','q35','-cpu','max','-smp','2','-m','2048','-nographic','-nic','none',
+                    '-accel','tcg,thread=multi','-machine','q35,hpet=off','-cpu','max','-smp','2','-m','2048','-nographic','-nic','none',
                     '-device','virtio-rng-pci','-drive','file=/vm/guest.raw,format=raw,if=virtio','-kernel','/vm/kernel','-initrd','/vm/initrd',
                     '-append','root=/dev/vda rw console=ttyS0 init=/lib/systemd/systemd systemd.log_level=warning'],env=ENV,stdout=log,stderr=subprocess.STDOUT,timeout=900)
             serial=(STATE/'c13-vm-serial.log').read_text(errors='replace')
@@ -123,6 +124,9 @@ def main():
                     auth.append({k:item[k] for k in ('stage','reason','elapsed_ms','verify_ms')})
                 if auth:
                     diagnostic['auth_diagnostics'] = auth
+                pressure = guest.get('login_pressure')
+                if isinstance(pressure, dict):
+                    diagnostic['login_pressure'] = {k:pressure[k] for k in ('kind','vm_cpu_quota_percent','http_status','credential_count_unchanged','auth_diagnostics','historical_cause_proven') if k in pressure}
                 raise VMFailure(diagnostic)
             (STATE/'c13-boot-smoke.json').write_text(json.dumps(records[-1],indent=2)+'\n')
             print(json.dumps(records[-1]))
