@@ -18,7 +18,7 @@ import (
 )
 
 func TestNativeWindowsBaseline(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	sections, err := Collect(ctx)
 	if err != nil {
@@ -28,7 +28,7 @@ func TestNativeWindowsBaseline(t *testing.T) {
 		t.Fatal("native identity/OS baseline missing")
 	}
 	names := map[string]bool{}
-	implemented := map[string]bool{"identity": true, "os": true, "network": true, "hardware": true, "software": true, "services": true, "routes_ports": true, "resources": true, "users_groups": true, "neighbors": true}
+	implemented := map[string]bool{"identity": true, "os": true, "network": true, "hardware": true, "software": true, "services": true, "routes_ports": true, "resources": true, "users_groups": true, "neighbors": true, "updates": true, "protection": true}
 	for _, section := range sections {
 		if names[section.Name] || section.Complete || section.Count != len(section.Records) {
 			t.Fatal("incorrect section status or count")
@@ -74,7 +74,7 @@ func TestNativeWindowsBaseline(t *testing.T) {
 	if _, err = v.Payload(b); err != nil {
 		t.Fatal("native baseline violates draft payload contract")
 	}
-	t.Logf("native Windows ten-section baseline checked; two sections unsupported; token_elevated=%t; synthetic envelope; no delivery/service/reboot test", windows.GetCurrentProcessToken().IsElevated())
+	t.Logf("native Windows twelve-section baseline checked; provider availability explicit; token_elevated=%t; synthetic envelope; no delivery/service/reboot test", windows.GetCurrentProcessToken().IsElevated())
 }
 
 func TestNativeWindowsCancellation(t *testing.T) {

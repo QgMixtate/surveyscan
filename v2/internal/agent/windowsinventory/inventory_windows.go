@@ -122,6 +122,10 @@ func Collect(ctx context.Context) ([]contracts.Section, error) {
 		if err := ctx.Err(); err != nil {
 			return sections, err
 		}
+		if c.name == "updates" || c.name == "protection" {
+			sections = append(sections, workerSection(ctx, c.name, 30*time.Second))
+			continue
+		}
 		rows := []map[string]any{}
 		status, reason := "unsupported", "ADAPTER_NOT_IMPLEMENTED"
 		if c.name == "users_groups" && windows.RtlGetVersion().ProductType == 2 {

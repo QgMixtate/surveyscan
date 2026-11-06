@@ -21,6 +21,9 @@ func run() error {
 	if len(os.Args) == 2 && (os.Args[1] == "version" || os.Args[1] == "--version") {
 		return buildinfo.Print(os.Stdout, "agent")
 	}
+	if handled, err := runNativeWorker(os.Args[1:]); handled {
+		return err
+	}
 	if len(os.Args) < 2 {
 		return fmt.Errorf("используйте prepare/enroll/bind-host/renew/run --config /secure/agent.json")
 	}

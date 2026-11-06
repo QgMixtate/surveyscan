@@ -17,7 +17,7 @@ const Inventory12MaxPayload = 1 << 20
 
 // Inventory12Validator validates an unsigned payload for future C15 integration.
 // It neither verifies signatures nor authorizes/adopts an origin or asset UID.
-type Inventory12Validator struct{ schema *jsonschema.Schema }
+type Inventory12Validator struct{ schema, section *jsonschema.Schema }
 
 func NewInventory12() (*Inventory12Validator, error) {
 	b, err := contracts.C15Files.ReadFile("c15.schema.json")
@@ -38,7 +38,28 @@ func NewInventory12() (*Inventory12Validator, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Inventory12Validator{schema: schema}, nil
+	section, err := c.Compile(id + "#/$defs/Section")
+	if err != nil {
+		return nil, err
+	}
+	return &Inventory12Validator{schema: schema, section: section}, nil
+}
+
+// Section checks an isolated worker response using the same versioned schema.
+// Worker output is data, not authority to adopt a source, identity or asset UID.
+func (v *Inventory12Validator) Section(b []byte) (contracts.Section, error) {
+	var out contracts.Section
+	if len(b) == 0 || len(b) > Inventory12MaxPayload {
+		return out, domain.Invalid
+	}
+	doc, err := jsonschema.UnmarshalJSON(bytes.NewReader(b))
+	if err != nil || !bounded(doc, 0) || v.section.Validate(doc) != nil {
+		return out, domain.Invalid
+	}
+	if _, err = Canonical(b); err != nil || json.Unmarshal(b, &out) != nil || out.Count != len(out.Records) {
+		return contracts.Section{}, domain.Invalid
+	}
+	return out, nil
 }
 
 // Payload returns JCS bytes only after schema and cross-field checks pass. Its

@@ -625,3 +625,11 @@ C15 Windowsf577436/42188089781 SUCCESS:10nativebaseline sections,5testfunctions;
 elevatedtoken=true, users5/groups27/memberships8, ARP/NDPcache25rows. Noactiveprobes/fulltopology
 claim. Two sections updates/protection иfullcoverage/pipeline/rights/SCM/reboot ещёunrun.
 Web42188089767SUCCESS, fullv2/bootf577 продолжаются; C14acceptedsource39 остаётсяseparateproof.
+
+C15.02 продолжение2026-11-06: updates/protection adapters добавлены через fixed local COM/WMI
+worker в том жеWindowsagentbinary. Parent30s/1MiB/stdout validation/kill+reap; profiles незадают
+произвольные executable/query/target. QFEsubset, realfirewall booleans, Defender/AV provider
+availability; locale InstalledOn неугадывается. go-ole1.3.0MIT pinned, noPowerShell/Win32_Product.
+Windows crosscompile/vet + makeverify/C03 58 passed; Section validation tests passedLinux.
+Windows native COM и synthetic helper failure/isolation tests ещёpendinghosted.
+FullC15.02wire/storage/API/fieldcoverage иC15.03/04неприняты,57done unchanged.

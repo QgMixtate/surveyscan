@@ -1,9 +1,9 @@
 name: surveyscan-c15-contract-preparation
 on:
   push:
-    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', '.github/workflows/c15.yml']
+    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', 'v2/cmd/surveyscan-agent/**', 'v2/go.mod', 'v2/go.sum', '.github/workflows/c15.yml']
   pull_request:
-    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', '.github/workflows/c15.yml']
+    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', 'v2/cmd/surveyscan-agent/**', 'v2/go.mod', 'v2/go.sum', '.github/workflows/c15.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -32,7 +32,13 @@ jobs:
         run: go test -count=1 ./internal/platform/wire
       - name: Native Windows API baseline (isolated, no delivery or service)
         working-directory: v2
-        run: go test -count=1 -v ./internal/agent/windowsinventory
+        env:
+          SURVEYSCAN_C15_TEST_AGENT: ${{ github.workspace }}\v2\surveyscan-agent.exe
+        shell: pwsh
+        run: |
+          go build -o surveyscan-agent.exe ./cmd/surveyscan-agent
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          go test -count=1 -v ./internal/agent/windowsinventory
       - name: Build and run version command only on Windows Server 2022
         working-directory: v2
         shell: pwsh
