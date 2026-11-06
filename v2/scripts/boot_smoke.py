@@ -112,6 +112,17 @@ def main():
                             'command_program', 'command_exit', 'command_elapsed_seconds', 'cli_error'):
                     if key in guest:
                         diagnostic[key] = guest[key]
+                auth = []
+                for item in guest.get('auth_diagnostics', [])[:3]:
+                    if not isinstance(item, dict) or item.get('stage') not in {'rate','user_lookup','password_verify','session_begin','user_recheck','active_sessions','session_insert','audit','commit','unknown'}:
+                        continue
+                    if item.get('reason') not in {'deadline_exceeded','request_cancelled','dependency_unavailable'}:
+                        continue
+                    if any(type(item.get(k)) is not int or not 0 <= item[k] <= 3600000 for k in ('elapsed_ms','verify_ms')):
+                        continue
+                    auth.append({k:item[k] for k in ('stage','reason','elapsed_ms','verify_ms')})
+                if auth:
+                    diagnostic['auth_diagnostics'] = auth
                 raise VMFailure(diagnostic)
             (STATE/'c13-boot-smoke.json').write_text(json.dumps(records[-1],indent=2)+'\n')
             print(json.dumps(records[-1]))

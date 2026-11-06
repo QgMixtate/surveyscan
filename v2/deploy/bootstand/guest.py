@@ -68,6 +68,27 @@ def command(args, env=None, timeout=60):
     return result.stdout
 
 
+def auth_diagnostics(raw):
+    """Only a fixed backend event vocabulary and bounded numbers reach proof."""
+    safe = []
+    stages = {'rate','user_lookup','password_verify','session_begin','user_recheck',
+              'active_sessions','session_insert','audit','commit','unknown'}
+    reasons = {'deadline_exceeded','request_cancelled','dependency_unavailable'}
+    for line in raw.splitlines():
+        try:
+            item = json.loads(line)
+            if item.get('component') != 'access' or item.get('event') != 'login_unavailable':
+                continue
+            if item.get('stage') not in stages or item.get('reason') not in reasons:
+                continue
+            if any(type(item.get(key)) is not int or not 0 <= item[key] <= 3600000 for key in ('elapsed_ms','verify_ms')):
+                continue
+            safe.append({key:item[key] for key in ('stage','reason','elapsed_ms','verify_ms')})
+        except (ValueError,TypeError,AttributeError):
+            continue
+    return safe[-3:]
+
+
 def save(path, data, mode=0o600):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -388,6 +409,10 @@ def main():
         if isinstance(error, CommandFailure):
             diagnostic.update(command_program=error.program, command_exit=error.code,
                               command_elapsed_seconds=error.elapsed, cli_error=error.cli_error)
+            if error.program == 'surveyscanctl' and error.cli_error == 'HTTP_503':
+                logs = subprocess.run(['journalctl','-b','--no-pager','-n','100','-o','cat',
+                                       '-u','surveyscan-server.service'],capture_output=True)
+                diagnostic['auth_diagnostics'] = auth_diagnostics(logs.stdout)
         print('SURVEYSCAN_BOOT_RESULT ' + json.dumps(diagnostic), flush=True)
         command(['systemctl', 'poweroff'])
 

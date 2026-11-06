@@ -13,6 +13,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"golang.org/x/crypto/argon2"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -160,7 +161,9 @@ type Session struct {
 	CSRFToken string    `json:"csrf_token"`
 }
 
-func (s *Service) Login(ctx context.Context, username, password string) (Session, string, error) {
+func (s *Service) Login(ctx context.Context, username, password string) (out Session, token string, failure error) {
+	started, stage, verifyTime := time.Now(), "rate", time.Duration(0)
+	defer func() { recordLoginFailure(os.Stderr, ctx, failure, stage, time.Since(started), verifyTime) }()
 	username = normalize(username)
 	if !usernamePattern.MatchString(username) || len(password) < 1 || len(password) > 1024 {
 		return Session{}, "", ErrAuth
@@ -177,6 +180,7 @@ func (s *Service) Login(ctx context.Context, username, password string) (Session
 	var userID, tenantID, role, revision string
 	var salt, stored []byte
 	var enabled bool
+	stage = "user_lookup"
 	e := s.pool.QueryRow(ctx, `SELECT u.user_id::text,u.tenant_id::text,u.role,u.revision::text,u.password_salt,u.password_hash,u.enabled AND t.status='active' FROM access.users u JOIN access.tenants t USING(tenant_id) WHERE username=$1`, username).Scan(&userID, &tenantID, &role, &revision, &salt, &stored, &enabled)
 	missing := errors.Is(e, pgx.ErrNoRows)
 	if e != nil && !missing {
@@ -186,16 +190,21 @@ func (s *Service) Login(ctx context.Context, username, password string) (Session
 		salt = s.dummySalt
 		stored = s.dummyHash
 	}
+	stage = "password_verify"
+	verifyStarted := time.Now()
 	match := subtle.ConstantTimeCompare(derive(password, salt), stored) == 1
+	verifyTime = time.Since(verifyStarted)
 	if !match || missing || !enabled {
 		return Session{}, "", ErrAuth
 	}
+	stage = "session_begin"
 	tx, e := s.pool.Begin(ctx)
 	if e != nil {
 		return Session{}, "", e
 	}
 	defer tx.Rollback(ctx)
 	var current bool
+	stage = "user_recheck"
 	e = tx.QueryRow(ctx, `SELECT u.enabled AND u.revision::text=$2 AND t.status='active' FROM access.users u JOIN access.tenants t USING(tenant_id) WHERE u.user_id=$1 FOR UPDATE OF u FOR SHARE OF t`, userID, revision).Scan(&current)
 	if e != nil {
 		return Session{}, "", e
@@ -204,6 +213,7 @@ func (s *Service) Login(ctx context.Context, username, password string) (Session
 		return Session{}, "", ErrAuth
 	}
 	var active int
+	stage = "active_sessions"
 	if e = tx.QueryRow(ctx, "SELECT count(*) FROM access.credentials WHERE user_id=$1 AND kind='session' AND revoked_at IS NULL AND expires_at>clock_timestamp() AND user_revision::text=$2", userID, revision).Scan(&active); e != nil {
 		return Session{}, "", e
 	}
@@ -212,13 +222,16 @@ func (s *Service) Login(ctx context.Context, username, password string) (Session
 	}
 	raw, csrf, id := secret(), secret(), identifier.New()
 	var expires time.Time
+	stage = "session_insert"
 	e = tx.QueryRow(ctx, "INSERT INTO access.credentials(credential_id,tenant_id,user_id,user_revision,kind,secret_hash,csrf_hash,name,expires_at) VALUES($1,$2,$3,$4,'session',$5,$6,'browser',clock_timestamp()+interval '8 hours') RETURNING expires_at", id, tenantID, userID, revision, Digest(raw), Digest(csrf)).Scan(&expires)
 	if e != nil {
 		return Session{}, "", e
 	}
+	stage = "audit"
 	if e = s.event(ctx, tx, port.Identity{TenantID: tenantID, UserID: userID}, "session.created", id); e != nil {
 		return Session{}, "", e
 	}
+	stage = "commit"
 	if e = tx.Commit(ctx); e != nil {
 		return Session{}, "", e
 	}

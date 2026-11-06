@@ -516,3 +516,9 @@ exit0 и pinnedfollow-up exit0:86400.914s/2740samples/1419observations/2renewals
 C14.02done, C14.03in_progress/D08 investigation, C14.04planned. E1done54 + C15.01design=55global.
 13702a8 fullv2 42127549066 иnative42127549126 SUCCESS; D08 failure не закрыт успешным повтором.
 Следующее — безопасная backenddiagnostic stage/reason, воспроизведение и исправление по фактам.
+
+C14.03 checkpoint: добавлена fixed-vocabulary backend login diagnostic(stage/reason/elapsed_ms/verify_ms),
+без username/password/SQL/rawerror; API response/error policy/5s budget/Argon2 unchanged.
+Guest/supervisor экспортируют только allowlisted fields.2Go redaction tests +17Python tests passed;
+make verify/C03 58 passed. Это диагностическое изменение после measured8560f57, не новый24hproof.
+Следующее — fresh nativeVM и hosted CI с диагностикой; D08 покаopen.
