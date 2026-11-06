@@ -22,8 +22,8 @@ evidence42183074089), две свежие VM9+9, локальный PG51 и то
 E1 source опубликован в [PR4](https://github.com/QgMixtate/surveyscan/pull/4).
 
 **Следующая работа — C15.02**, worktree `/workspace/surveyscan-c15`, ветка codex/v2-c15-windows,
-[PR5](https://github.com/QgMixtate/surveyscan/pull/5). C15.01done, C15.02partial: десять native
-секций проверены на WindowsServer2022 с elevatedtoken; updates/protection не реализованы. Новый
+[PR5](https://github.com/QgMixtate/surveyscan/pull/5). C15.01done, C15.02partial: базовые адаптеры всех12native
+секций проверены на WindowsServer2022 с elevatedtoken; полного покрытия ещё нет. Новый
 observation1.2 пока изолирован: signed delivery/storage/detail API, DACL/spool locks, host
 continuity, SCM lifecycle, обычные права, Windows11 и настоящий reboot ещё не приняты.
 Продолжать автоматически с этого пункта по R-020/R-022/R-023. Настройки среды не публиковать.
@@ -40,3 +40,10 @@ continuity, SCM lifecycle, обычные права, Windows11 и настоя�
 Users5/groups27/memberships8 и25ARP/NDPcache rows прочитаны без вывода имён/SID.
 Полнота секций не заявлена; envelopesynthetic, нет scheduled delivery/SCM/reboot.
 C15.02остаётсяIP; текущая полная Linux regression/boot этогоsource ещёвыполняется.
+
+C15 текущий source d9e6206: все4hosted workflows SUCCESS, включая actualWindows
+QFE5/protection6 иfaulttests worker timeout/crash/oversize/invalid/isolated section failure.
+Worker30s/1MiB/typedJSON/kill+reap; C15-D03 io.Copy обход bounds исправлен и проверен.
+57done сохраняется: C15.02 не закрыт. Следующий блок — protocol negotiation, корректная
+проекция/identity/coverage новых rows, совместимый detail API и отдельная collectiontask
+в scheduler. Нельзя просто включить1.2: старый flatten() молча игнорирует новые sections.

@@ -107,20 +107,29 @@
     "native_cache_rows": 25
   },
   "latest_verified": {
-    "source": "f5774366aba0d6ac85c061034b113690113d2369",
-    "run_id": 42188089781,
+    "source": "d9e620623d3d03522a5ec072e5a34809a1fd7f61",
+    "run_id": 42192291716,
     "runner": "windows-2022",
     "token_elevated": true,
-    "baseline_sections": 10,
+    "baseline_sections": 12,
     "native_test_functions": 5,
     "users": 5,
     "groups": 27,
     "memberships": 8,
     "neighbor_cache_rows": 25,
     "full_inventory_or_service_claim": false,
-    "remaining_sections": [
-      "updates",
-      "protection"
-    ]
+    "remaining_sections": []
+  },
+  "com_worker_increment": {
+    "source": "d9e620623d3d03522a5ec072e5a34809a1fd7f61",
+    "run_id": 42192291716,
+    "hosted_result": "success",
+    "baseline_sections": 12,
+    "QFE_records": 5,
+    "protection_records": 6,
+    "worker_timeout_seconds": 30,
+    "stdout_limit_bytes": 1048576,
+    "heartbeat_independence": "not wired/proven; scheduler integration gate remains",
+    "provider_missing_is_absence": false
   }
 }

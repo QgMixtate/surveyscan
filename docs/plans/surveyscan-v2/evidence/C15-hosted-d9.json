@@ -1,0 +1,62 @@
+{
+  "source_revision": "d9e620623d3d03522a5ec072e5a34809a1fd7f61",
+  "workflows": {
+    "windows": {
+      "id": 42192291716,
+      "conclusion": "success"
+    },
+    "v2": {
+      "id": 42192291708,
+      "conclusion": "success"
+    },
+    "native_linux": {
+      "id": 42192291745,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42192291735,
+      "conclusion": "success"
+    }
+  },
+  "native_windows": {
+    "runner": "windows-2022",
+    "elevated": true,
+    "baseline_sections": 12,
+    "QFE_records": 5,
+    "protection_records": 6,
+    "updates_status": "partial/QFE_SUBSET",
+    "protection_status": "partial/PROVIDER_UNAVAILABLE",
+    "envelope": "synthetic origin/scope/sequence, not signed delivery"
+  },
+  "fault_checks": {
+    "kind": "synthetic child processes on actual Windows",
+    "cases": [
+      "valid",
+      "malformed",
+      "wrong section",
+      "stdout overflow",
+      "crash",
+      "timeout/kill/reap"
+    ],
+    "section_failure_isolation": "passed",
+    "private_stderr_canary": "not exported",
+    "io_Copy_limit_regression": "passed Linux and Windows"
+  },
+  "local_verification": [
+    "Windows agent cross-build",
+    "Windows test executable cross-build",
+    "GOOS=windows vet",
+    "make verify including unit/vet/architecture/C03 58",
+    "new draft Section validation tests"
+  ],
+  "historical_failure": "C15-D03/run42191352349 retained; not renamed pass",
+  "unrun": [
+    "Windows11/ordinaryuser/LocalService/DC",
+    "complete field coverage/provider scope",
+    "protocol negotiation/signed1.2 delivery/PG projection/new API",
+    "concurrent heartbeat/collection scheduler",
+    "DACL/locks/host continuity",
+    "SCM/update/reboot"
+  ],
+  "completed_global_tasks": 57
+}

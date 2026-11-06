@@ -24,7 +24,7 @@
       "source_revision": "3d680cbe639ff9bd862cec9cb5bff7927559bc12",
       "observed": "oversized synthetic child returned INVALID_WORKER_RESPONSE instead of LIMIT_REACHED; promoted bytes.Buffer.ReadFrom bypassed Write through io.Copy",
       "fix": "named private bytes.Buffer, no ReaderFrom promotion; Linux reader-only pipe regression test plus native child kill/reap/oversize repeat",
-      "verification": "Linux regression and cross-compile passed; native repeat pending"
+      "verification": "fixed: Linux io.Copy reader-only regression + Windows42192291716 oversize/kill/reap suite passed; all4 d9 hosted workflows success"
     }
   ],
   "windows_inventory_tested": false,

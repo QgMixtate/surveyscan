@@ -1402,9 +1402,12 @@
             "contracts/C15/observation.schema.json",
             "evidence/C15-contract.json",
             "evidence/C15-native-baseline.json",
-            "evidence/C15-hosted-f577.json"
+            "evidence/C15-hosted-f577.json",
+            "evidence/C15-hosted-d9.json",
+            "decisions/C15-com-worker.md",
+            "decisions/C15-pipeline-gates.md"
           ],
-          "verification_status": "native10 baseline Windows2022/elevated passed42188089781; users/groups5/27/8 and localneighborcache25; remaining2/fullcoverage/negotiated pipeline/SCM/reboot unrun"
+          "verification_status": "native12 baseline Windows2022/elevated passed;QFE5/protection6; worker timeout/crash/overflow/isolation + all4hosted d9 passed; fullcoverage/negotiated pipeline/scheduler/SCM/reboot unrun"
         },
         {
           "id": "C15.03",

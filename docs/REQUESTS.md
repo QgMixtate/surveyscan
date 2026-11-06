@@ -640,3 +640,11 @@ passed, ноwholejobFAILED наsyntheticoversize child. Причина: promoted
 regressionpassed, Winchildtestsrepeatpending. FailureC15-D03сохранён, не переименованвPASS.
 Проверено: текущийE1scheduler sequential, не independentheartbeat при долгойcollection.
 Это обязательныйC15gate передruntimeenable; draftNativeSDK всёещёизолирован.
+
+C15 d9e6206 verification: all4hosted SUCCESS (Windows42192291716/v242192291708/
+boot42192291745/Web42192291735). Native12baseline/QFE5/protection6, provider availability
+partial; failureisolation, blockedchild2s→kill/reap, crash/invalid/overflow/canary allpassed.
+C15-D03 fixed privatebuffer +Linux/Windows io.Copy regression. makeverify/C03 58passed.
+Не считатьЭтоготовымWindowsagent: fullfieldcoverage, signed1.2pipeline, PGprojection/API,
+independentcollection scheduler, DACL/locks/SCM/reboot/ordinaryrights ещёнеприняты.57done.
+Следующее — C15.02 backendintegration по decisions/C15-pipeline-gates.md.

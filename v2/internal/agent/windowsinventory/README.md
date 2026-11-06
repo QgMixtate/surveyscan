@@ -8,8 +8,8 @@ IPv4/IPv6 route table. Службы перечисляются с CONNECT/ENUMER
 command lines/config не запрашиваются. Блокированы remote/removable drive probes. Без shell/PowerShell, удалённых целей,
 секретов и пользовательских файлов. MachineGuid — только inventory candidate, не asset_uid.
 
-Десять секций реализованы как baseline partial; neighbors ожидают Windows CI.
-Две секции — updates/protection — unsupported. Девять прежних секций уже проверены. с
+Базовые адаптеры всех12секций реализованы. Native Windows CI d9e6206 прошёл;
+partial/provider unavailable не выдаются за полное покрытие или отсутствие объектов. с
 ADAPTER_NOT_IMPLEMENTED. Нет утверждения о полном Windows inventory; недоступная API-секция
 не маскируется пустым ok. Контекст проверяется между вызовами, но не прерывает синхронный Win32
 вызов посередине. До COM/QFE нужны отдельные конечные timeout/worker limits.
@@ -33,3 +33,11 @@ API перечисления не вызываются. SAM/LSA secrets и па�
 Windows/amd64:88bytes/row, table row offset8; максимум10000rows. Interface_index
 добавлен в draft networkRow для связи NIC/routes/neighbors внутри текущего снимка,
 это не постоянный NICUID. Полнота топологии не заявлена.
+
+Updates/protection теперь собираются через COM/WMI в отдельном child того жеagentbinary:
+30sdeadline,1MiBstdout,validation,kill+reap. QFEsubset иISOdatesonly; firewall enabled читается
+черезINetFwPolicy2, Defender черезboolean properties, AVproductStateостаётсяopaque.
+COMreferences освобождаются; worker не читает configs/keys и не принимаетtarget/query.
+`SURVEYSCAN_C15_TEST_AGENT` используется толькоtestmain; productionpath — os.Executable.
+Синтетические childfailuretests отделеныотnativeAPI. СуществующийE1schedulersequential:
+independentheartbeat при подключенииWindowsдолжен быть реализован отдельно.
