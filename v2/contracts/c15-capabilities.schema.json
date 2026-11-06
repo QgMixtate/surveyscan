@@ -1,0 +1,335 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:surveyscan:c15:capabilities:1:0",
+  "$defs": {
+    "Capabilities": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "type": "object",
+          "properties": {
+            "major": {
+              "const": 1
+            },
+            "minor": {
+              "const": 0
+            }
+          },
+          "required": [
+            "major",
+            "minor"
+          ],
+          "additionalProperties": false
+        },
+        "issuer": {
+          "const": "center"
+        },
+        "tenant_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "audience": {
+          "type": "object",
+          "properties": {
+            "source_id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "source_kind": {
+              "const": "collector"
+            },
+            "generation_id": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "source_id",
+            "source_kind",
+            "generation_id"
+          ],
+          "additionalProperties": false
+        },
+        "nonce": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$"
+        },
+        "issued_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "observation_versions": {
+          "oneOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "major": {
+                      "const": 1
+                    },
+                    "minor": {
+                      "const": 0
+                    }
+                  },
+                  "required": [
+                    "major",
+                    "minor"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "major": {
+                      "const": 1
+                    },
+                    "minor": {
+                      "const": 0
+                    }
+                  },
+                  "required": [
+                    "major",
+                    "minor"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "major": {
+                      "const": 1
+                    },
+                    "minor": {
+                      "const": 2
+                    }
+                  },
+                  "required": [
+                    "major",
+                    "minor"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2
+            }
+          ]
+        },
+        "batch_versions": {
+          "oneOf": [
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "major": {
+                      "const": 1
+                    },
+                    "minor": {
+                      "const": 0
+                    }
+                  },
+                  "required": [
+                    "major",
+                    "minor"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 1
+            },
+            {
+              "type": "array",
+              "prefixItems": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "major": {
+                      "const": 1
+                    },
+                    "minor": {
+                      "const": 0
+                    }
+                  },
+                  "required": [
+                    "major",
+                    "minor"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "major": {
+                      "const": 1
+                    },
+                    "minor": {
+                      "const": 2
+                    }
+                  },
+                  "required": [
+                    "major",
+                    "minor"
+                  ],
+                  "additionalProperties": false
+                }
+              ],
+              "items": false,
+              "minItems": 2
+            }
+          ]
+        },
+        "inventory12_limits": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "canonical_bytes": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1073741824
+                },
+                "signed_bytes": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1073741824
+                },
+                "batch_bytes": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1073741824
+                },
+                "max_records": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 1000000
+                }
+              },
+              "required": [
+                "canonical_bytes",
+                "signed_bytes",
+                "batch_bytes",
+                "max_records"
+              ],
+              "additionalProperties": false
+            }
+          ]
+        },
+        "inventory12_snapshot_modes": {
+          "type": "array",
+          "items": {
+            "const": "partial"
+          },
+          "maxItems": 1,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "schema_version",
+        "issuer",
+        "tenant_id",
+        "audience",
+        "nonce",
+        "issued_at",
+        "expires_at",
+        "observation_versions",
+        "batch_versions",
+        "inventory12_limits",
+        "inventory12_snapshot_modes"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "properties": {
+            "observation_versions": {
+              "maxItems": 1
+            },
+            "batch_versions": {
+              "maxItems": 1
+            },
+            "inventory12_limits": {
+              "type": "null"
+            },
+            "inventory12_snapshot_modes": {
+              "maxItems": 0
+            }
+          }
+        },
+        {
+          "properties": {
+            "observation_versions": {
+              "minItems": 2
+            },
+            "batch_versions": {
+              "minItems": 2
+            },
+            "inventory12_limits": {
+              "type": "object"
+            },
+            "inventory12_snapshot_modes": {
+              "minItems": 1
+            }
+          }
+        }
+      ]
+    },
+    "SignedCapabilities": {
+      "type": "object",
+      "properties": {
+        "payload": {
+          "$ref": "#/$defs/Capabilities"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "key_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "signature": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{86}$"
+        }
+      },
+      "required": [
+        "payload",
+        "digest",
+        "key_id",
+        "signature"
+      ],
+      "additionalProperties": false
+    },
+    "Request": {
+      "type": "object",
+      "properties": {
+        "nonce": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_-]{43}$"
+        }
+      },
+      "required": [
+        "nonce"
+      ],
+      "additionalProperties": false
+    }
+  }
+}

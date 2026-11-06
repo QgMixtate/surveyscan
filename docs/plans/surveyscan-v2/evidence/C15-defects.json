@@ -41,7 +41,7 @@
       "observed": "actual mTLS/Ed25519/C03-valid synthetic10-record batch479558bytes would become2324798byte packet under default HTML escaping, beyond2097152byte reader limit",
       "fix": "non-HTML-expanding JSON encoder, explicit post-serialization maxPacketBytes guard on pending and receipt writes; reader bound unchanged",
       "local_verification": "actual mTLS C03 admission202 +disk canonical/digest roundtrip +sender replay202; new packet479799bytes; old escaped small packets readable; oversize rejected; race wire/collector passed",
-      "hosted_verification": "pending nextsource"
+      "hosted_verification": "fixed7ce0fda all5hostedSUCCESS; v242201674257/native42201674277/Windows42201674112/Web42201674383/evidence42201674420"
     }
   ],
   "windows_inventory_tested": true,

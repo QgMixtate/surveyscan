@@ -1,0 +1,29 @@
+{
+  "source_revision": "7ce0fdada2de1e71b97ae4d6f7d55c1b2777562c",
+  "workflows": {
+    "windows": {
+      "id": 42201674112,
+      "conclusion": "success"
+    },
+    "v2": {
+      "id": 42201674257,
+      "conclusion": "success"
+    },
+    "native_linux": {
+      "id": 42201674277,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42201674383,
+      "conclusion": "success"
+    },
+    "acceptance_evidence": {
+      "id": 42201674420,
+      "conclusion": "success"
+    }
+  },
+  "changes": "opt-in1.2signed/batch codec+limits helper; activeC03spool serialization fix",
+  "runtime12_enabled": false,
+  "local_regression": "actualmTLS/Ed25519/C03batch479558bytes; oldpacket2324798/new479799; disk canonical/digest and sender replay202; racewire/collector passed",
+  "completed_global_tasks": 57
+}

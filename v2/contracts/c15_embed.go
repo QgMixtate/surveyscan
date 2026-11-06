@@ -17,3 +17,6 @@ var C15API12Files embed.FS
 //
 //go:embed c15-transport.schema.json
 var Transport12Files embed.FS
+
+//go:embed c15-capabilities.schema.json
+var InventoryCapabilityFiles embed.FS

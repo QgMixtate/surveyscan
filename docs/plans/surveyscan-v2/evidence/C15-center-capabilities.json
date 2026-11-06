@@ -1,0 +1,41 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "date_utc": "2026-11-06T12:47:20.904794+00:00",
+  "endpoint": "POST /api/v1/machine/inventory-capabilities",
+  "advertised_protocols": [
+    "1.0"
+  ],
+  "runtime12_enabled": false,
+  "checks": {
+    "postgres_full_suite": {
+      "passed": 57,
+      "failed": 0,
+      "skipped": 0
+    },
+    "mtls_endpoint": "actual TLS/enrollment/PG+test Signer: signed audience/nonce, invalidrequest, revokedsource401, failingSigner503/no local fallback",
+    "wire": "closed schemas +nonce/tenant/generation/key/domain/expiry/limit checks; racepassed",
+    "windows": "crosscompile/vet passed",
+    "live_bao": {
+      "status": "passed",
+      "checks": 20,
+      "target": "actual OpenBao2.7.2 nonexportableTransit +compiledserver/collector+mTLS+PG, scopedmounts/temporaryDB/ports",
+      "new_cases": [
+        "capability200 with pinned signature/nonce/audience",
+        "sealed503/no privatefallback",
+        "unsealed200"
+      ],
+      "source_scope": "local working tree based on7ce0fda; not a clean release candidate",
+      "report": "v2/.local/bao-pipeline.json (private ignored; public report contains sanitized summary only)"
+    }
+  },
+  "unrun": [
+    "collector→agent capability forwarding",
+    "opt-in1.2machine dispatch/admission/ACK",
+    "Windowsprofile/independentcollection",
+    "fullfieldcoverage/scopeddeletion",
+    "DACL/SCM/rights/reboot"
+  ],
+  "completed_global_tasks": 57
+}

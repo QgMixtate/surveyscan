@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """CA/receipt key ops through scoped OpenBao, real machine flow and sealed dependency recovery."""
-import base64,copy,datetime,json,os,subprocess,tempfile,time,uuid
+import base64,copy,datetime,hashlib,json,os,subprocess,tempfile,time,uuid
 from pathlib import Path
 import rfc8785
 from cryptography.hazmat.primitives import serialization
@@ -17,14 +17,32 @@ def main():
    def scenario(**s):
     checks=s['checks'];request=s['request'];sql=s['sql'];checks.append('real enrollment and center ACK use scoped Transit CA/receipt keys, without local private signing-key files')
     assert sql('SELECT count(*) FROM inventory.observations')=='1'
+    def capability(expected):
+     nonce=b64(os.urandom(32))
+     status,frame,_=request(s['tls_port'],s['collector_client'],'POST','/api/v1/machine/inventory-capabilities',{'nonce':nonce})
+     assert status==expected
+     if expected!=200:
+      assert 'payload' not in frame
+      return
+     payload=frame['payload'];canonical=rfc8785.dumps(payload)
+     assert payload['issuer']=='center' and payload['tenant_id']==s['tenant'] and payload['nonce']==nonce
+     assert payload['audience']=={'source_id':s['collector_source'],'source_kind':'collector','generation_id':s['collector_result']['generation_id']}
+     assert frame['key_id']==s['center_id'] and frame['digest']==hashlib.sha256(canonical).hexdigest()
+     s['center_key'].public_key().verify(base64.urlsafe_b64decode(frame['signature']+'=='),b'SURVEYSCAN-INVENTORY-CAPABILITIES-V1\n'+canonical)
+     assert payload['observation_versions']==[{'major':1,'minor':0}] and payload['batch_versions']==[{'major':1,'minor':0}]
+     assert payload['inventory12_limits'] is None and payload['inventory12_snapshot_modes']==[]
+    capability(200)
+    checks.append('actual scoped non-exportable Transit center key signs fresh collector/tenant/generation/nonce-bound inventory capabilities; draft1.2 is not advertised')
+
     f['call']('POST','sys/seal',{});status,card,_=request(s['tls_port'],s['plain'],'GET','/api/v1/assets/'+s['asset'],headers={'Cookie':s['cookie']});assert status==200
     status,_,_=request(s['tls_port'],s['plain'],'GET','/health/ready');assert status==503;checks.append('sealed OpenBao declares readiness degraded while authenticated inventory reads remain available')
+    capability(503);checks.append('sealed Transit refuses new signed capabilities with no local-key fallback')
     key,signing,csr=s['enroll_material']();new_source=str(uuid.uuid4());permission=s['grant'](new_source,'agent',s['collector_id'],signing,csr)
     body={'grant_id':permission['grant_id'],'source_id':new_source,'csr_pem':csr.public_bytes(serialization.Encoding.PEM).decode(),'signing_public_key':b64(signing.public_key().public_bytes(serialization.Encoding.Raw,serialization.PublicFormat.Raw))}
     status,_,_=request(s['collector_port'],s['plain'],'POST','/api/v1/machine/enroll',body,{'Authorization':'Bearer '+permission['enrollment_token']},s['collector_name']);assert status==503;checks.append('sealed issuer refuses new certificates with no local CA fallback')
     payload=copy.deepcopy(s['payload']);stamp=datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='microseconds').replace('+00:00','Z');payload['observation_id']=str(uuid.uuid4());payload['source_sequence']='2';payload['collected_at']=stamp
     for section in payload['sections']:section['collected_at']=stamp
-    canonical=rfc8785.dumps(payload);import hashlib
+    canonical=rfc8785.dumps(payload)
     record={'payload':payload,'digest':hashlib.sha256(canonical).hexdigest(),'key_id':s['agent_result']['signing_key_id'],'signature':b64(s['agent_sign'].sign(b'SURVEYSCAN-OBSERVATION-V1\n'+canonical))};batch={'schema_version':{'major':1,'minor':0},'tenant_id':s['tenant'],'delivery_id':str(uuid.uuid4()),'records':[record]}
     status,_,_=request(s['collector_port'],s['client'],'POST','/api/v1/machine/observations',batch,sni=s['collector_name']);assert status==202
     end=time.monotonic()+12
@@ -47,6 +65,7 @@ def main():
      time.sleep(.4)
     else:raise RuntimeError('key operations failed to recover after unseal')
     s['center_key'].public_key().verify(base64.urlsafe_b64decode(result['signature']+'=='),b'SURVEYSCAN-CENTER-RESULT-V1\n'+rfc8785.dumps(result['payload']));assert result['payload']['results'][0]['disposition']=='applied' and sql('SELECT count(*) FROM inventory.observations')=='2' and sql('SELECT count(*) FROM assets.assets')=='1';checks.append('unseal resumes persisted retry and signs durable ACK without duplicate observation or manual requeue')
+    capability(200);checks.append('unseal restores signed capability issuance through the existing scoped Transit token')
     # Existing agent signing key proves a fresh TLS CSR through its assigned collector.
     status,challenges,_=request(s['collector_port'],s['client'],'POST','/api/v1/machine/heartbeat-challenges',{'source_ids':[s['agent_source']],'purpose':'cert_renew'},sni=s['collector_name']);assert status==200
     challenge=challenges['challenges'][0];tls_key,_,csr=s['enroll_material']()
@@ -66,5 +85,5 @@ def main():
     assert f['audit_check']();checks.append('audit log contains no raw application/root tokens or canary secret')
     report={'package':'C11','status':'passed','scope':'C11 scoped key/secret operations + real machine path; agent/collector lifecycle covered by separate reports','count':len(checks),'checks':checks,'target':'real OpenBao2.7.2 Raft + scoped periodic token + non-exportable Transit Ed25519 CA/receipt keys + compiled server/collector + synthetic signed agent + PostgreSQL; actual seal/unseal and server restart','unrun':['production bootstrap custody/HTTPS certificate deployment','backup restore rehearsal'],'private_material':'no root token in app config, no CA/receipt private keys outside Bao, all own keys/tokens/policy/test DB cleaned'};(STATE/'bao-pipeline.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
    settings={'config':f['config'],'ca_certificate':str(output/'ca.pem'),'server_certificate':str(output/'server.pem'),'server_private':str(output/'server.key'),'center_id':str(uuid.uuid4()),'center_public':f['profile']['keys']['center']['public_key'],'hook':scenario}
-   harness(bao_settings=settings)
+   harness(bao_settings=settings,report_directory=STATE)
 if __name__=='__main__':main()

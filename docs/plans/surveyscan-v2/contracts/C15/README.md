@@ -59,3 +59,8 @@ transport.schema.json/c15-transport.schema.json define opt-in SignedObservation/
 Only the shared parser/crypto/limit-selection helper exists; machine handlers stillC03.
 Initial effective ceilings512/576/768KiB (payload/envelope/batch),100records; draftpayload
 1MiB remains an isolated validation ceiling. See decisions/C15-transport.md.
+
+capabilities.schema.json/c15-capabilities.schema.json: center discovery contract1.0,
+POST /api/v1/machine/inventory-capabilities; signednonce/audience/expiry/pinnedkey.
+Current response advertises1.0 only until actual12handlers are connected; see
+decisions/C15-center-capabilities.md. This is separate from payload/batch/profile versions.

@@ -671,3 +671,14 @@ all-hop effective limits512/576/768KiB/100records; C03handlersstillunchanged.
 mTLS/admission/signature/disk/replay202 +race+verify/build/Wincompile/vet passedlocal.
 Документы decisions/C15-transport.md/evidenceC15-transport.json, pendingpublication.
 No1.2machinepipeline/capabilityHTTP/profileimplemented,57done/C15.02IP unchanged.
+
+Продолжение пользователя «Продолжай»: 7ce0fda опубликован и все5hostedSUCCESS, C15-D05fixed.
+СледующийC15.02increment — authenticated capabilities с audience/nonce/expiry и отдельным
+signaturedomain, затемruntime1.2dispatch. Поканеadvertise12 безготовыхhandlers.57done.
+
+C15.02 continuation: center POSTinventory-capabilities implemented, active collector mTLS/
+PG authorization; signednonce/audience/tenant/generation/expiry with existingcentertrust,
+newsignaturedomain. Current[1.0]truthfuloffer; no false12advertisement. PG57passed; actual
+scopedOpenBao/nonexportableTransit compiledpipeline20passed inclcap200/seal503/unseal200,
+no privatefallback. NewreportsC15only; E1sharedcredentials reusedread-only, no keycopies.
+Publicationpending, thenopt-in1.2dispatch/admission/projection/ACK andcollectorforwarding.

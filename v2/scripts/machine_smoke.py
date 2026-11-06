@@ -14,7 +14,7 @@ def b64(b):return base64.urlsafe_b64encode(b).rstrip(b'=').decode()
 def rawpublic(key):return key.public_key().public_bytes(serialization.Encoding.Raw,serialization.PublicFormat.Raw)
 def freeport():
  with socket.socket() as s:s.bind(('127.0.0.1',0));return s.getsockname()[1]
-def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=None):
+def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=None,report_directory=None):
  initialize();db='ssv2machine_'+uuid.uuid4().hex;tenant,site,scope,subject=uid(),uid(),uid(),uid();processes=[];checks=[];created=False
  def sql(query,database='surveyscan_v2'):
   return compose('exec','-T','db','psql','-U','surveyscan_v2','-d',database,'-v','ON_ERROR_STOP=1','-Atc',query,capture=True).strip()
@@ -107,7 +107,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
    assert not (directory/'spool'/(batch['delivery_id']+'.pending')).exists();checks.append('collector trims only after verified center acknowledgement')
    assert sql('SELECT count(*) FROM inventory.observations',db)=='1';checks.append('exactly one durable observation in isolated PostgreSQL')
    if bao_settings is not None:
-    bao_settings['hook'](directory=directory,context=context,checks=checks,request=request,sql=lambda query:sql(query,db),start=start,center_process=center_process,tls_port=tls_port,collector_port=collector_port,collector_name=collector_name,client=client,plain=plain,cookie=cookie,session=session,origin=browser_origin,grant=grant,enroll_material=enroll_material,payload=payload,agent_sign=agent_sign,agent_result=agent_result,center_key=center_key,center_id=center_id,asset=signed['results'][0]['asset_uid'],site=site,tenant=tenant,collector_id=collector_id,agent_source=agent_source)
+    bao_settings['hook'](directory=directory,context=context,checks=checks,request=request,sql=lambda query:sql(query,db),start=start,center_process=center_process,tls_port=tls_port,collector_port=collector_port,collector_name=collector_name,client=client,plain=plain,cookie=cookie,session=session,origin=browser_origin,grant=grant,enroll_material=enroll_material,payload=payload,agent_sign=agent_sign,agent_result=agent_result,center_key=center_key,center_id=center_id,asset=signed['results'][0]['asset_uid'],site=site,tenant=tenant,collector_id=collector_id,agent_source=agent_source,collector_source=collector_source,collector_result=collector_result,collector_client=context(collector_cert,collector_private))
     return
    if web_scenario is not None:
     def quiesce():
@@ -116,7 +116,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
        process.terminate();assert process.wait(timeout=8)==0,'fixture service did not stop cleanly'
     web_scenario(sql=lambda query:sql(query,db),command=command,directory=directory,origin=browser_origin,center_port=tls_port,ca_file=ca_file,username='admin',password=password,asset=signed['results'][0]['asset_uid'],tenant=tenant,checks=checks,quiesce=quiesce,server_environment=dict(env),center_process=center_process,collector_process=collector_process)
     return
-   report={'package':'C07','status':'passed','checks':checks,'count':len(checks),'target':'compiled server + compiled collector + real TLS/mTLS + synthetic Python Ed25519 source + PostgreSQL','keys':'temporary private files removed after run; no credential in report'};(STATE/'machine-smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
+   report={'package':'C07','status':'passed','checks':checks,'count':len(checks),'target':'compiled server + compiled collector + real TLS/mTLS + synthetic Python Ed25519 source + PostgreSQL','keys':'temporary private files removed after run; no credential in report'};((Path(report_directory) if report_directory is not None else STATE)/'machine-smoke.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report))
   finally:
    for process in reversed(processes):
     process.terminate()

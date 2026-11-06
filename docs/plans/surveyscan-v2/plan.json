@@ -1412,9 +1412,12 @@
             "evidence/C15-record-api.json",
             "evidence/C15-hosted-f6.json",
             "decisions/C15-transport.md",
-            "evidence/C15-transport.json"
+            "evidence/C15-transport.json",
+            "evidence/C15-hosted-7ce.json",
+            "decisions/C15-center-capabilities.md",
+            "evidence/C15-center-capabilities.json"
           ],
-          "verification_status": "native12 baseline Windows2022/elevated passed;QFE5/protection6; worker timeout/crash/overflow/isolation + all4hosted d9 passed; fullcoverage/negotiated pipeline/scheduler/SCM/reboot unrun; local record projection12/PG53+upgrade33→34 passed; new hosted pending; runtime1.2 disabled; read API localTLS/PG56+schema+cursor passed; C15-D04bootfixture fixed pendinghostedrepeat; f6all5hosted success/boot9+9; local isolated transport12+collector codec mTLS/race passed, runtime1.2disabled"
+          "verification_status": "native12 baseline Windows2022/elevated passed;QFE5/protection6; worker timeout/crash/overflow/isolation + all4hosted d9 passed; fullcoverage/negotiated pipeline/scheduler/SCM/reboot unrun; local record projection12/PG53+upgrade33→34 passed; new hosted pending; runtime1.2 disabled; read API localTLS/PG56+schema+cursor passed; C15-D04bootfixture fixed pendinghostedrepeat; f6all5hosted success/boot9+9; local isolated transport12+collector codec mTLS/race passed, runtime1.2disabled; center authenticated signedcaps localPG57/liveBao20 passed, runtime12stilloff, hostedpending"
         },
         {
           "id": "C15.03",

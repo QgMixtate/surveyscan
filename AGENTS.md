@@ -242,3 +242,8 @@ C15 f6e3047 all5hostedpassed; D04boot2freshVM9+9fixed. Newlocaltransport12parser
 allhoplimits512/576/768KiB andcollectorJSONcodecD05 recordedC15-transport.json. Sharedhelper
 notauthenticatednetworkcapabilities. HTTP/relay/centerstillC03; noprofile12/runtimeenable.
 57done/C15.02IP; SQLcatalog34/47unchanged. Use latest handoff/publication pointers.
+
+C15 centercap discovery nowimplementedlocal: signednonce/audience/expiry, mTLS/activePG,
+existingC11signer/pinnedkey/newdomain. PG57 +actualscopedTransitpipeline20passed.
+Truthfuloffer[1.0]untilruntime12wired; nofullthreehopnegotiationyet. Readlatesthandoff/
+C15-center-capabilities.json forpublication. NoE1historicalreportoverwrite/privatekeycopies.

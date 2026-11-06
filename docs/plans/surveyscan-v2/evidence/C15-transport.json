@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "7ce0fdada2de1e71b97ae4d6f7d55c1b2777562c",
+  "publication": "published PR5/codex/v2-c15-windows, all5hostedSUCCESS; C15-hosted-7ce.json",
   "task": "C15.02",
   "status": "partial",
   "transport12_runtime_enabled": false,

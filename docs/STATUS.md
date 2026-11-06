@@ -73,3 +73,15 @@ boot42199513709/Web42199513708/evidence42199513646; двеfreshVM9+9, C15-D04fix
 C15-D05collectorJSON: actualmTLS/C03 batch479558→oldpacket2324798>2MiB, fixed479799;
 disk/replay202/race wire+collector/verify/C03 58/build/Winwirecrosscompile+vet passed.
 Cap/profile1.2networkexchange и machine runtime ещёнеподключены; C15.02IP/57done.
+
+7ce0fda transport foundation/spoolfix опубликованPR5; все5hostedSUCCESS: v242201674257/
+boot42201674277/Windows42201674112/Web42201674383/evidence42201674420. C15-D05fixed.
+Runtime1.2stilloff,57done/C15.02IP. Текущий следующийincrement — authenticatedcapability
+exchange, затем versiondispatch/partialprojection/admission и Windowsprofile/scheduler.
+
+C15 center capability endpoint local: actualmTLS/PG +57PGpassed, nonce/audience/tenant/
+generation/expiry/domain/pinnedkey checks; configuredSigner failure503/no fallback.
+ActualscopedOpenBaoTransit/compiledserver+collector/mTLS/PG20checks passed, including
+cap200→seal503→unseal200. OwnDB/ports/mounts cleaned; E1private reports unchanged.
+Currentlytruthful[1.0]advertisement; optin12handlers+collectorforwarding stillnext.
+Newsourcepublicationpending; C15.02IP/57done, seeC15-center-capabilities.json.
