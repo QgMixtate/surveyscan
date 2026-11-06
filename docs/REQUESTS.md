@@ -508,3 +508,11 @@ Sanitized artifact13461866650 показывает command_exit5/HTTP503/5.741s.
 но внутренний root cause не установлен;5s auth context и медленныйTCG/PG — гипотезы.
 HTTP timeout/auth/runtime не менялись, retry не добавлен; C14.03 gate открыт.
 Failed proof сохранён вC14-native-cli-recurrence.json, не заменён успешным Windows CI.
+
+
+R-023 продолжение2026-11-06 («Дальше»): actualC14.02 завершён, независимыйread-only acceptance
+exit0 и pinnedfollow-up exit0:86400.914s/2740samples/1419observations/2renewals/queuesdrained.
+Публичный sanitized C14-soak-result.json создан; pinned startreference C14-soak.json не менялся.
+C14.02done, C14.03in_progress/D08 investigation, C14.04planned. E1done54 + C15.01design=55global.
+13702a8 fullv2 42127549066 иnative42127549126 SUCCESS; D08 failure не закрыт успешным повтором.
+Следующее — безопасная backenddiagnostic stage/reason, воспроизведение и исправление по фактам.

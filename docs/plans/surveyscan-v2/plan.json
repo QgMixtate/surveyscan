@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C13 done bounded E1; C14.01 done; C14.02 actual24h running; C14.03-C50 planned",
+  "status": "C01-C13 done bounded E1; C14.01/02 done; C14.03 in_progress; C14.04 planned; independent C15 branch54design+1soak=55done",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -1307,13 +1307,13 @@
           "output": "Периодический сбор плюс restart/network outage с журналом",
           "verification": "Наблюдены реальные циклы, recovery, freshness, отсутствие дублей",
           "estimation_basis": "Минимум 24ч; конфигурация интервалов и точек отказа зафиксирована",
-          "status": "in_progress",
+          "status": "done",
           "work_group": "Реализация",
           "evidence": [
             "evidence/C14-soak.json",
-            "evidence/C14-preflight.json"
+            "evidence/C14-soak-result.json"
           ],
-          "verification_status": "actual24h running 10812e7a-8a6a-4dae-9dd5-b0583f503c83 from2026-11-05T00:31:49Z; noacceptancebefore2026-11-06T00:31:49Z + allchecks"
+          "verification_status": "actual86400.914s passed;2740samples/1419observations;real2renewals/finaldrain;independent review exit0"
         },
         {
           "id": "C14.03",
@@ -1325,8 +1325,13 @@
           "output": "Исправления в рамках E1 и протокол регрессии",
           "verification": "Нерешённые обязательные дефекты блокируют release claim",
           "estimation_basis": "Только выявленные дефекты, не расширение в E2",
-          "status": "planned",
-          "work_group": "Реализация"
+          "status": "in_progress",
+          "work_group": "Реализация",
+          "evidence": [
+            "evidence/C14-defects.json",
+            "evidence/C14-native-cli-recurrence.json"
+          ],
+          "verification_status": "D08 recurring CLI503 root cause investigation; no timeout/auth weakening or retries"
         },
         {
           "id": "C14.04",

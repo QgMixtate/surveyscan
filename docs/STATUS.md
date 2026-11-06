@@ -1,65 +1,26 @@
 # Текущее состояние surveyscan
 
-Обновлено:2026-11-06, Москва. C01–C13 приняты в пределах E1; C14.01 done,
-**53/200 подзадач**. C14.02 выполняется; C14.03/04 planned до фактического суточного результата.
-Ветка `codex/v2-c13-operations`, draft [PR4](https://github.com/QgMixtate/surveyscan/pull/4).
-R-020 разрешает push/PR/CI; R-021/R-022 — автоматический переход после приёмки зависимостей.
-Main73ced7e не слит, production deployment и публикация настроек среды не поручены.
+Обновлено:2026-11-06. **C14.02 actual24h PASS**:86400.914s,2740samples,1419observations,
+оба реальных networkcut/restart,2 настоящих machine leaf renewals, final queuesempty/oneUID/no duplicates.
+[Суточный результат](plans/surveyscan-v2/evidence/C14-soak-result.json), independent review exit0.
+Run10812e7a закончился6ноября00:31:51UTC (03:31:51МСК), frozen runtime8560f57; не running.
+Private pinned follow-up такжеpassed. Общие PG/Bao больше не заняты этим run; private keys не публиковать.
 
-**Реальный24h прогон работает**: `10812e7a-8a6a-4dae-9dd5-b0583f503c83`, PID3505270.
-Чистый runtime source8560f57, frozen private copies/SHA256. Начало5 ноября00:31:49UTC;
-завершить можно не раньше **6 ноября03:31:49 по Москве** (00:31:49UTC), при всех успешных checks.
-При live-проверке по R-023 run жив уже≥22h; выполнены оба networkfault и запланированные restart collector/center.
-На [снимке](plans/surveyscan-v2/evidence/C14-soak-progress.json) пройдены оба настоящих разрыва
-связи, UID/sequence сохранены, очереди опустели; это **не** суточный PASS.
-Изv2: `python scripts/soak_status.py <run-id>`, `python scripts/soak_report.py <run-id>`
-и `python scripts/soak_acceptance.py <run-id>` (exit3=pending, не24hPASS).
-[Evidence guard](plans/surveyscan-v2/evidence/C14-evidence-gate.json):10 synthetic tests passed;
-Полнота actual samples перепроверена, max gap≈32s, pending. Private follow-up PID843094 после
-завершения runner сохранит acceptance-review.json; plan/Git/C15 автоматически не меняет.
-Local state `.local/c14-soak/<run-id>/status.json`; stdout `.local/c14-actual-soak.log`.
-Проверять PID/run ID и свежий sample; marker running без процесса неPASS. Не останавливать/
-запечатывать общий dev PG/Bao. Runner отделён от жизни вызова/чата, но не переживает выключение машины.
-[Инструкция](../v2/deploy/SOAK.md), [передача C14](plans/surveyscan-v2/handoffs/C14.md).
+**C14.03 in_progress**: разобраться с [D08 recurring CLI HTTP503](plans/surveyscan-v2/evidence/C14-native-cli-recurrence.json),
+5.741s после8native checks; login HTTP context5s — гипотеза, не доказанная RCA.
+Новый13702a8 fullv2 42127549066 и native42127549126 SUCCESS; успешный повтор не стирает failure.
+C14.04/release остаютсяplanned, весь C14 неdone. Нужна диагностика backend stage/reason без секретов.
 
-**Последний code8024972: все4 hosted workflows SUCCESS**:
-v2 42003198591, Web42003198611, native42003198599, acceptance-evidence42003198780.
-Ещё один ограниченный native campaign42004731564 на том жеSHA тожеSUCCESS:2 freshVM9+9.
-[Полные отчёты/хеши/timings](plans/surveyscan-v2/evidence/C14-hosted-802.json).
-Новые CI unit tests:10 synthetic evidence checks+5 safe diagnostic redaction checks; это не24hPASS.
+E1ветка codex/v2-c13-operations, [draftPR4](https://github.com/QgMixtate/surveyscan/pull/4).
+Здесь54E1tasks done; с независимой C15.01 design — **55/200**.
+C15ветка codex/v2-c15-windows, [draftPR5](https://github.com/QgMixtate/surveyscan/pull/5):
+C15.01done/C15.02partial,8native baseline sections passed WindowsServer2022/elevatedtoken
+42127549414 на13702a8;4unsupported, syntheticenvelope, service/delivery/standarduser/reboot unrun.
+Кодветок не смешивать без проверки; fullC15 неaccepted.
 
-Ранее e7a07fe native failed после8checks на CLI-login. Исторически ошибка не воспроизводилась в2local+4hosted
-freshVM; теперь CLI-login снова failed в42126656841 на3eb6c79: HTTP503 за5.741s. login2.625–4.706s. Таймауты/auth/runtime не менялись; retry внутриVM не добавлялся.
-Внутренняя причина503 не подтверждена;5s login context — гипотеза, не доказанная RCA.
-[Recurrence proof](plans/surveyscan-v2/evidence/C14-native-cli-recurrence.json). Причина прежнего CLI error не подтверждена, [C14-D08](plans/surveyscan-v2/evidence/C14-defects.json)
-сохранён дляC14.03. Новая безопасная диагностика содержит exit/категорию/длительность и невыводит
-argv/stderr/credentials. Старые failed runs не переименованы вPASS.
-
-Local verification:43 top-level Go tests +3 subtests,58 C03 fixtures; исходные architecture guards
-сохранены, новый SQL guard проверяет92 production Go files/7 контрпримеров.136 runtime inputs
-Go/SQL/contracts/build files побайтно равны measured8560f57; после него менялись tests/docs/operator stand.
-[Reconnect5](plans/surveyscan-v2/evidence/C14-reconnect.json) на3 процессах/одном хосте и
-[preflight121.597s](plans/surveyscan-v2/evidence/C14-preflight.json) прошли; preflight не заменяет сутки.
-
-[Private candidate27files](plans/surveyscan-v2/evidence/C14-candidate.json): clean8560f57 Go/Web,
-те же3 daemon hashes, test sign/verify/staging и [Chromium16](plans/surveyscan-v2/evidence/C14-candidate-browser.json)
-на точных artifacts passed. Private test signing key удалён, official release не опубликован/не принят.
-[Draft notes](releases/surveyscan-v2-e1-candidate.md), [матрица15 E1 сценариев](plans/surveyscan-v2/evidence/C14-plan.json).
-
-По R-023 независимая подготовка **C15.01 начата параллельно** в отдельном worktree/ветке
-`codex/v2-c15-windows`. Матрица Windows API/прав и cross-build PE32+ готовы как подготовка;
-Windows runtime/API/ACL/SCM/reboot unrun. 53done сохраняется, C15.01 in_progress.
-После реального≥86400s PASS — C14.03 triage/регрессия, C14.04 acceptance/поставка.
-Подготовка C15 не отменяет этот gate и не меняет измеряемые binaries/stand.
-Нет claim о100users/SLA/production KMS/HA/geo/physical power loss. SQL0000–0032/C03/C09 не менялись.
-Отдельная ветка C15 уже опубликована: [draft PR5](https://github.com/QgMixtate/surveyscan/pull/5),
-base codex/v2-c13-operations. В ней C15.01 design done (общий счёт54), C15.02 in_progress:
-draft12-section contract, изолированный Go payload validator и native Windows baseline.
-Реальный WindowsServer2022 run42126656625 на3eb6c79 прошёл identity/OS/network + synthetic envelope;
-расширенные8секций на13702a8 ждут hosted proof. C14 остаётся отдельным actualsoak, неPASS.
-Актуальная передача C15 — в docs/plans/surveyscan-v2/handoffs/C15.md той ветки;
-эта E1-копия сохраняет исходный53-task plan и pinned runner для проверки суточного результата.
-История ниже — прежние состояния; текущий статус определяется этим блоком и живым run report.
+Пользователь снова поручил продолжать этапы автоматически; R-020/R-022/R-023 сохраняются.
+Публиковать source/PR/CI разрешено; mainmerge/production deploy/cloud environment publication не поручены.
+История ниже — прежние snapshots, current gate определяется этим блоком.
 
 ## Контекст архитектуры и история C01–C04
 
