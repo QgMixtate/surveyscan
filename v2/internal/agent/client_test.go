@@ -26,16 +26,21 @@ import (
 )
 
 type responseTransport struct {
-	status int
-	body   string
-	fail   bool
+	status    int
+	getStatus int
+	body      string
+	fail      bool
 }
 
-func (r responseTransport) RoundTrip(*http.Request) (*http.Response, error) {
+func (r responseTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 	if r.fail {
 		return nil, errors.New("offline")
 	}
-	return &http.Response{StatusCode: r.status, Body: io.NopCloser(strings.NewReader(r.body)), Header: make(http.Header)}, nil
+	status := r.status
+	if req.Method == "GET" && r.getStatus != 0 {
+		status = r.getStatus
+	}
+	return &http.Response{StatusCode: status, Body: io.NopCloser(strings.NewReader(r.body)), Header: make(http.Header)}, nil
 }
 func TestAgentOfflineAndUntrustedAckNeverTrim(t *testing.T) {
 	dir := t.TempDir()
@@ -180,5 +185,38 @@ func TestSourceCachedAckRecoveryAndQuarantineWithoutNetwork(t *testing.T) {
 	}
 	if _, e = os.Stat(path); !os.IsNotExist(e) {
 		t.Fatal("cached verified ACK failed pending-unlink recovery")
+	}
+	// Mix an old verified cached ACK with a newly staged transport-only packet.
+	// Arrival of new work must not erase successful durable delivery progress.
+	if e = writeAtomic(path, raw); e != nil {
+		t.Fatal(e)
+	}
+	fresh := batch
+	fresh.DeliveryID = identifier.New()
+	freshRaw, _ := json.Marshal(fresh)
+	freshCanonical, _ := wire.Canonical(freshRaw)
+	freshSum := sha256.Sum256(freshCanonical)
+	freshPath := filepath.Join(spool, fresh.DeliveryID+".pending")
+	if e = writeAtomic(freshPath, freshRaw); e != nil {
+		t.Fatal(e)
+	}
+	transport, _ := json.Marshal(contracts.TransportReceipt{Type: "transport", TenantID: claims.Tenant, DeliveryID: fresh.DeliveryID, Digest: hex.EncodeToString(freshSum[:]), Stage: "processing", SpoolAction: "retain", RequestID: identifier.New()})
+	if e = v.Validate("TransportReceipt", transport); e != nil {
+		t.Fatal("invalid synthetic transport receipt", e)
+	}
+	c.http.Transport = responseTransport{status: 202, getStatus: 200, body: string(transport)}
+	progress, err := c.flushProgress(context.Background())
+	if !progress || err == nil {
+		t.Fatal("verified removal hidden by new pending work", progress, err)
+	}
+	if _, e = os.Stat(path); !os.IsNotExist(e) {
+		t.Fatal("old acknowledged packet remains")
+	}
+	preserved, e := os.ReadFile(freshPath)
+	if e != nil || string(preserved) != string(freshRaw) {
+		t.Fatal("transport-only packet altered/removed", e)
+	}
+	if progress, err = c.flushProgress(context.Background()); progress || err == nil {
+		t.Fatal("transport receipt falsely reported progress", progress, err)
 	}
 }

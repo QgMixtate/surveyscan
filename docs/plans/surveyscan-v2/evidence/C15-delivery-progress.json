@@ -1,0 +1,29 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "status": "partial",
+  "change": "reset delivery backoff on verified durable ACK progress despite fresh pending work",
+  "checks": {
+    "agent_race": "passed",
+    "verify_build_C03": "passed;58 fixtures unchanged",
+    "windows_agent_crossbuild": "passed",
+    "mixed_ack_transport_regression": "passed: only verified old pending removed, fresh bytes retained; transport-only not progress",
+    "actual_compiled_reconnect": {
+      "status": "passed",
+      "count": 5,
+      "agents": 3,
+      "hosts": 1,
+      "drain_seconds": 21.347,
+      "conditions": [
+        "real TLS link cut",
+        "explicit quota fixture",
+        "bounded production jitter/backoff",
+        "simultaneous reconnect",
+        "verified cached original replay/no duplicate effects"
+      ]
+    }
+  },
+  "C15_D07_root_cause_proven": false,
+  "completed_global_tasks": 57
+}

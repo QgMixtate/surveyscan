@@ -731,3 +731,11 @@ SameLinuxproductcode freshlocalVM9/reboot/update/CLI passed(login4.938s). Added 
 queue counts/closed reasons and8privacytests, no product/timeout change onguess.
 Two instrumented hostedVM repeat next; all5 not yetgreen. Windows profile nextplan
 prepared; notimplemented, global57done/C15.02IP. Exactevidence C15-hosted-2fe.json.
+
+5fb5838 hosted boot42236193133 passed two independently fresh VM9+9; D07notreproduced
+in3freshVM total, causeunconfirmed. Newlocal D08: report durable verifiedACK removal
+progress separately from a new transport-only pending packet; actor resets backoff
+onlyon actualprogress, publicFlush contract unchanged. Mixedpacket regression/race/
+verify/C03 58/Winbuild passed; actual3agents reconnect/quota/network/replay5passed,
+drain21.347s. Not claimedasprovenD07cause. AGENTS checkpoint history preservedwhole
+in AGENTS_HISTORY.md; currentrules keptconcise toreduce nextchat context.57done.

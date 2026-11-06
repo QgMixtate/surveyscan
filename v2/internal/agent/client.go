@@ -487,9 +487,16 @@ func (c *Client) queueSnapshot(ctx context.Context, snapshot Snapshot, collected
 	return writeAtomic(filepath.Join(c.cfg.State, "spool", batch.DeliveryID+".pending"), b)
 }
 func (c *Client) Flush(ctx context.Context) error {
+	_, err := c.flushProgress(ctx)
+	return err
+}
+
+// Progress means a verified remove ACK was durably consumed, not HTTP acceptance.
+func (c *Client) flushProgress(ctx context.Context) (bool, error) {
+	progress := false
 	entries, e := os.ReadDir(filepath.Join(c.cfg.State, "spool"))
 	if e != nil {
-		return e
+		return progress, e
 	}
 	waiting := false
 	for _, entry := range entries {
@@ -498,54 +505,55 @@ func (c *Client) Flush(ctx context.Context) error {
 		}
 		id := strings.TrimSuffix(entry.Name(), ".pending")
 		if !identifier.Valid(id) {
-			return errors.New("invalid agent packet path")
+			return progress, errors.New("invalid agent packet path")
 		}
 		path := filepath.Join(c.cfg.State, "spool", entry.Name())
 		raw, e := privatefile.Read(path, 1048576)
 		if e != nil {
-			return e
+			return progress, e
 		}
 		var batch contracts.Batch
 		if e = json.Unmarshal(raw, &batch); e != nil || batch.DeliveryID != id || batch.TenantID != c.claims.Tenant {
-			return errors.New("invalid agent pending packet")
+			return progress, errors.New("invalid agent pending packet")
 		}
 		if _, stat := os.Stat(filepath.Join(c.cfg.State, "spool", id+".receipt")); stat == nil {
 			cached, e := privatefile.Read(filepath.Join(c.cfg.State, "spool", id+".receipt"), 1048576)
 			if e != nil {
-				return e
+				return progress, e
 			}
 			_, remove, e := c.wire.VerifyCenterResult(cached, raw, c.claims.CenterKeyID, c.claims.CenterPublic)
 			if e != nil {
-				return errors.New("cached source receipt verification failed")
+				return progress, errors.New("cached source receipt verification failed")
 			}
 			if remove {
 				if e = os.Remove(path); e != nil {
-					return e
+					return progress, e
 				}
 				if e = diskspool.SyncDir(filepath.Dir(path)); e != nil {
-					return e
+					return progress, e
 				}
+				progress = true
 			}
 			continue
 		} else if !os.IsNotExist(stat) {
-			return stat
+			return progress, stat
 		}
 		// У transport receipt нет права удалять пакет. Результат центра проверяется независимо.
 		code, ack, e := request(ctx, c.http, c.cfg.CollectorURL, "POST", "/api/v1/machine/observations", raw, "")
 		if e != nil {
-			return e
+			return progress, e
 		}
 		if code != 202 {
-			return fmt.Errorf("collector batch rejected (HTTP %d)", code)
+			return progress, fmt.Errorf("collector batch rejected (HTTP %d)", code)
 		}
 		_, remove, verify := c.wire.VerifyCenterResult(ack, raw, c.claims.CenterKeyID, c.claims.CenterPublic)
 		if verify != nil {
 			code, ack, e = request(ctx, c.http, c.cfg.CollectorURL, "GET", "/api/v1/machine/deliveries/"+id, nil, "")
 			if e != nil {
-				return e
+				return progress, e
 			}
 			if code != 200 {
-				return fmt.Errorf("collector status rejected (HTTP %d)", code)
+				return progress, fmt.Errorf("collector status rejected (HTTP %d)", code)
 			}
 			_, remove, verify = c.wire.VerifyCenterResult(ack, raw, c.claims.CenterKeyID, c.claims.CenterPublic)
 		}
@@ -554,30 +562,31 @@ func (c *Client) Flush(ctx context.Context) error {
 			continue
 		}
 		if e = diskspool.Capacity(filepath.Join(c.cfg.State, "spool"), c.cfg.Limit, int64(len(ack))); e != nil {
-			return e
+			return progress, e
 		}
 		if e = writeAtomic(filepath.Join(c.cfg.State, "spool", id+".receipt"), ack); e != nil {
-			return e
+			return progress, e
 		}
 		if remove {
 			if e = os.Remove(path); e != nil {
-				return e
+				return progress, e
 			}
 			dir, e := os.Open(filepath.Dir(path))
 			if e != nil {
-				return e
+				return progress, e
 			}
 			e = dir.Sync()
 			dir.Close()
 			if e != nil {
-				return e
+				return progress, e
 			}
+			progress = true
 		}
 	}
 	if waiting {
-		return errors.New("center result pending; source packet retained")
+		return progress, errors.New("center result pending; source packet retained")
 	}
-	return nil
+	return progress, nil
 }
 func (c *Client) Heartbeat(ctx context.Context) error {
 	if e := verifyHostBinding(c.cfg, c.claims.Source, c.key); e != nil {
@@ -738,8 +747,14 @@ func runClientLoop(ctx context.Context, client *Client, report func(string), col
 		}
 
 		if delivery.Ready(time.Now()) {
-			if e = client.Flush(ctx); e != nil {
-				delivery.Failed(time.Now())
+			if progress, err := client.flushProgress(ctx); err != nil {
+				// A new transport-only packet must not keep old successful
+				// delivery work stuck at maximum retry delay forever.
+				if progress {
+					delivery.Reset()
+				} else {
+					delivery.Failed(time.Now())
+				}
 				report("delivery_pending")
 			} else {
 				delivery.Reset()

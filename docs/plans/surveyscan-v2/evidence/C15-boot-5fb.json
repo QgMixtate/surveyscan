@@ -1,0 +1,25 @@
+{
+  "source_revision": "5fb5838e79d92282cec19a4f64fb284a45e3c726",
+  "run_id": 42236193133,
+  "conclusion": "success",
+  "scope": "two independently fresh actual Linux VM/kernel reboot/update/CLI",
+  "reports": {
+    "c13-boot-stand1.json": {
+      "status": "passed",
+      "count": 9,
+      "sha256": "5391c163b124166fba5a34befedd128a7eece50617093d69e7c648639bc6b74b"
+    },
+    "c13-boot-stand2.json": {
+      "status": "passed",
+      "count": 9,
+      "sha256": "3039cded54527c9095df3753d6561f88fdab52c6c6960c3574205238e40d9fb4"
+    },
+    "c13-boot-smoke.json": {
+      "status": "passed",
+      "count": 9,
+      "sha256": "3039cded54527c9095df3753d6561f88fdab52c6c6960c3574205238e40d9fb4"
+    }
+  },
+  "follow_up": "C15-D07 not reproduced in two hosted+one local fresh VMs; historical cause unconfirmed",
+  "completed_global_tasks": 57
+}

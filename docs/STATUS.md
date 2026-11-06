@@ -22,7 +22,9 @@ crash isolation и kill/reap passed. Данные relay синтетически
 Причина C15-D07 неизвестна. Добавлена безопасная диагностика counts/closedreasoncodes,
 8redaction tests passed; product behavior/timeout не менялись по догадке. Одна свежая
 localVM с тем же Linuxproductcode прошла9checks/reboot/update/CLI (login4.938s).
-Две instrumented hostedVM ещё pending. Не выдавать четыре green workflows за all5.
+Две instrumented hostedVM на5fb5838 прошли9+9 (boot42236193133);
+[proof](plans/surveyscan-v2/evidence/C15-boot-5fb.json). D07 не повторился на3freshVM,
+точная историческая причина не доказана. Не выдавать это за all5 на2fe.
 C15-D06 isolatedBao restore: activeleader readiness перед единственным force-write;
 local9 и новый hostedrestore9 passed. HTTPstatus старого failure не сохранился,
 его точная причина не доказана. Исторические failures сохранены в C15-defects.json.
@@ -45,3 +47,10 @@ source8560f57; отдельный authdelta39e401f (5→8s без ослабле
 и не перезаписывать. C15 stand — свои DB/ports/scopedmounts/processes, E1devcredentials
 read-only; не запускать C15dev up/down/reset с общими E1project/ports.57done не увеличивать
 без фактической приёмки. История — REQUESTS, подробные proof/ограничения — handoff/evidence.
+
+Новый локальный fix: backoff учитывает durable delivery progress даже при новом
+transport-pending пакете. MixedACK/retain regression +agent race/verify/build/C03 58/
+Winbuild passed; real3agent reconnect/quota/replay5passed, drain21.347s. D08 независимо
+подтверждён; связь с историческим D07 не доказана. Publication pending; читать
+C15-delivery-progress.json. AGENTS сокращён, вся прежняя история сохранена отдельно
+в AGENTS_HISTORY.md для экономии контекста следующих чатов.

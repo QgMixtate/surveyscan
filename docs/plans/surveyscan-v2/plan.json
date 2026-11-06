@@ -1430,9 +1430,12 @@
             "decisions/C15-all-provider-workers.md",
             "evidence/C15-all-provider-workers.json",
             "evidence/C15-hosted-2fe.json",
-            "decisions/C15-windows-profile-next.md"
+            "decisions/C15-windows-profile-next.md",
+            "decisions/C15-delivery-progress.md",
+            "evidence/C15-delivery-progress.json",
+            "evidence/C15-boot-5fb.json"
           ],
-          "verification_status": "Published2fe4b93:fullv2/Windows/Web/evidence success, Linuxboot failedsecond_queue_drain(C15-D07unknowncause). PG58/relay10/scopedBao20/realLinuxagent11, native12 allprocesses/COM+nonCOMfailure/killreap passed. LocalfreshVM9 passed; instrumented twohostedrepeat pending. D06restore readiness guard hostedpassed. Windowsprofile/runtime/DACL/SCM/rights/reboot/completecoverage remain,57done."
+          "verification_status": "Published2fe4b93:fullv2/Windows/Web/evidence success, Linuxboot failedsecond_queue_drain(C15-D07unknowncause). PG58/relay10/scopedBao20/realLinuxagent11, native12 allprocesses/COM+nonCOMfailure/killreap passed. LocalfreshVM9 passed; instrumented twohostedrepeat pending. D06restore readiness guard hostedpassed. Windowsprofile/runtime/DACL/SCM/rights/reboot/completecoverage remain,57done.;5fb hostedtwoVM9+9passed/D07notreproduced causeunknown; D08deliveryprogress localmixedtest/race/verify/Winbuild/real3agent reconnect5passed,publicationpending"
         },
         {
           "id": "C15.03",
