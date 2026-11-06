@@ -64,7 +64,8 @@
       "new_evidence": "same Linux product source passed one fresh local QEMU/systemd reboot/update9; login4.938s; source dirty metadata/new test diagnostics distinguish from clean hostedrun",
       "change": "safe pending/receipt counts and closed retained-reason counters in guest+supervisor;8 diagnostic redaction tests passed",
       "status": "not reproduced in one local and two hosted fresh VMs; historical cause unconfirmed",
-      "hosted_follow_up": "5fb5838 boot42236193133 success9+9; exact reports/hashes C15-boot-5fb.json"
+      "hosted_follow_up": "5fb5838 boot42236193133 success9+9; exact reports/hashes C15-boot-5fb.json",
+      "post_change_follow_up": "d4ae425 with independentD08fix also passed twofreshVM9+9; originalD07cause remainsunconfirmed"
     },
     {
       "id": "C15-D08",
@@ -73,7 +74,9 @@
       "change": "private flushProgress reports true only after verified remove ACK and durable pending unlink; actor resets backoff on that progress even if another packet remains pending; public Flush behavior unchanged",
       "local_verification": "mixed two-packet test uses signed cached old ACK and schema-valid fresh transport retain: old removed, new bytes untouched, progress true; second transport-only pass reports no progress. Agent race/verify/build/Wincompile passed; actual3agent reconnect/quota/network/cached replay5 passed (21.347s drain)",
       "historical_boot_cause_proven": false,
-      "publication": "published d4ae425 in PR5; hosted CI pending"
+      "publication": "published d4ae425 PR5",
+      "status": "fixed; independently verified progress class, not proven historicalD07cause",
+      "hosted_verification": "all5 d4 hosted SUCCESS; v2 agent mixedACK/race/reconnect5 and boot twofreshVM9+9"
     }
   ],
   "windows_inventory_tested": true,

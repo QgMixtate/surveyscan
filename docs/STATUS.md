@@ -1,56 +1,52 @@
 # Текущее состояние surveyscan
 
 6 ноября 2026. **57/200 done; C15.02 in_progress.** C14 принят в bounded Linux E1,
-C15.01 — проектирование done; C15.03/04 и C16–C50 не приняты.
+C15.01 design done; C15.03/04 и C16–C50 ещё не приняты.
 
-Рабочая ветка codex/v2-c15-windows, /workspace/surveyscan-c15,
+Рабочая ветка codex/v2-c15-windows, worktree /workspace/surveyscan-c15,
 [draft PR5](https://github.com/QgMixtate/surveyscan/pull/5), base E1 изPR4.
-Последний product code —d4ae425 (published, hostedCI pending): частичный inventory1.2 center+collector relay,
-две подписанные capabilities роли/Go agent negotiation, независимый read-only
-collection worker и serial state actor, все12Windowsproviders через bounded ownbinary
-процессы. Default inventory12_enabled у центра/коллектора false; Windows daemon ещё
-не включён. Complete/deletion1.2 отклоняется. C03/C09/C12 неизменны; SQL34/47ownedtables.
+**Последний product code —d4ae425; все5 hosted workflows SUCCESS.**
+[Exact SHA/runs +23sanitized reports иboot hashes](plans/surveyscan-v2/evidence/C15-hosted-d4.json).
+Docs-only commits с[skip ci] не меняют проверенный product code.
 
-Фактические проверки на2fe4b93: fullv2 42233416953 SUCCESS, Windows42233417128 SUCCESS,
-Web42233417240/evidence42233417031 SUCCESS. PG58, scopedBao20, center6/relay10,
-realcompiledLinuxagent11 (3cycles+restart4th/UID/counters/verifiedACK/lock/revoke),
-wire/collector/agent race. Native Windows2022/elevated: all12processes, COM+software
-crash isolation и kill/reap passed. Данные relay синтетические; native SDK проверен
-отдельно. [Exact runs/reports](plans/surveyscan-v2/evidence/C15-hosted-2fe.json).
+Реализовано в текущем C15 срезе:
 
-**Boot42233416959 FAILED**: firstVM после reboot, second_queue_drain,4checks.
-Причина C15-D07 неизвестна. Добавлена безопасная диагностика counts/closedreasoncodes,
-8redaction tests passed; product behavior/timeout не менялись по догадке. Одна свежая
-localVM с тем же Linuxproductcode прошла9checks/reboot/update/CLI (login4.938s).
-Две instrumented hostedVM на5fb5838 прошли9+9 (boot42236193133);
-[proof](plans/surveyscan-v2/evidence/C15-boot-5fb.json). D07 не повторился на3freshVM,
-точная историческая причина не доказана. Не выдавать это за all5 на2fe.
-C15-D06 isolatedBao restore: activeleader readiness перед единственным force-write;
-local9 и новый hostedrestore9 passed. HTTPstatus старого failure не сохранился,
-его точная причина не доказана. Исторические failures сохранены в C15-defects.json.
+- Opt-in partial inventory1.2 center+collector admission/crypto/scope/durable relay,
+  typed per-field projection/provenance и revision-bound fact-page API. Default
+  inventory12_enabled false. Complete/deletion отклоняется; C03/C09/C12 неизменны.
+- Две подписанные capabilities роли, nonce/tenant/audiences/generations/expiry,
+  pinned center иTLS-attested collector keys, quota-aware three-hop intersection.
+  Go agent method готов; Windows daemon его ещё не вызывает.
+- Один read-only collection task вне serial state actor: heartbeat продолжает
+  работать при blocked collection; counters/sign/TLS/spool меняет только actor.
+- Все12native Windows providers — bounded ownbinary child processes. Сбой одного
+  сохраняет остальные. Backoff sender сбрасывается на durable verifiedACK progress,
+  даже если новый пакет ещё processing; transport receipt не считаетсяprogress.
 
-Следующий Windows runtime блок — [точный план](plans/surveyscan-v2/decisions/C15-windows-profile-next.md):
-отдельный profile1.2/overall budget/appliedprogress/offlinecache, затем secure Windows
-state/DACL/reparse/locks/hostcontinuity, SCM/update/ordinaryrights/Windows11/actualreboot.
-Новый actor удерживает один provider slot при noncooperative cancel; это не обещание
-убить произвольный in-process call. Windows SDK использует отдельные child processes.
-[Handoff](plans/surveyscan-v2/handoffs/C15.md), [scheduler](plans/surveyscan-v2/evidence/C15-independent-collection.json),
-[providers](plans/surveyscan-v2/evidence/C15-all-provider-workers.json).
+Проверки d4: PG58, verify/C03 58, agent/collector/wire race, center6/relay10 на настоящих
+mTLS/scopednonexportableTransit/PG (agentdata синтетические), livecompiledLinuxagent11,
+real3agent reconnect/quota/replay5, isolatedBao restore9 идвеfreshLinuxVM9+9 с реальным
+kernelreboot/systemd/update/CLI. NativeWindows2022/elevated all12 иCOM+software failure/
+kill-reap passed. Это не Windows11/ordinaryrights/SCM/continuousWindowsdelivery.
 
-E1 frozen: actualsoak86400.914s/2740samples/1419observations/двеrenewals, одинUID/queuesempty,
-source8560f57; отдельный authdelta39e401f (5→8s без ослабленияArgon2/rates/slots) all4hosted
-иVM9+9. Candidate27files/Chromium16 — внутренний, не официальныйrelease. C15 binaries
-не подменяют этот candidate или24hproof; нового24h прогона нет.
+C15-D06 restore readiness guard прошёл; исходный HTTPstatus/rootcause не сохранился.
+C15-D07 старый bootqueue timeout не повторился в3freshVM на прежнем productcode и
+2freshVM с новым независимым D08fix; историческая причина не доказана.
+[Журнал дефектов](plans/surveyscan-v2/evidence/C15-defects.json) сохраняет failures.
 
-Продолжать автоматически по R020/022/023; mainmerge/officialrelease/productiondeploy/
-повторная cloud settings publication не выполнялись. E1 private keys/reports не копировать
-и не перезаписывать. C15 stand — свои DB/ports/scopedmounts/processes, E1devcredentials
-read-only; не запускать C15dev up/down/reset с общими E1project/ports.57done не увеличивать
-без фактической приёмки. История — REQUESTS, подробные proof/ограничения — handoff/evidence.
+**Следующий код:** [Windows profile1.2/runtime plan](plans/surveyscan-v2/decisions/C15-windows-profile-next.md).
+Нужны отдельный profile/budget/appliedprogress/offlinecache и secure Windows state/
+DACL/reparse/atomicfiles/lock/hostcontinuity внутриC15.02. SCM/install/update/reboot —
+C15.03/04 после его приёмки. Полное providercoverage не заявлено. Не увеличивать57done.
+[Handoff](plans/surveyscan-v2/handoffs/C15.md); текущие правила AGENTS83lines,
+полный прежний checkpointarchive сохранён без потерь в AGENTS_HISTORY.md.
 
-Опубликованный fix d4ae425: backoff учитывает durable delivery progress даже при новом
-transport-pending пакете. MixedACK/retain regression +agent race/verify/build/C03 58/
-Winbuild passed; real3agent reconnect/quota/replay5passed, drain21.347s. D08 независимо
-подтверждён; связь с историческим D07 не доказана. Новые workflows: v242237739720/boot42237740069/Windows42237739729/
-Web42237739727/evidence42237739732; latest proof — C15-delivery-progress.json. AGENTS сокращён, вся прежняя история сохранена отдельно
-в AGENTS_HISTORY.md для экономии контекста следующих чатов.
+E1 frozen: actualsoak86400.914s/2740samples/1419observations/2renewals/oneUID/queuesempty
+на8560f57. Отдельный authdelta39e401f all4hosted/VM9+9, candidate27files/Chromium16 —
+внутренний. C15 binaries не подменяют candidate/24hproof; нового24h прогона нет.
+
+Продолжать автоматически по R020/022/023. Mainmerge/officialrelease/productiondeploy/
+повторная cloud settings publication не выполнялись. SQL34/47ownedtables, applied0000–0033
+immutable. E1 privatekeys/reports не копировать/не перезаписывать; C15test свои DB/ports/
+mounts/processes, E1devcredentials read-only. Не запускать C15dev up/down/reset с общими
+E1project/ports. История в REQUESTS и handoff/evidence; старые pending markers исторические.

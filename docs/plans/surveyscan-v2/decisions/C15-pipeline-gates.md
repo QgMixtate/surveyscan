@@ -24,3 +24,8 @@ Native12baseline и worker проверки не завершают C15.02. До
 7. Только после real signed agent→collector→center→PG/projection/API + offline/replay/
    old-peer rejection/tenant/secret/partialcoverage checks закрывать C15.02. Windows DACL,
    hostcontinuity/processlock и SCM/reboot — C15.03/04, не доказаны native API CI.
+
+Уточнение зависимостей: shared Windows DACL/atomic-state/host-binding/lock primitives
+нужны для настоящего sender в C15.02 и реализуются как его prerequisites. SCM installer/
+service lifecycle/update/reboot остаются C15.03/04; это не переход к следующему пакету
+или объявление его done до приёмки C15.02.

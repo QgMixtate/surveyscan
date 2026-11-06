@@ -1433,9 +1433,10 @@
             "decisions/C15-windows-profile-next.md",
             "decisions/C15-delivery-progress.md",
             "evidence/C15-delivery-progress.json",
-            "evidence/C15-boot-5fb.json"
+            "evidence/C15-boot-5fb.json",
+            "evidence/C15-hosted-d4.json"
           ],
-          "verification_status": "Published2fe4b93:fullv2/Windows/Web/evidence success, Linuxboot failedsecond_queue_drain(C15-D07unknowncause). PG58/relay10/scopedBao20/realLinuxagent11, native12 allprocesses/COM+nonCOMfailure/killreap passed. LocalfreshVM9 passed; instrumented twohostedrepeat pending. D06restore readiness guard hostedpassed. Windowsprofile/runtime/DACL/SCM/rights/reboot/completecoverage remain,57done.;5fb hostedtwoVM9+9passed/D07notreproduced causeunknown; D08deliveryprogress localmixedtest/race/verify/Winbuild/real3agent reconnect5passed,publicationpending"
+          "verification_status": "Published d4ae425 all5 exact-SHA hosted SUCCESS: PG58/C03 58/race3packages/compiled center6+relay10/scopedTransit/liveLinuxagent11/reconnect5/restore9/nativeWindows12provider processes+failureisolation/twofreshLinuxVM9+9. D06guard andD08progress verified; historicalD07cause unproven/notreproduced. Windowsprofile1.2/continuoussender/securestate/SCM/rights/Windows11/reboot/fullcoverage remain,57done."
         },
         {
           "id": "C15.03",

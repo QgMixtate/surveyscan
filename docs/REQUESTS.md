@@ -744,3 +744,10 @@ D08fix published asd4ae425130fab36f80ff58dd4de08ace41052e9e inPR5; exact-SHA fiv
 workflows launched (v242237739720/boot42237740069/Windows42237739729/Web42237739727/
 evidence42237739732). Localverify/build/race/Wincompile/mixedACK/real3agent5 passed;
 newhostedpending. Prior5fb twoVM9+9 confirmed;57done. No merge/release/deploy/envpublish.
+
+Final d4ae425 exact-SHA all5 hosted SUCCESS: v242237739720/Windows42237739729/
+Web42237739727/boot42237740069/evidence42237739732. Downloaded23sanitized v2reports
+andtwofreshVM9+9 reports, hashes C15-hosted-d4.json. PG58/relay10/center6/agent11/
+reconnect5/restore9 andnativeall12/failureisolation passed. D07historicalcause still
+unproven; independentD08fix verified.57done/C15.02IP; nextWinprofile1.2/securestate,
+SCM03/04 remainsafter02acceptance. No merge/release/deploy/envpublication.

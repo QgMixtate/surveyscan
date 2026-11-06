@@ -18,5 +18,10 @@
     "provider complete coverage"
   ],
   "completed_global_tasks": 57,
-  "hosted_evidence": "C15-hosted-2fe.json"
+  "hosted_evidence": "C15-hosted-2fe.json",
+  "latest_hosted_verification": {
+    "source_revision": "d4ae425130fab36f80ff58dd4de08ace41052e9e",
+    "all_five_workflows": "success",
+    "evidence": "C15-hosted-d4.json"
+  }
 }

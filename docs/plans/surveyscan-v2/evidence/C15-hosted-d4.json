@@ -1,0 +1,170 @@
+{
+  "source_revision": "d4ae425130fab36f80ff58dd4de08ace41052e9e",
+  "all_workflows_success": true,
+  "workflows": {
+    "v2": {
+      "id": 42237739720,
+      "conclusion": "success"
+    },
+    "windows": {
+      "id": 42237739729,
+      "conclusion": "success"
+    },
+    "web": {
+      "id": 42237739727,
+      "conclusion": "success"
+    },
+    "native_linux": {
+      "id": 42237740069,
+      "conclusion": "success"
+    },
+    "acceptance_evidence": {
+      "id": 42237739732,
+      "conclusion": "success"
+    }
+  },
+  "sanitized_reports": {
+    "c13-update-smoke.json": {
+      "status": "passed",
+      "count": 19,
+      "sha256": "4a484266744e1e5d2d1551f5f940e189112b99a04abf767e475f213cbdc50a27"
+    },
+    "cli-smoke.json": {
+      "status": "passed",
+      "count": 17,
+      "sha256": "9cb3d83d5ccf505d27c25f5fd3e7c7ab5eef4d2e7a362603da3b33815d5d473e"
+    },
+    "smoke.json": {
+      "status": "passed",
+      "count": 6,
+      "sha256": "4e78339e0996b942e1ebc59bfde59775ce94946d91b8679c222ea7cde9425b30"
+    },
+    "c14-reconnect-smoke.json": {
+      "status": "passed",
+      "count": 5,
+      "sha256": "e9992f0ff2ba8284740321da0de01720de51436ae5d307550825e076c51c9502"
+    },
+    "machine-smoke.json": {
+      "status": "passed",
+      "count": 8,
+      "sha256": "3e23d8c14fbff3506906567f97ee96e5b5ac0d9f870b1770c37176769348fae6"
+    },
+    "auth-smoke.json": {
+      "status": "passed",
+      "count": 10,
+      "sha256": "2d1a715a334f68ca7cb89063959420c353a615f126c93665989af8530f939bc4"
+    },
+    "recovery-smoke.json": {
+      "status": "passed",
+      "count": 8,
+      "sha256": "ac4e2188345258d65253bbc56b24d38473e39284641b7efd0bdd6e57ac283220"
+    },
+    "c13-checkpoint-smoke.json": {
+      "status": "passed",
+      "count": 10,
+      "sha256": "c61bcc3816c4b4bc0f32682c44cdb656a78b26c9147ed523c66f0272efbaedc1"
+    },
+    "diskfault-smoke.json": {
+      "status": "passed",
+      "count": 1,
+      "sha256": "334315c18d01ffa8b80f6edb1fdd7ff7780d123f9356303ab1b4baaf67965a6a"
+    },
+    "agent-smoke.json": {
+      "status": "passed",
+      "count": 11,
+      "sha256": "cb2227691f590a4793a45c56f36e76a20e94634c58952fa61ddf85af13406951"
+    },
+    "c13-release-smoke.json": {
+      "status": "passed",
+      "count": 14,
+      "sha256": "3b10c3c158f7109949bf14fc0d420efc5aaf5883ec17e1b52b29e8ff64c7cacf"
+    },
+    "c13-pg-restore-smoke.json": {
+      "status": "passed",
+      "count": 18,
+      "sha256": "ce7256e1fd7ca202ffedeeec6f0ee800d10b0ebba327b12c9d4f5ae8dec95c80"
+    },
+    "c13-upgrade-smoke.json": {
+      "status": "passed",
+      "count": 13,
+      "sha256": "7a77c46c2108898802ceb381e983e32327e461f9c24d3944879c1d1d4c932e09"
+    },
+    "renewal-smoke.json": {
+      "status": "passed",
+      "count": 10,
+      "sha256": "c89051f54a42093e231e5bb5c4ce48ecc9fbf8cd961e84079ef764e3e5c9e219"
+    },
+    "contracts-validation.json": {
+      "status": null,
+      "count": null,
+      "sha256": "e400250353d7c7f202a4e16a7c490933032c30c9500cbaec012e4261e95ec189"
+    },
+    "profiles-smoke.json": {
+      "status": "passed",
+      "count": 13,
+      "sha256": "dccd2dfd5ebf66734c93faa02a78a3c631cd9379a76483e169b5f3a745ab7aa8"
+    },
+    "c15-relay-smoke.json": {
+      "status": "passed",
+      "count": 10,
+      "sha256": "58b239f505697857ec8215facf0e8a1dd78a9459f5e2ec481facd3b9b55183b9"
+    },
+    "c15-center-smoke.json": {
+      "status": "passed",
+      "count": 6,
+      "sha256": "1b0cacbcfa969a859815f691823ea9d3def6374d801ef22d52aab8c397c7965d"
+    },
+    "collector-renewal-smoke.json": {
+      "status": "passed",
+      "count": 10,
+      "sha256": "2b7ecb998fec0b67f38f848417ee2a2e12108b10f72f088ae64131fb83a152c3"
+    },
+    "bao-pipeline.json": {
+      "status": "passed",
+      "count": 20,
+      "sha256": "46ae61ca59318f37746994cf58ffa9d5a42b0cb9b69c8c692abd7c57fa45ba83"
+    },
+    "c13-unit-check.json": {
+      "status": null,
+      "count": null,
+      "sha256": "10b03098e0d3d4eab61648dd0242338daec15b7800316821c86614eedb5bf8c5"
+    },
+    "c13-bao-restore-smoke.json": {
+      "status": "passed",
+      "count": 9,
+      "sha256": "3c2651b4006d299aa54f13329378766a6c2b83912095b1c9cc3e944c0f4c12bd"
+    },
+    "bao-smoke.json": {
+      "status": "passed",
+      "count": 4,
+      "sha256": "300ee43014fc1d92e4456701c4cc55260a804bbd5e39bc455d37eb5f57b94455"
+    }
+  },
+  "boot_reports": {
+    "c13-boot-stand1.json": {
+      "status": "passed",
+      "count": 9,
+      "sha256": "59eac471b3529b94df2533c6e9d516645b85d2093f6d7a67c5fb5a59266f7354"
+    },
+    "c13-boot-stand2.json": {
+      "status": "passed",
+      "count": 9,
+      "sha256": "700564ea4412799f5918ba4d4de8f4063822ab42eff834b51c961e19b7048e3f"
+    },
+    "c13-boot-smoke.json": {
+      "status": "passed",
+      "count": 9,
+      "sha256": "700564ea4412799f5918ba4d4de8f4063822ab42eff834b51c961e19b7048e3f"
+    }
+  },
+  "postgres_pass": 58,
+  "completed_global_tasks": 57,
+  "scope": "bounded C15.02 foundations, not Windows daemon acceptance",
+  "unrun": [
+    "Windowsprofile1.2/continuoussender",
+    "DACL/reparse/atomicstate/lock/hostcontinuity",
+    "SCM/install/update/ordinaryrights/Windows11/reboot",
+    "new24h/100user/productionDR"
+  ],
+  "historical_D07_cause_proven": false
+}

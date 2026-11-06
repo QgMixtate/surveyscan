@@ -1,6 +1,6 @@
 {
   "source_revision": "d4ae425130fab36f80ff58dd4de08ace41052e9e",
-  "publication": "published PR5; exact-SHA hosted CI pending",
+  "publication": "published PR5; all five hosted workflows success",
   "task": "C15.02",
   "status": "partial",
   "change": "reset delivery backoff on verified durable ACK progress despite fresh pending work",
@@ -25,5 +25,10 @@
     }
   },
   "C15_D07_root_cause_proven": false,
-  "completed_global_tasks": 57
+  "completed_global_tasks": 57,
+  "latest_hosted_verification": {
+    "source_revision": "d4ae425130fab36f80ff58dd4de08ace41052e9e",
+    "all_five_workflows": "success",
+    "evidence": "C15-hosted-d4.json"
+  }
 }

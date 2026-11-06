@@ -58,8 +58,10 @@
    сети не подменяется ложным heartbeat/config contact или inventory success.
 10. Новый runtime не включать, пока Windows private files/DACL/reparse protection,
     exclusive writer lock, atomic durable state и MachineGuid continuity не проверены.
-    Следующая независимая подготовка C15.03 может реализовать эти prerequisites;
-    C15.02 не закрывать по Linux testdouble или только cross-build.
+    Общие secure-state primitives нужны уже в C15.02 для реального Windows sender;
+    это его технические prerequisites, а не объявление C15.03 выполненным. Сам SCM
+    install/update/reboot остаётся C15.03/04 после приёмки C15.02. Сохранять порядок
+    плана; C15.02 не закрывать по Linux testdouble или только cross-build.
 
 ## Проверки и публикация
 
