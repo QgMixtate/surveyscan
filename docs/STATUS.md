@@ -34,3 +34,9 @@ PG/Bao blindly. AppliedSQL0000–0034 immutable; continueautomatically R020/022/
 NtCreateFile/bounds/no-overwrite/exclusive process lock. Crosscompile/vet passed; native
 Windows execution pending. Не подключён к runtime; atomic replace/cache/hostbinding
 ещёне реализованы. Proof C15-winstate-primitives.json иновыйWindowsCIstep.
+
+Private-root base c7e2f0a now all5hostedSUCCESS; native DACL/drift/null/reparse/hardlink/
+crossprocesslock/redaction passed. D09 fixed; old57e failedrun retained. New localatomic
+increment requires lock and uses root-relative NT rename, optional read errors distinguished;
+Wincompile/vetpassed, nativepending. Stillnotadopted/cache/hostbinding/cleanup. Read
+C15-winstate-atomic.json andC15-hosted-winstate-base.json.57done.

@@ -23,9 +23,18 @@ var ErrPrivate = errors.New("private Windows state unavailable or unsafe")
 
 const MaxBytes = 2 << 20
 
+type stateError struct {
+	stage string
+	code  uint32
+}
+
+func (e *stateError) Error() string {
+	return fmt.Sprintf("%s [%s code=%d]", ErrPrivate, e.stage, e.code)
+}
+func (e *stateError) Unwrap() error { return ErrPrivate }
 func privateError(stage string, err error) error {
 	switch stage {
-	case "root_create", "root_open", "root_path", "root_type", "root_acl", "relative_open", "file_type", "file_acl":
+	case "root_create", "root_open", "root_path", "root_type", "root_acl", "relative_open", "file_type", "file_acl", "atomic_rename", "atomic_flush":
 	default:
 		stage = "unknown"
 	}
@@ -37,10 +46,16 @@ func privateError(stage string, err error) error {
 	} else if errors.As(err, &win32) {
 		code = uint32(win32)
 	}
-	return fmt.Errorf("%w [%s code=%d]", ErrPrivate, stage, code)
+	return &stateError{stage: stage, code: code}
+}
+
+type stateLock struct {
+	handle windows.Handle
+	closed bool
 }
 
 type Root struct {
+	writer *stateLock
 	mu     sync.Mutex
 	handle windows.Handle
 	owner  string
@@ -148,7 +163,7 @@ func info(handle windows.Handle, directory bool) (windows.ByHandleFileInformatio
 		return out, ErrPrivate
 	}
 	isDir := out.FileAttributes&windows.FILE_ATTRIBUTE_DIRECTORY != 0
-	if isDir != directory || !directory && out.NumberOfLinks != 1 {
+	if isDir != directory || !directory && out.NumberOfLinks > 1 {
 		return out, ErrPrivate
 	}
 	return out, nil
@@ -219,6 +234,11 @@ func (r *Root) Close() error {
 	if r.handle == windows.InvalidHandle {
 		return nil
 	}
+	if r.writer != nil && !r.writer.closed {
+		windows.CloseHandle(r.writer.handle)
+		r.writer.closed = true
+		r.writer = nil
+	}
 	err := windows.CloseHandle(r.handle)
 	r.handle = windows.InvalidHandle
 	if err != nil {
@@ -272,13 +292,11 @@ func (r *Root) open(name string, access, disposition, share uint32) (windows.Han
 	}
 	return handle, nil
 }
-func (r *Root) Read(name string, max int64) ([]byte, error) {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+func (r *Root) read(name string, max int64) ([]byte, error) {
 	if max < 1 || max > MaxBytes {
 		return nil, ErrPrivate
 	}
-	handle, err := r.open(name, windows.GENERIC_READ, windows.FILE_OPEN, windows.FILE_SHARE_READ)
+	handle, err := r.open(name, windows.GENERIC_READ, windows.FILE_OPEN, windows.FILE_SHARE_READ|windows.FILE_SHARE_DELETE)
 	if err != nil {
 		return nil, err
 	}
@@ -293,6 +311,26 @@ func (r *Root) Read(name string, max int64) ([]byte, error) {
 		return nil, ErrPrivate
 	}
 	return value, nil
+}
+func (r *Root) Read(name string, max int64) ([]byte, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	return r.read(name, max)
+}
+
+// Only an actual missing leaf is absence. ACL/reparse/I/O errors stay errors.
+func (r *Root) ReadOptional(name string, max int64) ([]byte, bool, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	value, err := r.read(name, max)
+	var missing *stateError
+	if errors.As(err, &missing) && missing.stage == "relative_open" && missing.code == uint32(windows.ERROR_FILE_NOT_FOUND) {
+		return nil, false, nil
+	}
+	if err != nil {
+		return nil, false, err
+	}
+	return value, true, nil
 }
 
 // CreateNew never overwrites an existing state file. Atomic replacement/cache
@@ -323,10 +361,24 @@ func (r *Root) CreateNew(name string, value []byte) error {
 func (r *Root) Lock() (func(), error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if r.writer != nil && !r.writer.closed {
+		return nil, ErrPrivate
+	}
 	handle, err := r.open(".state.lock", windows.GENERIC_READ|windows.GENERIC_WRITE, windows.FILE_OPEN_IF, 0)
 	if err != nil {
 		return nil, err
 	}
-	var once sync.Once
-	return func() { once.Do(func() { windows.CloseHandle(handle) }) }, nil
+	owned := &stateLock{handle: handle}
+	r.writer = owned
+	return func() {
+		r.mu.Lock()
+		defer r.mu.Unlock()
+		if !owned.closed {
+			windows.CloseHandle(owned.handle)
+			owned.closed = true
+		}
+		if r.writer == owned {
+			r.writer = nil
+		}
+	}, nil
 }

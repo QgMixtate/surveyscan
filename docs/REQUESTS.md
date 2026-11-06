@@ -771,3 +771,9 @@ Winstate57e305b published; firstnative42306359060 FAILED atCreateNew file_type v
 Lock acrossprocesses andredactionpassed, wholesuite notpassed. C15-D09: writer handle
 lackedFILE_READ_ATTRIBUTES forGetFileInformationByHandle; added explicitright, no guard
 relaxation. Crosscompile/vetpassed; native repeatnext. Runtime stillnotadopted,57done.
+
+Winstatebase c7e2f0a all5hostedSUCCESS; nativeWindows42306657936 provesD09fix andall
+DACL/reparse/hardlink/crossprocesslock/redaction cases. Nextlocal atomicreplacement: held
+writerlock, private stagedfsync, root-relativeNT rename, typedoptionalreads/whole snapshots,
+sharingfailurecleanup andbefore/after-process-crash tests prepared. Wincompile/vetpassed;
+nativepending, not runtime/cache adoption. C15-winstate-atomic.json,57done unchanged.

@@ -1,0 +1,26 @@
+{
+  "source_revision": null,
+  "publication": "pending",
+  "task": "C15.02",
+  "status": "partial",
+  "implemented": [
+    "locked root-relative NT atomic replacement",
+    "typed optional reads without ignoring unsafe/I/O errors",
+    "whole snapshots across atomic rename",
+    "idempotent lock lifetime/root close"
+  ],
+  "local_checks": {
+    "windows_amd64_test_crosscompile": "passed",
+    "windows_cross_vet": "passed"
+  },
+  "native_execution": "pending",
+  "runtime_adoption": false,
+  "unrun": [
+    "bounded orphan cleanup/recovery",
+    "physicalpowerloss/Windowsrealreboot",
+    "integrated privatefile/diskspool/hostbinding",
+    "signed durable acceptancecache/profileapply/ACK",
+    "SCM/rights/Windows11"
+  ],
+  "completed_global_tasks": 57
+}

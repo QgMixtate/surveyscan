@@ -1,6 +1,6 @@
 {
-  "source_revision": "57e305b8b1a465b1727c02508afe5a95709a8783",
-  "publication": "published PR5; native42306359060 FAILED, D09 correction localpending",
+  "source_revision": "c7e2f0a859e0005f3a7e4dfa9818ca6d885a5314",
+  "publication": "published PR5; all5hosted success",
   "task": "C15.02",
   "status": "partial",
   "implemented": [
@@ -14,7 +14,7 @@
     "windows_amd64_test_crosscompile": "passed",
     "windows_cross_vet": "passed"
   },
-  "native_execution": "first failed file_type on write-only handle; cross-process lock and diagnostic redaction passed; whole suite not passed",
+  "native_execution": "Windows42306657936 all private-root tests passed, including cross-process lock and reparse/hardlinks",
   "runtime_adoption": false,
   "unrun": [
     "atomic replacement/crash recovery",
@@ -22,5 +22,6 @@
     "durable signed offline cache/apply/ACK",
     "SCM/ordinaryrights/Windows11/realreboot"
   ],
-  "completed_global_tasks": 57
+  "completed_global_tasks": 57,
+  "hosted_evidence": "C15-hosted-winstate-base.json"
 }

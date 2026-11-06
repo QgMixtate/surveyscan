@@ -86,8 +86,8 @@
       "observed": "CreateNew failed closed during same-handle file-type check; cross-process Lock (read+write handle) passed",
       "cause": "GENERIC_WRITE did not include FILE_READ_ATTRIBUTES required by GetFileInformationByHandle; the writer handle lacked the validation right",
       "change": "explicit FILE_READ_ATTRIBUTES on relative file opens, retaining read-control/ACL/reparse/hardlink checks",
-      "verification": "Windows test crosscompile/vet passed; native repeat pending",
-      "status": "native fix pending"
+      "verification": "Windows42306657936 native roundtrip/ACL drift+null+unprotected/reparse+hardlink/crossprocesslock/redaction passed; base57e failure preserved",
+      "status": "fixed on c7e2f0a; all five workflows success"
     }
   ],
   "windows_inventory_tested": true,
