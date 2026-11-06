@@ -93,13 +93,34 @@
     "GOOS_windows_vet": "passed",
     "Go_wire_and_architecture": "passed",
     "Python_schema_fixtures": 19,
-    "hosted_result": "pending",
+    "hosted_result": "success",
     "active_discovery": false,
     "complete_topology_claim": false,
     "remaining_unimplemented": [
       "updates",
       "protection"
     ],
-    "network_interface_index": "optional draft1.2 field only; frozen C03/C09 untouched"
+    "network_interface_index": "optional draft1.2 field only; frozen C03/C09 untouched",
+    "run_id": 42188089781,
+    "source_revision": "f5774366aba0d6ac85c061034b113690113d2369",
+    "token_elevated": true,
+    "native_cache_rows": 25
+  },
+  "latest_verified": {
+    "source": "f5774366aba0d6ac85c061034b113690113d2369",
+    "run_id": 42188089781,
+    "runner": "windows-2022",
+    "token_elevated": true,
+    "baseline_sections": 10,
+    "native_test_functions": 5,
+    "users": 5,
+    "groups": 27,
+    "memberships": 8,
+    "neighbor_cache_rows": 25,
+    "full_inventory_or_service_claim": false,
+    "remaining_sections": [
+      "updates",
+      "protection"
+    ]
   }
 }

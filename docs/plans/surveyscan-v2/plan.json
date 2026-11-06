@@ -1401,9 +1401,10 @@
             "contracts/C15/README.md",
             "contracts/C15/observation.schema.json",
             "evidence/C15-contract.json",
-            "evidence/C15-native-baseline.json"
+            "evidence/C15-native-baseline.json",
+            "evidence/C15-hosted-f577.json"
           ],
-          "verification_status": "native8 baseline WindowsServer2022/elevated and isolated validator passed; combined981f4e7 all5hosted success; remaining4/fullcoverage/negotiated pipeline/SCM/reboot unrun"
+          "verification_status": "native10 baseline Windows2022/elevated passed42188089781; users/groups5/27/8 and localneighborcache25; remaining2/fullcoverage/negotiated pipeline/SCM/reboot unrun"
         },
         {
           "id": "C15.03",

@@ -22,8 +22,8 @@ evidence42183074089), две свежие VM9+9, локальный PG51 и то
 E1 source опубликован в [PR4](https://github.com/QgMixtate/surveyscan/pull/4).
 
 **Следующая работа — C15.02**, worktree `/workspace/surveyscan-c15`, ветка codex/v2-c15-windows,
-[PR5](https://github.com/QgMixtate/surveyscan/pull/5). C15.01done, C15.02partial: восемь native
-секций проверены на WindowsServer2022 с elevatedtoken; четыре секции не реализованы. Новый
+[PR5](https://github.com/QgMixtate/surveyscan/pull/5). C15.01done, C15.02partial: десять native
+секций проверены на WindowsServer2022 с elevatedtoken; updates/protection не реализованы. Новый
 observation1.2 пока изолирован: signed delivery/storage/detail API, DACL/spool locks, host
 continuity, SCM lifecycle, обычные права, Windows11 и настоящий reboot ещё не приняты.
 Продолжать автоматически с этого пункта по R-020/R-022/R-023. Настройки среды не публиковать.
@@ -35,3 +35,8 @@ continuity, SCM lifecycle, обычные права, Windows11 и настоя�
 Текущий checkout — C15 worktree. Комбинированный981f4e7 (E1 auth8s + C15 baseline)
 прошёл все5hosted workflows. C14final metadata получена изE1fa73e47, статусыplan/CSV57done
 согласованы; C15 evidence использует локальныеpaths. Следующий код — локальные users/groups/SID.
+
+Последний C15 кодf577436: Windows42188089781 SUCCESS,5native testfunctions.
+Users5/groups27/memberships8 и25ARP/NDPcache rows прочитаны без вывода имён/SID.
+Полнота секций не заявлена; envelopesynthetic, нет scheduled delivery/SCM/reboot.
+C15.02остаётсяIP; текущая полная Linux regression/boot этогоsource ещёвыполняется.

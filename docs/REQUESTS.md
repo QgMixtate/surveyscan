@@ -620,3 +620,8 @@ ARP/NDPcache, max10000rows, ABItest, noactiveprobes/notcompletetopology. Optiona
 добавленвdraft1.2networkRow (дляNIC/routes/neighborsjoin, неpersistentUID); C03/C09 unchanged.
 Crosscompile/vet/wire/architecture/Python19passed; новаяWindowsCIpending. Updates/protection
 иfullcoverage/signeddelivery/storage/API/DACL/SCM/standarduser/reboot остаютсянепринятыми.
+
+C15 Windowsf577436/42188089781 SUCCESS:10nativebaseline sections,5testfunctions;
+elevatedtoken=true, users5/groups27/memberships8, ARP/NDPcache25rows. Noactiveprobes/fulltopology
+claim. Two sections updates/protection иfullcoverage/pipeline/rights/SCM/reboot ещёunrun.
+Web42188089767SUCCESS, fullv2/bootf577 продолжаются; C14acceptedsource39 остаётсяseparateproof.

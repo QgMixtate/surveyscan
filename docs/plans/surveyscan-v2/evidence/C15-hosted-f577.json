@@ -1,0 +1,40 @@
+{
+  "source": "f5774366aba0d6ac85c061034b113690113d2369",
+  "windows": {
+    "run_id": 42188089781,
+    "status": "success",
+    "native_test_functions": 5,
+    "baseline_sections": 10,
+    "token_elevated": true,
+    "data": "real local APIs; synthetic origin/scope/sequence envelope"
+  },
+  "web": {
+    "run_id": 42188089767,
+    "status": "success"
+  },
+  "full_v2": {
+    "run_id": 42188089801,
+    "status": "running_at_checkpoint"
+  },
+  "native_linux_boot": {
+    "run_id": 42188089780,
+    "status": "running_at_checkpoint"
+  },
+  "unit_local": [
+    "Windows test executable cross-compile",
+    "GOOS_windows vet",
+    "wire/architecture Go tests",
+    "Python19 schema fixtures"
+  ],
+  "unrun": [
+    "standard user/LocalService",
+    "Windows11",
+    "domain controller behavior",
+    "fullsectioncoverage",
+    "two remainingsections",
+    "scheduled signed delivery/projection/detail API",
+    "DACL/spool lock/host continuity",
+    "SCM/update/actualWindowsreboot"
+  ],
+  "scope": "C15.02 partial, not whole C15 acceptance; E1C14 acceptance separate"
+}
