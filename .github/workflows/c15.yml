@@ -58,3 +58,30 @@ jobs:
           if ($parsed.component -ne 'agent') { throw 'Unexpected component' }
           Write-Output $version
           Write-Output 'Only isolated baseline APIs, private-state primitives and version were checked; no scheduled Windows sender, runtime adoption, service, update or reboot.'
+      - name: Compiled agent prepare with an operator-style private config (icacls, no network)
+        working-directory: v2
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = Join-Path $env:RUNNER_TEMP 'c15-operator'
+          $cfgDir = Join-Path $root 'cfg'
+          $state = Join-Path $root 'state'
+          $user = "$env:USERNAME"
+          New-Item -ItemType Directory -Force -Path $cfgDir | Out-Null
+          # Каталог и каждый файл в нём получают собственный защищённый DACL без унаследованных записей.
+          & icacls $cfgDir /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\Administrators:(OI)(CI)F' "${user}:(OI)(CI)F" | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'icacls directory' }
+          $config = @{ tenant_id = [guid]::NewGuid().ToString(); site_id = [guid]::NewGuid().ToString(); network_scope_id = [guid]::NewGuid().ToString(); collector_url = 'https://collector.invalid'; collector_source_id = [guid]::NewGuid().ToString(); ca_certificate_file = (Join-Path $cfgDir 'ca.pem'); state_directory = $state } | ConvertTo-Json
+          $file = Join-Path $cfgDir 'agent.json'
+          Set-Content -Path $file -Value $config -Encoding utf8NoBOM
+          & icacls $file /inheritance:r /grant:r 'SYSTEM:F' 'BUILTIN\Administrators:F' "${user}:F" | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'icacls file' }
+          $first = & .\surveyscan-agent.exe prepare --config $file
+          if ($LASTEXITCODE -ne 0) { throw 'prepare failed' }
+          $second = & .\surveyscan-agent.exe prepare --config $file
+          if ($LASTEXITCODE -ne 0) { throw 'second prepare failed' }
+          $a = $first | ConvertFrom-Json
+          $b = $second | ConvertFrom-Json
+          if (-not $a.source_id -or $a.source_id -ne $b.source_id -or $a.csr_sha256 -ne $b.csr_sha256) { throw 'prepare is not stable' }
+          if ($first -match 'PRIVATE KEY') { throw 'prepare printed key material' }
+          Write-Output "prepare ok, identity stable (source $($a.source_id))"
