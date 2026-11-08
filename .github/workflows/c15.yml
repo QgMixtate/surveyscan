@@ -105,12 +105,16 @@ jobs:
             $qc = (& sc.exe qc $name) -join "`n"
             if ($qc -notmatch 'LocalSystem') { throw 'service is not LocalSystem' }
             if ($qc -notmatch 'AUTO_START\s+\(DELAYED\)') { throw 'service is not delayed-auto' }
-            & sc.exe start $name | Out-Null
+            $startOut = (& sc.exe start $name) -join ' '
+            Write-Output "sc start: $($startOut -replace '\s+',' ')"
+            $sawRunning = $false
             $exit = $null
             for ($i = 0; $i -lt 60; $i++) {
               Start-Sleep -Milliseconds 500
               $q = (& sc.exe queryex $name) -join "`n"
-              if ($q -match 'STOPPED') {
+              if ($q -match 'RUNNING|START_PENDING') { $sawRunning = $true }
+              if ($q -match 'STOPPED' -and ($sawRunning -or $i -ge 4)) {
+                Write-Output ('queryex: ' + ($q -replace '\s+',' '))
                 if ($q -match 'SERVICE_EXIT_CODE\s*:\s*(\d+)') { $exit = [int]$Matches[1] }
                 break
               }
