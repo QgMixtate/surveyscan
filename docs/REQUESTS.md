@@ -782,3 +782,16 @@ Atomic6768d8f native42308645680 failedconcurrentreader code32 duringpublication;
 lockedreplace/sharingfailurecleanup/before+afterprocesscrash/old+newwholedata/lockrelease
 andDACLbase casespassed. C15-D10 targeted bounded1s read-only sharing retry; write/rename
 not retried, ACL/I/O never treatedasabsence. Native repeatnext; module unadopted,57done.
+
+## R-024 — Переход на Claude, продолжение C15.02 (atomic_rename)
+Дата: 2026-11-08. Запрос: прежнюю разработку (Codex) больше не вести; продолжить с текущей точки,
+историю хранить в git (экономия контекста), далее работать по этапам плана.
+Ветка: claude/peaceful-goodall-a8u9sk (fast-forward от codex/v2-c15-windows 5fe78c5, без force). Единственный писатель.
+Сделано: f04274f — сырой NTSTATUS в winstate-ошибках (число, без путей). Windows run 42514937997:
+`atomic_rename code=5 status=0xc0000022` = настоящий STATUS_ACCESS_DENIED (не DELETE_PENDING/CANNOT_DELETE).
+Причина (по статусу и коду; не доказана отдельным экспериментом): классический FileRenameInformation не заменяет файл,
+открытый читателем, даже с FILE_SHARE_DELETE. Исправление C15-D11: FileRenameInformationEx (65),
+REPLACE_IF_EXISTS|POSIX_SEMANTICS, без IGNORE_READONLY; открытие/DACL/reparse/hardlink-проверки не менялись; retry не добавлялись.
+Ограничение: Windows 10 1709+/Server 2019+, NTFS; Server 2016 не поддержан этим вызовом.
+Проверки: Windows cross-vet passed; нативный Windows CI на исправлении — см. STATUS (до результата не считать закрытым).
+Следующий шаг: подтвердить все 5 workflow на точном SHA, затем orphan recovery, адаптеры private file/spool, MachineGuid.

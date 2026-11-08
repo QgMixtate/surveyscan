@@ -1,5 +1,12 @@
 # Текущее состояние surveyscan
 
+**8 ноября 2026 (Claude, R-024).** Работа продолжается в ветке claude/peaceful-goodall-a8u9sk
+(от 5fe78c5 fast-forward, единственный писатель; codex-ветки заморожены). 57/200 done, C15.02 in_progress.
+Блокер C15-D11: `atomic_rename` ACCESS_DENIED (0xc0000022) при конкурентном читателе; исправление —
+FileRenameInformationEx с POSIX-семантикой, CI на нём ожидается (не считать закрытым до зелёного winstate).
+Дальше по плану: orphan recovery, private file/spool адаптеры, MachineGuid, signed cache, runtime, C15.03/04.
+Историю вести в REQUESTS (R-024+) и handoffs/C15.md; ниже — прежний срез Codex от 6 ноября.
+
 6 ноября 2026.57/200done; C15.02 in_progress. Ветка codex/v2-c15-windows,
 worktree /workspace/surveyscan-c15, draftPR5/baseE1PR4. Последний проверенный published
 product4ff977f — all5hostedSUCCESS; C15-hosted-profile.json. Profile core опубликован. Main/release/deploy/cloudsettings не выполнялись.

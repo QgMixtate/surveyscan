@@ -16,6 +16,13 @@ import (
 // product. A crash after staging leaves a private orphan, not a partial target.
 var replaceHook func(string)
 
+// fileRenameInformationEx — класс 65 FILE_INFORMATION_CLASS (Windows 10 1709+,
+// NTFS). Классический FileRenameInformation (10) отвечает STATUS_ACCESS_DENIED
+// (0xc0000022), если у заменяемого файла есть открытый дескриптор читателя, даже
+// с FILE_SHARE_DELETE. POSIX-семантика снимает старое имя сразу: читатели
+// дочитывают целый старый файл, а новые открытия видят целый новый.
+const fileRenameInformationEx = 65
+
 // AtomicReplace requires the exclusive state lock. A fresh private file is
 // flushed before same-directory handle-relative NT rename, then flushed again.
 // This provides atomic namespace replacement/process-crash recovery; physical
@@ -66,17 +73,18 @@ func (r *Root) AtomicReplace(name string, value []byte) error {
 		return ErrPrivate
 	}
 	chars = chars[:len(chars)-1]
-	// FILE_RENAME_INFORMATION on amd64: BOOLEAN at0, HANDLE at8, ULONG at16,
+	// FILE_RENAME_INFORMATION_EX on amd64: ULONG Flags at0, HANDLE at8, ULONG at16,
 	// counted WCHAR name at20. Extra tail padding is zero and not part of name.
+	// Flags не включают IGNORE_READONLY_ATTRIBUTE: read-only цель по-прежнему отказ.
 	buffer := make([]byte, 24+len(chars)*2)
-	buffer[0] = 1
+	binary.LittleEndian.PutUint32(buffer[0:4], windows.FILE_RENAME_REPLACE_IF_EXISTS|windows.FILE_RENAME_POSIX_SEMANTICS)
 	binary.LittleEndian.PutUint64(buffer[8:16], uint64(r.handle))
 	binary.LittleEndian.PutUint32(buffer[16:20], uint32(len(chars)*2))
 	for i, c := range chars {
 		binary.LittleEndian.PutUint16(buffer[20+i*2:], c)
 	}
 	var status windows.IO_STATUS_BLOCK
-	if err = windows.NtSetInformationFile(handle, &status, &buffer[0], uint32(len(buffer)), windows.FileRenameInformation); err != nil {
+	if err = windows.NtSetInformationFile(handle, &status, &buffer[0], uint32(len(buffer)), fileRenameInformationEx); err != nil {
 		return privateError("atomic_rename", err)
 	}
 	renamed = true
