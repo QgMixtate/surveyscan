@@ -70,6 +70,25 @@ type Root struct {
 	sd     *windows.SECURITY_DESCRIPTOR
 }
 
+// enabledAdministrator: группа Administrators в токене включена и не «только для запрета»
+// (так у повышенного администратора и у LocalSystem). IsMember здесь не подходит: он требует
+// токен олицетворения, а у основного токена процесса молча отвечает «нет».
+func enabledAdministrator(token windows.Token) bool {
+	groups, err := token.GetTokenGroups()
+	if err != nil {
+		return false
+	}
+	admins, err := windows.CreateWellKnownSid(windows.WinBuiltinAdministratorsSid)
+	if err != nil {
+		return false
+	}
+	for _, g := range groups.AllGroups() {
+		if g.Sid.Equals(admins) && g.Attributes&windows.SE_GROUP_ENABLED != 0 && g.Attributes&windows.SE_GROUP_USE_FOR_DENY_ONLY == 0 {
+			return true
+		}
+	}
+	return false
+}
 func descriptor() (*windows.SECURITY_DESCRIPTOR, string, error) {
 	token, err := windows.OpenCurrentProcessToken()
 	if err != nil {
@@ -85,10 +104,8 @@ func descriptor() (*windows.SECURITY_DESCRIPTOR, string, error) {
 	// через BA, а запись с его личным SID лишняя и вредная: служба под другой учётной записью
 	// не доверяла бы такому каталогу. Обычный пользователь сохраняет свою запись.
 	sddl := "O:" + sid + "D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;" + sid + ")"
-	if admins, e := windows.CreateWellKnownSid(windows.WinBuiltinAdministratorsSid); e == nil {
-		if member, e := token.IsMember(admins); e == nil && member {
-			sddl = "D:P(A;;FA;;;SY)(A;;FA;;;BA)"
-		}
+	if enabledAdministrator(token) {
+		sddl = "D:P(A;;FA;;;SY)(A;;FA;;;BA)"
 	}
 	sd, err := windows.SecurityDescriptorFromString(sddl)
 	if err != nil {

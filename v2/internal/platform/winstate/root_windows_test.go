@@ -226,13 +226,12 @@ func TestPrivateErrorsNeverExposePathsOrArbitraryMessages(t *testing.T) {
 // Для администратора каталог доступен только SYSTEM и Administrators: так состояние, подготовленное
 // администратором, принимает и служба под LocalSystem. Обычный пользователь проверяется отдельно.
 func TestAdministratorRootHasNoUserSpecificEntry(t *testing.T) {
-	token := windows.GetCurrentProcessToken()
-	admins, err := windows.CreateWellKnownSid(windows.WinBuiltinAdministratorsSid)
+	token, err := windows.OpenCurrentProcessToken()
 	if err != nil {
 		t.Fatal(err)
 	}
-	member, err := token.IsMember(admins)
-	if err != nil || !member {
+	defer token.Close()
+	if !enabledAdministrator(token) {
 		t.Skip("current token is not an enabled administrator")
 	}
 	path := filepath.Join(t.TempDir(), "state")
