@@ -1,0 +1,33 @@
+digraph G {
+rankdir=TB;
+graph [bgcolor="white", pad="0.2", nodesep="0.3", ranksep="0.5", dpi=170];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=11, margin="0.16,0.1"];
+edge [fontname="DejaVu Sans",fontsize=9,color="#536878", arrowsize=0.7];
+"browser" [label="Браузер / отдельный Web UI",fillcolor="#DDF1E4"];
+"cli" [label="CLI / внешние интеграции",fillcolor="#DDF1E4"];
+"edge" [label="HTTPS / reverse proxy",fillcolor="#DDF1E4"];
+"api" [label="Go API / auth / tenant scope",fillcolor="#DDF1E4"];
+"domain" [label="Модули: Assets / Inventory / Sources\nResponsibility / History",fillcolor="#DDF1E4"];
+"worker" [label="Workers / scheduler / outbox",fillcolor="#DDF1E4"];
+"pg" [label="PostgreSQL\nреестр / наблюдения / jobs / outbox",fillcolor="#DFEFF7"];
+"bao" [label="OpenBao\nPKI / Transit / секреты",fillcolor="#DDF1E4"];
+"collector" [label="Постоянный site collector\nspool / relay",fillcolor="#DDF1E4"];
+"agent" [label="Постоянные host agents\nLinux E1; Windows C15 — частично",fillcolor="#FFF0CC"];
+"targets" [label="Agentless SSH / WinRM / SNMP\nхосты и сетевые устройства",fillcolor="#E6ECF7"];
+"portable" [label="Portable / offline-пакет",fillcolor="#E6ECF7"];
+"proj" [label="Поиск / presence / топология",fillcolor="#E6ECF7"];
+"geo" [label="HA / shard routing / geo DR",fillcolor="#E6ECF7"];
+"browser" -> "edge" [label=""];
+"cli" -> "edge" [label="API"];
+"edge" -> "api" [label=""];
+"api" -> "domain" [label=""];
+"domain" -> "pg" [label="транзакции"];
+"worker" -> "pg" [label="jobs / checkpoints"];
+"domain" -> "bao" [label="scoped операции"];
+"agent" -> "collector" [label="исходящий HTTPS"];
+"collector" -> "edge" [label="подписанные наблюдения"];
+"collector" -> "targets" [style=dashed,label="разрешённый сбор"];
+"portable" -> "edge" [style=dashed,label="импорт"];
+"pg" -> "proj" [style=dashed,label="outbox"];
+"pg" -> "geo" [style=dashed,label="E5"];
+}

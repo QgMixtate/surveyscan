@@ -1,0 +1,19 @@
+digraph G {
+rankdir=TB;
+graph [bgcolor="white", pad="0.2", nodesep="0.3", ranksep="0.5", dpi=170];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=11, margin="0.16,0.1"];
+edge [fontname="DejaVu Sans",fontsize=9,color="#536878", arrowsize=0.7];
+"route" [label="Каталог tenant → shard\nhome / DR / residency / routing epoch",fillcolor="#E6ECF7"];
+"a" [label="Шард A: primary, регион 1",fillcolor="#E6ECF7"];
+"b" [label="Шард B: primary, регион 2",fillcolor="#E6ECF7"];
+"ar" [label="DR A: разрешённый регион 2",fillcolor="#E6ECF7"];
+"br" [label="DR B: разрешённый регион 1",fillcolor="#E6ECF7"];
+"ops" [label="Fencing / failover / failback\nизмеренные RPO / RTO",fillcolor="#E6ECF7"];
+"all" [label="Восстановить весь контур:\nPG, каталог, artifacts, OpenBao,\nkeys, outbox, dedup, index rebuild",fillcolor="#E6ECF7"];
+"route" -> "a" [label="один writer"];
+"route" -> "b" [label="один writer"];
+"a" -> "ar" [label="репликация по RPO"];
+"b" -> "br" [label="репликация по RPO"];
+"ops" -> "route" [label="новый epoch"];
+"ops" -> "all" [label="проверяемая процедура"];
+}

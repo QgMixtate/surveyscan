@@ -1,0 +1,21 @@
+digraph G {
+rankdir=TB;
+graph [bgcolor="white", pad="0.2", nodesep="0.3", ranksep="0.5", dpi=170];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=11, margin="0.16,0.1"];
+edge [fontname="DejaVu Sans",fontsize=9,color="#536878", arrowsize=0.7];
+"cmd" [label="Команда UI / CLI / collector",fillcolor="#DDF1E4"];
+"tx" [label="Транзакция владельца модуля",fillcolor="#DDF1E4"];
+"state" [label="Состояние / observations",fillcolor="#DFEFF7"];
+"ob" [label="PostgreSQL outbox",fillcolor="#DFEFF7"];
+"d" [label="Go dispatcher\nretry / checkpoints / dedup",fillcolor="#DDF1E4"];
+"fts" [label="FTS-проекция / rebuild",fillcolor="#E6ECF7"];
+"top" [label="Presence / topology",fillcolor="#E6ECF7"];
+"future" [label="ЖЦ / склад / ITSM",fillcolor="#E6ECF7"];
+"cmd" -> "tx" [label=""];
+"tx" -> "state" [label="атомарно"];
+"tx" -> "ob" [label="атомарно"];
+"ob" -> "d" [label="at least once"];
+"d" -> "fts" [style=dashed,label="C28–C29"];
+"d" -> "top" [style=dashed,label="C21–C22"];
+"d" -> "future" [style=dashed,label="волны 2–3"];
+}

@@ -1445,7 +1445,7 @@
             "decisions/C15-winstate-atomic.md",
             "evidence/C15-winstate-atomic.json"
           ],
-          "verification_status": "Published d4ae425 all5 exact-SHA hosted SUCCESS: PG58/C03 58/race3packages/compiled center6+relay10/scopedTransit/liveLinuxagent11/reconnect5/restore9/nativeWindows12provider processes+failureisolation/twofreshLinuxVM9+9. D06guard andD08progress verified; historicalD07cause unproven/notreproduced. Windowsprofile1.2/continuoussender/securestate/SCM/rights/Windows11/reboot/fullcoverage remain,57done.;newlocalprofile1.2core PG60/relay11/race/Winbuild passed, publicationpending; secureWindowsstate/cache/applyunrun;4ffprofileall5hostedgreen/PG60/relay11/center7/twoVM9+9; newisolatedwinstatecompile/vetonly,nativepending/notadopted;c7private-root all5hosted/nativepassedD09fixed;newatomiclocalcompile/vetonly,nativepending/notadopted"
+          "verification_status": "Published d4ae425 all5 exact-SHA hosted SUCCESS: PG58/C03 58/race3packages/compiled center6+relay10/scopedTransit/liveLinuxagent11/reconnect5/restore9/nativeWindows12provider processes+failureisolation/twofreshLinuxVM9+9. D06guard andD08progress verified; historicalD07cause unproven/notreproduced. Windowsprofile1.2/continuoussender/securestate/SCM/rights/Windows11/reboot/fullcoverage remain,57done.;newlocalprofile1.2core PG60/relay11/race/Winbuild passed, publicationpending; secureWindowsstate/cache/applyunrun;4ffprofileall5hostedgreen/PG60/relay11/center7/twoVM9+9; newisolatedwinstatecompile/vetonly,nativepending/notadopted;c7private-root all5hosted/nativepassedD09fixed;newatomiclocalcompile/vetonly,nativepending/notadopted;08Nov GitHub checked: published5fe78c5 v2/Web/boot/evidence success; nativeWindows42309005102 failed TestAtomicReadersSeeWholeOldOrNewData atomic_rename code=5; rootcause unconfirmed, module unadopted, task in_progress."
         },
         {
           "id": "C15.03",
@@ -3800,7 +3800,8 @@
       "C10",
       "C11",
       "C12",
-      "C13"
+      "C13",
+      "C14"
     ],
     "done_tasks": [
       "C01.01",
@@ -3855,9 +3856,13 @@
       "C13.02",
       "C13.03",
       "C13.04",
-      "C14.01"
+      "C14.01",
+      "C14.02",
+      "C14.03",
+      "C14.04",
+      "C15.01"
     ],
-    "next_package": "C14",
+    "next_package": "C15",
     "product_implementation_started": true
   }
 }

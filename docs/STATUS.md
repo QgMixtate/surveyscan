@@ -1,42 +1,38 @@
 # Текущее состояние surveyscan
 
-6 ноября 2026.57/200done; C15.02 in_progress. Ветка codex/v2-c15-windows,
-worktree /workspace/surveyscan-c15, draftPR5/baseE1PR4. Последний проверенный published
-product4ff977f — all5hostedSUCCESS; C15-hosted-profile.json. Profile core опубликован. Main/release/deploy/cloudsettings не выполнялись.
+8 ноября 2026. **57/200 done**, C15.02 in_progress; C01–C14 приняты в bounded Linux E1.
+Ветка `codex/v2-c15-windows`, draft [PR5](https://github.com/QgMixtate/surveyscan/pull/5)
+на базе draft E1 PR4. Код опубликован: `5fe78c5f844e6d1768fa343cdb64ed18178c5d1b`.
+Main/release/production deploy/cloud settings не выполнялись.
 
-Новый profile1.2 core: отдельные schema/DTO/signatures и center+collector endpoint,
-common cadence +fixed12partial policy/30sworker/420ssweep, отдельный applied-progress
-и tenant-scoped readAPI. Sources0034 appended:35migrations/48ownedtables; old0000–0033
-immutable, privateupdatefixture0035/schema35→36. Defaultoptin flagsfalse, C03/C09/C12
-unchanged. Go agent FetchInventoryProfile12 requires fresh private three-hop proof and
-returns a verified profile/limits; it does not apply/persist/report application yet.
+## Последний CI: проверен через GitHub 08.11.2026
 
-Localverify/build/C03 58, PG60, racewire/agent/collector, Windowscrossbuild/vet passed.
-Compiled actualmTLS/scopednonexportableTransit/PGrelay11passed with synthetic enrolled
-agent; explicit Linux fsync acceptancefixture precedes appliedACK. Not Windows cache.
-MockSigner-failure/no-fallback uses realTLS/PG; actualTransit verified separately.
-[Evidences](plans/surveyscan-v2/evidence/C15-inventory-profile12.json),
-[design](plans/surveyscan-v2/decisions/C15-inventory-profile12.md).
+- v2 42309004958 / Web 42309004983 / native Linux boot 42309005065 /
+  acceptance evidence 42309005140 — SUCCESS.
+- Windows 42309005102 — FAILED: `TestAtomicReadersSeeWholeOldOrNewData`,
+  `atomic_windows_test.go:149`, `atomic_rename code=5`. Причина пока не установлена.
+  Предыдущий failed code32 сохранён; исправление bounded read retry не закрыло gate.
+- Последний all5green private-root base — `c7e2f0a`; profile core — `4ff977f`.
 
-Next: secure Windows DACL/reparse/root-relative private files, exclusive lock/atomic
-state/hostcontinuity, then durable signed acceptancecache/offline/applied reporting.
-Native12provider process isolation exists but actual Windows daemon is not enabled.
-SCM/install/update/rebootC15.03/04 follow02acceptance. Global57done unchanged.
-[Handoff](plans/surveyscan-v2/handoffs/C15.md); historical failures D06/D07/D08 retained;
-D07originalcauseunconfirmed, priorrepeatVM9+9 passed, independentbackofffixd4allgreen.
+## Реализовано и что дальше
 
-E1frozen24h/candidate preserved:source8560f57/86400.914s, authdelta39e401f/internal27files.
-No new24h or100user/productionSLA claim. Use C15binaries/ownDB/ports/scopedmounts/reports
-with E1devcredentials read-only; nevercopyprivatekeys/overwriteE1reports/resetshared
-PG/Bao blindly. AppliedSQL0000–0034 immutable; continueautomatically R020/022/023.
+C15 partial12/provider isolation/typed facts/relay/capabilities/profile1.2 core есть.
+Private DACL/root-relative reads/create/exclusive lock проверены native Windows2022/elevated.
+Atomic replace опубликован, но native gate failed; winstate ещё не подключён к runtime.
+Windows continuous sender, durable cache/apply/ACK, host continuity, SCM/install/update,
+ordinary rights/Windows11/reboot/full coverage ещё не приняты. Default inventory12 flag false.
+SQL35/48ownedtables; applied0000–0034 immutable. C03/C09/C12 frozen.
 
-Следующий localincrement — isolated platform/winstate: protected privateDACL/root-relative
-NtCreateFile/bounds/no-overwrite/exclusive process lock. Crosscompile/vet passed; native
-Windows execution pending. Не подключён к runtime; atomic replace/cache/hostbinding
-ещёне реализованы. Proof C15-winstate-primitives.json иновыйWindowsCIstep.
+Следующий шаг: разобрать atomic_rename code5, исправить и проверить exact-SHA CI,
+затем bounded orphan recovery/privatefile+diskspool adapters/host binding/signed cache.
+SCM C15.03/04 — после02acceptance. [Handoff](plans/surveyscan-v2/handoffs/C15.md),
+[evidence](plans/surveyscan-v2/evidence/C15-winstate-atomic.json).
 
-Private-root base c7e2f0a now all5hostedSUCCESS; native DACL/drift/null/reparse/hardlink/
-crossprocesslock/redaction passed. D09 fixed; old57e failedrun retained. New localatomic
-increment requires lock and uses root-relative NT rename, optional read errors distinguished;
-Wincompile/vetpassed, nativepending. Stillnotadopted/cache/hostbinding/cleanup. Read
-C15-winstate-atomic.json andC15-hosted-winstate-base.json.57done.
+## Полный отчёт
+
+[Word/PDF, схемы, спецификация и все 200 задач](reports/2026-11-08/README.md).
+Архивный снимок на5fe78c5, 97 страниц PDF; 8 схем; FTS/geo/волны2–3 пока план.
+
+E1 frozen24h/candidate сохранены: source8560f57/86400.914s;
+authdelta39e401f/internal27files. Нового C15 24h, 100users/HA/geo/production SLA нет.
+Не сбрасывать shared PG/Bao, не копировать ключи и не перезаписывать E1 reports.

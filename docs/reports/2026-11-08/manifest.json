@@ -1,0 +1,35 @@
+{
+  "snapshot_date": "2026-11-08",
+  "source_revision": "5fe78c5f844e6d1768fa343cdb64ed18178c5d1b",
+  "task_counts": {
+    "done": 57,
+    "in_progress": 1,
+    "planned": 142
+  },
+  "document": "SurveyScan_v2_Architecture_Specification_Status_2026-11-08.docx",
+  "docx_sha256": "0c481ac7c839a922e58a4b4ddc59d3fa1f98cedd79509d476fb76694a29a9ddb",
+  "diagrams": 8,
+  "sources": {
+    "docs/specifications/go-asset-management-v2.md": "266f394bf666fb7f2a265e09c4a863ad7c1f28b49d3e6057175df6aea7856d74",
+    "docs/architecture/go-target-architecture.md": "19ab4fd7dd8b95eddb345e6e9d792b4cb8bec615e42563273376a16f084bf59a",
+    "docs/plans/surveyscan-v2/plan.json": "6c8e2190fa75eb32c146f491dd0de1b9d0eec80a7fcdfb84f327a3c479f6399e"
+  },
+  "latest_ci": {
+    "success": [
+      42309004958,
+      42309004983,
+      42309005065,
+      42309005140
+    ],
+    "failure": [
+      42309005102
+    ]
+  },
+  "validation": {
+    "docx_reopened": true,
+    "pdf_rendered_pages": 97,
+    "all_200_task_ids_present": true,
+    "unique_diagrams": 8,
+    "visual_review": "main pages and diagram contact sheet inspected"
+  }
+}

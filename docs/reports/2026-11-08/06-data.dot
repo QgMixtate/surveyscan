@@ -1,0 +1,30 @@
+digraph G {
+rankdir=TB;
+graph [bgcolor="white", pad="0.2", nodesep="0.3", ranksep="0.5", dpi=170];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=11, margin="0.16,0.1"];
+edge [fontname="DejaVu Sans",fontsize=9,color="#536878", arrowsize=0.7];
+"tenant" [label="Tenant / Site / сетевой контекст",fillcolor="#DDF1E4"];
+"asset" [label="Asset: неизменный asset_uid",fillcolor="#DDF1E4"];
+"ids" [label="Identifiers / aliases\nконфликты / merge / split",fillcolor="#FFF0CC"];
+"source" [label="Source: agent_id / collector_id\ngeneration / assignment / profile",fillcolor="#DDF1E4"];
+"rec" [label="Source record → asset mapping",fillcolor="#DDF1E4"];
+"obs" [label="Immutable observations\nsection status / origin / sequence",fillcolor="#DDF1E4"];
+"facts" [label="Current facts + provenance\nотдельно от business fields",fillcolor="#DDF1E4"];
+"own" [label="Responsibility assignments\nfallback team / интервалы",fillcolor="#FFF0CC"];
+"hist" [label="History / audit / outbox",fillcolor="#DDF1E4"];
+"rel" [label="Relations / topology / CI / service",fillcolor="#E6ECF7"];
+"future" [label="ЖЦ / stock / parts / ITSM\nссылки на общий asset_uid",fillcolor="#E6ECF7"];
+"tenant" -> "asset" [label="1:N"];
+"tenant" -> "source" [label="1:N"];
+"asset" -> "ids" [label="1:N"];
+"source" -> "rec" [label="1:N"];
+"rec" -> "asset" [label="mapping"];
+"rec" -> "obs" [label="1:N"];
+"obs" -> "facts" [label="проекция"];
+"asset" -> "facts" [label="1:N"];
+"asset" -> "own" [label="во времени"];
+"asset" -> "hist" [label="история"];
+"asset" -> "rel" [style=dashed,label="связи"];
+"asset" -> "future" [style=dashed,label="общая идентичность"];
+ids -> own -> hist -> rel -> future [style=invis];
+}

@@ -1,0 +1,22 @@
+digraph G {
+rankdir=TB;
+graph [bgcolor="white", pad="0.2", nodesep="0.3", ranksep="0.5", dpi=170];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=11, margin="0.16,0.1"];
+edge [fontname="DejaVu Sans",fontsize=9,color="#536878", arrowsize=0.7];
+"a" [label="Агент: read-only сбор",fillcolor="#DDF1E4"];
+"as" [label="Долговечный spool агента",fillcolor="#DDF1E4"];
+"c" [label="Collector: проверка / spool",fillcolor="#DDF1E4"];
+"s" [label="Центр: подпись / tenant / dedup",fillcolor="#DDF1E4"];
+"tx" [label="Одна транзакция PostgreSQL\nнаблюдение + факты + история + outbox",fillcolor="#DFEFF7"];
+"ack" [label="Подписанный CenterResult ACK",fillcolor="#DDF1E4"];
+"del" [label="Проверка ACK и долговечное\nудаление подтверждённого пакета",fillcolor="#DDF1E4"];
+"a" -> "as" [label="сохранить до отправки"];
+"as" -> "c" [label="повторы с backoff"];
+"c" -> "s" [label="origin сохранён"];
+"s" -> "tx" [label="применить"];
+"tx" -> "ack" [label="после commit"];
+"ack" -> "c" [label="relay без подмены"];
+"c" -> "del" [label="передать ACK агенту"];
+"as" -> "as" [label="перезапуск / обрыв: сохранить"];
+"s" -> "s" [label="повтор: без дублей"];
+}

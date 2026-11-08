@@ -1,6 +1,6 @@
 {
-  "source_revision": null,
-  "publication": "pending",
+  "source_revision": "5fe78c5f844e6d1768fa343cdb64ed18178c5d1b",
+  "publication": "published in codex/v2-c15-windows / draft PR5",
   "task": "C15.02",
   "status": "partial",
   "implemented": [
@@ -13,7 +13,7 @@
     "windows_amd64_test_crosscompile": "passed",
     "windows_cross_vet": "passed"
   },
-  "native_execution": "pending",
+  "native_execution": "failed",
   "runtime_adoption": false,
   "unrun": [
     "bounded orphan cleanup/recovery",
@@ -22,5 +22,38 @@
     "signed durable acceptancecache/profileapply/ACK",
     "SCM/rights/Windows11"
   ],
-  "completed_global_tasks": 57
+  "completed_global_tasks": 57,
+  "checked_at": "2026-11-08",
+  "native_failure": {
+    "run_id": 42309005102,
+    "test": "TestAtomicReadersSeeWholeOldOrNewData",
+    "location": "atomic_windows_test.go:149",
+    "operation": "atomic_rename",
+    "windows_error_code": 5,
+    "root_cause": "unconfirmed"
+  },
+  "prior_native_failure": {
+    "source_revision": "6768d8f865ac2506dde3e0de150c7ac5b319b282",
+    "run_id": 42308645680,
+    "operation": "relative_open",
+    "windows_error_code": 32
+  },
+  "other_workflows": {
+    "v2": {
+      "run_id": 42309004958,
+      "conclusion": "success"
+    },
+    "web": {
+      "run_id": 42309004983,
+      "conclusion": "success"
+    },
+    "boot": {
+      "run_id": 42309005065,
+      "conclusion": "success"
+    },
+    "acceptance_evidence": {
+      "run_id": 42309005140,
+      "conclusion": "success"
+    }
+  }
 }

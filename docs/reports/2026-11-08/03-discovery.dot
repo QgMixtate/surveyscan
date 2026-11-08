@@ -1,0 +1,20 @@
+digraph G {
+rankdir=TB;
+graph [bgcolor="white", pad="0.2", nodesep="0.3", ranksep="0.5", dpi=170];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=11, margin="0.16,0.1"];
+edge [fontname="DejaVu Sans",fontsize=9,color="#536878", arrowsize=0.7];
+"active" [label="ICMP / TCP / ARP / NDP",fillcolor="#E6ECF7"];
+"passive" [label="ARP/NDP/FDB, DHCP/DNS\nAD / гипервизоры / импорт",fillcolor="#E6ECF7"];
+"e" [label="Наблюдение + scope + время\nпокрытие + полнота + здоровье источника",fillcolor="#E6ECF7"];
+"id" [label="Reconciliation / asset_uid / конфликты",fillcolor="#E6ECF7"];
+"pr" [label="Presence: present / suspect\nmissing / unknown / reappeared",fillcolor="#E6ECF7"];
+"net" [label="SNMPv3 / read-only SSH/API\nLLDP/CDP / VLAN / VRF / routes",fillcolor="#E6ECF7"];
+"top" [label="L2/L3 связи\nevidence / confidence / возраст",fillcolor="#E6ECF7"];
+"active" -> "e" [label=""];
+"passive" -> "e" [label=""];
+"e" -> "id" [label=""];
+"id" -> "pr" [label="пороги / TTL"];
+"net" -> "top" [label=""];
+"id" -> "top" [label="идентичность"];
+"e" -> "top" [label="подтверждение"];
+}

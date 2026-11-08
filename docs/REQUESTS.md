@@ -782,3 +782,14 @@ Atomic6768d8f native42308645680 failedconcurrentreader code32 duringpublication;
 lockedreplace/sharingfailurecleanup/before+afterprocesscrash/old+newwholedata/lockrelease
 andDACLbase casespassed. C15-D10 targeted bounded1s read-only sharing retry; write/rename
 not retried, ACL/I/O never treatedasabsence. Native repeatnext; module unadopted,57done.
+
+
+2026-11-08 — полный Word и публикация оставшихся материалов по запросам пользователя.
+Собран `docs/reports/2026-11-08/`: Word/PDF97pages,8diagrams,DOT/PNG,buildscript,
+manifest,fullspec/architecture/50packages/200tasks. DOCX reopened/PDF rendered,
+all200taskIDs present, layout inspected. GitHub refs confirm code5fe78c5 andE1fa73e47
+alreadypublished; no unpublished product changes. Current5fe workflows4SUCCESS,
+Windows42309005102FAILED atomic_rename code5; historicalcode32 retained, causeunconfirmed.
+STATUS/handoff/evidence corrected; plan.progress reconciled with57done task records,
+no additional acceptance. Files prepared for publication in existingPR5, basePR4.
+No main merge/release/deploy/cloud settings. Next C15.02 nativeatomicfix/cache/adapters.

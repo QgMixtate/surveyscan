@@ -1,0 +1,19 @@
+digraph G {
+rankdir=TB;
+graph [bgcolor="white", pad="0.2", nodesep="0.3", ranksep="0.5", dpi=170];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=11, margin="0.16,0.1"];
+edge [fontname="DejaVu Sans",fontsize=9,color="#536878", arrowsize=0.7];
+"bao" [label="OpenBao Transit\nнеэкспортируемый ключ центра",fillcolor="#DDF1E4"];
+"center" [label="Центр: signed capabilities\nи inventory profile 1.2",fillcolor="#DDF1E4"];
+"collector" [label="Collector: attested key\nнеизменный inner frame + outer signature",fillcolor="#DDF1E4"];
+"agent" [label="Агент: pinned center key\nTLS peer + две подписи + nonce\ntenant / generation / expiry",fillcolor="#DDF1E4"];
+"limits" [label="Пересечение лимитов трёх сторон\nзакрытый partial profile 12 секций",fillcolor="#DDF1E4"];
+"cache" [label="Windows private state / host binding\nsigned cache / offline verify / apply",fillcolor="#FFF0CC"];
+"progress" [label="Applied progress центра\nsource-reported, не аттестация хоста",fillcolor="#FFF0CC"];
+"bao" -> "center" [label="подписать без fallback"];
+"center" -> "collector" [label="подписанный inner frame"];
+"collector" -> "agent" [label="mTLS + outer frame"];
+"agent" -> "limits" [label="проверка"];
+"limits" -> "cache" [style=dashed,label="нужна интеграция"];
+"cache" -> "progress" [style=dashed,label="после durable commit"];
+}

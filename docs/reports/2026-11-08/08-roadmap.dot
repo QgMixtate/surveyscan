@@ -1,0 +1,21 @@
+digraph G {
+rankdir=TB;
+graph [bgcolor="white", pad="0.2", nodesep="0.3", ranksep="0.5", dpi=170];
+node [shape=box, style="rounded,filled", fontname="DejaVu Sans", fontsize=11, margin="0.16,0.1"];
+edge [fontname="DejaVu Sans",fontsize=9,color="#536878", arrowsize=0.7];
+"e0" [label="E0 · C01–C03\nконтракты и базовая модель\nЗАВЕРШЕНО",fillcolor="#DDF1E4"];
+"e1" [label="E1 · C04–C14\nпостоянный Linux SMB\nПРИНЯТ В ОГРАНИЧЕННОМ ПРОФИЛЕ",fillcolor="#DDF1E4"];
+"e2" [label="E2 · C15–C24\nсбор / discovery / topology / portable\nC15.02 В РАБОТЕ",fillcolor="#FFF0CC"];
+"e3" [label="E3 · C25–C30\nреестр / ответственность / FTS / 100 active",fillcolor="#E6ECF7"];
+"e4" [label="E4 · C31–C34\nинтеграции / миграция / пилот",fillcolor="#E6ECF7"];
+"e5" [label="E5 · C35–C40\nреплики / pool / shards / geo DR",fillcolor="#E6ECF7"];
+"w2" [label="Волна 2 · C41–C45\nЖЦ / склад / запчасти / движения",fillcolor="#E6ECF7"];
+"w3" [label="Волна 3 · C46–C50\nITSM / каталог / SLA",fillcolor="#E6ECF7"];
+"e0" -> "e1" [label=""];
+"e1" -> "e2" [label=""];
+"e2" -> "e3" [label=""];
+"e3" -> "e4" [label=""];
+"e4" -> "e5" [label=""];
+"e3" -> "w2" [label="по зависимостям"];
+"w2" -> "w3" [label=""];
+}
