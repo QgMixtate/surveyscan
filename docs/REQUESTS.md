@@ -795,3 +795,10 @@ REPLACE_IF_EXISTS|POSIX_SEMANTICS, без IGNORE_READONLY; открытие/DACL
 Ограничение: Windows 10 1709+/Server 2019+, NTFS; Server 2016 не поддержан этим вызовом.
 Проверки: Windows cross-vet passed; нативный Windows CI на исправлении — см. STATUS (до результата не считать закрытым).
 Следующий шаг: подтвердить все 5 workflow на точном SHA, затем orphan recovery, адаптеры private file/spool, MachineGuid.
+
+R-024, итог 8 ноября. C15-D11 закрыт на native Windows Server 2022: 505f7a4 (atomic replace) прошёл c15 42515121234.
+3566cf7 добавил RecoverOrphans; run 42515414808 упал только в моём тесте PreservesUnsafeLeftovers (root.Read по дизайну
+отвергает файл с 2 ссылками; продукт сохранил и остаток, и цель). 7d67248 исправил тест: c15 42515541316, v2 42515541308,
+boot 42515541314 — success. Прогоны 505f7a4 v2/boot отменены новым пушем, итог принят на 7d67248. web/evidence не запускались.
+Не доказано: ordinary rights, Windows 11, Server 2016 (FileRenameInformationEx недоступен), power-loss durability.
+Следующий шаг: общие private file/disk spool адаптеры, затем host continuity (MachineGuid), signed durable cache.
