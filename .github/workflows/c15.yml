@@ -145,7 +145,13 @@ jobs:
           } finally {
             & $exe uninstall-service --name $name
             $u = $LASTEXITCODE
-            & sc.exe query $name 2>$null | Out-Null
-            if ($u -ne 0) { Write-Warning 'uninstall-service failed' }
-            if ($LASTEXITCODE -ne 1060) { throw 'service still present after uninstall' }
+            if ($u -ne 0) { throw "uninstall-service failed ($u)" }
+            $gone = $false
+            for ($i = 0; $i -lt 40; $i++) {
+              & sc.exe query $name 2>$null | Out-Null
+              if ($LASTEXITCODE -eq 1060) { $gone = $true; break }
+              Start-Sleep -Milliseconds 500
+            }
+            if (-not $gone) { throw "service still present after uninstall (sc query exit $LASTEXITCODE)" }
+            Write-Output 'service uninstalled'
           }
