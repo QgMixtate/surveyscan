@@ -27,9 +27,15 @@ const MaxBytes = 2 << 20
 type stateError struct {
 	stage string
 	code  uint32
+	// status — сырой NTSTATUS (0 для win32-ошибок): разные статусы, например
+	// ACCESS_DENIED и DELETE_PENDING, сворачиваются в один win32-код 5.
+	status uint32
 }
 
 func (e *stateError) Error() string {
+	if e.status != 0 {
+		return fmt.Sprintf("%s [%s code=%d status=0x%08x]", ErrPrivate, e.stage, e.code, e.status)
+	}
 	return fmt.Sprintf("%s [%s code=%d]", ErrPrivate, e.stage, e.code)
 }
 func (e *stateError) Unwrap() error { return ErrPrivate }
@@ -39,15 +45,16 @@ func privateError(stage string, err error) error {
 	default:
 		stage = "unknown"
 	}
-	var code uint32
+	var code, status uint32
 	var native windows.NTStatus
 	var win32 syscall.Errno
 	if errors.As(err, &native) {
 		code = uint32(native.Errno())
+		status = uint32(native)
 	} else if errors.As(err, &win32) {
 		code = uint32(win32)
 	}
-	return &stateError{stage: stage, code: code}
+	return &stateError{stage: stage, code: code, status: status}
 }
 
 type stateLock struct {
