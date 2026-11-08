@@ -118,3 +118,52 @@ func TestInventoryProfile12CacheRevisionIsMonotonic(t *testing.T) {
 		t.Fatal("latest revision not stored", err)
 	}
 }
+
+func TestInventoryProfile12AppliedComesOnlyFromDurableCache(t *testing.T) {
+	f := newProfileCacheFixture(t)
+	dir := t.TempDir()
+	if applied, err := appliedFromCache(dir, f.scope); err != nil || applied != nil {
+		t.Fatal("nothing durable means nothing to report", applied, err)
+	}
+	if err := commitInventoryProfile12(dir, f.signed(t, "5", 30), f.scope); err != nil {
+		t.Fatal(err)
+	}
+	applied, err := appliedFromCache(dir, f.scope)
+	if err != nil || applied == nil || applied.Common != "5" || applied.Policy != contracts.InventoryPolicy12 {
+		t.Fatal("durable revision not reported", applied, err)
+	}
+	other := f.scope
+	other.Origin.GenerationID = identifier.New()
+	if applied, err = appliedFromCache(dir, other); err == nil || applied != nil {
+		t.Fatal("a foreign generation must not report an applied revision")
+	}
+}
+
+func TestInventoryProfile12OfflineLimitsNeverExceedOwnOrProfile(t *testing.T) {
+	f := newProfileCacheFixture(t)
+	dir := t.TempDir()
+	own, err := wire.InventorySpoolOffer12(524288)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = cachedInventoryProfile12(dir, f.scope, own); err != errNoCachedProfile12 {
+		t.Fatal("missing cache must be a distinct error", err)
+	}
+	if err = commitInventoryProfile12(dir, f.signed(t, "2", 30), f.scope); err != nil {
+		t.Fatal(err)
+	}
+	sel, err := cachedInventoryProfile12(dir, f.scope, own)
+	if err != nil {
+		t.Fatal(err)
+	}
+	l := sel.Profile.Config.Limits
+	if sel.Limits.BatchBytes > own.BatchBytes || sel.Limits.BatchBytes > l.BatchBytes || sel.Limits.SignedBytes > own.SignedBytes || sel.Limits.Records > l.Records {
+		t.Fatal("offline limits exceed own or profile ceilings", sel.Limits)
+	}
+	tiny := own
+	tiny.BatchBytes, tiny.SignedBytes, tiny.CanonicalBytes = own.BatchBytes/4, own.SignedBytes/4, own.CanonicalBytes/4
+	small, err := cachedInventoryProfile12(dir, f.scope, tiny)
+	if err != nil || small.Limits.BatchBytes != tiny.BatchBytes {
+		t.Fatal("agent's smaller ceiling must win", small.Limits, err)
+	}
+}

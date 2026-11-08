@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"os"
@@ -86,4 +87,65 @@ func commitInventoryProfile12(dir string, sel InventoryProfileSelection12, s pro
 		return errProfileCache12
 	}
 	return diskspool.Atomic(filepath.Join(dir, profileCacheFile12), raw)
+}
+
+var errNoCachedProfile12 = errors.New("no cached inventory profile")
+
+func (c *Client) profileScope12() profileScope12 {
+	return profileScope12{Tenant: c.claims.Tenant, Origin: contracts.Origin{SourceID: c.claims.Source, SourceKind: "agent", GenerationID: c.claims.Generation},
+		Collector: c.claims.Collector, KeyID: c.claims.CenterKeyID, Public: c.claims.CenterPublic}
+}
+
+// appliedFromCache — ревизия, уже сохранённая durable; именно её можно сообщать центру.
+func appliedFromCache(dir string, s profileScope12) (*contracts.InventoryRevision12, error) {
+	p, _, present, e := loadInventoryProfile12(dir, s)
+	if e != nil || !present {
+		return nil, e
+	}
+	return &contracts.InventoryRevision12{Common: p.Config.Revision, Policy: p.Config.Policy}, nil
+}
+
+// cachedInventoryProfile12 возвращает последний принятый профиль для работы без сети.
+// Лимиты — пересечение своих возможностей, лимитов профиля и максимумов; расширить
+// согласованные потолки профиль не может. Свежего подтверждения трёх участков он не даёт.
+func cachedInventoryProfile12(dir string, s profileScope12, own wire.InventoryOffer12) (InventoryProfileSelection12, error) {
+	var empty InventoryProfileSelection12
+	p, raw, present, e := loadInventoryProfile12(dir, s)
+	if e != nil {
+		return empty, e
+	}
+	if !present {
+		return empty, errNoCachedProfile12
+	}
+	l := p.Config.Limits
+	limits, e := wire.NegotiateInventory12(own, wire.InventoryOffer12{Observation12: true, Batch12: true, CanonicalBytes: l.CanonicalBytes, SignedBytes: l.SignedBytes, BatchBytes: l.BatchBytes, Records: l.Records}, wire.InventoryMaximum12())
+	if e != nil {
+		return empty, errProfileCache12
+	}
+	return InventoryProfileSelection12{Profile: p, Raw: raw, Limits: limits}, nil
+}
+
+// SyncInventoryProfile12 — один сетевой обмен: сообщает центру ревизию из durable-кэша,
+// проверяет свежий ответ и только затем заменяет кэш. Вызывать под блокировкой состояния.
+// Это не включает Windows runtime и не меняет уже поставленные в очередь наблюдения.
+func (c *Client) SyncInventoryProfile12(ctx context.Context, negotiated InventoryNegotiation12) (InventoryProfileSelection12, error) {
+	var empty InventoryProfileSelection12
+	scope, dir := c.profileScope12(), c.cfg.State
+	applied, e := appliedFromCache(dir, scope)
+	if e != nil {
+		return empty, e
+	}
+	selection, e := c.fetchInventoryProfile12(ctx, negotiated, applied)
+	if e != nil {
+		return empty, e
+	}
+	if e = commitInventoryProfile12(dir, selection, scope); e != nil {
+		return empty, e
+	}
+	return selection, nil
+}
+
+// CachedInventoryProfile12 — офлайн-доступ к последнему принятому профилю.
+func (c *Client) CachedInventoryProfile12(own wire.InventoryOffer12) (InventoryProfileSelection12, error) {
+	return cachedInventoryProfile12(c.cfg.State, c.profileScope12(), own)
 }

@@ -24,6 +24,12 @@ type InventoryProfileSelection12 struct {
 // policy nor reports it applied; durable acceptance/cache is a separate step.
 // Only a fresh result produced by this client's negotiation may be used here.
 func (c *Client) FetchInventoryProfile12(ctx context.Context, negotiated InventoryNegotiation12) (InventoryProfileSelection12, error) {
+	return c.fetchInventoryProfile12(ctx, negotiated, nil)
+}
+
+// fetchInventoryProfile12 передаёт applied только из durable-кэша (см. Sync): центр
+// принимает ревизию, которую агент уже сохранил, а не ту, которую только собирается применить.
+func (c *Client) fetchInventoryProfile12(ctx context.Context, negotiated InventoryNegotiation12, applied *contracts.InventoryRevision12) (InventoryProfileSelection12, error) {
 	var empty InventoryProfileSelection12
 	if len(negotiated.proof) == 0 || !negotiated.Expires.After(time.Now()) {
 		return empty, errors.New("fresh inventory negotiation required")
@@ -33,7 +39,7 @@ func (c *Client) FetchInventoryProfile12(ctx context.Context, negotiated Invento
 		return empty, err
 	}
 	origin := contracts.Origin{SourceID: c.claims.Source, SourceKind: "agent", GenerationID: c.claims.Generation}
-	request := contracts.InventoryProfileRequest12{Version: contracts.Version{Major: 1, Minor: 2}, Tenant: c.claims.Tenant, Origin: origin, Nonce: nonce, Sent: time.Now().UTC(), Platform: contracts.InventoryPlatform12, Applied: nil}
+	request := contracts.InventoryProfileRequest12{Version: contracts.Version{Major: 1, Minor: 2}, Tenant: c.claims.Tenant, Origin: origin, Nonce: nonce, Sent: time.Now().UTC(), Platform: contracts.InventoryPlatform12, Applied: applied}
 	raw, err := wire.SignInventoryProfile12(request, wire.InventoryProfileRequestDomain12, c.claims.KeyID, c.key)
 	if err != nil {
 		return empty, err
