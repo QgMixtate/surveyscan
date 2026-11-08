@@ -1,9 +1,9 @@
 name: surveyscan-c15-contract-preparation
 on:
   push:
-    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', 'v2/internal/platform/winstate/**', 'v2/cmd/surveyscan-agent/**', 'v2/go.mod', 'v2/go.sum', '.github/workflows/c15.yml']
+    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', 'v2/internal/platform/winstate/**', 'v2/internal/platform/diskspool/**', 'v2/internal/platform/privatefile/**', 'v2/cmd/surveyscan-agent/**', 'v2/go.mod', 'v2/go.sum', '.github/workflows/c15.yml']
   pull_request:
-    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', 'v2/internal/platform/winstate/**', 'v2/cmd/surveyscan-agent/**', 'v2/go.mod', 'v2/go.sum', '.github/workflows/c15.yml']
+    paths: ['docs/plans/surveyscan-v2/contracts/C15/**', 'v2/contracts/c15*', 'v2/internal/platform/wire/inventory12*', 'v2/internal/agent/windowsinventory/**', 'v2/internal/platform/winstate/**', 'v2/internal/platform/diskspool/**', 'v2/internal/platform/privatefile/**', 'v2/cmd/surveyscan-agent/**', 'v2/go.mod', 'v2/go.sum', '.github/workflows/c15.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -41,7 +41,7 @@ jobs:
           go test -count=1 -v ./internal/agent/windowsinventory
       - name: Isolated Windows private DACL, reparse, bounded file and process lock primitives
         working-directory: v2
-        run: go test -count=1 -v ./internal/platform/winstate
+        run: go test -count=1 -v ./internal/platform/winstate ./internal/platform/diskspool
       - name: Build and run version command only on Windows Server 2022
         working-directory: v2
         shell: pwsh
