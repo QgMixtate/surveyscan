@@ -45,7 +45,7 @@ jobs:
         run: |
           go test -count=1 -v ./internal/platform/winstate ./internal/platform/diskspool ./internal/platform/machineid
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-          go test -count=1 -v -run TestWindowsProfileCacheThroughPrivateAdapters ./internal/agent
+          go test -count=1 -v -run "TestWindowsProfileCacheThroughPrivateAdapters|TestWindowsStateDirIsPrivateAndLocked" ./internal/agent
       - name: Build and run version command only on Windows Server 2022
         working-directory: v2
         shell: pwsh

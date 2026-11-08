@@ -825,3 +825,9 @@ R-024, sync/applied 8 ноября. 8cff618: Client.SyncInventoryProfile12 (appl
 свежего ответа), CachedInventoryProfile12 (офлайн, лимиты не шире агента/профиля/максимумов), нативный Windows-тест записи кэша через
 приватные адаптеры (диск как приватный корень, без lock запись невозможна). c15 Windows 42521990391, boot 42521990366, v2 42521990363 — success.
 Граница: Windows runtime не вызывает Sync/Cached, на очередь наблюдений не влияет; re-enroll/клоны и runtime — дальше.
+
+R-024, Windows runtime, путь 1 (решение пользователя: отдельный Windows-цикл, Linux E1 не менять). Разбиение остатка C15.02:
+W1 состояние+блокировка (ensureStateDir над winstate, lockState над diskspool.Lock; Linux-поведение прежнее) — в работе;
+W2 секции windowsinventory -> Observation 1.2 -> подписанный batch -> очередь (в агенте такого пути ещё нет, есть только wire/collector);
+W3 цикл RunWindows: Sync/Cached профиля, один collection task, heartbeat, delivery; W4 enroll/prepare/renew на Windows с проверкой
+в CI; затем C15.03/04. Клоны: известное ограничение MachineGuid до C15.04.

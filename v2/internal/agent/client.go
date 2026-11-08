@@ -139,7 +139,7 @@ func readKey(path string) (ed25519.PrivateKey, error) {
 }
 func Prepare(c Config) (Preparation, error) {
 	var out Preparation
-	if e := os.MkdirAll(c.State, 0700); e != nil {
+	if e := ensureStateDir(c.State); e != nil {
 		return out, e
 	}
 	if e := os.Chmod(c.State, 0700); e != nil {
@@ -405,7 +405,7 @@ func open(c Config, requireBinding bool) (*Client, error) {
 			return nil, errors.New("invalid agent counters")
 		}
 	}
-	if e = os.MkdirAll(filepath.Join(c.State, "spool"), 0700); e != nil {
+	if e = ensureStateDir(filepath.Join(c.State, "spool")); e != nil {
 		return nil, e
 	}
 	if e = out.loadProfile(); e != nil {
