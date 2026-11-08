@@ -155,3 +155,4 @@ jobs:
             if (-not $gone) { throw "service still present after uninstall (sc query exit $LASTEXITCODE)" }
             Write-Output 'service uninstalled'
           }
+          exit 0
