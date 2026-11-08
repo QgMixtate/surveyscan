@@ -90,9 +90,22 @@ jobs:
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $file = Join-Path $env:RUNNER_TEMP 'c15-operator\cfg\agent.json'
-          if (-not (Test-Path $file)) { throw 'prepared config missing (previous step)' }
           $exe = (Resolve-Path .\surveyscan-agent.exe).Path
+          # Состояние администратора для службы LocalSystem: в DACL только SYSTEM и Administrators
+          # (личный SID пользователя служба отвергла бы — это и есть модель доверия).
+          $root = Join-Path $env:RUNNER_TEMP 'c15-service'
+          $cfgDir = Join-Path $root 'cfg'
+          $state = Join-Path $root 'state'
+          New-Item -ItemType Directory -Force -Path $cfgDir | Out-Null
+          & icacls $cfgDir /inheritance:r /grant:r 'SYSTEM:(OI)(CI)F' 'BUILTIN\Administrators:(OI)(CI)F' | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'icacls directory' }
+          $config = @{ tenant_id = [guid]::NewGuid().ToString(); site_id = [guid]::NewGuid().ToString(); network_scope_id = [guid]::NewGuid().ToString(); collector_url = 'https://collector.invalid'; collector_source_id = [guid]::NewGuid().ToString(); ca_certificate_file = (Join-Path $cfgDir 'ca.pem'); state_directory = $state } | ConvertTo-Json
+          $file = Join-Path $cfgDir 'agent.json'
+          Set-Content -Path $file -Value $config -Encoding utf8NoBOM
+          & icacls $file /inheritance:r /grant:r 'SYSTEM:F' 'BUILTIN\Administrators:F' | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'icacls file' }
+          & $exe prepare --config $file | Out-Null
+          if ($LASTEXITCODE -ne 0) { throw 'administrator prepare failed' }
           $name = 'SurveyscanAgentCi'
           # Относительный путь конфигурации отвергается; повторная установка тоже.
           & $exe install-service --name $name --config 'relative.json' 2>$null
