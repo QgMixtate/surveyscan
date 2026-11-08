@@ -210,3 +210,23 @@ func VerifyInventoryProfile12(raw []byte, tenant string, origin contracts.Origin
 	}
 	return p, nil
 }
+
+// VerifyCachedInventoryProfile12 — отдельный путь офлайн-приёмки уже принятого профиля из
+// durable-кэша. Срок и nonce защищают свежее принятие и повтор, но не отменяют ранее
+// принятую конфигурацию, поэтому здесь они не проверяются. Подписи, ключ центра, tenant,
+// origin с поколением и collector проверяются так же строго; смена любого из них
+// отвергает кэш. Впервые принять просроченный ответ этим путём нельзя: в кэш попадает
+// только результат VerifyInventoryProfile12.
+func VerifyCachedInventoryProfile12(raw []byte, tenant string, origin contracts.Origin, collector, keyID string, public ed25519.PublicKey) (contracts.InventoryProfile12, error) {
+	frame, p, err := InventoryProfileResponse12(raw)
+	if err != nil {
+		return p, err
+	}
+	if err = VerifyProfileFrame12(frame, InventoryProfileResponseDomain12, keyID, public); err != nil {
+		return contracts.InventoryProfile12{}, err
+	}
+	if p.Tenant != tenant || p.Origin != origin || p.Config.CollectorID != collector || p.Issued.After(time.Now().Add(30*time.Second)) {
+		return contracts.InventoryProfile12{}, domain.Invalid
+	}
+	return p, nil
+}
