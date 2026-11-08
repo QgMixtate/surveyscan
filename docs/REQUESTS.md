@@ -814,3 +814,9 @@ R-024, host continuity 8 ноября. b25f07a: пакет platform/machineid (L
 64-битного реестра; прочие платформы unavailable), agent.localMachineID через него. c15 Windows2022, v2, boot — success.
 Граница: клон ВМ без sysprep сохраняет MachineGuid, привязка ловит замену хоста, но не клон. Повторный enrollment/клоны,
 signed durable cache, apply+applied ACK и Windows runtime не сделаны. Агент на Windows не запускается.
+
+R-024, signed cache 8 ноября. 9e7538c: wire.VerifyCachedInventoryProfile12 (отдельный офлайн-путь без nonce/срока: подпись, ключ центра,
+tenant, origin+поколение, collector) и agent-кэш inventory-profile12.json (точные подписанные байты, перепроверка при каждой
+загрузке; ревизия не убывает, та же ревизия с иной конфигурацией отвергается). 3 Linux-теста; v2 и boot — success, c15 не
+запускался (пути). Нативная запись кэша через Windows-адаптеры не проверена. Никто не вызывает кэш: apply, applied ACK после
+durable commit и Windows runtime — следующие шаги. Найдена и исправлена потеря завершающего \n при json.RawMessage.
