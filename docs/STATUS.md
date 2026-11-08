@@ -7,7 +7,7 @@
 Windows-адаптеры privatefile/diskspool (Lock/Atomic/SyncDir/RecoverTemps) над winstate — 1c29799: c15, v2, boot success; Capacity/Data не портированы.
 Проверено на 7d67248: c15 Windows Server 2022 (42515541316), v2 (42515541308), boot (42515541314) — success;
 web/evidence на этот SHA не запускались (path-фильтры), «все 5 workflow» не заявляется. Не runtime, не ordinary rights/Win11.
-Дальше: private file/spool адаптеры, MachineGuid/клоны, signed cache, apply+applied ACK, runtime; C15.03/04.
+Windows runtime путь 1 (отдельный цикл): W1 state/lock, W2 batch 1.2, W3a доставка, W3b цикл RunWindows, W4a Prepare — зелёные (последний e3802d5). Не запускался целиком: enroll/bind-host/renew и связка с центром ждут решения, где гонять интеграцию в CI. Дальше C15.03 (SCM) / C15.04.
 Историю вести в REQUESTS (R-024+) и handoffs/C15.md; ниже — прежний срез Codex от 6 ноября.
 
 6 ноября 2026.57/200done; C15.02 in_progress. Ветка codex/v2-c15-windows,

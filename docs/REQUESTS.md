@@ -848,3 +848,7 @@ W3b: runLoop12 (цикл над узким интерфейсом client12) + wi
 Windows 11/обычные права, SCM. Namespace кандидатов Windows (hostname.raw, windows-machine-guid) требует подтверждения сопоставления в центре (C15.04).
 
 R-024, W3b итог. 900a1d2: c15 42529093397, boot 42529093501, v2 42529093597 — success (цикл проверен на Linux фейками; RunWindows не запускался). Далее W4: нативный тест Prepare/ReadConfig на Windows.
+
+R-024, W4a итог. e3802d5: c15 Windows2022 42530303711 success — нативно: Prepare на свежем state (приватный корень), повтор не заменяет личность, tls.key != signing.key,
+ReadConfig читает конфигурацию из приватного каталога (defaults 900/60) и отвергает обычный каталог; os.Chmod(state,0700) безвреден. Не проверено: enroll/bind-host/renew (нужны collector+center),
+RunWindows целиком, SCM. Решение за пользователем: где гонять интеграцию Windows-агента с центром/PG в CI (см. STATUS).
