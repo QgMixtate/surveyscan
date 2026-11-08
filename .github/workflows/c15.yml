@@ -97,7 +97,9 @@ jobs:
           # Относительный путь конфигурации отвергается; повторная установка тоже.
           & $exe install-service --name $name --config 'relative.json' 2>$null
           if ($LASTEXITCODE -eq 0) { throw 'relative config accepted' }
-          & $exe install-service --name $name --config $file
+          $errFile = Join-Path $env:RUNNER_TEMP 'c15-service-error.txt'
+          Remove-Item $errFile -ErrorAction SilentlyContinue
+          & $exe install-service --name $name --config $file --error-file $errFile
           if ($LASTEXITCODE -ne 0) { throw 'install-service failed' }
           try {
             & $exe install-service --name $name --config $file 2>$null
@@ -124,6 +126,9 @@ jobs:
             if ($exit -eq 1) { throw 'service rejected the administrator-prepared state (stage 1)' }
             if ($exit -ne 2) { throw "unexpected service stage code $exit" }
             Write-Output "service reached Open (stage 2: agent not enrolled); administrator-prepared state accepted by LocalSystem"
+          } catch {
+            if (Test-Path $errFile) { Write-Output ('service error file: ' + (Get-Content $errFile -Raw)) }
+            throw
           } finally {
             & $exe uninstall-service --name $name
             $u = $LASTEXITCODE

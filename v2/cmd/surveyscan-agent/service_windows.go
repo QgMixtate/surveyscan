@@ -31,6 +31,7 @@ func runServiceCommand(args []string) (bool, error) {
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	name := flags.String("name", defaultServiceName, "service name")
 	configPath := flags.String("config", "", "private config (absolute path)")
+	errorFile := flags.String("error-file", "", "необязательный файл для текста ошибки завершения службы (диагностика)")
 	if e := flags.Parse(args[1:]); e != nil {
 		return true, e
 	}
@@ -50,7 +51,7 @@ func runServiceCommand(args []string) (bool, error) {
 		}
 		e = winservice.Install(winservice.Spec{Name: *name, DisplayName: "surveyscan agent",
 			Description: "Постоянный агент инвентаризации surveyscan", Exe: exe,
-			Args: []string{"service", "--name", *name, "--config", *configPath}})
+			Args: serviceArgs(*name, *configPath, *errorFile)})
 		if e == nil {
 			fmt.Println("service_installed")
 		}
@@ -58,16 +59,44 @@ func runServiceCommand(args []string) (bool, error) {
 	default: // service — вход SCM
 		c, e := agent.ReadConfig(*configPath)
 		if e != nil {
+			noteError(*errorFile, "config", e)
 			return true, &exitError{code: 1, err: e}
 		}
 		e = winservice.Run(*name, func(ctx context.Context) error {
 			err := agent.RunWindows(ctx, c, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
+			if err != nil && !errors.Is(err, context.Canceled) {
+				noteError(*errorFile, "run", err)
+			}
 			var st *agent.StageError
 			if errors.As(err, &st) {
 				return &winservice.StageError{Code: st.Code, Err: err}
 			}
 			return err
 		})
+		if e != nil {
+			noteError(*errorFile, "scm", e)
+		}
 		return true, e
 	}
+}
+
+func serviceArgs(name, config, errorFile string) []string {
+	args := []string{"service", "--name", name, "--config", config}
+	if errorFile != "" {
+		args = append(args, "--error-file", errorFile)
+	}
+	return args
+}
+
+// noteError дописывает причину завершения в файл диагностики, если он задан.
+func noteError(path, stage string, err error) {
+	if path == "" {
+		return
+	}
+	f, e := os.OpenFile(path, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0o600)
+	if e != nil {
+		return
+	}
+	defer f.Close()
+	fmt.Fprintf(f, "%s: %v\n", stage, err)
 }
