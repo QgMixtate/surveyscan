@@ -831,3 +831,6 @@ W1 состояние+блокировка (ensureStateDir над winstate, lock
 W2 секции windowsinventory -> Observation 1.2 -> подписанный batch -> очередь (в агенте такого пути ещё нет, есть только wire/collector);
 W3 цикл RunWindows: Sync/Cached профиля, один collection task, heartbeat, delivery; W4 enroll/prepare/renew на Windows с проверкой
 в CI; затем C15.03/04. Клоны: известное ограничение MachineGuid до C15.04.
+
+R-024, W1 итог. 8497cfb: c15 Windows2022 42525213933, v2 42525213892, boot 42525213856 — success; нативно проверены приватный state-каталог (повтор/вложенный spool),
+вторая блокировка отвергается, каталог с унаследованным ACL отвергается. Дальше W2 (секции -> Observation12 -> batch -> очередь).
