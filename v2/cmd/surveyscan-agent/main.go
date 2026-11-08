@@ -81,7 +81,7 @@ func run() error {
 		fmt.Println("agent_certificate_renewed")
 		return nil
 	case "run":
-		return agent.Run(ctx, c, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
+		return runAgent(ctx, c, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
 	default:
 		return fmt.Errorf("неизвестная команда агента")
 	}

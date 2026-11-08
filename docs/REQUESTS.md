@@ -839,3 +839,10 @@ R-024, W2 итог и W3a. W2 513d7d7: buildBatch12/queueSections12 (канон�
 корпусе C15) — c15 42526462370, boot 42526462385, v2 42526462373 success. W3a: flushProgress12 (копия доставки под InventoryDecoder; Linux flushProgress не менялся),
 diskspool.Remove и winstate.Root.Remove (удаление через приватный корень под lock). Находка: принимающий декодер отвергает секции ok/complete в 1.2, поэтому buildBatch12
 теперь отвергает их сам (иначе пакет застрял бы в очереди навсегда); старый C03 flushProgress батч 1.2 не принимает — доказано тестом. Не подключено к циклу (W3b).
+
+R-024, W3a итог и W3b. W3a 8ff6de9: c15 42527719494, boot 42527719501, v2 42527719469 — success (flushProgress12, diskspool/winstate Remove, партиальные секции).
+W3b: runLoop12 (цикл над узким интерфейсом client12) + windowsClient12 + RunWindows + dispatch runAgent в surveyscan-agent (Linux по-прежнему agent.Run). Правила:
+сбор только при проверенном профиле 1.2 (negotiate+Sync); сетевой сбой -> последний принятый профиль в памяти или durable-кэш; отказ по протоколу/ошибка кэша -> новые сборы
+прекращаются, heartbeat и доставка продолжаются; один сбор за раз, лимит = collection_timeout профиля. Проверено на Linux фейковым клиентом (-race): нет сбора без профиля, офлайн
+со старта только при кэше, остановка после отказа, классификация сбоя. НЕ проверено: RunWindows ни разу не запускался (нет Windows-enroll, W4), реальные сеть/центр/PG с Windows-агентом,
+Windows 11/обычные права, SCM. Namespace кандидатов Windows (hostname.raw, windows-machine-guid) требует подтверждения сопоставления в центре (C15.04).
