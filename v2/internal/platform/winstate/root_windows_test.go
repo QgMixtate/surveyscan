@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"unsafe"
 
 	"golang.org/x/sys/windows"
 )
@@ -219,5 +220,55 @@ func TestPrivateErrorsNeverExposePathsOrArbitraryMessages(t *testing.T) {
 	err := privateError("canary-private-path", errors.New("canary-private-key"))
 	if !errors.Is(err, ErrPrivate) || strings.Contains(err.Error(), "canary") {
 		t.Fatal("private diagnostic leak")
+	}
+}
+
+// Для администратора каталог доступен только SYSTEM и Administrators: так состояние, подготовленное
+// администратором, принимает и служба под LocalSystem. Обычный пользователь проверяется отдельно.
+func TestAdministratorRootHasNoUserSpecificEntry(t *testing.T) {
+	token := windows.GetCurrentProcessToken()
+	admins, err := windows.CreateWellKnownSid(windows.WinBuiltinAdministratorsSid)
+	if err != nil {
+		t.Fatal(err)
+	}
+	member, err := token.IsMember(admins)
+	if err != nil || !member {
+		t.Skip("current token is not an enabled administrator")
+	}
+	path := filepath.Join(t.TempDir(), "state")
+	root, err := CreateRoot(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer root.Close()
+	sd, err := windows.GetNamedSecurityInfo(path, windows.SE_FILE_OBJECT, windows.DACL_SECURITY_INFORMATION)
+	if err != nil {
+		t.Fatal(err)
+	}
+	acl, _, err := sd.DACL()
+	if err != nil || acl == nil {
+		t.Fatal("dacl", err)
+	}
+	seen := map[string]bool{}
+	for i := uint32(0); i < uint32(acl.AceCount); i++ {
+		var ace *windows.ACCESS_ALLOWED_ACE
+		if windows.GetAce(acl, i, &ace) != nil {
+			t.Fatal("ace")
+		}
+		seen[(*windows.SID)(unsafe.Pointer(&ace.SidStart)).String()] = true
+	}
+	if len(seen) != 2 || !seen["S-1-5-18"] || !seen["S-1-5-32-544"] {
+		t.Fatal("administrator root must grant only SYSTEM and Administrators", seen)
+	}
+	unlock, err := root.Lock()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer unlock()
+	if err = root.AtomicReplace("probe", []byte("x")); err != nil {
+		t.Fatal("files created under the administrator root must pass the same trust check", err)
+	}
+	if data, err := root.Read("probe", 8); err != nil || string(data) != "x" {
+		t.Fatal("read back", err)
 	}
 }

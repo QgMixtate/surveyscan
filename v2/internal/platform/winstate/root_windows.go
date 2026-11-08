@@ -81,7 +81,16 @@ func descriptor() (*windows.SECURITY_DESCRIPTOR, string, error) {
 		return nil, "", ErrPrivate
 	}
 	sid := user.User.Sid.String()
-	sd, err := windows.SecurityDescriptorFromString("O:" + sid + "D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;" + sid + ")")
+	// Администратор (включённая группа Administrators; LocalSystem тоже в ней) получает доступ
+	// через BA, а запись с его личным SID лишняя и вредная: служба под другой учётной записью
+	// не доверяла бы такому каталогу. Обычный пользователь сохраняет свою запись.
+	sddl := "O:" + sid + "D:P(A;;FA;;;SY)(A;;FA;;;BA)(A;;FA;;;" + sid + ")"
+	if admins, e := windows.CreateWellKnownSid(windows.WinBuiltinAdministratorsSid); e == nil {
+		if member, e := token.IsMember(admins); e == nil && member {
+			sddl = "D:P(A;;FA;;;SY)(A;;FA;;;BA)"
+		}
+	}
+	sd, err := windows.SecurityDescriptorFromString(sddl)
 	if err != nil {
 		return nil, "", ErrPrivate
 	}
