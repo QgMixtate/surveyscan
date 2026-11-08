@@ -92,7 +92,9 @@ func TestRecoverOrphansPreservesUnsafeLeftovers(t *testing.T) {
 	if !exists(t, filepath.Join(path, ".tmp-link")) || !exists(t, filepath.Join(path, "target")) {
 		t.Fatal("unsafe orphan or its target was deleted")
 	}
-	data, err := root.Read("target", 64)
+	// root.Read по замыслу отвергает файл с двумя ссылками, поэтому байты цели
+	// проверяются обычным чтением: важно лишь, что отказ ничего не изменил.
+	data, err := os.ReadFile(filepath.Join(path, "target"))
 	if err != nil || string(data) != "canary-private" {
 		t.Fatal("target bytes altered", err)
 	}
