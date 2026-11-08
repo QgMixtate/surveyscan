@@ -7,10 +7,9 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
-	"os"
 	"path/filepath"
-	"runtime"
-	"strings"
+
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/machineid"
 )
 
 type hostBinding struct {
@@ -18,21 +17,7 @@ type hostBinding struct {
 	Digest  string `json:"digest"`
 }
 
-func localMachineID() (string, error) {
-	if runtime.GOOS != "linux" {
-		return "", errors.New("host continuity adapter unavailable")
-	}
-	raw, e := os.ReadFile("/etc/machine-id")
-	if e != nil || len(raw) > 128 {
-		return "", errors.New("stable local machine identity unavailable")
-	}
-	id := strings.ToLower(strings.TrimSpace(string(raw)))
-	decoded, e := hex.DecodeString(id)
-	if e != nil || len(decoded) != 16 || id == strings.Repeat("0", 32) {
-		return "", errors.New("stable local machine identity unavailable")
-	}
-	return id, nil
-}
+func localMachineID() (string, error) { return machineid.Local() }
 func bindingValue(source, id string, key ed25519.PrivateKey) hostBinding {
 	h := hmac.New(sha256.New, key.Seed())
 	_, _ = h.Write([]byte("SURVEYSCAN-HOST-BINDING-V1\n" + source + "\n" + id))
