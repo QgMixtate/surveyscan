@@ -85,3 +85,45 @@ jobs:
           if (-not $a.source_id -or $a.source_id -ne $b.source_id -or $a.csr_sha256 -ne $b.csr_sha256) { throw 'prepare is not stable' }
           if ($first -match 'PRIVATE KEY') { throw 'prepare printed key material' }
           Write-Output "prepare ok, identity stable (source $($a.source_id))"
+      - name: Compiled agent as a LocalSystem service on administrator-prepared state (install, run to Open, uninstall)
+        working-directory: v2
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $file = Join-Path $env:RUNNER_TEMP 'c15-operator\cfg\agent.json'
+          if (-not (Test-Path $file)) { throw 'prepared config missing (previous step)' }
+          $exe = (Resolve-Path .\surveyscan-agent.exe).Path
+          $name = 'SurveyscanAgentCi'
+          # Относительный путь конфигурации отвергается; повторная установка тоже.
+          & $exe install-service --name $name --config 'relative.json' 2>$null
+          if ($LASTEXITCODE -eq 0) { throw 'relative config accepted' }
+          & $exe install-service --name $name --config $file
+          if ($LASTEXITCODE -ne 0) { throw 'install-service failed' }
+          try {
+            & $exe install-service --name $name --config $file 2>$null
+            if ($LASTEXITCODE -eq 0) { throw 'second install accepted' }
+            $qc = (& sc.exe qc $name) -join "`n"
+            if ($qc -notmatch 'LocalSystem') { throw 'service is not LocalSystem' }
+            if ($qc -notmatch 'AUTO_START\s+\(DELAYED\)') { throw 'service is not delayed-auto' }
+            & sc.exe start $name | Out-Null
+            $exit = $null
+            for ($i = 0; $i -lt 60; $i++) {
+              Start-Sleep -Milliseconds 500
+              $q = (& sc.exe queryex $name) -join "`n"
+              if ($q -match 'STOPPED') {
+                if ($q -match 'SERVICE_EXIT_CODE\s*:\s*(\d+)') { $exit = [int]$Matches[1] }
+                break
+              }
+            }
+            if ($null -eq $exit) { throw 'service did not stop with a stage code' }
+            # 1 = состояние/блокировка/ACL отвергнуты (провал), 2 = дошла до Open: агент не зарегистрирован (ожидаемо).
+            if ($exit -eq 1) { throw 'service rejected the administrator-prepared state (stage 1)' }
+            if ($exit -ne 2) { throw "unexpected service stage code $exit" }
+            Write-Output "service reached Open (stage 2: agent not enrolled); administrator-prepared state accepted by LocalSystem"
+          } finally {
+            & $exe uninstall-service --name $name
+            $u = $LASTEXITCODE
+            & sc.exe query $name 2>$null | Out-Null
+            if ($u -ne 0) { Write-Warning 'uninstall-service failed' }
+            if ($LASTEXITCODE -ne 1060) { throw 'service still present after uninstall' }
+          }

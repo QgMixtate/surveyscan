@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -22,6 +23,9 @@ func run() error {
 		return buildinfo.Print(os.Stdout, "agent")
 	}
 	if handled, err := runNativeWorker(os.Args[1:]); handled {
+		return err
+	}
+	if handled, err := runServiceCommand(os.Args[1:]); handled {
 		return err
 	}
 	if len(os.Args) < 2 {
@@ -86,9 +90,22 @@ func run() error {
 		return fmt.Errorf("неизвестная команда агента")
 	}
 }
+
+// exitError задаёт код выхода процесса (этапы службы), не печатая лишнего.
+type exitError struct {
+	code int
+	err  error
+}
+
+func (e *exitError) Error() string { return e.err.Error() }
+
 func main() {
 	if e := run(); e != nil {
 		fmt.Fprintln(os.Stderr, e)
+		var ee *exitError
+		if errors.As(e, &ee) {
+			os.Exit(ee.code)
+		}
 		os.Exit(1)
 	}
 }
