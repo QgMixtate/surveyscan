@@ -41,7 +41,7 @@ func (e *stateError) Error() string {
 func (e *stateError) Unwrap() error { return ErrPrivate }
 func privateError(stage string, err error) error {
 	switch stage {
-	case "root_create", "root_open", "root_path", "root_type", "root_acl", "relative_open", "file_type", "file_acl", "atomic_rename", "atomic_flush":
+	case "root_create", "root_open", "root_path", "root_type", "root_acl", "relative_open", "file_type", "file_acl", "atomic_rename", "atomic_flush", "orphan_scan", "orphan_delete":
 	default:
 		stage = "unknown"
 	}
