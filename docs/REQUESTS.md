@@ -802,3 +802,10 @@ R-024, итог 8 ноября. C15-D11 закрыт на native Windows Server 
 boot 42515541314 — success. Прогоны 505f7a4 v2/boot отменены новым пушем, итог принят на 7d67248. web/evidence не запускались.
 Не доказано: ordinary rights, Windows 11, Server 2016 (FileRenameInformationEx недоступен), power-loss durability.
 Следующий шаг: общие private file/disk spool адаптеры, затем host continuity (MachineGuid), signed durable cache.
+
+R-024, адаптеры 8 ноября. e3fecbf: Windows privatefile.Read и diskspool.Lock/Atomic/SyncDir/RecoverTemps поверх winstate
+(Linux-код вынесен в !windows без изменения поведения). Run 42517551862 упал: два новых нативных теста адаптеров прошли,
+упали три старых POSIX-теста files_test.go, которые я сам начал гонять на Windows (пишут через Atomic без lock). 1c29799:
+files_test.go помечен !windows; c15 Windows, v2, boot — success. Не портированы Capacity/Data (os.ReadDir по пути); каталоги
+после обычного MkdirAll адаптер отвергает — runtime обязан создавать состояние через winstate. Не adopted агентом.
+Следующий шаг: host continuity (MachineGuid), клоны/повторный enrollment, затем signed cache.

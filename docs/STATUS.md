@@ -4,6 +4,7 @@
 (от 5fe78c5 fast-forward, единственный писатель; codex-ветки заморожены). 57/200 done, C15.02 in_progress.
 Закрыт C15-D11: atomic_rename ACCESS_DENIED (0xc0000022) при читателе — FileRenameInformationEx с POSIX-семантикой.
 Добавлен winstate.RecoverOrphans (только .tmp-* под lock, небезопасный остаток сохраняется).
+Windows-адаптеры privatefile/diskspool (Lock/Atomic/SyncDir/RecoverTemps) над winstate — 1c29799: c15, v2, boot success; Capacity/Data не портированы.
 Проверено на 7d67248: c15 Windows Server 2022 (42515541316), v2 (42515541308), boot (42515541314) — success;
 web/evidence на этот SHA не запускались (path-фильтры), «все 5 workflow» не заявляется. Не runtime, не ordinary rights/Win11.
 Дальше: private file/spool адаптеры, MachineGuid/клоны, signed cache, apply+applied ACK, runtime; C15.03/04.
