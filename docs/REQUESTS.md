@@ -809,3 +809,8 @@ R-024, адаптеры 8 ноября. e3fecbf: Windows privatefile.Read и dis
 files_test.go помечен !windows; c15 Windows, v2, boot — success. Не портированы Capacity/Data (os.ReadDir по пути); каталоги
 после обычного MkdirAll адаптер отвергает — runtime обязан создавать состояние через winstate. Не adopted агентом.
 Следующий шаг: host continuity (MachineGuid), клоны/повторный enrollment, затем signed cache.
+
+R-024, host continuity 8 ноября. b25f07a: пакет platform/machineid (Linux /etc/machine-id как раньше; Windows MachineGuid из
+64-битного реестра; прочие платформы unavailable), agent.localMachineID через него. c15 Windows2022, v2, boot — success.
+Граница: клон ВМ без sysprep сохраняет MachineGuid, привязка ловит замену хоста, но не клон. Повторный enrollment/клоны,
+signed durable cache, apply+applied ACK и Windows runtime не сделаны. Агент на Windows не запускается.
