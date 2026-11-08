@@ -820,3 +820,8 @@ tenant, origin+поколение, collector) и agent-кэш inventory-profile1
 загрузке; ревизия не убывает, та же ревизия с иной конфигурацией отвергается). 3 Linux-теста; v2 и boot — success, c15 не
 запускался (пути). Нативная запись кэша через Windows-адаптеры не проверена. Никто не вызывает кэш: apply, applied ACK после
 durable commit и Windows runtime — следующие шаги. Найдена и исправлена потеря завершающего \n при json.RawMessage.
+
+R-024, sync/applied 8 ноября. 8cff618: Client.SyncInventoryProfile12 (applied сообщается только из durable-кэша, кэш заменяется после проверки
+свежего ответа), CachedInventoryProfile12 (офлайн, лимиты не шире агента/профиля/максимумов), нативный Windows-тест записи кэша через
+приватные адаптеры (диск как приватный корень, без lock запись невозможна). c15 Windows 42521990391, boot 42521990366, v2 42521990363 — success.
+Граница: Windows runtime не вызывает Sync/Cached, на очередь наблюдений не влияет; re-enroll/клоны и runtime — дальше.
