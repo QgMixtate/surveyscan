@@ -32,3 +32,12 @@ func RecoverTemps(directory string) error {
 	_, e = h.root.RecoverOrphans()
 	return e
 }
+
+// Remove удаляет файл через приватный корень; требует блокировки каталога.
+func Remove(path string) error {
+	h, e := holder(filepath.Dir(path))
+	if e != nil {
+		return e
+	}
+	return h.root.Remove(filepath.Base(path))
+}

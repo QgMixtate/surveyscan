@@ -32,6 +32,10 @@ func allSectionsFixture(t *testing.T) contracts.Observation {
 			if err = json.Unmarshal(f.Payload, &o); err != nil || len(o.Sections) != 12 {
 				t.Fatal("fixture", err)
 			}
+			// Реальные секции 1.2 частичные: ok/complete отвергает принимающая сторона.
+			for i := range o.Sections {
+				o.Sections[i].Status, o.Sections[i].Complete, o.Sections[i].Reason = "partial", false, "PARTIAL_BASELINE"
+			}
 			return o
 		}
 	}
@@ -89,5 +93,22 @@ func TestBuildBatch12RespectsNegotiatedByteBounds(t *testing.T) {
 	full, _ := wire.NewInventoryTransport12(wire.InventoryMaximum12())
 	if _, _, err = buildBatch12(id, full, "1", o.Candidates, o.Sections, o.CollectedAt); err == nil {
 		t.Fatal("unsigned batch accepted")
+	}
+}
+
+func TestBuildBatch12RejectsCompleteOrOkSections(t *testing.T) {
+	o := allSectionsFixture(t)
+	_, key, _ := ed25519.GenerateKey(rand.Reader)
+	id := batchIdentity12{Tenant: o.TenantID, Origin: o.Origin, Site: o.Scope.SiteID, Scope: o.Scope.ScopeID, KeyID: identifier.New(), Key: key}
+	transport, _ := wire.NewInventoryTransport12(wire.InventoryMaximum12())
+	for name, mutate := range map[string]func(*contracts.Section){
+		"complete": func(s *contracts.Section) { s.Complete = true },
+		"ok":       func(s *contracts.Section) { s.Status = "ok" },
+	} {
+		sections := append([]contracts.Section(nil), o.Sections...)
+		mutate(&sections[0])
+		if _, _, err := buildBatch12(id, transport, "1", o.Candidates, sections, o.CollectedAt); err == nil {
+			t.Fatal("receiver would reject this packet forever, but it was queued:", name)
+		}
 	}
 }

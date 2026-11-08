@@ -72,3 +72,34 @@ func TestWindowsPrivateReadRejectsOrdinaryDirectory(t *testing.T) {
 		t.Fatal("non-private directory adopted as spool")
 	}
 }
+
+func TestWindowsRemoveRequiresLockAndDeletesThroughRoot(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "spool")
+	file := filepath.Join(dir, "packet.pending")
+	unlock, err := Lock(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err = Atomic(file, []byte("data")); err != nil {
+		t.Fatal(err)
+	}
+	if err = Remove(file); err != nil {
+		t.Fatal("remove under lock", err)
+	}
+	if _, err = privatefile.Read(file, 64); err == nil {
+		t.Fatal("file survived Remove")
+	}
+	if Remove(file) == nil {
+		t.Fatal("removing a missing file must report an error")
+	}
+	if err = Atomic(file, []byte("again")); err != nil {
+		t.Fatal(err)
+	}
+	unlock()
+	if Remove(file) == nil {
+		t.Fatal("remove allowed without the writer lock")
+	}
+	if data, err := privatefile.Read(file, 64); err != nil || string(data) != "again" {
+		t.Fatal("unlocked remove altered state", err)
+	}
+}

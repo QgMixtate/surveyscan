@@ -37,6 +37,13 @@ func buildBatch12(id batchIdentity12, t *wire.InventoryTransport12, sequence str
 	if t == nil || len(id.Key) != ed25519.PrivateKeySize {
 		return "", nil, errBatch12
 	}
+	// Политика 1.2 частичная: принимающая сторона отвергает ok/complete секции, поэтому
+	// такой пакет нельзя ставить в очередь: он навсегда остался бы неотправляемым.
+	for _, section := range sections {
+		if section.Complete || section.Status == "ok" {
+			return "", nil, errBatch12
+		}
+	}
 	o := contracts.Observation{Version: contracts.Version{Major: 1, Minor: 2}, ID: identifier.New(), TenantID: id.Tenant, Origin: id.Origin,
 		Record: contracts.SourceRecord{Namespace: "host", LocalID: "host"}, Scope: contracts.Scope{SiteID: id.Site, ScopeID: id.Scope},
 		Sequence: sequence, CollectedAt: collected, Clock: "trusted", Candidates: candidates, Sections: sections}

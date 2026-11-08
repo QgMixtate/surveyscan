@@ -40,24 +40,13 @@ func (r *Root) RecoverOrphans() (int, error) {
 	}
 	removed := 0
 	for _, name := range names {
-		// Без разделения доступа: если кто-то держит файл, это не остаток.
-		handle, err := r.open(name, windows.DELETE, windows.FILE_OPEN, 0)
+		err := r.removeLocked(name)
 		if err != nil {
 			var missing *stateError
 			if errors.As(err, &missing) && missing.stage == "relative_open" && missing.code == uint32(windows.ERROR_FILE_NOT_FOUND) {
 				continue
 			}
 			return removed, err
-		}
-		mark := byte(1)
-		var status windows.IO_STATUS_BLOCK
-		err = windows.NtSetInformationFile(handle, &status, &mark, 1, windows.FileDispositionInformation)
-		closeErr := windows.CloseHandle(handle)
-		if err != nil {
-			return removed, privateError("orphan_delete", err)
-		}
-		if closeErr != nil {
-			return removed, ErrPrivate
 		}
 		removed++
 	}
@@ -111,4 +100,35 @@ func (r *Root) orphanNames() ([]string, error) {
 			offset += next
 		}
 	}
+}
+
+// removeLocked удаляет обычный приватный файл относительно корня теми же проверками,
+// что и чтение (не reparse, одна ссылка, приватный DACL). Вызывать под r.mu и lock писателя.
+func (r *Root) removeLocked(name string) error {
+	// Без разделения доступа: если кто-то держит файл, это не остаток.
+	handle, err := r.open(name, windows.DELETE, windows.FILE_OPEN, 0)
+	if err != nil {
+		return err
+	}
+	mark := byte(1)
+	var status windows.IO_STATUS_BLOCK
+	err = windows.NtSetInformationFile(handle, &status, &mark, 1, windows.FileDispositionInformation)
+	closeErr := windows.CloseHandle(handle)
+	if err != nil {
+		return privateError("orphan_delete", err)
+	}
+	if closeErr != nil {
+		return ErrPrivate
+	}
+	return nil
+}
+
+// Remove удаляет файл состояния; требует эксклюзивной блокировки писателя.
+func (r *Root) Remove(name string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if r.writer == nil || r.writer.closed || r.handle == windows.InvalidHandle || !fileName(name) {
+		return ErrPrivate
+	}
+	return r.removeLocked(name)
 }

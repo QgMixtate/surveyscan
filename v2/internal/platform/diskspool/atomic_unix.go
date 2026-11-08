@@ -64,3 +64,11 @@ func RecoverTemps(directory string) error {
 	}
 	return nil
 }
+
+// Remove удаляет файл и сбрасывает каталог, как это делал Linux-код доставки.
+func Remove(path string) error {
+	if e := os.Remove(path); e != nil {
+		return e
+	}
+	return SyncDir(filepath.Dir(path))
+}
