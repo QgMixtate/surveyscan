@@ -123,3 +123,39 @@ func TestRecordPage12OpenAPIComponentMatchesRuntime(t *testing.T) {
 		t.Fatal("published component rejects runtime page", err, v.Validate(page))
 	}
 }
+
+// Linux-факты (uid/gid/пакеты dpkg/mount/interface) проходят схему чтения; прежние ограничения значений сохранены.
+func TestRecordPage12AcceptsLinuxFacts(t *testing.T) {
+	key := strings.Repeat("a", 64)
+	check := func(section, field, value string, want bool) {
+		t.Helper()
+		p := recordPageFixture12()
+		p.Section = section
+		p.Items[0].Record = key
+		p.Items[0].Field = field
+		p.Items[0].Value = json.RawMessage(value)
+		b, err := RecordJSON(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := ValidateRecordPage12(b) == nil; got != want {
+			t.Fatalf("%s.%s=%s: accepted=%v, want %v", section, field, value, got, want)
+		}
+	}
+	check("software", "source", `"dpkg"`, true)
+	check("software", "source", `"homebrew"`, false)
+	check("software", "architecture", `"i386"`, true)
+	check("software", "architecture", `"a b"`, false)
+	check("users_groups", "uid", `1000`, true)
+	check("users_groups", "uid", `-1`, false)
+	check("users_groups", "uid", `"1000"`, false)
+	check("users_groups", "gid", `0`, true)
+	check("users_groups", "group", `"wheel"`, true)
+	check("users_groups", "shell", `"/bin/bash"`, true)
+	check("routes_ports", "interface", `"eth0"`, true)
+	check("routes_ports", "interface", `5`, false)
+	check("resources", "kind", `"mount"`, true)
+	check("resources", "kind", `"cdrom"`, false)
+	check("resources", "read_only", `true`, true)
+	check("resources", "read_only", `"yes"`, false)
+}

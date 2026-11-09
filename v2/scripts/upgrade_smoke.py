@@ -27,8 +27,8 @@ def fixture(old_root):
             process.terminate()
             assert process.wait(timeout=8) == 0
         tables = sql("SELECT table_schema||'.'||table_name FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema NOT IN ('pg_catalog','information_schema','platform') ORDER BY 1").splitlines()
-        def fingerprint(table):
-            return sql("SELECT encode(sha256(convert_to(coalesce(string_agg(row_to_json(t)::text,E'\\n' ORDER BY row_to_json(t)::text),''),'UTF8')),'hex') FROM " + table + ' t')
+        def fingerprint(table):  # колонка inventory_platform (миграция 0035) добавлена позже и в сравнение старых данных не входит
+            return sql("SELECT encode(sha256(convert_to(coalesce(string_agg((to_jsonb(t)-'inventory_platform')::text,E'\\n' ORDER BY (to_jsonb(t)-'inventory_platform')::text),''),'UTF8')),'hex') FROM " + table + ' t')
         before = {table: fingerprint(table) for table in tables}
         ledger = sql('SELECT id||owner||sha256 FROM platform.schema_migrations ORDER BY id').splitlines()
         assert len(ledger) == 31

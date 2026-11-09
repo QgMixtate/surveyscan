@@ -958,7 +958,8 @@
           "enum": [
             "volume",
             "share",
-            "usb"
+            "usb",
+            "mount"
           ]
         },
         "name": {
@@ -988,6 +989,9 @@
           "minLength": 1,
           "maxLength": 512,
           "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "read_only": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -997,6 +1001,468 @@
       "additionalProperties": false
     },
     "routes_portsRow": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/routes_portsRowWindows"
+        },
+        {
+          "$ref": "#/$defs/routes_portsRowLinux"
+        }
+      ]
+    },
+    "servicesRow": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "display_name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "state": {
+          "enum": [
+            "stopped",
+            "start_pending",
+            "stop_pending",
+            "running",
+            "continue_pending",
+            "pause_pending",
+            "paused",
+            "unknown"
+          ]
+        },
+        "start_mode": {
+          "enum": [
+            "boot",
+            "system",
+            "auto",
+            "demand",
+            "disabled",
+            "unknown"
+          ]
+        },
+        "account": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "executable": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048,
+          "pattern": "^[^\u0000-\u001f]+$"
+        }
+      },
+      "required": [
+        "name",
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "softwareRow": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/softwareRowWindows"
+        },
+        {
+          "$ref": "#/$defs/softwareRowLinux"
+        }
+      ]
+    },
+    "updatesRow": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "installed_on": {
+          "type": "string",
+          "format": "date"
+        },
+        "source": {
+          "enum": [
+            "qfe"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "users_groupsRow": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/users_groupsRowWindows"
+        },
+        {
+          "$ref": "#/$defs/users_groupsRowLinux"
+        }
+      ]
+    },
+    "softwareRowWindows": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "vendor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "architecture": {
+          "enum": [
+            "amd64",
+            "arm64",
+            "386",
+            "unknown"
+          ]
+        },
+        "scope": {
+          "enum": [
+            "machine",
+            "current_user"
+          ]
+        },
+        "source": {
+          "enum": [
+            "uninstall_registry"
+          ]
+        },
+        "registry_view": {
+          "enum": [
+            "32",
+            "64"
+          ]
+        },
+        "registry_key": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "principal_sid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 184,
+          "pattern": "^S-1-[0-9]+(?:-[0-9]+)+$"
+        }
+      },
+      "required": [
+        "name",
+        "scope",
+        "source",
+        "registry_view",
+        "registry_key"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "current_user"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "principal_sid"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "principal_sid"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "softwareRowLinux": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "vendor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "architecture": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[A-Za-z0-9_.+-]+$"
+        },
+        "scope": {
+          "enum": [
+            "machine"
+          ]
+        },
+        "source": {
+          "enum": [
+            "dpkg",
+            "rpm",
+            "apk"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "scope",
+        "source"
+      ],
+      "additionalProperties": false
+    },
+    "users_groupsRowWindows": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "user",
+            "group",
+            "membership"
+          ]
+        },
+        "sid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 184,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "group_sid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 184,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "disabled": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "sid"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "user"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "group"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "name"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "membership"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "group_sid"
+            ]
+          }
+        }
+      ]
+    },
+    "users_groupsRowLinux": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "user",
+            "group",
+            "membership"
+          ]
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "uid": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "gid": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4294967295
+        },
+        "group": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        },
+        "shell": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[^\u0000-\u001f]+$"
+        }
+      },
+      "required": [
+        "kind",
+        "name",
+        "gid"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "user"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "uid"
+            ],
+            "not": {
+              "required": [
+                "group"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "group"
+              }
+            }
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "uid"
+                  ]
+                },
+                {
+                  "required": [
+                    "group"
+                  ]
+                },
+                {
+                  "required": [
+                    "shell"
+                  ]
+                }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "membership"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "group"
+            ],
+            "not": {
+              "anyOf": [
+                {
+                  "required": [
+                    "uid"
+                  ]
+                },
+                {
+                  "required": [
+                    "shell"
+                  ]
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "routes_portsRowWindows": {
       "type": "object",
       "properties": {
         "kind": {
@@ -1117,219 +1583,77 @@
         }
       ]
     },
-    "servicesRow": {
+    "routes_portsRowLinux": {
       "type": "object",
       "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "pattern": "^[^\u0000-\u001f]+$"
-        },
-        "display_name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "pattern": "^[^\u0000-\u001f]+$"
-        },
-        "state": {
+        "kind": {
           "enum": [
-            "stopped",
-            "start_pending",
-            "stop_pending",
-            "running",
-            "continue_pending",
-            "pause_pending",
-            "paused",
-            "unknown"
+            "route",
+            "tcp",
+            "udp"
           ]
         },
-        "start_mode": {
+        "family": {
           "enum": [
-            "boot",
-            "system",
-            "auto",
-            "demand",
-            "disabled",
-            "unknown"
+            "ipv4",
+            "ipv6"
           ]
         },
-        "account": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "pattern": "^[^\u0000-\u001f]+$"
-        },
-        "executable": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 2048,
-          "pattern": "^[^\u0000-\u001f]+$"
-        }
-      },
-      "required": [
-        "name",
-        "state"
-      ],
-      "additionalProperties": false
-    },
-    "softwareRow": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "pattern": "^[^\u0000-\u001f]+$"
-        },
-        "version": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "pattern": "^[^\u0000-\u001f]+$"
-        },
-        "vendor": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "pattern": "^[^\u0000-\u001f]+$"
-        },
-        "architecture": {
-          "enum": [
-            "amd64",
-            "arm64",
-            "386",
-            "unknown"
-          ]
-        },
-        "scope": {
-          "enum": [
-            "machine",
-            "current_user"
-          ]
-        },
-        "source": {
-          "enum": [
-            "uninstall_registry"
-          ]
-        },
-        "registry_view": {
-          "enum": [
-            "32",
-            "64"
-          ]
-        },
-        "registry_key": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 256,
-          "pattern": "^[^\u0000-\u001f]+$"
-        },
-        "principal_sid": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 184,
-          "pattern": "^S-1-[0-9]+(?:-[0-9]+)+$"
-        }
-      },
-      "required": [
-        "name",
-        "scope",
-        "source",
-        "registry_view",
-        "registry_key"
-      ],
-      "additionalProperties": false,
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "scope": {
-                "const": "current_user"
-              }
-            }
-          },
-          "then": {
-            "required": [
-              "principal_sid"
-            ]
-          },
-          "else": {
-            "not": {
-              "required": [
-                "principal_sid"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    "updatesRow": {
-      "type": "object",
-      "properties": {
-        "id": {
+        "destination": {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
           "pattern": "^[^\u0000-\u001f]+$"
         },
-        "description": {
+        "gateway": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 512,
+          "maxLength": 128,
           "pattern": "^[^\u0000-\u001f]+$"
         },
-        "installed_on": {
-          "type": "string",
-          "format": "date"
+        "metric": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
         },
-        "source": {
-          "enum": [
-            "qfe"
-          ]
-        }
-      },
-      "required": [
-        "id",
-        "source"
-      ],
-      "additionalProperties": false
-    },
-    "users_groupsRow": {
-      "type": "object",
-      "properties": {
-        "kind": {
-          "enum": [
-            "user",
-            "group",
-            "membership"
-          ]
-        },
-        "sid": {
+        "local_address": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 184,
+          "maxLength": 128,
           "pattern": "^[^\u0000-\u001f]+$"
         },
-        "name": {
+        "local_port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "remote_address": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 256,
+          "maxLength": 128,
           "pattern": "^[^\u0000-\u001f]+$"
         },
-        "group_sid": {
+        "remote_port": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 65535
+        },
+        "state": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 184,
+          "maxLength": 64,
           "pattern": "^[^\u0000-\u001f]+$"
         },
-        "disabled": {
-          "type": "boolean"
+        "interface": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[^\u0000-\u001f]+$"
         }
       },
       "required": [
         "kind",
-        "sid"
+        "family"
       ],
       "additionalProperties": false,
       "allOf": [
@@ -1337,13 +1661,14 @@
           "if": {
             "properties": {
               "kind": {
-                "const": "user"
+                "const": "route"
               }
             }
           },
           "then": {
             "required": [
-              "name"
+              "destination",
+              "interface"
             ]
           }
         },
@@ -1351,13 +1676,15 @@
           "if": {
             "properties": {
               "kind": {
-                "const": "group"
+                "const": "tcp"
               }
             }
           },
           "then": {
             "required": [
-              "name"
+              "local_address",
+              "local_port",
+              "state"
             ]
           }
         },
@@ -1365,13 +1692,14 @@
           "if": {
             "properties": {
               "kind": {
-                "const": "membership"
+                "const": "udp"
               }
             }
           },
           "then": {
             "required": [
-              "group_sid"
+              "local_address",
+              "local_port"
             ]
           }
         }

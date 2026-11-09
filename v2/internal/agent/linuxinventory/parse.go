@@ -119,7 +119,11 @@ func Accounts(passwd, group string) []Row {
 		if e1 != nil || e2 != nil || name == "" || len(rows) >= maxRows {
 			continue
 		}
-		rows = append(rows, Row{"kind": "user", "name": name, "uid": uid, "gid": gid, "shell": clean(p[6], 256)})
+		row := Row{"kind": "user", "name": name, "uid": uid, "gid": gid}
+		if shell := clean(p[6], 256); shell != "" {
+			row["shell"] = shell
+		}
+		rows = append(rows, row)
 	}
 	for _, l := range lines(group) {
 		p := strings.Split(l, ":")
@@ -165,7 +169,7 @@ func Mounts(mountinfo string) []Row {
 		if mp == "" {
 			continue
 		}
-		rows = append(rows, Row{"kind": "mount", "name": mp, "filesystem": a[0], "device": clean(unescapeMount(a[1]), 4096), "read_only": strings.Contains(","+b[5]+",", ",ro,")})
+		rows = append(rows, Row{"kind": "mount", "name": mp, "filesystem": a[0], "device_id": clean(unescapeMount(a[1]), 512), "read_only": strings.Contains(","+b[5]+",", ",ro,")})
 	}
 	return rows
 }

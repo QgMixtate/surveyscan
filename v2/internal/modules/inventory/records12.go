@@ -31,6 +31,10 @@ func recordKey12(section string, row map[string]any) (string, error) {
 	case "hardware", "resources":
 		keys = []string{"kind", "name"}
 	case "software":
+		if linuxPackageSource(row["source"]) { // строка Linux: схема уже проверила форму
+			keys = []string{"source", "scope", "name", "architecture"}
+			break
+		}
 		keys = []string{"source", "scope", "registry_view", "registry_key", "principal_sid"}
 		if row["registry_key"] == nil || row["scope"] == "current_user" && row["principal_sid"] == nil {
 			return "", domain.Invalid
@@ -38,6 +42,19 @@ func recordKey12(section string, row map[string]any) (string, error) {
 	case "updates":
 		keys = []string{"source", "id"}
 	case "users_groups":
+		if row["sid"] == nil { // Linux: идентификатор — uid/gid, не SID
+			switch row["kind"] {
+			case "user":
+				keys = []string{"kind", "uid"}
+			case "group":
+				keys = []string{"kind", "gid"}
+			case "membership":
+				keys = []string{"kind", "gid", "name"}
+			default:
+				return "", domain.Invalid
+			}
+			break
+		}
 		keys = []string{"kind", "sid"}
 		if row["kind"] == "membership" {
 			keys = append(keys, "group_sid")
@@ -48,6 +65,9 @@ func recordKey12(section string, row map[string]any) (string, error) {
 			keys = append(keys, "destination", "gateway", "interface_index")
 		} else {
 			keys = append(keys, "local_address", "local_port", "remote_address", "remote_port", "interface_index")
+		}
+		if row["interface"] != nil { // Linux: имя интерфейса; для строк Windows ключ не меняется
+			keys = append(keys, "interface")
 		}
 	case "protection":
 		keys = []string{"kind", "provider", "name"}
@@ -74,6 +94,11 @@ func recordKey12(section string, row map[string]any) (string, error) {
 	}
 	sum := sha256.Sum256(b)
 	return hex.EncodeToString(sum[:]), nil
+}
+
+func linuxPackageSource(v any) bool {
+	s, _ := v.(string)
+	return s == "dpkg" || s == "rpm" || s == "apk"
 }
 
 func preparePartial12(o contracts.Observation) (map[string][]record12, error) {

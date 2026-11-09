@@ -963,12 +963,10 @@
                   "then": {
                     "properties": {
                       "value": {
-                        "enum": [
-                          "amd64",
-                          "arm64",
-                          "386",
-                          "unknown"
-                        ]
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[A-Za-z0-9_.+-]+$"
                       }
                     }
                   }
@@ -1004,7 +1002,10 @@
                     "properties": {
                       "value": {
                         "enum": [
-                          "uninstall_registry"
+                          "uninstall_registry",
+                          "dpkg",
+                          "rpm",
+                          "apk"
                         ]
                       }
                     }
@@ -1349,7 +1350,11 @@
                     "sid",
                     "name",
                     "group_sid",
-                    "disabled"
+                    "disabled",
+                    "uid",
+                    "gid",
+                    "group",
+                    "shell"
                   ]
                 }
               },
@@ -1446,6 +1451,80 @@
                       }
                     }
                   }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "uid"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "gid"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 4294967295
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "group"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256,
+                        "pattern": "^[^\u0000-\u001f]+$"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "shell"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 256,
+                        "pattern": "^[^\u0000-\u001f]+$"
+                      }
+                    }
+                  }
                 }
               ]
             }
@@ -1478,7 +1557,8 @@
                     "remote_address",
                     "remote_port",
                     "state",
-                    "interface_index"
+                    "interface_index",
+                    "interface"
                   ]
                 }
               },
@@ -1688,6 +1768,25 @@
                       }
                     }
                   }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "interface"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 64,
+                        "pattern": "^[^\u0000-\u001f]+$"
+                      }
+                    }
+                  }
                 }
               ]
             }
@@ -1715,7 +1814,8 @@
                     "filesystem",
                     "total_bytes",
                     "free_bytes",
-                    "device_id"
+                    "device_id",
+                    "read_only"
                   ]
                 }
               },
@@ -1734,7 +1834,8 @@
                         "enum": [
                           "volume",
                           "share",
-                          "usb"
+                          "usb",
+                          "mount"
                         ]
                       }
                     }
@@ -1829,6 +1930,22 @@
                         "minLength": 1,
                         "maxLength": 512,
                         "pattern": "^[^\u0000-\u001f]+$"
+                      }
+                    }
+                  }
+                },
+                {
+                  "if": {
+                    "properties": {
+                      "field": {
+                        "const": "read_only"
+                      }
+                    }
+                  },
+                  "then": {
+                    "properties": {
+                      "value": {
+                        "type": "boolean"
                       }
                     }
                   }

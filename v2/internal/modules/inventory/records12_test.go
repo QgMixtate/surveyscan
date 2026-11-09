@@ -131,3 +131,65 @@ func TestLegacyProjectionRejectsUnknownEvenEmptyBeforeSQL(t *testing.T) {
 		}
 	}
 }
+
+// Linux-строки проходят схему наблюдения и получают устойчивые ключи без registry_key/SID.
+func TestRecord12LinuxRowsKeysAndSchema(t *testing.T) {
+	o := partial12Fixture(t)
+	linux := map[string][]map[string]any{
+		"software": {{"name": "bash", "version": "5.2-1", "architecture": "amd64", "scope": "machine", "source": "dpkg"}},
+		"users_groups": {
+			{"kind": "user", "name": "root", "uid": 0, "gid": 0, "shell": "/bin/bash"},
+			{"kind": "group", "name": "wheel", "gid": 10},
+			{"kind": "membership", "name": "root", "group": "wheel", "gid": 10},
+		},
+		"routes_ports": {
+			{"kind": "route", "family": "ipv4", "destination": "0.0.0.0/0", "gateway": "192.168.0.1", "interface": "eth0", "metric": 100},
+			{"kind": "tcp", "family": "ipv4", "local_address": "127.0.0.1", "local_port": 22, "remote_address": "0.0.0.0", "remote_port": 0, "state": "LISTEN"},
+		},
+		"resources": {{"kind": "mount", "name": "/", "filesystem": "ext4", "device_id": "/dev/sda1", "read_only": false}},
+	}
+	for i := range o.Sections {
+		if rows, ok := linux[o.Sections[i].Name]; ok {
+			o.Sections[i].Records = rows
+			o.Sections[i].Count = len(rows)
+		}
+	}
+	prepared, err := preparePartial12(o)
+	if err != nil {
+		t.Fatal("linux rows rejected", err)
+	}
+	if len(prepared["users_groups"]) != 3 || len(prepared["routes_ports"]) != 2 || len(prepared["software"]) != 1 {
+		t.Fatal("linux rows lost")
+	}
+	// Идентичность — не изменяемые поля; разные пакеты/архитектуры/пользователи не сливаются.
+	a, _ := recordKey12("software", linux["software"][0])
+	changed := map[string]any{"name": "bash", "version": "9", "architecture": "amd64", "scope": "machine", "source": "dpkg"}
+	b, _ := recordKey12("software", changed)
+	if a != b {
+		t.Fatal("version changed package identity")
+	}
+	changed["architecture"] = "arm64"
+	if c, _ := recordKey12("software", changed); c == a {
+		t.Fatal("architectures collapsed")
+	}
+	u0, _ := recordKey12("users_groups", map[string]any{"kind": "user", "name": "root", "uid": 0, "gid": 0})
+	u1, _ := recordKey12("users_groups", map[string]any{"kind": "user", "name": "svc", "uid": 101, "gid": 101})
+	if u0 == u1 {
+		t.Fatal("users collapsed")
+	}
+	// Строка Windows (SID) по-прежнему требует прежнего ключа: ключ Linux-пакета не должен совпасть.
+	if _, err = recordKey12("software", map[string]any{"source": "uninstall_registry", "scope": "machine"}); err == nil {
+		t.Fatal("windows software without registry_key accepted")
+	}
+	// Смешение: Linux-источник пакетов вместе с полями реестра отвергается схемой.
+	bad := partial12Fixture(t)
+	for i := range bad.Sections {
+		if bad.Sections[i].Name == "software" {
+			bad.Sections[i].Records = []map[string]any{{"name": "x", "scope": "machine", "source": "dpkg", "registry_key": "K"}}
+			bad.Sections[i].Count = 1
+		}
+	}
+	if _, err = preparePartial12(bad); err == nil {
+		t.Fatal("mixed windows/linux software row accepted")
+	}
+}
