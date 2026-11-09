@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"net"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/QgMixtate/surveyscan/v2/contracts"
@@ -85,6 +87,19 @@ func candidatesFromSections(sections []contracts.Section) []contracts.Candidate 
 	return out
 }
 
+// reportDetail сообщает текст ошибки ТОЛЬКО при явном включении SURVEYSCAN_AGENT_DEBUG=1 (диагностика на стенде).
+// По умолчанию наружу идут лишь фиксированные коды событий; текст ошибки может содержать адреса/пути.
+func reportDetail(report func(string), where string, err error) {
+	if err == nil || os.Getenv("SURVEYSCAN_AGENT_DEBUG") != "1" {
+		return
+	}
+	text := strings.NewReplacer("\n", " ", "\r", " ").Replace(err.Error())
+	if len(text) > 300 {
+		text = text[:300]
+	}
+	report("detail:" + where + ": " + text)
+}
+
 // loop12Timing — периоды цикла; в бою defaultLoop12Timing, в тестах короткие.
 type loop12Timing struct {
 	Tick, ProfileOK, ProfileRetry, WaitingProfile time.Duration
@@ -132,6 +147,7 @@ func runLoop12(ctx context.Context, cl client12, report func(string), collect fu
 		if !isNetworkFailure(e) {
 			transport = nil
 			report("inventory_profile_rejected")
+			reportDetail(report, "profile", e)
 			return false
 		}
 		if transport != nil {
@@ -167,6 +183,7 @@ func runLoop12(ctx context.Context, cl client12, report func(string), collect fu
 					report("inventory_failed")
 				} else if err := cl.queue(ctx, transport, result.snapshot, result.at); err != nil {
 					report("inventory_failed")
+					reportDetail(report, "queue", err)
 				} else {
 					report("inventory_queued")
 				}
@@ -185,6 +202,7 @@ func runLoop12(ctx context.Context, cl client12, report func(string), collect fu
 			cancel()
 			if err != nil {
 				report("profile_unavailable_cached_or_local")
+				reportDetail(report, "poll_profile_1_0", err)
 			} else if changed {
 				report("profile_applied")
 			}
@@ -208,6 +226,7 @@ func runLoop12(ctx context.Context, cl client12, report func(string), collect fu
 		if !now.Before(heartbeatAt) {
 			if err := cl.Heartbeat(ctx); err != nil {
 				report("heartbeat_failed")
+				reportDetail(report, "heartbeat", err)
 			} else {
 				report("heartbeat_accepted")
 			}
@@ -232,6 +251,7 @@ func runLoop12(ctx context.Context, cl client12, report func(string), collect fu
 					delivery.Failed(time.Now())
 				}
 				report("delivery_pending")
+				reportDetail(report, "flush", err)
 			} else {
 				delivery.Reset()
 			}
