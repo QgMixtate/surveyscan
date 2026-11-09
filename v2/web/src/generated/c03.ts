@@ -635,6 +635,8 @@ export interface components {
             ttl_seconds: number;
             csr_sha256: string;
             signing_public_key: string;
+            /** @enum {unknown} */
+            inventory_platform?: "windows/amd64" | "linux/amd64";
         };
         EnrollmentGrant: {
             /** Format: uuid */
