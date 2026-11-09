@@ -82,7 +82,7 @@ func candidatesFromSections(sections []contracts.Section) []contracts.Candidate 
 		}
 	}
 	if id, e := machineid.Local(); e == nil {
-		out = append(out, contracts.Candidate{Kind: "machine_uuid", Namespace: machineNamespace12(), Value: id})
+		out = append(out, contracts.Candidate{Kind: "machine_uuid", Namespace: machineNamespace12(), Value: canonicalMachineUUID(id)})
 	}
 	return out
 }
@@ -98,6 +98,16 @@ func reportDetail(report func(string), where string, err error) {
 		text = text[:300]
 	}
 	report("detail:" + where + ": " + text)
+}
+
+// canonicalMachineUUID приводит 32-символьный machine id (machineid.Local возвращает его без дефисов) к
+// канонической форме UUID 8-4-4-4-12: центр отвергает кандидата machine_uuid в другой форме, и всё
+// наблюдение получает отказ (находка стенда V2 на Windows Server 2019).
+func canonicalMachineUUID(id string) string {
+	if len(id) != 32 {
+		return id
+	}
+	return id[:8] + "-" + id[8:12] + "-" + id[12:16] + "-" + id[16:20] + "-" + id[20:]
 }
 
 // loop12Timing — периоды цикла; в бою defaultLoop12Timing, в тестах короткие.

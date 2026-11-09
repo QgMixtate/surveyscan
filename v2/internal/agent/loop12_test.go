@@ -7,6 +7,8 @@ import (
 	"sync"
 	"sync/atomic"
 	"testing"
+
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"time"
 
 	"github.com/QgMixtate/surveyscan/v2/contracts"
@@ -147,5 +149,20 @@ func TestCandidatesFromSectionsUsesIdentityHostname(t *testing.T) {
 	}
 	if len(candidatesFromSections(nil)) > 1 {
 		t.Fatal("no identity section must not invent hostnames")
+	}
+}
+
+func TestMachineUUIDCandidateIsCanonicalUUID(t *testing.T) {
+	if got := canonicalMachineUUID("15b9bc6bf4234db283a367df09c5db84"); got != "15b9bc6b-f423-4db2-83a3-67df09c5db84" {
+		t.Fatal("not canonical:", got)
+	}
+	if got := canonicalMachineUUID("already-not-32"); got != "already-not-32" {
+		t.Fatal("must leave other forms alone:", got)
+	}
+	// Кандидаты реального сбора проходят ту же проверку формата, что центр применяет к machine_uuid.
+	for _, c := range candidatesFromSections(nil) {
+		if c.Kind == "machine_uuid" && !identifier.Valid(c.Value) {
+			t.Fatalf("machine_uuid candidate rejected by the centre format check: %q", c.Value)
+		}
 	}
 }
