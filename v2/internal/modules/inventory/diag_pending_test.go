@@ -3,11 +3,14 @@
 package inventory
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"os"
 	"testing"
 
 	"github.com/QgMixtate/surveyscan/v2/contracts"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
 )
 
 // Диагностика стенда (не часть обычных тестов): PENDING=/путь/к/*.pending go test -tags=diag -run TestDiagPending -v ./internal/modules/inventory
@@ -54,6 +57,30 @@ func TestDiagPending(t *testing.T) {
 			probe.Sections[i] = sec
 		}
 		return probe
+	}
+	// Полный путь центра: декодер подписанного наблюдения (схема + digest + запрет complete/ok).
+	var rawRecords struct {
+		Batch struct {
+			Records []json.RawMessage `json:"records"`
+		} `json:"batch"`
+	}
+	_ = json.Unmarshal(raw, &rawRecords)
+	if base, e := wire.New(); e == nil {
+		if decoder, e := wire.NewInventoryDecoder(base, true); e == nil {
+			for i, rr := range rawRecords.Batch.Records {
+				_, _, _, e := decoder.Observation(rr)
+				t.Logf("record %d: signed observation decoder (centre) -> %v", i, e)
+				var sig struct {
+					Payload json.RawMessage `json:"payload"`
+					Digest  string          `json:"digest"`
+				}
+				_ = json.Unmarshal(rr, &sig)
+				if c, e := wire.Canonical(sig.Payload); e == nil {
+					sum := sha256.Sum256(c)
+					t.Logf("record %d: digest matches canonical payload: %v", i, hex.EncodeToString(sum[:]) == sig.Digest)
+				}
+			}
+		}
 	}
 	for number, record := range file.Batch.Records {
 		o := record.Payload
