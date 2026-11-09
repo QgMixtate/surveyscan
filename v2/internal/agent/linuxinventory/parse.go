@@ -156,6 +156,7 @@ func unescapeMount(s string) string {
 // Mounts разбирает /proc/self/mountinfo; служебные ФС отбрасываются.
 func Mounts(mountinfo string) []Row {
 	rows := []Row{}
+	index := map[string]int{}
 	for _, l := range lines(mountinfo) {
 		before, after, ok := strings.Cut(l, " - ")
 		if !ok {
@@ -169,7 +170,15 @@ func Mounts(mountinfo string) []Row {
 		if mp == "" {
 			continue
 		}
-		rows = append(rows, Row{"kind": "mount", "name": mp, "filesystem": a[0], "device_id": clean(unescapeMount(a[1]), 512), "read_only": strings.Contains(","+b[5]+",", ",ro,")})
+		row := Row{"kind": "mount", "name": mp, "filesystem": a[0], "device_id": clean(unescapeMount(a[1]), 512), "read_only": strings.Contains(","+b[5]+",", ",ro,")}
+		// Несколько монтирований в одну точку (stacked mounts): ключ записи — точка, поэтому
+		// остаётся верхнее (последнее в mountinfo); порядок по первому появлению точки.
+		if i, dup := index[mp]; dup {
+			rows[i] = row
+			continue
+		}
+		index[mp] = len(rows)
+		rows = append(rows, row)
 	}
 	return rows
 }

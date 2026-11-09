@@ -14,25 +14,6 @@ import (
 // RunWindows — постоянный цикл Windows-агента. Состояние и очередь — приватные корни под
 // эксклюзивными блокировками; сбор — 12 изолированных воркеров; наблюдения идут batch 1.2
 // и только при проверенном профиле. Linux Run не затрагивается.
-// Коды этапов завершения RunWindows (попадают в код выхода службы).
-const (
-	StageState = 1 // состояние, блокировка, восстановление .tmp-*
-	StageOpen  = 2 // Open: агент не зарегистрирован / нет доверенного сертификата
-	StageSpool = 3 // очередь
-	StageSetup = 4 // клиент 1.2, лимиты
-)
-
-// StageError помечает этап, на котором RunWindows завершился.
-type StageError struct {
-	Code uint32
-	Err  error
-}
-
-func (e *StageError) Error() string { return e.Err.Error() }
-func (e *StageError) Unwrap() error { return e.Err }
-
-func stage(code uint32, e error) error { return &StageError{Code: code, Err: e} }
-
 func RunWindows(ctx context.Context, c Config, report func(string)) error {
 	unlock, e := lockState(c.State)
 	if e != nil {

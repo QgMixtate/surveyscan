@@ -29,7 +29,7 @@ func run() error {
 		return err
 	}
 	if len(os.Args) < 2 {
-		return fmt.Errorf("используйте prepare/enroll/bind-host/renew/run --config /secure/agent.json")
+		return fmt.Errorf("используйте prepare/enroll/bind-host/renew/run/run12 --config /secure/agent.json")
 	}
 	command := os.Args[1]
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
@@ -86,6 +86,9 @@ func run() error {
 		return nil
 	case "run":
 		return runAgent(ctx, c, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
+	case "run12":
+		// Явное включение цикла по профилю 1.2 на Linux; на Windows run уже использует 1.2.
+		return runAgent12(ctx, c, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
 	default:
 		return fmt.Errorf("неизвестная команда агента")
 	}

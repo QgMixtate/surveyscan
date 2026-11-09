@@ -95,3 +95,11 @@ func TestMalformedInputIsIgnored(t *testing.T) {
 		t.Fatal("malformed input produced rows")
 	}
 }
+
+func TestMountsStackedKeepsTopmost(t *testing.T) {
+	mi := "22 1 8:1 / /dev/shm rw - tmpfs tmpfs rw\n23 22 0:9 / /mnt rw - ext4 /dev/sdb1 rw\n24 22 0:10 / /dev/shm ro - tmpfs shm ro\n"
+	rows := Mounts(mi)
+	if len(rows) != 2 || rows[0]["name"] != "/dev/shm" || rows[0]["device_id"] != "shm" || rows[0]["read_only"] != true {
+		t.Fatalf("%v", rows)
+	}
+}

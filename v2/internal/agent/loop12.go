@@ -80,7 +80,7 @@ func candidatesFromSections(sections []contracts.Section) []contracts.Candidate 
 		}
 	}
 	if id, e := machineid.Local(); e == nil {
-		out = append(out, contracts.Candidate{Kind: "machine_uuid", Namespace: "windows-machine-guid", Value: id})
+		out = append(out, contracts.Candidate{Kind: "machine_uuid", Namespace: machineNamespace12(), Value: id})
 	}
 	return out
 }

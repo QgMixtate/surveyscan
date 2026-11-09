@@ -11,3 +11,7 @@ import (
 func runAgent(ctx context.Context, c agent.Config, report func(string)) error {
 	return agent.RunWindows(ctx, c, report)
 }
+
+func runAgent12(ctx context.Context, c agent.Config, report func(string)) error {
+	return agent.RunWindows(ctx, c, report)
+}

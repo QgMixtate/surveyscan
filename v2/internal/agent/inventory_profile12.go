@@ -39,7 +39,7 @@ func (c *Client) fetchInventoryProfile12(ctx context.Context, negotiated Invento
 		return empty, err
 	}
 	origin := contracts.Origin{SourceID: c.claims.Source, SourceKind: "agent", GenerationID: c.claims.Generation}
-	request := contracts.InventoryProfileRequest12{Version: contracts.Version{Major: 1, Minor: 2}, Tenant: c.claims.Tenant, Origin: origin, Nonce: nonce, Sent: time.Now().UTC(), Platform: contracts.InventoryPlatform12, Applied: applied}
+	request := contracts.InventoryProfileRequest12{Version: contracts.Version{Major: 1, Minor: 2}, Tenant: c.claims.Tenant, Origin: origin, Nonce: nonce, Sent: time.Now().UTC(), Platform: platform12(), Applied: applied}
 	raw, err := wire.SignInventoryProfile12(request, wire.InventoryProfileRequestDomain12, c.claims.KeyID, c.key)
 	if err != nil {
 		return empty, err
