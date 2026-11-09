@@ -13,12 +13,13 @@ import json
 import os
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from pathlib import Path
 
 from bao_fixture import fixture
-from dev import ROOT, STATE, initialize
+from dev import ROOT, STATE, bao_request, initialize
 from machine_smoke import main as harness
 
 STOP = False
@@ -136,6 +137,17 @@ def selftest_finish(args, c, agent, s):
     print('SELFTEST PASS ' + json.dumps(c), flush=True)
 
 
+def ensure_stack():
+    # PostgreSQL и OpenBao (docker compose) нужны стенду; если OpenBao не отвечает — поднимаем тем же dev.py up, что и CI.
+    try:
+        bao_request('/v1/sys/init')
+        return
+    except Exception:
+        pass
+    print('PostgreSQL/OpenBao не запущены: выполняю scripts/dev.py up (первый раз скачивает образы)', flush=True)
+    subprocess.run([sys.executable, str(ROOT / 'scripts/dev.py'), 'up'], cwd=ROOT, check=True)
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument('--public-host', default='127.0.0.1', help='адрес collector, который увидит агент (IP/имя Linux-ВМ)')
@@ -155,6 +167,7 @@ def main():
     signal.signal(signal.SIGTERM, _stop)
     signal.signal(signal.SIGINT, _stop)
     initialize()
+    ensure_stack()
     with tempfile.TemporaryDirectory(prefix='vmc-', dir=STATE) as temp:
         directory = Path(temp)
         with fixture(directory) as f:

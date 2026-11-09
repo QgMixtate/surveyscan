@@ -15,6 +15,7 @@ enroll против настоящего центра с Windows-агентом 
     sudo ufw allow 18443/tcp                 # если ufw включён
 
 ## Запуск центра (держать открытым, например в tmux)
+(Скрипт сам поднимает PostgreSQL/OpenBao через `scripts/dev.py up`, если они не запущены; можно выполнить `python3 scripts/dev.py up` заранее.)
     cd surveyscan/v2 && .contract-tools/bin/python scripts/vm_center.py --public-host <IP_Linux-ВМ> --collector-port 18443
 Печатает `READY …`, затем `STATUS {...}` каждые 20 с. Файлы для агента — в `v2/.local/vm-center/` (ca.pem, agent-config.windows.json).
 
