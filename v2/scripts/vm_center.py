@@ -1,0 +1,170 @@
+#!/usr/bin/env python3
+"""Стенд центра для проверки агента с другой машины (Windows/Linux ВМ), НЕ production.
+
+Поднимает тот же стенд, что и c15 relay smoke (PostgreSQL+OpenBao в docker, скомпилированные центр и collector,
+профиль 1.2 включён), но collector слушает наружу. Центр остаётся на loopback. Одноразовая синтетическая dev-CA.
+
+Порядок для ВМ: up -> агент делает prepare и кладёт вывод в OUT/prepare.json -> скрипт выдаёт grant в OUT/grant.json
+(действует 15 минут) -> агент делает enroll и run. Данные видны в центре; скрипт печатает счётчики.
+--selftest: роль агента играет скомпилированный Linux-агент (prepare, enroll, run12 демоном) — проверка самого стенда.
+"""
+import argparse
+import json
+import os
+import signal
+import subprocess
+import tempfile
+import time
+from pathlib import Path
+
+from bao_fixture import fixture
+from dev import ROOT, STATE, initialize
+from machine_smoke import main as harness
+
+STOP = False
+
+
+def _stop(*_):
+    global STOP
+    STOP = True
+
+
+def read_json(path):
+    raw = Path(path).read_bytes()
+    for enc in ('utf-8-sig', 'utf-16'):  # PowerShell 5.1 пишет UTF-16 при перенаправлении
+        try:
+            return json.loads(raw.decode(enc))
+        except (UnicodeError, ValueError):
+            continue
+    raise ValueError('prepare.json: не удалось разобрать JSON')
+
+
+def write_private(path, text):
+    path = Path(path)
+    if path.exists():
+        path.unlink()
+    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, 'w') as f:
+        f.write(text)
+
+
+def counters(sql):
+    sections = sql("SELECT coalesce(string_agg(section_name||'='||n,' ' ORDER BY section_name),'-') FROM (SELECT section_name,count(*) n FROM inventory.record_facts12 GROUP BY section_name) t")
+    return {'observations': int(sql('SELECT count(*) FROM inventory.observations')),
+            'assets': int(sql('SELECT count(*) FROM assets.assets')), 'facts_by_section': sections}
+
+
+def scenario(args, **s):
+    out = Path(args.out)
+    out.mkdir(parents=True, exist_ok=True)
+    os.chmod(out, 0o700)
+    ca = Path(s['ca_file']).read_bytes()
+    (out / 'ca.pem').write_bytes(ca)
+    base = {'tenant_id': s['tenant'], 'site_id': s['site'], 'network_scope_id': s['scope'],
+            'collector_url': f'https://{args.public_host}:{args.collector_port}', 'collector_source_id': s['collector_source'],
+            'inventory_seconds': 60, 'heartbeat_seconds': 30, 'jitter_percent': 0, 'spool_limit_bytes': 1048576}
+    windows = dict(base, ca_certificate_file=args.windows_root + '\\cfg\\ca.pem', state_directory=args.windows_root + '\\state')
+    (out / 'agent-config.windows.json').write_text(json.dumps(windows, indent=2))
+    (out / 'agent-config.linux.json').write_text(json.dumps(dict(base, ca_certificate_file='/CHANGE/ME/ca.pem', state_directory='/CHANGE/ME/state'), indent=2))
+    print(f"READY collector=https://{args.public_host}:{args.collector_port} out={out}", flush=True)
+    for name in ('prepare.json', 'grant.json'):
+        (out / name).unlink(missing_ok=True)
+    agent = None
+    if args.selftest:
+        agent = selftest_prepare(args, out, s)
+    issued = False
+    deadline = time.monotonic() + args.timeout
+    last = 0.0
+    while not STOP and time.monotonic() < deadline:
+        if not issued and (out / 'prepare.json').exists():
+            time.sleep(0.5)
+            prep = read_json(out / 'prepare.json')
+            body = {'tenant_id': s['tenant'], 'source_id': prep['source_id'], 'source_kind': 'agent', 'site_id': s['site'],
+                    'collector_id': s['collector_id'], 'ttl_seconds': 900, 'csr_sha256': prep['csr_sha256'],
+                    'signing_public_key': prep['signing_public_key'], 'inventory_platform': args.platform}
+            headers = {'Origin': s['origin'], 'Cookie': s['cookie'], 'X-CSRF-Token': s['session']['csrf_token']}
+            code, grant, _ = s['request'](s['tls_port'], s['plain'], 'POST', '/api/v1/enrollments', body, headers)
+            assert code == 201, f'grant refused: {code} {grant}'
+            write_private(out / 'grant.json', json.dumps(grant))
+            issued = True
+            print(f"GRANT issued for source {prep['source_id']} platform {args.platform} (valid 15 min) -> {out / 'grant.json'}", flush=True)
+            if args.selftest:
+                agent = selftest_enroll_run(args, out, agent)
+        if time.monotonic() - last > 20:
+            last = time.monotonic()
+            c = counters(s['sql'])
+            print('STATUS', json.dumps(c), flush=True)
+            if args.selftest and c['observations'] >= 1 and c['facts_by_section'].count('=') >= 8:
+                return selftest_finish(args, c, agent, s)
+        time.sleep(1)
+    if args.selftest:
+        raise AssertionError('selftest: данные агента не дошли до центра за отведённое время')
+
+
+def agent_bin():
+    return str(ROOT / '.dist/surveyscan-agent')
+
+
+def selftest_prepare(args, out, s):
+    work = Path(tempfile.mkdtemp(prefix='vmc-agent-', dir=STATE))
+    os.chmod(work, 0o700)
+    cfgdir = work / 'cfg'
+    cfgdir.mkdir(mode=0o700)
+    cfg = json.loads((out / 'agent-config.linux.json').read_text())
+    cfg.update(collector_url=f'https://127.0.0.1:{args.collector_port}', ca_certificate_file=str(cfgdir / 'ca.pem'), state_directory=str(work / 'state'))
+    write_private(cfgdir / 'ca.pem', (out / 'ca.pem').read_text())
+    write_private(cfgdir / 'agent.json', json.dumps(cfg))
+    prepared = subprocess.run([agent_bin(), 'prepare', '--config', str(cfgdir / 'agent.json')], capture_output=True, timeout=30)
+    assert prepared.returncode == 0, 'selftest agent prepare failed'
+    (out / 'prepare.json').write_bytes(prepared.stdout)
+    return {'config': str(cfgdir / 'agent.json'), 'process': None}
+
+
+def selftest_enroll_run(args, out, agent):
+    enrolled = subprocess.run([agent_bin(), 'enroll', '--config', agent['config'], '--grant-file', str(out / 'grant.json')], capture_output=True, timeout=60)
+    assert enrolled.returncode == 0, 'selftest agent enroll failed: ' + enrolled.stderr.decode()[:200]
+    agent['process'] = subprocess.Popen([agent_bin(), 'run12', '--config', agent['config']], stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    return agent
+
+
+def selftest_finish(args, c, agent, s):
+    process = agent['process']
+    assert process.poll() is None, 'selftest run12 daemon exited: ' + process.stderr.read().decode()[:300]
+    process.send_signal(signal.SIGTERM)
+    assert process.wait(timeout=20) == 0, 'run12 daemon did not stop cleanly on SIGTERM'
+    assert s['sql']("SELECT count(*) FROM sources.agents WHERE inventory_platform='linux/amd64'") == '1'
+    print('SELFTEST PASS ' + json.dumps(c), flush=True)
+
+
+def main():
+    p = argparse.ArgumentParser()
+    p.add_argument('--public-host', default='127.0.0.1', help='адрес collector, который увидит агент (IP/имя Linux-ВМ)')
+    p.add_argument('--bind', default=None, help='адрес прослушивания collector (по умолчанию 0.0.0.0 при внешнем host, иначе 127.0.0.1)')
+    p.add_argument('--collector-port', type=int, default=18443)
+    p.add_argument('--platform', default='windows/amd64', choices=['windows/amd64', 'linux/amd64'])
+    p.add_argument('--out', default=str(ROOT / '.local/vm-center'))
+    p.add_argument('--windows-root', default='C:\\surveyscan\\vm')
+    p.add_argument('--timeout', type=int, default=4 * 3600)
+    p.add_argument('--selftest', action='store_true')
+    args = p.parse_args()
+    if args.selftest:
+        args.platform = 'linux/amd64'
+        args.timeout = 420
+    os.environ['C15_COLLECTOR_BIND'] = args.bind or ('127.0.0.1' if args.public_host in ('127.0.0.1', 'localhost') else '0.0.0.0')
+    os.environ['C15_COLLECTOR_PORT'] = str(args.collector_port)
+    signal.signal(signal.SIGTERM, _stop)
+    signal.signal(signal.SIGINT, _stop)
+    initialize()
+    with tempfile.TemporaryDirectory(prefix='vmc-', dir=STATE) as temp:
+        directory = Path(temp)
+        with fixture(directory) as f:
+            issuer = directory / 'issuer'
+            r = subprocess.run([str(ROOT / '.dist/surveyscan-server'), 'bootstrap-issuer', '--config', f['config'], '--output-directory', str(issuer)], capture_output=True, timeout=30)
+            assert r.returncode == 0, 'scoped issuer bootstrap failed'
+            settings = {'config': f['config'], 'ca_certificate': str(issuer / 'ca.pem'), 'server_certificate': str(issuer / 'server.pem'),
+                        'server_private': str(issuer / 'server.key'), 'center_id': __import__('uuid').uuid4().__str__(), 'center_public': f['profile']['keys']['center']['public_key']}
+            harness(agent_scenario=lambda **s: scenario(args, **s), bao_settings=settings, report_directory=STATE, inventory12=True, collector_inventory12=True)
+
+
+if __name__ == '__main__':
+    main()

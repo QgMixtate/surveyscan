@@ -84,6 +84,8 @@ jobs:
         env:
           C15_SMOKE_PLATFORM: linux/amd64
         run: .contract-tools/bin/python scripts/c15_relay_smoke.py
+      - name: VM center stand selftest (grant by prepare.json, compiled Linux agent enroll and run12 daemon, facts in PostgreSQL)
+        run: .contract-tools/bin/python scripts/vm_center.py --selftest
       - name: Linux agent run12 stage exit code (not enrolled = 2) and non-root collection
         run: |
           set -eu

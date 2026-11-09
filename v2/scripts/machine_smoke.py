@@ -38,7 +38,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
    class PublicOnly:
     def public_key(self):return ed25519.Ed25519PublicKey.from_public_bytes(base64.urlsafe_b64decode(bao_settings['center_public']+'=='))
    center_key=PublicOnly()
-  tls_port,http_port,collector_port=freeport(),freeport(),freeport();machine_file=save('machine.json',json.dumps({'dev_mode':True,'listen':f'127.0.0.1:{tls_port}','ca_certificate_file':ca_file,'ca_private_key_file':ca_private,'server_certificate_file':server_file,'server_private_key_file':server_private,'center_signing_key_file':center_private}))
+  tls_port,http_port,collector_port=freeport(),freeport(),int(os.environ.get('C15_COLLECTOR_PORT') or freeport());machine_file=save('machine.json',json.dumps({'dev_mode':True,'listen':f'127.0.0.1:{tls_port}','ca_certificate_file':ca_file,'ca_private_key_file':ca_private,'server_certificate_file':server_file,'server_private_key_file':server_private,'center_signing_key_file':center_private}))
   if inventory12:
    cfg=json.loads(Path(machine_file).read_text());cfg['inventory12_enabled']=True;Path(machine_file).write_text(json.dumps(cfg))
   if bao_settings is not None:
@@ -90,7 +90,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
    body={'grant_id':permission['grant_id'],'source_id':collector_source,'csr_pem':csr.public_bytes(serialization.Encoding.PEM).decode(),'signing_public_key':b64(rawpublic(collector_sign))};status,collector_result,_=request(tls_port,plain,'POST','/api/v1/machine/enroll',body,{'Authorization':'Bearer '+permission['enrollment_token']});assert status==201
    collector_cert=save('collector.pem',collector_result['certificate_chain_pem']);collector_private=save('collector.key',private(collector_key));cert=x509.load_pem_x509_certificate(collector_result['certificate_chain_pem'].encode());uris=cert.extensions.get_extension_for_class(x509.SubjectAlternativeName).value.get_values_for_type(x509.UniformResourceIdentifier);collector_id=next(u.rsplit('/',1)[1] for u in uris if '/kind/collector/' in u)
    collector_signing=save('collector-signing.key',private(collector_sign))
-   cfg=save('collector.json',json.dumps({'source_id':collector_source,'credential_directory':str(directory/'collector-credentials'),'signing_private_key_file':collector_signing,'listen':f'127.0.0.1:{collector_port}','center_url':origin,'certificate_file':collector_cert,'private_key_file':collector_private,'ca_certificate_file':ca_file,'spool_directory':str(directory/'spool'),'spool_limit_bytes':1048576}))
+   cfg=save('collector.json',json.dumps({'source_id':collector_source,'credential_directory':str(directory/'collector-credentials'),'signing_private_key_file':collector_signing,'listen':f"{os.environ.get('C15_COLLECTOR_BIND','127.0.0.1')}:{collector_port}",'center_url':origin,'certificate_file':collector_cert,'private_key_file':collector_private,'ca_certificate_file':ca_file,'spool_directory':str(directory/'spool'),'spool_limit_bytes':1048576}))
    if collector_inventory12:
     collector_settings=json.loads(Path(cfg).read_text());collector_settings['inventory12_enabled']=True;Path(cfg).write_text(json.dumps(collector_settings))
    collector_process=start('collector',[str(ROOT/'.dist/surveyscan-collector'),'run','--config',cfg]);collector_name=collector_source+'.collector.invalid';ready(collector_port,plain,collector_name);checks.append('compiled collector enrolls and starts HTTPS daemon')
