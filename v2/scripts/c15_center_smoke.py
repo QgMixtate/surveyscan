@@ -29,6 +29,11 @@ from dev import ROOT, STATE, initialize
 from machine_smoke import main as harness, b64, rawpublic
 
 
+PLATFORM = os.environ.get('C15_SMOKE_PLATFORM', 'windows/amd64')
+LINUX = PLATFORM == 'linux/amd64'
+POLICY = 'linux-amd64-partial-baseline-v1' if LINUX else 'windows-amd64-partial-baseline-v1'
+
+
 def scenario(relay12=False, **s):
     checks, request, sql = s['checks'], s['request'], s['sql']
     collector = s['collector_result']
@@ -65,8 +70,19 @@ def scenario(relay12=False, **s):
                    collected_at=stamp, origin={'source_id': source, 'source_kind': 'agent', 'generation_id': identity['generation_id']},
                    source_record={'namespace': 'host', 'source_local_id': 'synthetic-windows12'},
                    scope={'site_id': s['site'], 'network_scope_id': s['scope']})
-    for section in payload['sections']:
-        section.update(collected_at=stamp, status='partial', collection_complete=False)
+    if LINUX:
+        # Настоящий разовый сбор скомпилированным Linux-агентом (collect12), а не фикстура Windows.
+        collected = subprocess.run([str(ROOT / '.dist/surveyscan-agent'), 'collect12'], capture_output=True, timeout=90)
+        assert collected.returncode == 0, 'compiled agent collect12 failed'
+        snapshot = json.loads(collected.stdout)
+        payload['sections'] = snapshot['sections']
+        payload['identity_candidates'] = snapshot['identity_candidates']
+        payload['source_record'] = {'namespace': 'host', 'source_local_id': 'live-linux12'}
+        for section in payload['sections']:
+            section['collected_at'] = stamp
+    else:
+        for section in payload['sections']:
+            section.update(collected_at=stamp, status='partial', collection_complete=False)
     canonical = rfc8785.dumps(payload)
     record = {'payload': payload, 'digest': hashlib.sha256(canonical).hexdigest(),
               'key_id': identity['signing_key_id'],
@@ -108,7 +124,7 @@ def scenario(relay12=False, **s):
     def profile_request(applied):
         profile_nonce = b64(os.urandom(32))
         now = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec='microseconds').replace('+00:00', 'Z')
-        value = {'schema_version':{'major':1,'minor':2}, 'tenant_id':s['tenant'], 'origin':payload['origin'], 'nonce':profile_nonce, 'sent_at':now, 'platform':'windows/amd64', 'applied':applied}
+        value = {'schema_version':{'major':1,'minor':2}, 'tenant_id':s['tenant'], 'origin':payload['origin'], 'nonce':profile_nonce, 'sent_at':now, 'platform':PLATFORM, 'applied':applied}
         body = rfc8785.dumps(value)
         signed = {'payload':value, 'digest':hashlib.sha256(body).hexdigest(), 'key_id':identity['signing_key_id'], 'signature':b64(agent_sign.sign(b'SURVEYSCAN-INVENTORY-PROFILE-REQUEST-V1-2\n' + body))}
         code, result, _ = request(port, client, 'POST', '/api/v1/machine/inventory-profile', signed, sni=sni)
@@ -117,7 +133,7 @@ def scenario(relay12=False, **s):
         center_public.verify(base64.urlsafe_b64decode(result['signature'] + '=='), b'SURVEYSCAN-INVENTORY-PROFILE-RESPONSE-V1-2\n' + canonical_profile)
         assert result['digest'] == hashlib.sha256(canonical_profile).hexdigest() and result['key_id'] == collector['center_result_key_id']
         assert value['tenant_id'] == s['tenant'] and value['origin'] == payload['origin'] and value['nonce'] == profile_nonce
-        assert value['config']['collector_id'] == s['collector_id'] and value['config']['policy_id'] == 'windows-amd64-partial-baseline-v1'
+        assert value['config']['collector_id'] == s['collector_id'] and value['config']['policy_id'] == POLICY and value['config']['platform'] == PLATFORM
         assert value['config']['worker_timeout_seconds'] == 30 and value['config']['collection_timeout_seconds'] == 420
         assert set(value['config']['sections']) == {section['name'] for section in payload['sections']}
         return result
@@ -158,9 +174,9 @@ def scenario(relay12=False, **s):
     assert applied['observation_digest'] == record['digest'] and applied['disposition'] == 'applied' and applied['spool_action'] == 'remove'
     asset = applied['asset_uid']
     assert sql('SELECT count(*) FROM inventory.observations') == '1'
-    assert sql('SELECT count(DISTINCT section_name) FROM inventory.record_facts12') == '12'
+    assert sql('SELECT count(DISTINCT section_name) FROM inventory.record_facts12') == ('8' if LINUX else '12')  # Linux: 4 секции явно unsupported без строк
     checks.append('actual mTLS courier forwards delegated signed synthetic agent1.2 to compiled center; all12sections commit inPG with history/audit/outbox and verified unchanged ACK1.0')
-    path = '/api/v1/assets/' + asset + '/inventory/facts/services'
+    path = '/api/v1/assets/' + asset + '/inventory/facts/' + ('software' if LINUX else 'services')
     code, page, _ = request(s['tls_port'], s['plain'], 'GET', path, headers={'Cookie': s['cookie']})
     assert code == 200 and page['schema_version'] == {'major': 1, 'minor': 2} and page['items']
     assert all(f['evidence']['observation_id'] == payload['observation_id'] for f in page['items'])
@@ -239,7 +255,7 @@ def scenario(relay12=False, **s):
 
 def main(relay12=False):
     initialize()
-    report_path = STATE / ('c15-relay-smoke.json' if relay12 else 'c15-center-smoke.json')
+    report_path = STATE / (('c15-relay-smoke' if relay12 else 'c15-center-smoke') + ('-linux' if LINUX else '') + '.json')
     report_path.write_text(json.dumps({'package':'C15','status':'in_progress','mode':'relay' if relay12 else 'center','started_at':datetime.datetime.now(datetime.timezone.utc).isoformat()}) + '\n')
     with tempfile.TemporaryDirectory(prefix='c15-center-', dir=STATE) as temp:
         directory = Path(temp)

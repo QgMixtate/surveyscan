@@ -84,6 +84,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
     return key,signing,csr
    def grant(source,kind,collector,key,csr):
     body={'tenant_id':tenant,'source_id':source,'source_kind':kind,'site_id':site,'collector_id':collector,'ttl_seconds':900,'csr_sha256':hashlib.sha256(csr.public_bytes(serialization.Encoding.DER)).hexdigest(),'signing_public_key':b64(rawpublic(key))}
+    if kind=='agent' and os.environ.get('C15_SMOKE_PLATFORM'):body['inventory_platform']=os.environ['C15_SMOKE_PLATFORM']
     status,result,_=request(tls_port,plain,'POST','/api/v1/enrollments',body,{'Origin':browser_origin,'Cookie':cookie,'X-CSRF-Token':session['csrf_token']});assert status==201;return result
    collector_source=uid();collector_key,collector_sign,csr=enroll_material();permission=grant(collector_source,'collector',None,collector_sign,csr)
    body={'grant_id':permission['grant_id'],'source_id':collector_source,'csr_pem':csr.public_bytes(serialization.Encoding.PEM).decode(),'signing_public_key':b64(rawpublic(collector_sign))};status,collector_result,_=request(tls_port,plain,'POST','/api/v1/machine/enroll',body,{'Authorization':'Bearer '+permission['enrollment_token']});assert status==201

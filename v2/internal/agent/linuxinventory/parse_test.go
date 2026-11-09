@@ -103,3 +103,29 @@ func TestMountsStackedKeepsTopmost(t *testing.T) {
 		t.Fatalf("%v", rows)
 	}
 }
+
+func TestSocketsIPv4MappedBecomeIPv4(t *testing.T) {
+	// ::ffff:127.0.0.1 -> ::ffff:10.0.0.5 (двухстековый сокет), слушатель на :: и смешанная пара.
+	tcp6 := "  sl a b st\n" +
+		"   0: 0000000000000000FFFF00000100007F:0016 0000000000000000FFFF0000050000" + "0A:C350 01 0:0\n" +
+		"   1: 00000000000000000000000000000000:0050 00000000000000000000000000000000:0000 0A 0:0\n" +
+		"   2: 0000000000000000FFFF00000100007F:0051 00000000000000000000000001000000:0000 0A 0:0\n"
+	rows := Sockets("tcp", tcp6, true)
+	if len(rows) != 2 {
+		t.Fatalf("mixed v4/v6 pair must be skipped: %v", rows)
+	}
+	var mapped, wildcard Row
+	for _, r := range rows {
+		if r["local_port"] == uint64(22) {
+			mapped = r
+		} else {
+			wildcard = r
+		}
+	}
+	if mapped["family"] != "ipv4" || mapped["local_address"] != "127.0.0.1" || mapped["remote_address"] != "10.0.0.5" {
+		t.Fatalf("%v", mapped)
+	}
+	if wildcard["family"] != "ipv6" || wildcard["local_address"] != "::" {
+		t.Fatalf("pure ipv6 wildcard changed: %v", wildcard)
+	}
+}

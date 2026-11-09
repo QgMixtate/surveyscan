@@ -25,6 +25,9 @@ func run() error {
 	if handled, err := runNativeWorker(os.Args[1:]); handled {
 		return err
 	}
+	if handled, err := runCollect12(os.Args[1:]); handled {
+		return err
+	}
 	if handled, err := runServiceCommand(os.Args[1:]); handled {
 		return err
 	}

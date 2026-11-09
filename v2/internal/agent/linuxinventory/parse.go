@@ -231,7 +231,28 @@ func Sockets(proto, text string, v6 bool) []Row {
 		} else if state == "" {
 			continue
 		}
-		row := Row{"kind": proto, "family": family, "local_address": lip.String(), "local_port": lport, "remote_address": rip.String(), "remote_port": rport}
+		rowFamily := family
+		if v6 && (lip.Is4In6() || rip.Is4In6()) {
+			// Двухстековый сокет с IPv4-партнёром (::ffff:a.b.c.d) — это IPv4-соединение; контракт не
+			// допускает IPv4-mapped в строках ipv6, поэтому адреса разворачиваются, "::" → 0.0.0.0.
+			rowFamily = "ipv4"
+			norm := func(a netip.Addr) (netip.Addr, bool) {
+				if a.Is4In6() {
+					return a.Unmap(), true
+				}
+				if a.IsUnspecified() {
+					return netip.IPv4Unspecified(), true
+				}
+				return a, a.Is4()
+			}
+			var ok1, ok2 bool
+			lip, ok1 = norm(lip)
+			rip, ok2 = norm(rip)
+			if !ok1 || !ok2 {
+				continue // смешанная пара IPv4/IPv6 не представима в контракте
+			}
+		}
+		row := Row{"kind": proto, "family": rowFamily, "local_address": lip.String(), "local_port": lport, "remote_address": rip.String(), "remote_port": rport}
 		if state != "" {
 			row["state"] = state
 		}
