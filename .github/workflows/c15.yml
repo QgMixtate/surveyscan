@@ -193,6 +193,22 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Get-Content (Join-Path $base 'vmcheck-report.txt') -ErrorAction SilentlyContinue; throw "windows-vm-check.ps1 failed ($LASTEXITCODE)" }
           Get-Content (Join-Path $base 'vmcheck-report.txt')
           exit 0
+      - name: windows-vm-enroll.ps1 prepare step under Windows PowerShell 5.1 (synthetic template and CA; enroll needs a real center, not run here)
+        working-directory: v2
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $base = Join-Path $env:RUNNER_TEMP 'vmenroll-ci'
+          New-Item -ItemType Directory -Force -Path $base | Out-Null
+          $template = Join-Path $base 'agent-config.windows.json'
+          @{ tenant_id = [guid]::NewGuid().ToString(); site_id = [guid]::NewGuid().ToString(); network_scope_id = [guid]::NewGuid().ToString(); collector_url = 'https://collector.invalid:18443'; collector_source_id = [guid]::NewGuid().ToString(); ca_certificate_file = 'X'; state_directory = 'X'; inventory_seconds = 60; heartbeat_seconds = 30; jitter_percent = 0; spool_limit_bytes = 1048576 } | ConvertTo-Json | Set-Content $template -Encoding ascii
+          Set-Content (Join-Path $base 'ca.pem') 'synthetic' -Encoding ascii
+          & powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\scripts\windows-vm-enroll.ps1 -Step prepare -Exe (Resolve-Path .\surveyscan-agent.exe).Path -Root (Join-Path $base 'vm') -ConfigTemplate $template -CA (Join-Path $base 'ca.pem')
+          if ($LASTEXITCODE -ne 0) { throw "windows-vm-enroll.ps1 prepare failed ($LASTEXITCODE)" }
+          $prep = Get-Content (Join-Path $base 'vm\prepare.json') -Raw | ConvertFrom-Json
+          if (-not $prep.source_id -or -not $prep.csr_sha256 -or -not $prep.signing_public_key) { throw 'prepare.json lacks fields the center needs' }
+          Write-Output "prepare.json OK for source $($prep.source_id)"
+          exit 0
       - name: Package test agent binary for manual Windows VM check (build output only, no keys or data)
         working-directory: v2
         shell: pwsh
@@ -202,6 +218,7 @@ jobs:
           Copy-Item .\surveyscan-agent.exe ..\agent-vm\surveyscan-agent.exe
           (Get-FileHash ..\agent-vm\surveyscan-agent.exe -Algorithm SHA256).Hash.ToLower() + '  surveyscan-agent.exe' | Set-Content ..\agent-vm\surveyscan-agent.exe.sha256 -Encoding ascii
           Copy-Item .\scripts\windows-vm-check.ps1 ..\agent-vm\windows-vm-check.ps1
+          Copy-Item .\scripts\windows-vm-enroll.ps1 ..\agent-vm\windows-vm-enroll.ps1
           Write-Output "commit ${env:GITHUB_SHA}" | Set-Content ..\agent-vm\BUILD.txt -Encoding ascii
           exit 0
       - uses: actions/upload-artifact@v4
