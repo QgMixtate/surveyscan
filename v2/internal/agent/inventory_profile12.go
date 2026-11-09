@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -57,7 +58,9 @@ func (c *Client) fetchInventoryProfile12(ctx context.Context, negotiated Invento
 	}
 	defer response.Body.Close()
 	if response.StatusCode != 200 || response.TLS == nil || len(response.TLS.VerifiedChains) == 0 || len(response.TLS.PeerCertificates) == 0 {
-		return empty, errors.New("authenticated inventory profile unavailable")
+		// Код и короткий код ошибки сервера (без тела запроса и секретов) — для диагностики; наружу идут только при SURVEYSCAN_AGENT_DEBUG=1.
+		snippet, _ := io.ReadAll(io.LimitReader(response.Body, 200))
+		return empty, fmt.Errorf("authenticated inventory profile unavailable: HTTP %d %s", response.StatusCode, bytes.TrimSpace(snippet))
 	}
 	peer, err := pki.ClaimsFromCertificate(response.TLS.PeerCertificates[0])
 	if err != nil || peer.Kind != "collector" || peer.Tenant != c.claims.Tenant || peer.Source != c.cfg.CollectorSource || peer.Collector != c.claims.Collector {
