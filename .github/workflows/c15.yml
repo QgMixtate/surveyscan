@@ -182,3 +182,19 @@ jobs:
           if ($before.source_id -ne $after.source_id -or $before.csr_sha256 -ne $after.csr_sha256) { throw 'identity changed across upgrade' }
           Write-Output "identity preserved across reinstall/upgrade (source $($after.source_id)); no enroll, no reboot"
           exit 0
+      - name: Package test agent binary for manual Windows VM check (build output only, no keys or data)
+        working-directory: v2
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          New-Item -ItemType Directory -Force -Path ..\agent-vm | Out-Null
+          Copy-Item .\surveyscan-agent.exe ..\agent-vm\surveyscan-agent.exe
+          (Get-FileHash ..\agent-vm\surveyscan-agent.exe -Algorithm SHA256).Hash.ToLower() + '  surveyscan-agent.exe' | Set-Content ..\agent-vm\surveyscan-agent.exe.sha256 -Encoding ascii
+          Write-Output "commit ${env:GITHUB_SHA}" | Set-Content ..\agent-vm\BUILD.txt -Encoding ascii
+          exit 0
+      - uses: actions/upload-artifact@v4
+        with:
+          name: surveyscan-agent-windows-amd64-test
+          path: agent-vm/
+          retention-days: 14
+          if-no-files-found: error
