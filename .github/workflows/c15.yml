@@ -156,3 +156,29 @@ jobs:
             Write-Output 'service uninstalled'
           }
           exit 0
+      - name: Service reinstall and binary upgrade keep the prepared identity (no enroll)
+        working-directory: v2
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $exe = (Resolve-Path .\surveyscan-agent.exe).Path
+          $file = Join-Path $env:RUNNER_TEMP 'c15-service\cfg\agent.json'
+          $before = (& $exe prepare --config $file) | ConvertFrom-Json
+          # Обновление: новый путь бинарника, служба переустановлена, состояние то же.
+          $newExe = Join-Path $env:RUNNER_TEMP 'c15-upgraded-agent.exe'
+          Copy-Item $exe $newExe -Force
+          $name = 'SurveyscanAgentCiUpgrade'
+          & $newExe install-service --name $name --config $file
+          if ($LASTEXITCODE -ne 0) { throw 'install after upgrade failed' }
+          try {
+            & sc.exe start $name | Out-Null
+            Start-Sleep -Seconds 4
+            $q = (& sc.exe queryex $name) -join ' '
+            if ($q -notmatch 'SERVICE_EXIT_CODE\s*:\s*2\b') { throw "service did not reach Open after upgrade: $($q -replace '\s+',' ')" }
+          } finally {
+            & $newExe uninstall-service --name $name
+          }
+          $after = (& $newExe prepare --config $file) | ConvertFrom-Json
+          if ($before.source_id -ne $after.source_id -or $before.csr_sha256 -ne $after.csr_sha256) { throw 'identity changed across upgrade' }
+          Write-Output "identity preserved across reinstall/upgrade (source $($after.source_id)); no enroll, no reboot"
+          exit 0
