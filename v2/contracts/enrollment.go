@@ -14,6 +14,8 @@ type EnrollmentGrantRequest struct {
 	TTL         int     `json:"ttl_seconds"`
 	CSRHash     string  `json:"csr_sha256"`
 	PublicKey   string  `json:"signing_public_key"`
+	// InventoryPlatform — необязательная платформа агента (только source_kind=agent); по умолчанию windows/amd64.
+	InventoryPlatform string `json:"inventory_platform,omitempty"`
 }
 type EnrollmentGrant struct {
 	ID       string    `json:"grant_id"`

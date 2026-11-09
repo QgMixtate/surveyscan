@@ -88,8 +88,19 @@ func InventorySpoolOffer12(limit int64) (InventoryOffer12, error) {
 	canonical := min(max.CanonicalBytes, signed-(64<<10))
 	return NegotiateInventory12(InventoryOffer12{true, true, canonical, signed, batch, max.Records}, max, max)
 }
+
+// InventoryConfigFromCommon12 строит конфиг для платформы Windows (прежнее поведение).
 func InventoryConfigFromCommon12(common contracts.MachineConfig) (contracts.InventoryConfig12, error) {
+	return InventoryConfigForPlatform12(common, contracts.InventoryPlatform12)
+}
+
+// InventoryConfigForPlatform12 строит конфиг для зарегистрированной платформы агента.
+func InventoryConfigForPlatform12(common contracts.MachineConfig, platform string) (contracts.InventoryConfig12, error) {
 	var empty contracts.InventoryConfig12
+	policy, ok := contracts.InventoryPolicyFor12(platform)
+	if !ok {
+		return empty, domain.Invalid
+	}
 	if common.CollectorID == nil {
 		return empty, domain.Invalid
 	}
@@ -97,7 +108,7 @@ func InventoryConfigFromCommon12(common contracts.MachineConfig) (contracts.Inve
 	if err != nil {
 		return empty, err
 	}
-	c := contracts.InventoryConfig12{SourceID: common.SourceID, CollectorID: *common.CollectorID, Revision: common.Revision, Policy: contracts.InventoryPolicy12, Platform: contracts.InventoryPlatform12, Sections: []string{"identity", "os", "network", "hardware", "software", "updates", "services", "users_groups", "routes_ports", "resources", "protection", "neighbors"}, Heartbeat: common.Heartbeat, Inventory: common.Inventory, Jitter: common.Jitter, SpoolBytes: common.SpoolBytes, WorkerSeconds: 30, CollectionSeconds: 420, SnapshotMode: "partial", Observation: contracts.Version{Major: 1, Minor: 2}, Batch: contracts.Version{Major: 1, Minor: 2}, Limits: contracts.InventoryLimits12{CanonicalBytes: offer.CanonicalBytes, SignedBytes: offer.SignedBytes, BatchBytes: offer.BatchBytes, Records: offer.Records}}
+	c := contracts.InventoryConfig12{SourceID: common.SourceID, CollectorID: *common.CollectorID, Revision: common.Revision, Policy: policy, Platform: platform, Sections: []string{"identity", "os", "network", "hardware", "software", "updates", "services", "users_groups", "routes_ports", "resources", "protection", "neighbors"}, Heartbeat: common.Heartbeat, Inventory: common.Inventory, Jitter: common.Jitter, SpoolBytes: common.SpoolBytes, WorkerSeconds: 30, CollectionSeconds: 420, SnapshotMode: "partial", Observation: contracts.Version{Major: 1, Minor: 2}, Batch: contracts.Version{Major: 1, Minor: 2}, Limits: contracts.InventoryLimits12{CanonicalBytes: offer.CanonicalBytes, SignedBytes: offer.SignedBytes, BatchBytes: offer.BatchBytes, Records: offer.Records}}
 	if err = inventoryConfig12(c); err != nil {
 		return empty, err
 	}

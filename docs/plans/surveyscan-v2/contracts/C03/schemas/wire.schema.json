@@ -1044,6 +1044,12 @@
         "signing_public_key": {
           "type": "string",
           "pattern": "^[A-Za-z0-9_-]{43}$"
+        },
+        "inventory_platform": {
+          "enum": [
+            "windows/amd64",
+            "linux/amd64"
+          ]
         }
       },
       "required": [

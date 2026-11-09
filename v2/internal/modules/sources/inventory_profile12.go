@@ -54,7 +54,15 @@ func (s *MachineService) PollInventoryProfile12(ctx context.Context, fp string, 
 	if err != nil {
 		return empty, err
 	}
-	config, err := wire.InventoryConfigFromCommon12(common)
+	// Платформа берётся из регистрации источника; самозаявленная платформа запроса обязана совпасть.
+	var platform string
+	if err = tx.QueryRow(ctx, `SELECT inventory_platform FROM sources.agents WHERE tenant_id=$1 AND source_id=$2`, req.Tenant, req.Origin.SourceID).Scan(&platform); err != nil {
+		return empty, domain.Unauthorized
+	}
+	if req.Platform != platform {
+		return empty, domain.Invalid
+	}
+	config, err := wire.InventoryConfigForPlatform12(common, platform)
 	if err != nil {
 		return empty, err
 	}
@@ -78,7 +86,7 @@ func (s *MachineService) PollInventoryProfile12(ctx context.Context, fp string, 
 		}
 		applied = &req.Applied.Common
 	}
-	_, err = tx.Exec(ctx, `INSERT INTO sources.inventory_profile_progress12(tenant_id,source_id,generation_id,policy_id,offered_revision,applied_revision) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(tenant_id,source_id,generation_id) DO UPDATE SET offered_revision=GREATEST(sources.inventory_profile_progress12.offered_revision,excluded.offered_revision),applied_revision=GREATEST(sources.inventory_profile_progress12.applied_revision,excluded.applied_revision),last_profile_contact_at=clock_timestamp()`, req.Tenant, req.Origin.SourceID, req.Origin.GenerationID, contracts.InventoryPolicy12, config.Revision, applied)
+	_, err = tx.Exec(ctx, `INSERT INTO sources.inventory_profile_progress12(tenant_id,source_id,generation_id,policy_id,offered_revision,applied_revision) VALUES($1,$2,$3,$4,$5,$6) ON CONFLICT(tenant_id,source_id,generation_id) DO UPDATE SET offered_revision=GREATEST(sources.inventory_profile_progress12.offered_revision,excluded.offered_revision),applied_revision=GREATEST(sources.inventory_profile_progress12.applied_revision,excluded.applied_revision),last_profile_contact_at=clock_timestamp()`, req.Tenant, req.Origin.SourceID, req.Origin.GenerationID, config.Policy, config.Revision, applied)
 	if err != nil {
 		return empty, err
 	}
@@ -118,7 +126,11 @@ func (s *MachineService) InventoryProfile12View(ctx context.Context, actor acces
 	if err != nil {
 		return out, err
 	}
-	out.Config, err = wire.InventoryConfigFromCommon12(common)
+	var platform string
+	if err = tx.QueryRow(ctx, `SELECT inventory_platform FROM sources.agents WHERE tenant_id=$1 AND source_id=$2`, actor.TenantID, source).Scan(&platform); err != nil {
+		return out, err
+	}
+	out.Config, err = wire.InventoryConfigForPlatform12(common, platform)
 	if err != nil {
 		return out, err
 	}
