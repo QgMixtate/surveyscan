@@ -33,3 +33,10 @@ Linux-ВМ (Ubuntu 24.04, root, Docker, Go 1.27.3 в /usr/local/go, репози
 4. Дальше по плану: C16.02 (rpm/apk, systemd-службы, DMI), C16.04; C17 (SSH-сбор Linux).
 Диагностика: SURVEYSCAN_AGENT_DEBUG=1 печатает тексты ошибок цикла; scripts/validate_pending.py, scripts/verify_pending_signature.py,
 `PENDING=… go test -tags=diag -run TestDiagPending ./internal/modules/inventory` разбирают отвергнутые наблюдения.
+
+## Базовый снимок длительного прогона (soak-start), 2026-11-09 22:51 UTC (данные пользователя)
+Windows (служба SurveyscanAgentVm, build 0.0.1-upgrade-test, PID 4800, старт 1:46:43 местного): sequences.json inventory=26 heartbeat=74;
+WS 24 272 896, PM 59 199 488, HandleCount 161; w32tm Source 10.170.108.2, Last Successful Sync 1:50:49 местного.
+Linux (центр): observations count=18, max(source_sequence)=26 (номера 9..26), assets=1. Питание Windows: standby/hibernate/monitor timeout = 0 (AC).
+Утром сравнить: нумерация без пропусков, assets=1, WS/PM/HandleCount (рост?), w32tm Source и «Last Successful Sync», служба RUNNING, центр жив.
+Риск: центр vm_center.py живёт в окне SSH — закрытие окна останавливает центр.
