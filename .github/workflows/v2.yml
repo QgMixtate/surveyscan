@@ -84,6 +84,39 @@ jobs:
         env:
           C15_SMOKE_PLATFORM: linux/amd64
         run: .contract-tools/bin/python scripts/c15_relay_smoke.py
+      - name: Linux agent run12 stage exit code (not enrolled = 2) and non-root collection
+        run: |
+          set -eu
+          BIN="$PWD/.dist/surveyscan-agent"
+          WORK="$(mktemp -d)"; chmod 700 "$WORK"; mkdir "$WORK/cfg"; chmod 700 "$WORK/cfg"
+          python3 - "$WORK" <<'PY'
+          import json, sys, uuid
+          w = sys.argv[1]
+          cfg = {'tenant_id': str(uuid.uuid4()), 'site_id': str(uuid.uuid4()), 'network_scope_id': str(uuid.uuid4()),
+                 'collector_url': 'https://collector.invalid', 'collector_source_id': str(uuid.uuid4()),
+                 'ca_certificate_file': w + '/cfg/ca.pem', 'state_directory': w + '/state'}
+          open(w + '/cfg/agent.json', 'w').write(json.dumps(cfg))
+          PY
+          chmod 600 "$WORK/cfg/agent.json"
+          "$BIN" prepare --config "$WORK/cfg/agent.json" > "$WORK/prepare1.json"
+          # Обновление: новый бинарник по другому пути на том же состоянии — личность прежняя.
+          cp "$BIN" "$WORK/surveyscan-agent-upgraded" && chmod 755 "$WORK/surveyscan-agent-upgraded"
+          "$WORK/surveyscan-agent-upgraded" prepare --config "$WORK/cfg/agent.json" > "$WORK/prepare2.json"
+          cmp "$WORK/prepare1.json" "$WORK/prepare2.json" || { echo "identity changed across binary replacement"; exit 1; }
+          set +e; "$BIN" run12 --config "$WORK/cfg/agent.json" > /dev/null 2>&1; rc=$?; set -e
+          test "$rc" -eq 2 || { echo "run12 unenrolled exit $rc, want 2 (Open)"; exit 1; }
+          # Сбор без root: тот же набор секций (профиль прав «ограниченные»).
+          cp "$BIN" /tmp/surveyscan-agent-nonroot && chmod 755 /tmp/surveyscan-agent-nonroot
+          sudo -u nobody /tmp/surveyscan-agent-nonroot collect12 > "$WORK/nonroot.json"
+          python3 - "$WORK/nonroot.json" <<'PY'
+          import json, sys
+          sections = {s['name']: s for s in json.load(open(sys.argv[1]))['sections']}
+          for name in ('identity', 'os', 'network', 'hardware', 'users_groups', 'routes_ports', 'resources'):
+              assert sections[name]['status'] == 'partial' and sections[name]['records'], name
+          for name in ('updates', 'services', 'protection', 'neighbors'):
+              assert sections[name]['status'] == 'unsupported', name
+          print('non-root collect12: 7 sections partial, 4 unsupported')
+          PY
       - name: Live agent TLS key rotation and committed ACK loss
         run: .contract-tools/bin/python scripts/renewal_smoke.py
       - name: Collector TLS rotation, queues, committed ACK loss and race-checked hot reload

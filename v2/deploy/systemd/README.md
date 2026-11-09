@@ -50,3 +50,20 @@ parser/libs/targets и собственный staged filesystem. Bao unit не �
 Debian12/systemd, включает все службы, выполняет kernel reboot, sealed-Bao degraded startup,
 operator unseal, replay pending, combined update и CLI/Web. Два fresh VM по9 checks прошли локально
 и в hosted CI. Нет claim о physical power loss, production custody/DR/HA или100users.
+
+## Linux agent: профиль инвентаризации 1.2 (C16.03, частично)
+
+Режим включается drop-in `surveyscan-agent.service.d/run12.conf` (подменяет `ExecStart` на `run12`,
+`RestartPreventExitStatus=2`); прежний `run` (профиль 1.0) остаётся по умолчанию. Центр должен знать
+платформу агента: `inventory_platform: linux/amd64` в заявке на grant при регистрации (иначе Windows
+по умолчанию, и профиль 1.2 для Linux-агента будет отвергнут), а в центре/collector включён профиль 1.2.
+Коды выхода `run12`: 0 нормальная остановка; 1 общая ошибка/этап «состояние» без отдельного кода; 2 этап
+Open (нет личности/не зарегистрирован/не доверенное состояние); 3 очередь; 4 клиент/лимиты 1.2.
+Сервис работает не от root (User=surveyscan-agent, StateDirectory 0700): на проверенном хосте без root собираются те же
+7 секций (identity, os, network, hardware, users_groups, routes_ports, resources) плюс software из dpkg;
+поля, требующие root (DMI serial/uuid, PID сокетов, firewall), пока не собираются вовсе.
+Обновление: остановить службу, заменить бинарник/symlink, запустить; личность и очередь лежат в
+StateDirectory и не пересоздаются (проверка: `prepare` новым бинарником даёт ту же личность). Одновременный второй
+писатель отвергается блокировкой состояния.
+Не проверено: реальный запуск под systemd PID1 (unit проверен только `systemd-analyze verify`), другие дистрибутивы,
+init кроме systemd, update с работающей зарегистрированной личностью и непустой очередью именно для run12.

@@ -112,6 +112,12 @@ func main() {
 		if errors.As(e, &ee) {
 			os.Exit(ee.code)
 		}
+		// Этап завершения цикла (1 состояние, 2 Open, 3 очередь, 4 клиент 1.2) — код выхода процесса:
+		// по нему супервизор и оператор отличают «не зарегистрирован» от отказа ACL/блокировки.
+		var st *agent.StageError
+		if errors.As(e, &st) && st.Code > 0 && st.Code < 256 {
+			os.Exit(int(st.Code))
+		}
 		os.Exit(1)
 	}
 }
