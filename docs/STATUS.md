@@ -8,6 +8,7 @@ Windows-адаптеры privatefile/diskspool (Lock/Atomic/SyncDir/RecoverTemps
 Проверено на 7d67248: c15 Windows Server 2022 (42515541316), v2 (42515541308), boot (42515541314) — success;
 web/evidence на этот SHA не запускались (path-фильтры), «все 5 workflow» не заявляется. Не runtime, не ordinary rights/Win11.
 Windows runtime путь 1 (отдельный цикл): W1 state/lock, W2 batch 1.2, W3a доставка, W3b цикл RunWindows, W4a Prepare — зелёные (последний e3802d5). Решение пользователя: сквозная интеграция — на Windows-ВМ по runbook handoffs/C15-windows-vm-integration.md (в CI не гоняется); enroll/bind-host/renew и RunWindows не проверены. C15.03 начат: доверие ACL для SYSTEM/Administrators и пакет winservice (SCM) зелёные на 9355cfb. Команды агента install-service/uninstall-service/service и нативный тест SYSTEM-службы (доходит до Open, ACL администратора принят, uninstall) зелёные на e3759bd. Не проверено: перезагрузка, обновление, Win11/обычные права, ВМ. Дальше: C15.04 (обновление/перезагрузка), сквозной прогон на ВМ.
+**10 ноября 2026 (Claude, R-025).** На реальной ВМ Windows Server 2019 пройдены V1–V4 и первая оценка V9 (служба, сквозной enroll→центр на Ubuntu 24.04, reboot, подмена бинарника); Linux-платформа внутри профиля 1.2 (этапы 1–6, run12, collect12) закрыта в CI. 57/200 не менялся; C15.02 in_progress. Состояние и открытые проверки — handoffs/C15-C16-session-handoff.md.
 Историю вести в REQUESTS (R-024+) и handoffs/C15.md; ниже — прежний срез Codex от 6 ноября.
 
 6 ноября 2026.57/200done; C15.02 in_progress. Ветка codex/v2-c15-windows,
