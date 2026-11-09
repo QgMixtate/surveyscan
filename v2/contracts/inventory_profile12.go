@@ -10,6 +10,20 @@ var InventoryProfile12Files embed.FS
 
 const InventoryPolicy12 = "windows-amd64-partial-baseline-v1"
 const InventoryPlatform12 = "windows/amd64"
+const InventoryPolicyLinux12 = "linux-amd64-partial-baseline-v1"
+const InventoryPlatformLinux12 = "linux/amd64"
+
+// InventoryPolicyFor12 возвращает политику для платформы; ok=false для неподдержанной платформы.
+// Пара policy_id/platform в конфиге должна совпадать с этим соответствием.
+func InventoryPolicyFor12(platform string) (string, bool) {
+	switch platform {
+	case InventoryPlatform12:
+		return InventoryPolicy12, true
+	case InventoryPlatformLinux12:
+		return InventoryPolicyLinux12, true
+	}
+	return "", false
+}
 
 type InventoryRevision12 struct {
 	Common string `json:"common_revision"`

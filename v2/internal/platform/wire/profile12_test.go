@@ -163,3 +163,25 @@ func TestInventoryProfile12SpoolBudgetAndSchemaParity(t *testing.T) {
 		t.Fatal("schema copies diverged", err)
 	}
 }
+
+func TestInventoryConfig12PlatformPolicyPairing(t *testing.T) {
+	c := profileFixture12(t).Config
+	if err := inventoryConfig12(c); err != nil {
+		t.Fatalf("windows pair rejected: %v", err)
+	}
+	linux := c
+	linux.Policy, linux.Platform = contracts.InventoryPolicyLinux12, contracts.InventoryPlatformLinux12
+	if err := inventoryConfig12(linux); err != nil {
+		t.Fatalf("linux pair rejected: %v", err)
+	}
+	mixed := c
+	mixed.Platform = contracts.InventoryPlatformLinux12 // политика Windows + платформа Linux
+	if err := inventoryConfig12(mixed); err == nil {
+		t.Fatal("mismatched policy/platform accepted")
+	}
+	unknown := c
+	unknown.Platform = "darwin/arm64"
+	if err := inventoryConfig12(unknown); err == nil {
+		t.Fatal("unknown platform accepted")
+	}
+}

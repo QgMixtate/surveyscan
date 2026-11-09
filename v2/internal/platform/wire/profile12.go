@@ -114,6 +114,10 @@ func inventoryConfig12(c contracts.InventoryConfig12) error {
 	if _, err = ProfileRevision12(c.Revision); err != nil {
 		return err
 	}
+	// Политика и платформа обязаны соответствовать друг другу (схема допускает обе пары по отдельности).
+	if policy, ok := contracts.InventoryPolicyFor12(c.Platform); !ok || policy != c.Policy {
+		return domain.Invalid
+	}
 	offer, err := InventorySpoolOffer12(c.SpoolBytes)
 	if err != nil {
 		return err
