@@ -49,7 +49,7 @@ def main():
                     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
                         tar.extractall(source, filter='data')
                     source = source / 'v2'
-                    (source / 'internal/platform/messaging/schema/0036_c13_update_acceptance.sql').write_text(
+                    (source / 'internal/platform/messaging/schema/0037_c13_update_acceptance.sql').write_text(
                         'CREATE TABLE messaging.c13_update_acceptance (row_id bigint PRIMARY KEY);\n')
                 distribution = work / ('dist-' + version)
                 distribution.mkdir()
@@ -248,7 +248,7 @@ def main():
                 result = updater.apply(root, public, controller)
                 assert controller.applied_migrations == 1 and result['phase'] == 'recovery_required'
                 assert updater.active(base) == versions[3] and (base / 'update.fence').exists()
-                assert s['sql']('SELECT count(*) FROM platform.schema_migrations') == '37'
+                assert s['sql']('SELECT count(*) FROM platform.schema_migrations') == '38'
                 assert not controller.check_schema(base / 'releases' / versions[2] / 'bin/surveyscan-server')
                 controller.fail_version = None
                 result = updater.apply(root, public, controller, recover=True)
@@ -259,7 +259,7 @@ def main():
                     refused(lambda: updater.prepare(root, bundles[base_version], public))
                 checks.append('installation-wide writer lock refuses a concurrent updater')
                 report = {'package': 'C13', 'task': 'C13.02', 'status': 'passed', 'count': len(checks), 'checks': checks,
-                          'target': 'actual signed ELF releases/server processes, PostgreSQL, TLS/login/registry, original UID; explicit bad listen/ledger drift and private compiled append-only migration35 fixtures (product SQL unchanged)',
+                          'target': 'actual signed ELF releases/server processes, PostgreSQL, TLS/login/registry, original UID; explicit bad listen/ledger drift and private compiled append-only migration37 fixtures (product SQL unchanged)',
                           'unrun': ['production systemd controller', 'physical power loss', 'boot/reboot/two clean OS/production DR']}
                 (STATE / 'c13-update-smoke.json').write_text(json.dumps(report, indent=2) + '\n')
                 print(json.dumps(report))
