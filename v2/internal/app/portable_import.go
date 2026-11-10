@@ -5,6 +5,7 @@ import (
 	"crypto/ed25519"
 	"encoding/json"
 	"errors"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 
@@ -27,13 +28,23 @@ type PortableRecord struct {
 type PortableReport struct {
 	SourceID string           `json:"source_id"`
 	Records  []PortableRecord `json:"records"`
+	// Complete=false — обработка остановлена по бюджету времени; Remaining записей ещё не обработано.
+	// Повторная отправка того же пакета продолжает: обработанные записи вернутся как duplicate.
+	Complete  bool `json:"complete"`
+	Remaining int  `json:"remaining"`
 }
 
 // ImportPortable проверяет пакет ключом зарегистрированного portable-источника (подпись манифеста, digest, подпись
 // каждой записи, лимиты, схема 1.2) и проводит записи через общий конвейер IngestAuthorized: та же проверка привязки
 // ключа, дедупликация и сопоставление с активами, что у агентов. Повторная загрузка того же пакета идемпотентна.
 func (r *Registry) ImportPortable(ctx context.Context, machine *sources.MachineService, tenant, source string, pkg []byte) (PortableReport, error) {
-	report := PortableReport{SourceID: source, Records: []PortableRecord{}}
+	return r.ImportPortableUntil(ctx, machine, tenant, source, pkg, time.Time{})
+}
+
+// ImportPortableUntil — то же с бюджетом времени: после until новые записи не начинаются (нулевое until — без
+// ограничения). Нужен HTTP-пути, где запрос ограничен таймаутами сервера и прокси.
+func (r *Registry) ImportPortableUntil(ctx context.Context, machine *sources.MachineService, tenant, source string, pkg []byte, until time.Time) (PortableReport, error) {
+	report := PortableReport{SourceID: source, Records: []PortableRecord{}, Complete: true}
 	keyID, pub, err := machine.PortableTrust(ctx, tenant, source)
 	if err != nil {
 		return report, err
@@ -58,7 +69,11 @@ func (r *Registry) ImportPortable(ctx context.Context, machine *sources.MachineS
 		}
 		return nil
 	}
-	for _, raw := range res.Accepted {
+	for i, raw := range res.Accepted {
+		if !until.IsZero() && time.Now().After(until) {
+			report.Complete, report.Remaining = false, len(res.Accepted)-i
+			break
+		}
 		var signed contracts.SignedObservation
 		var o contracts.Observation
 		_ = json.Unmarshal(raw, &signed)

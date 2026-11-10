@@ -17,6 +17,10 @@ import (
 // (10 с) и контекст авторизации (5 с) рассчитаны на короткие запросы, поэтому здесь продлеваются явно.
 const portableImportTimeout = 5 * time.Minute
 
+// portableImportBudget — от начала запроса (включая приём тела); после него новые записи пакета не начинаются, ответ уходит с complete=false.
+// Меньше portableImportTimeout и proxy_read_timeout 300 с в deploy/nginx.conf с запасом на запись в обработке.
+const portableImportBudget = 4 * time.Minute
+
 // portableImportHandler — HTTPS-путь C23.03: POST /api/v1/sources/{source_id}/portable-import, тело —
 // portable-пакет (application/zip). Права sources:admin; tenant — только из учётных данных. Проверки те же,
 // что у консольного portable-import (подписи, лимиты, карантин); повтор того же пакета идемпотентен, поэтому
@@ -58,7 +62,7 @@ func (r *Registry) portableImportHandler() http.Handler {
 			access.APIError(w, 400, "INVALID_BODY")
 			return
 		}
-		report, e := r.ImportPortable(ctx, r.Machine.Sources, id.TenantID, source, data)
+		report, e := r.ImportPortableUntil(ctx, r.Machine.Sources, id.TenantID, source, data, deadline.Add(portableImportBudget-portableImportTimeout))
 		if e != nil {
 			switch {
 			case errors.Is(e, domain.NotFound) || errors.Is(e, domain.Unauthorized):

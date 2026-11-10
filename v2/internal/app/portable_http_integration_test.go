@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/QgMixtate/surveyscan/v2/internal/app"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/access"
@@ -78,10 +79,15 @@ func TestC23PortableHTTPImport(t *testing.T) {
 		t.Fatal("rejected uploads must not store observations:", n)
 	}
 
+	// бюджет исчерпан до начала — ни одна запись не обработана, остаток сообщён; повтор продолжит
+	part, err := f.registry.ImportPortableUntil(f.ctx, machine, tenant, source, []byte(pkg), time.Now().Add(-time.Second))
+	if err != nil || part.Complete || part.Remaining != 2 || len(part.Records) != 0 || countObservations(t, f, source) != 0 {
+		t.Fatalf("exhausted budget must stop before records: %+v %v", part, err)
+	}
 	code, raw, _ := b.request(t, "POST", path, pkg, s.CSRFToken, "https://ui.example", zipHdr)
 	expect(t, 200, code)
 	var report app.PortableReport
-	if err = json.Unmarshal(raw, &report); err != nil || report.SourceID != source || len(report.Records) != 2 {
+	if err = json.Unmarshal(raw, &report); err != nil || report.SourceID != source || len(report.Records) != 2 || !report.Complete || report.Remaining != 0 {
 		t.Fatalf("report: %s %v", raw, err)
 	}
 	for _, r := range report.Records {

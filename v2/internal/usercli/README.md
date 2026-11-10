@@ -10,6 +10,7 @@ surveyscanctl assets list --context-file /secure/survey-context.json --limit 50
 surveyscanctl assets get --context-file /secure/survey-context.json --id UUID
 surveyscanctl sources list --context-file /secure/survey-context.json
 surveyscanctl sources status --context-file /secure/survey-context.json --id UUID
+surveyscanctl sources portable-import --context-file /secure/survey-context.json --id SOURCE_UUID --package audit.zip
 surveyscanctl status --context-file /secure/survey-context.json
 surveyscanctl logout --context-file /secure/survey-context.json
 surveyscanctl help
@@ -35,3 +36,5 @@ Context не должен публиковаться/попадать в backup 
 scripts/cli_smoke.py: compiled CLI/real HTTPS/PG/auth/CSRF, two tenants/viewer, pagination и logout.
 C12.02–04 добавили profiles get/set --id UUID --revision REV --profile-file JSON, diagnostics,
 local-status --diagnostics-file PRIVATE; source profile panel виден в отдельном UI. JSONC03/C09 остаётся неизменным.
+
+C23.03 `sources portable-import`: пакет ≤128 МиБ отправляется как есть (application/zip), таймаут запроса 6 мин. Большой пакет центр обрабатывает частями (complete=false); команда повторяет загрузку того же пакета до complete=true (≤50 раз) и печатает объединённый итог с числом попыток. Повтор после обрыва безопасен: обработанные записи возвращаются как duplicate.

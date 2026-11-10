@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -149,5 +150,87 @@ func TestTableOutputWhitelistsFieldsAndRemovesTerminalControls(t *testing.T) {
 	}
 	if strings.Contains(out.String(), "\x1b") || strings.Contains(out.String(), "must-not-print") || !strings.Contains(out.String(), "ASSET_UID") {
 		t.Fatal("table leaked extra fields or terminal controls", out.String())
+	}
+}
+
+// C23.03: CLI отправляет пакет как есть (zip), с сессией, Origin и CSRF; ответ печатается; ошибки — коды выхода.
+func TestPortableImportUploadsPackage(t *testing.T) {
+	source := identifier.New()
+	pkg := bytes.Repeat([]byte("PK\x03\x04synthetic"), 1000)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" || r.URL.Path != "/api/v1/sources/"+source+"/portable-import" || r.Header.Get("Content-Type") != "application/zip" || r.Header.Get("X-CSRF-Token") != "csrf" || r.Header.Get("Origin") == "" || r.Header.Get("Cookie") == "" {
+			w.WriteHeader(400)
+			return
+		}
+		body, _ := io.ReadAll(r.Body)
+		if !bytes.Equal(body, pkg) {
+			w.WriteHeader(422)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"source_id":"` + source + `","records":[{"observation_id":"x","disposition":"applied"}],"complete":true,"remaining":0}`))
+	}))
+	defer server.Close()
+	dir := t.TempDir()
+	path := filepath.Join(dir, "context.json")
+	if e := writeNew(path, profile{Version: 1, Server: server.URL, DevHTTP: true, Tenant: identifier.New(), User: identifier.New(), Cookie: "surveyscan_session=s", CSRF: "csrf", Expires: time.Now().Add(time.Hour)}); e != nil {
+		t.Fatal(e)
+	}
+	file := filepath.Join(dir, "audit.zip")
+	if e := os.WriteFile(file, pkg, 0o600); e != nil {
+		t.Fatal(e)
+	}
+	code, out, err := invoke(context.Background(), "sources", "portable-import", "--context-file", path, "--id", source, "--package", file)
+	if code != 0 || !strings.Contains(out, `"applied"`) {
+		t.Fatal("upload failed", code, out, err)
+	}
+	if code, _, _ = invoke(context.Background(), "sources", "portable-import", "--context-file", path, "--id", "bad", "--package", file); code != 2 {
+		t.Fatal("invalid source id must be an argument error", code)
+	}
+	if code, _, _ = invoke(context.Background(), "sources", "portable-import", "--context-file", path, "--id", source, "--package", filepath.Join(dir, "missing.zip")); code != 2 {
+		t.Fatal("missing package must be an argument error", code)
+	}
+	if code, _, _ = invoke(context.Background(), "sources", "portable-import", "--context-file", path, "--id", identifier.New(), "--package", file); code != 6 {
+		t.Fatal("server rejection must map to API failure exit code", code)
+	}
+}
+
+// Большой пакет центр обрабатывает частями: CLI повторяет загрузку до complete=true и объединяет итог.
+func TestPortableImportResumesUntilComplete(t *testing.T) {
+	source := identifier.New()
+	var calls atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.Copy(io.Discard, r.Body)
+		w.Header().Set("Content-Type", "application/json")
+		if calls.Add(1) == 1 {
+			_, _ = w.Write([]byte(`{"source_id":"` + source + `","records":[{"observation_id":"a","disposition":"applied","asset_id":"u1"}],"complete":false,"remaining":1}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"source_id":"` + source + `","records":[{"observation_id":"a","disposition":"duplicate","asset_id":"u1"},{"observation_id":"b","disposition":"applied","asset_id":"u2"}],"complete":true,"remaining":0}`))
+	}))
+	defer server.Close()
+	dir := t.TempDir()
+	path := filepath.Join(dir, "context.json")
+	if e := writeNew(path, profile{Version: 1, Server: server.URL, DevHTTP: true, Tenant: identifier.New(), User: identifier.New(), Cookie: "surveyscan_session=s", CSRF: "csrf", Expires: time.Now().Add(time.Hour)}); e != nil {
+		t.Fatal(e)
+	}
+	file := filepath.Join(dir, "audit.zip")
+	if e := os.WriteFile(file, []byte("PK"), 0o600); e != nil {
+		t.Fatal(e)
+	}
+	code, out, err := invoke(context.Background(), "sources", "portable-import", "--context-file", path, "--id", source, "--package", file)
+	if code != 0 || calls.Load() != 2 {
+		t.Fatal("must resume until complete", code, calls.Load(), err)
+	}
+	var r struct {
+		Records []struct {
+			ID          string `json:"observation_id"`
+			Disposition string `json:"disposition"`
+		} `json:"records"`
+		Complete bool `json:"complete"`
+		Attempts int  `json:"attempts"`
+	}
+	if e := json.Unmarshal([]byte(out), &r); e != nil || !r.Complete || r.Attempts != 2 || len(r.Records) != 2 || r.Records[0].Disposition != "applied" || r.Records[1].Disposition != "applied" {
+		t.Fatal("merged report must keep first non-duplicate result per record:", out)
 	}
 }

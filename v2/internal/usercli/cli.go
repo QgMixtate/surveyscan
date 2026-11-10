@@ -44,6 +44,65 @@ type failure struct {
 
 func (f failure) Error() string           { return f.code }
 func fail(code int, message string) error { return failure{code, message} }
+
+// portablePackage — тело загрузки portable-пакета (zip), отправляется как есть.
+type portablePackage []byte
+
+const (
+	portableMaxBytes      = 128 << 20 // как portable.DefaultLimits().MaxPackageBytes у центра
+	portableUploadTimeout = 6 * time.Minute
+	portableMaxAttempts   = 50
+)
+
+// uploadPortable отправляет пакет, пока центр не ответит complete=true: большой пакет центр обрабатывает частями
+// в пределах бюджета запроса, а повтор того же пакета продолжает с места остановки (обработанное — duplicate).
+// Итог объединяет записи всех попыток: для каждой записи — первый результат, отличный от duplicate.
+func uploadPortable(ctx context.Context, c *http.Client, p profile, source string, pkg []byte) ([]byte, error) {
+	type record struct {
+		ID          string `json:"observation_id"`
+		Disposition string `json:"disposition"`
+		AssetID     string `json:"asset_id,omitempty"`
+		Reason      string `json:"reason_code,omitempty"`
+	}
+	type report struct {
+		SourceID  string   `json:"source_id"`
+		Records   []record `json:"records"`
+		Complete  bool     `json:"complete"`
+		Remaining int      `json:"remaining"`
+		Attempts  int      `json:"attempts"`
+	}
+	merged := report{Records: []record{}}
+	index := map[string]int{}
+	for attempt := 1; attempt <= portableMaxAttempts; attempt++ {
+		raw, _, e := call(ctx, c, p, "POST", "/api/v1/sources/"+source+"/portable-import", portablePackage(pkg))
+		if e != nil {
+			return nil, e
+		}
+		var r report
+		if json.Unmarshal(raw, &r) != nil {
+			return nil, fail(5, "INVALID_RESPONSE")
+		}
+		merged.SourceID, merged.Complete, merged.Remaining, merged.Attempts = r.SourceID, r.Complete, r.Remaining, attempt
+		for _, rec := range r.Records {
+			if i, seen := index[rec.ID]; seen {
+				if merged.Records[i].Disposition == "duplicate" && rec.Disposition != "duplicate" {
+					merged.Records[i] = rec
+				}
+				continue
+			}
+			index[rec.ID] = len(merged.Records)
+			merged.Records = append(merged.Records, rec)
+		}
+		if r.Complete {
+			break
+		}
+	}
+	if !merged.Complete {
+		return nil, fail(5, "PORTABLE_IMPORT_INCOMPLETE")
+	}
+	return json.Marshal(merged)
+}
+
 func client(p profile) (*http.Client, error) {
 	u, e := url.Parse(p.Server)
 	if e != nil || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || u.Path != "" {
@@ -73,7 +132,10 @@ func client(p profile) (*http.Client, error) {
 }
 func call(ctx context.Context, c *http.Client, p profile, method, path string, body any, extra ...http.Header) ([]byte, *http.Response, error) {
 	var input io.Reader
-	if body != nil {
+	contentType := "application/json"
+	if pkg, ok := body.(portablePackage); ok {
+		input, contentType = bytes.NewReader(pkg), "application/zip"
+	} else if body != nil {
 		raw, e := json.Marshal(body)
 		if e != nil {
 			return nil, nil, fail(2, "INVALID_REQUEST")
@@ -91,7 +153,7 @@ func call(ctx context.Context, c *http.Client, p profile, method, path string, b
 	}
 	r.Header.Set("Accept", "application/json")
 	if body != nil {
-		r.Header.Set("Content-Type", "application/json")
+		r.Header.Set("Content-Type", contentType)
 	}
 	if p.Cookie != "" {
 		r.Header.Set("Cookie", p.Cookie)
@@ -197,7 +259,7 @@ func read(path string) (profile, error) {
 }
 func execute(ctx context.Context, args []string, out io.Writer) error {
 	if len(args) == 1 && (args[0] == "help" || args[0] == "--help") {
-		return emit(out, map[string]any{"commands": []string{"login --server URL --username USER --password-file PRIVATE --context-file PRIVATE [--ca-file CA]", "context show --context-file PRIVATE", "assets list --context-file PRIVATE [--limit 1..200 --cursor CURSOR]", "assets get --context-file PRIVATE --id UUID", "sources list|get|status --context-file PRIVATE [--id UUID]", "profiles get --context-file PRIVATE --id UUID", "profiles set --context-file PRIVATE --id UUID --revision REV --profile-file JSON", "diagnostics --context-file PRIVATE", "local-status --diagnostics-file PRIVATE", "status --context-file PRIVATE", "logout --context-file PRIVATE", "version"}, "output": "JSON by default; --output table for resource commands", "exit_codes": map[string]int{"success": 0, "arguments_or_private_context": 2, "authentication_or_policy": 3, "not_found": 4, "network_tls_timeout_or_dependency": 5, "other_api_failure": 6}})
+		return emit(out, map[string]any{"commands": []string{"login --server URL --username USER --password-file PRIVATE --context-file PRIVATE [--ca-file CA]", "context show --context-file PRIVATE", "assets list --context-file PRIVATE [--limit 1..200 --cursor CURSOR]", "assets get --context-file PRIVATE --id UUID", "sources list|get|status --context-file PRIVATE [--id UUID]", "profiles get --context-file PRIVATE --id UUID", "profiles set --context-file PRIVATE --id UUID --revision REV --profile-file JSON", "sources portable-import --context-file PRIVATE --id SOURCE_UUID --package FILE", "diagnostics --context-file PRIVATE", "local-status --diagnostics-file PRIVATE", "status --context-file PRIVATE", "logout --context-file PRIVATE", "version"}, "output": "JSON by default; --output table for resource commands", "exit_codes": map[string]int{"success": 0, "arguments_or_private_context": 2, "authentication_or_policy": 3, "not_found": 4, "network_tls_timeout_or_dependency": 5, "other_api_failure": 6}})
 	}
 	if len(args) == 0 {
 		return fail(2, "COMMAND_REQUIRED")
@@ -225,6 +287,7 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 	cursor := f.String("cursor", "", "")
 	optionsFile := f.String("profile-file", "", "")
 	revision := f.String("revision", "", "")
+	packageFile := f.String("package", "", "")
 	format := f.String("output", "json", "")
 	if f.Parse(args) != nil || f.NArg() != 0 || (*contextFile == "" && operation != "local-status") {
 		return fail(2, "INVALID_ARGUMENTS")
@@ -353,6 +416,25 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 			return e
 		}
 		if e = render(out, raw, operation, *format); e != nil {
+			return fail(5, "OUTPUT_UNAVAILABLE")
+		}
+		return nil
+	}
+	if operation == "sources portable-import" {
+		// C23.03: загрузка portable-пакета; центр проверяет подписи сам, повтор того же пакета не создаёт дублей.
+		if !identifier.Valid(*id) {
+			return fail(2, "INVALID_RESOURCE_ID")
+		}
+		raw, e := boundedFile(*packageFile, portableMaxBytes)
+		if e != nil {
+			return fail(2, "INVALID_PACKAGE_FILE")
+		}
+		c.Timeout = portableUploadTimeout
+		result, e := uploadPortable(ctx, c, p, *id, raw)
+		if e != nil {
+			return e
+		}
+		if e = render(out, result, operation, *format); e != nil {
 			return fail(5, "OUTPUT_UNAVAILABLE")
 		}
 		return nil
