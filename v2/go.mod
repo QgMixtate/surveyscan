@@ -5,6 +5,7 @@ go 1.27.3
 require (
 	github.com/cyberphone/json-canonicalization v0.0.0-20261011152517-32a48195b9b2
 	github.com/go-ole/go-ole v1.3.0
+	github.com/gosnmp/gosnmp v1.38.0
 	github.com/jackc/pgx/v5 v5.12.0
 	github.com/santhosh-tekuri/jsonschema/v6 v6.0.3
 	golang.org/x/crypto v0.58.0
