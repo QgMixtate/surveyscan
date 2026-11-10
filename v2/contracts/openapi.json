@@ -5423,6 +5423,13 @@
               "windows/amd64",
               "linux/amd64"
             ]
+          },
+          "acquisition": {
+            "enum": [
+              "agent",
+              "ssh",
+              "winrm"
+            ]
           }
         },
         "required": [
@@ -5957,6 +5964,13 @@
               {
                 "type": "null"
               }
+            ]
+          },
+          "acquisition": {
+            "enum": [
+              "agent",
+              "ssh",
+              "winrm"
             ]
           }
         },

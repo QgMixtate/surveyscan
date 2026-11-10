@@ -72,6 +72,12 @@ def grant_requests(out, default_platform):
     return found
 
 
+def acquisition_for(name):
+    """Способ получения данных по имени prepare-файла: ...ssh... -> ssh, ...winrm... -> winrm, иначе агент на хосте."""
+    low = name.lower()
+    return 'ssh' if 'ssh' in low else 'winrm' if 'winrm' in low else 'agent'
+
+
 def scenario(args, **s):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -118,6 +124,8 @@ def scenario(args, **s):
             body = {'tenant_id': s['tenant'], 'source_id': prep['source_id'], 'source_kind': 'agent', 'site_id': s['site'],
                     'collector_id': s['collector_id'], 'ttl_seconds': 900, 'csr_sha256': prep['csr_sha256'],
                     'signing_public_key': prep['signing_public_key'], 'inventory_platform': platform}
+            if acquisition_for(prepare_name) != 'agent':
+                body['acquisition'] = acquisition_for(prepare_name)
             headers = {'Origin': s['origin'], 'Cookie': s['cookie'], 'X-CSRF-Token': s['session']['csrf_token']}
             code, grant, _ = s['request'](s['tls_port'], s['plain'], 'POST', '/api/v1/enrollments', body, headers)
             if code != 201:
@@ -127,7 +135,7 @@ def scenario(args, **s):
                 continue
             write_private(out / grant_name, json.dumps(grant))
             issued[prepare_name] = prep['source_id']
-            print(f"GRANT issued for source {prep['source_id']} platform {platform} (valid 15 min) -> {out / grant_name}", flush=True)
+            print(f"GRANT issued for source {prep['source_id']} platform {platform} acquisition {acquisition_for(prepare_name)} (valid 15 min) -> {out / grant_name}", flush=True)
             if args.selftest:
                 agent = selftest_enroll_run(args, out, agent)
         if time.monotonic() - last > 20:

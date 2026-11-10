@@ -18,6 +18,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/collector"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/access"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/imports"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/domain"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/health"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/pki"
@@ -161,6 +162,34 @@ func TestC07AgentCollectorCenterPGAndVerifiedReturn(t *testing.T) {
 	agentGrant, e := machine.Grant(f.ctx, f.identity, contracts.EnrollmentGrantRequest{TenantID: tenant, SourceID: agentSource, Kind: "agent", SiteID: siteID, CollectorID: &claims.Collector, TTL: 900, CSRHash: agentHash, PublicKey: base64.RawURLEncoding.EncodeToString(agentSignPub)})
 	if e != nil {
 		t.Fatal(e)
+	}
+	// Способ получения данных (acquisition): по умолчанию agent, ssh сохраняется, неизвестное значение отвергается.
+	if v, e := machine.View(f.ctx, f.identity, agentSource); e != nil || v.Acquisition != "agent" {
+		t.Fatal("default acquisition must be agent", v.Acquisition, e)
+	}
+	_, sshHash, _, _ := csrTLSMaterial(t)
+	sshPub, _, e := ed25519.GenerateKey(rand.Reader)
+	if e != nil {
+		t.Fatal(e)
+	}
+	sshSource := identifier.New()
+	sshReq := contracts.EnrollmentGrantRequest{TenantID: tenant, SourceID: sshSource, Kind: "agent", SiteID: siteID, CollectorID: &claims.Collector, TTL: 900, CSRHash: sshHash, PublicKey: base64.RawURLEncoding.EncodeToString(sshPub), Acquisition: "bogus"}
+	if _, e = machine.Grant(f.ctx, f.identity, sshReq); !errors.Is(e, domain.Invalid) {
+		t.Fatal("unknown acquisition must be rejected", e)
+	}
+	sshReq.Acquisition = "ssh"
+	if _, e = machine.Grant(f.ctx, f.identity, sshReq); e != nil {
+		t.Fatal(e)
+	}
+	if v, e := machine.View(f.ctx, f.identity, sshSource); e != nil || v.Acquisition != "ssh" || v.Kind != "agent" {
+		t.Fatal("ssh acquisition must be stored and visible", v, e)
+	}
+	if v, e := machine.View(f.ctx, f.identity, collectorSource); e != nil || v.Acquisition != "" {
+		t.Fatal("collector must not carry acquisition", v, e)
+	}
+	collectorBad := contracts.EnrollmentGrantRequest{TenantID: tenant, SourceID: identifier.New(), Kind: "collector", SiteID: siteID, TTL: 900, CSRHash: sshHash, PublicKey: base64.RawURLEncoding.EncodeToString(sshPub), Acquisition: "ssh"}
+	if _, e = machine.Grant(f.ctx, f.identity, collectorBad); !errors.Is(e, domain.Invalid) {
+		t.Fatal("acquisition is only valid for agents", e)
 	}
 	// Агент регистрируется через collector, не требует прямого соединения с центром.
 	bootstrapClient := &http.Client{Transport: &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12, RootCAs: roots, ServerName: collectorSource + ".collector.invalid"}}, Timeout: 5 * time.Second}

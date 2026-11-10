@@ -637,6 +637,8 @@ export interface components {
             signing_public_key: string;
             /** @enum {unknown} */
             inventory_platform?: "windows/amd64" | "linux/amd64";
+            /** @enum {unknown} */
+            acquisition?: "agent" | "ssh" | "winrm";
         };
         EnrollmentGrant: {
             /** Format: uuid */
@@ -763,6 +765,8 @@ export interface components {
             state: "pending" | "active" | "revoked" | "disabled";
             last_contact_at: string | null;
             last_successful_inventory_at: string | null;
+            /** @enum {unknown} */
+            acquisition?: "agent" | "ssh" | "winrm";
         };
         SourcePage: {
             items: components["schemas"]["Source"][];

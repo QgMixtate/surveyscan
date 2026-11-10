@@ -77,6 +77,13 @@ func (s *MachineService) Grant(ctx context.Context, actor access.Identity, req c
 	if _, ok := contracts.InventoryPolicyFor12(platform); !ok || (req.Kind != "agent" && req.InventoryPlatform != "") {
 		return contracts.EnrollmentGrant{}, domain.Invalid
 	}
+	acquisition := req.Acquisition
+	if acquisition == "" {
+		acquisition = "agent"
+	}
+	if (acquisition != "agent" && acquisition != "ssh" && acquisition != "winrm") || (req.Kind != "agent" && req.Acquisition != "") {
+		return contracts.EnrollmentGrant{}, domain.Invalid
+	}
 	if e = s.rate(ctx, "grant:"+actor.UserID, 30); e != nil {
 		return contracts.EnrollmentGrant{}, e
 	}
@@ -140,7 +147,7 @@ func (s *MachineService) Grant(ctx context.Context, actor access.Identity, req c
 		collector = &id
 		_, e = tx.Exec(ctx, "INSERT INTO sources.collectors(tenant_id,collector_id,source_id) VALUES($1,$2,$3)", req.TenantID, id, req.SourceID)
 	} else if req.Kind == "agent" {
-		_, e = tx.Exec(ctx, "INSERT INTO sources.agents(tenant_id,agent_id,source_id,collector_id,inventory_platform) VALUES($1,$2,$3,$4,$5)", req.TenantID, identifier.New(), req.SourceID, *req.CollectorID, platform)
+		_, e = tx.Exec(ctx, "INSERT INTO sources.agents(tenant_id,agent_id,source_id,collector_id,inventory_platform,acquisition) VALUES($1,$2,$3,$4,$5,$6)", req.TenantID, identifier.New(), req.SourceID, *req.CollectorID, platform, acquisition)
 	}
 	if e != nil {
 		return contracts.EnrollmentGrant{}, e
@@ -400,7 +407,7 @@ func (s *MachineService) Revoke(ctx context.Context, actor access.Identity, sour
 
 func (s *MachineService) viewTx(ctx context.Context, tx pgx.Tx, tenant, id string) (contracts.Source, error) {
 	var out contracts.Source
-	e := tx.QueryRow(ctx, "SELECT tenant_id::text,source_id::text,source_kind,site_id::text,state,GREATEST(last_contact_at,(SELECT max(h.last_contact_at) FROM sources.heartbeat_state h WHERE h.tenant_id=sources.sources.tenant_id AND h.source_id=sources.sources.source_id AND h.generation_id=sources.sources.generation_id)),GREATEST(last_successful_inventory_at,(SELECT p.last_successful_inventory_at FROM sources.inventory_progress p WHERE p.tenant_id=sources.sources.tenant_id AND p.source_id=sources.sources.source_id AND p.generation_id=sources.sources.generation_id)) FROM sources.sources WHERE tenant_id=$1 AND source_id=$2", tenant, id).Scan(&out.TenantID, &out.SourceID, &out.Kind, &out.SiteID, &out.State, &out.LastContact, &out.LastInventory)
+	e := tx.QueryRow(ctx, "SELECT tenant_id::text,source_id::text,source_kind,site_id::text,state,GREATEST(last_contact_at,(SELECT max(h.last_contact_at) FROM sources.heartbeat_state h WHERE h.tenant_id=sources.sources.tenant_id AND h.source_id=sources.sources.source_id AND h.generation_id=sources.sources.generation_id)),GREATEST(last_successful_inventory_at,(SELECT p.last_successful_inventory_at FROM sources.inventory_progress p WHERE p.tenant_id=sources.sources.tenant_id AND p.source_id=sources.sources.source_id AND p.generation_id=sources.sources.generation_id)),COALESCE((SELECT a.acquisition FROM sources.agents a WHERE a.tenant_id=sources.sources.tenant_id AND a.source_id=sources.sources.source_id),'') FROM sources.sources WHERE tenant_id=$1 AND source_id=$2", tenant, id).Scan(&out.TenantID, &out.SourceID, &out.Kind, &out.SiteID, &out.State, &out.LastContact, &out.LastInventory, &out.Acquisition)
 	if e == pgx.ErrNoRows {
 		e = domain.NotFound
 	}

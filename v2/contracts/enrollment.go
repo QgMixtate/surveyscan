@@ -16,6 +16,8 @@ type EnrollmentGrantRequest struct {
 	PublicKey   string  `json:"signing_public_key"`
 	// InventoryPlatform — необязательная платформа агента (только source_kind=agent); по умолчанию windows/amd64.
 	InventoryPlatform string `json:"inventory_platform,omitempty"`
+	// Acquisition — необязательный способ получения данных (только source_kind=agent): agent (по умолчанию), ssh, winrm.
+	Acquisition string `json:"acquisition,omitempty"`
 }
 type EnrollmentGrant struct {
 	ID       string    `json:"grant_id"`
@@ -57,6 +59,8 @@ type Source struct {
 	State         string     `json:"state"`
 	LastContact   *time.Time `json:"last_contact_at"`
 	LastInventory *time.Time `json:"last_successful_inventory_at"`
+	// Acquisition — способ получения данных агентского источника (agent|ssh|winrm); у collector/portable отсутствует.
+	Acquisition string `json:"acquisition,omitempty"`
 }
 type SourcePage struct {
 	Items      []Source `json:"items"`

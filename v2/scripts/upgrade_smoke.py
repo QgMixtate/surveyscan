@@ -27,8 +27,8 @@ def fixture(old_root):
             process.terminate()
             assert process.wait(timeout=8) == 0
         tables = sql("SELECT table_schema||'.'||table_name FROM information_schema.tables WHERE table_type='BASE TABLE' AND table_schema NOT IN ('pg_catalog','information_schema','platform') ORDER BY 1").splitlines()
-        def fingerprint(table):  # колонка inventory_platform (миграция 0035) добавлена позже и в сравнение старых данных не входит
-            return sql("SELECT encode(sha256(convert_to(coalesce(string_agg((to_jsonb(t)-'inventory_platform')::text,E'\\n' ORDER BY (to_jsonb(t)-'inventory_platform')::text),''),'UTF8')),'hex') FROM " + table + ' t')
+        def fingerprint(table):  # колонки inventory_platform (0035) и acquisition (0036) добавлены позже и в сравнение старых данных не входит
+            return sql("SELECT encode(sha256(convert_to(coalesce(string_agg((to_jsonb(t)-'inventory_platform'-'acquisition')::text,E'\\n' ORDER BY (to_jsonb(t)-'inventory_platform'-'acquisition')::text),''),'UTF8')),'hex') FROM " + table + ' t')
         before = {table: fingerprint(table) for table in tables}
         ledger = sql('SELECT id||owner||sha256 FROM platform.schema_migrations ORDER BY id').splitlines()
         assert len(ledger) == 31
@@ -36,11 +36,11 @@ def fixture(old_root):
         env = s['server_environment']
         binary = str(CURRENT / '.dist/surveyscan-server')
         result = subprocess.run([binary, 'migrate'], env=env, capture_output=True, timeout=30)
-        assert result.returncode == 0 and b'applied_migrations=5' in result.stdout
+        assert result.returncode == 0 and b'applied_migrations=6' in result.stdout
         assert {table: fingerprint(table) for table in tables} == before
-        assert len(sql('SELECT id FROM platform.schema_migrations').splitlines()) == 36
+        assert len(sql('SELECT id FROM platform.schema_migrations').splitlines()) == 37
         assert set(ledger) <= set(sql('SELECT id||owner||sha256 FROM platform.schema_migrations ORDER BY id').splitlines())
-        checks.append('current binary appends exactly5 migrations; every previous data table and all31 applied hashes preserved')
+        checks.append('current binary appends exactly6 migrations; every previous data table and all31 applied hashes preserved')
         result = subprocess.run([binary, 'migrate'], env=env, capture_output=True, timeout=30)
         assert result.returncode == 0 and b'applied_migrations=0' in result.stdout
         checks.append('second current migrate is a verified no-op; no edited SQL or duplicate upgrade effects')
@@ -85,7 +85,7 @@ def fixture(old_root):
             assert code == 200 and not profile['managed'] and profile['config']['profile_revision'] == '1'
             checks.append('authorized write works after upgrade; newly introduced profiles expose unmanaged revision1 for existing source')
             report = {'package': 'C13', 'task': 'C13.03', 'status': 'passed', 'count': len(checks), 'checks': checks,
-                      'previous_ref': PREVIOUS, 'previous_migrations': 31, 'current_migrations': 36,
+                      'previous_ref': PREVIOUS, 'previous_migrations': 31, 'current_migrations': 37,
                       'target': 'archived actual C11 source compiled into previous server/collector; real PG, TLS and signed synthetic inventory; current migration and API',
                       'fixture_adapter': 'only old test callback extended to expose SQL helper/processes/environment; previous application code/SQL not modified',
                       'unrun': ['live service update/rollback', 'schema downgrade', 'systemd boot/reboot', 'two clean OS systems', 'production/DR']}
