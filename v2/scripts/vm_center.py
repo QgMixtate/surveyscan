@@ -55,6 +55,23 @@ def counters(sql):
             'assets': int(sql('SELECT count(*) FROM assets.assets')), 'facts_by_section': sections}
 
 
+def grant_requests(out, default_platform):
+    """prepare-файлы в каталоге -> {имя: (платформа, имя grant)}; пустой словарь, если файлов нет."""
+    found = {}
+    for path in sorted(Path(out).glob('prepare*.json')):
+        name = path.name
+        if name == 'prepare.json':
+            platform = default_platform
+        elif name.startswith('prepare-linux'):
+            platform = 'linux/amd64'
+        elif name.startswith('prepare-windows'):
+            platform = 'windows/amd64'
+        else:
+            continue
+        found[name] = (platform, name.replace('prepare', 'grant', 1))
+    return found
+
+
 def scenario(args, **s):
     out = Path(args.out)
     out.mkdir(parents=True, exist_ok=True)
@@ -68,13 +85,11 @@ def scenario(args, **s):
     (out / 'agent-config.windows.json').write_text(json.dumps(windows, indent=2))
     (out / 'agent-config.linux.json').write_text(json.dumps(dict(base, ca_certificate_file='/CHANGE/ME/ca.pem', state_directory='/CHANGE/ME/state'), indent=2))
     print(f"READY collector=https://{args.public_host}:{args.collector_port} out={out}", flush=True)
-    # Заявки: prepare.json -> платформа --platform (grant.json); prepare-linux.json / prepare-windows.json -> своя платформа
-    # (grant-linux.json / grant-windows.json). Так за один запуск центра регистрируются агенты обеих ОС.
-    requests = {'prepare.json': (args.platform, 'grant.json'), 'prepare-linux.json': ('linux/amd64', 'grant-linux.json'),
-                'prepare-windows.json': ('windows/amd64', 'grant-windows.json')}
-    for prepare_name, (_, grant_name) in requests.items():
-        for name in (prepare_name, grant_name):
-            (out / name).unlink(missing_ok=True)
+    # Заявки по файлам в OUT: prepare.json -> платформа --platform (grant.json); prepare-linux*.json -> linux/amd64;
+    # prepare-windows*.json -> windows/amd64; grant лежит рядом под именем с заменой prepare -> grant. Файлов может быть
+    # сколько угодно (несколько агентов/целей за один запуск центра); найденные позже подхватываются на лету.
+    for old in list(out.glob('prepare*.json')) + list(out.glob('grant*.json')):
+        old.unlink()
     agent = None
     if args.selftest:
         agent = selftest_prepare(args, out, s)
@@ -83,8 +98,8 @@ def scenario(args, **s):
     deadline = time.monotonic() + args.timeout
     last = 0.0
     while not STOP and time.monotonic() < deadline:
-        for prepare_name, (platform, grant_name) in requests.items():
-            if prepare_name in issued or not (out / prepare_name).exists():
+        for prepare_name, (platform, grant_name) in grant_requests(out, args.platform).items():
+            if prepare_name in issued:
                 continue
             time.sleep(0.5)
             try:
@@ -101,7 +116,11 @@ def scenario(args, **s):
                     'signing_public_key': prep['signing_public_key'], 'inventory_platform': platform}
             headers = {'Origin': s['origin'], 'Cookie': s['cookie'], 'X-CSRF-Token': s['session']['csrf_token']}
             code, grant, _ = s['request'](s['tls_port'], s['plain'], 'POST', '/api/v1/enrollments', body, headers)
-            assert code == 201, f'grant refused: {code} {grant}'
+            if code != 201:
+                # отказ (например, источник уже зарегистрирован) не должен ронять центр с чужими агентами
+                issued.add(prepare_name)
+                print(f'GRANT REFUSED for {prepare_name}: HTTP {code}', flush=True)
+                continue
             write_private(out / grant_name, json.dumps(grant))
             issued.add(prepare_name)
             print(f"GRANT issued for source {prep['source_id']} platform {platform} (valid 15 min) -> {out / grant_name}", flush=True)
