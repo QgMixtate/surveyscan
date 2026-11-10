@@ -19,6 +19,33 @@ type Resolution struct {
 	AssetID          string
 	Created, Pending bool
 	Reason           string
+	// AutoMatched — запись привязана к существующему активу по единственному надёжному сильному
+	// идентификатору (C25.01, вариант Б); вызывающий фиксирует аудит и историю актива.
+	AutoMatched bool
+}
+
+// strongKind — сильные идентификаторы (C25.01 §1). IP/MAC/hostname — слабые и никогда не склеивают.
+func strongKind(kind string) bool {
+	return kind == "machine_uuid" || kind == "bios_uuid" || kind == "serial"
+}
+
+// placeholder — известные заглушки сильных идентификаторов (C25.01 §2): для авто-сведения не используются.
+func placeholder(c contracts.Candidate) bool {
+	v := strings.ToLower(strings.TrimSpace(c.Value))
+	switch c.Kind {
+	case "serial":
+		switch v {
+		case "", "0", "00000000", "none", "n/a", "na", "null", "default string", "to be filled by o.e.m.", "to be filled by oem", "system serial number", "not specified", "not applicable", "123456789", "0123456789", "chassis serial number", "invalid":
+			return true
+		}
+		return len(strings.Trim(v, "0")) == 0
+	case "bios_uuid", "machine_uuid":
+		switch v {
+		case "00000000-0000-0000-0000-000000000000", "ffffffff-ffff-ffff-ffff-ffffffffffff", "03000200-0400-0500-0006-000700080009":
+			return true
+		}
+	}
+	return false
 }
 
 func Normalize(c contracts.Candidate) (contracts.Candidate, error) {
@@ -83,6 +110,7 @@ func (Store) Resolve(ctx context.Context, tx pgx.Tx, o contracts.Observation) (R
 		}
 	}
 	hits := map[string]bool{}
+	strongHits := map[string]bool{} // активы, совпавшие по надёжному сильному идентификатору
 	conflict := (!fresh && uid == nil) || scopeConflict
 	normalized := []contracts.Candidate{}
 	for _, candidate := range o.Candidates {
@@ -102,6 +130,9 @@ func (Store) Resolve(ctx context.Context, tx pgx.Tx, o contracts.Observation) (R
 				return result, e
 			}
 			hits[match] = true
+			if strongKind(c.Kind) && !placeholder(c) {
+				strongHits[match] = true
+			}
 		}
 		e = rows.Err()
 		rows.Close()
@@ -115,6 +146,51 @@ func (Store) Resolve(ctx context.Context, tx pgx.Tx, o contracts.Observation) (R
 				return result, e
 			}
 			conflict = conflict || contradiction
+		}
+	}
+	// C25.01 вариант Б: запись без актива (новая или прежде ушедшая в конфликт) привязывается к существующему активу,
+	// если ровно один актив совпал по надёжному сильному идентификатору, все прочие совпадения указывают на него же,
+	// нет утверждения asserted_asset_uid, конфликта scope и противоречащего сильного идентификатора того же вида.
+	if uid == nil && o.Asserted == nil && !scopeConflict && len(strongHits) == 1 {
+		var candidate string
+		for id := range strongHits {
+			candidate = id
+		}
+		auto := true
+		for hit := range hits {
+			auto = auto && hit == candidate
+		}
+		if auto {
+			// две разные записи ОДНОГО источника с одним сильным ID — признак клона, не авто-сведение (C06)
+			var sameSource bool
+			e = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM assets.source_records WHERE tenant_id=$1 AND source_id=$2 AND asset_uid=$3 AND source_record_key<>$4)", o.TenantID, o.Origin.SourceID, candidate, result.RecordKey).Scan(&sameSource)
+			if e != nil {
+				return result, e
+			}
+			auto = !sameSource
+		}
+		for _, c := range normalized {
+			if !auto || !strongKind(c.Kind) {
+				continue
+			}
+			var contradiction bool
+			e = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM assets.asset_identifiers WHERE tenant_id=$1 AND asset_uid=$2 AND kind=$3 AND namespace=$4 AND normalized_value<>$5 AND valid_to IS NULL)", o.TenantID, candidate, c.Kind, c.Namespace, c.Value).Scan(&contradiction)
+			if e != nil {
+				return result, e
+			}
+			auto = !contradiction
+		}
+		if auto {
+			uid = &candidate
+			conflict = scopeConflict
+			result.AssetID, result.AutoMatched, result.Reason = candidate, true, "AUTO_STRONG_MATCH"
+			if _, e = tx.Exec(ctx, "UPDATE assets.source_records SET asset_uid=$3,resolution_state='resolved',revision=revision+1 WHERE tenant_id=$1 AND source_record_key=$2", o.TenantID, result.RecordKey, candidate); e != nil {
+				return result, e
+			}
+			// прежние открытые конфликты этой записи закрываются (история остаётся)
+			if _, e = tx.Exec(ctx, "UPDATE assets.reconciliation_conflicts SET state='resolved',revision=revision+1 WHERE tenant_id=$1 AND source_record_key=$2 AND state='open'", o.TenantID, result.RecordKey); e != nil {
+				return result, e
+			}
 		}
 	}
 	for hit := range hits {

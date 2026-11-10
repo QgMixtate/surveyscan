@@ -130,6 +130,17 @@ func (r *Registry) IngestAuthorized(ctx context.Context, tenant, source string, 
 				return result, e
 			}
 		}
+		if resolved.AutoMatched {
+			// C25.01 вариант Б: аудит и история актива — авто-привязка обратима разделением (C25.03)
+			result.Reason = resolved.Reason
+			version, e := r.Assets.Bump(ctx, tx, tenant, resolved.AssetID)
+			if e != nil {
+				return result, e
+			}
+			if e = r.assetEvent(ctx, tx, tenant, resolved.AssetID, version, "asset.facts_changed.v1", "Assets", "AUTO_STRONG_MATCH", source, o.ID); e != nil {
+				return result, e
+			}
+		}
 		link, e := r.Assets.Link(ctx, tx, o, resolved.AssetID)
 		if e != nil {
 			return result, e
