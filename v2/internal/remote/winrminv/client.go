@@ -109,6 +109,13 @@ func (r winrmRunner) RunPowerShell(ctx context.Context, script string, maxOut in
 		}
 		return "", fmt.Errorf("%w (code %d)", ErrExit, code)
 	}
+	if out.b.Len() == 0 && os.Getenv("SURVEYSCAN_AGENT_DEBUG") == "1" { // отладка: пустой stdout — показать хвост stderr цели
+		tail := strings.Join(strings.Fields(errOut.b.String()), " ")
+		if len(tail) > 600 {
+			tail = tail[:600]
+		}
+		return "", fmt.Errorf("%w: empty stdout, exit 0, stderr=%q", ErrRun, tail)
+	}
 	return out.b.String(), nil
 }
 
