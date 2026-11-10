@@ -1,6 +1,6 @@
 # C23.01/C23.03 — формат portable-пакета и импорт (код: v2/internal/portable)
 
-Статус: формат и импорт реализованы и проверены тестами; **workflow сбора portable (C23.02) и parity online/file на реальном аудите (C23.04) НЕ выполнены**.
+Статус: формат и импорт реализованы и проверены тестами; workflow сбора (C23.02) реализован (`surveyscan-portable`, internal/portableaudit) и проверен в песочнице; **импорт в центр (C23.03 по HTTPS/реестр) и parity online/file на реальном аудите (C23.04) НЕ выполнены**.
 
 - **Контейнер.** ZIP (stdlib), плоская схема: `manifest.json`, `manifest.sig`, `obs/<observation_id>.json`. Любые другие имена, `..`, абсолютные пути, обратные слэши,
   каталоги, дубликаты, лишние файлы вне manifest — отказ целиком.
@@ -11,3 +11,12 @@
   digest mismatch / tenant-source mismatch / нарушение схемы 1.2 / тот же ID с другим digest → карантин; тот же ID и digest → дубликат (идемпотентно). Late-наблюдения (старый collected_at) принимаются.
 - **Не сделано:** сбор portable (host/network/mixed, прогресс, отмена), загрузка по HTTPS с докачкой, staging/checkpoints, mapping на реестр, подпись/ключ portable-источника в enrollment,
   проверка эквивалентности реестра online vs file. Проверено только на синтетических наблюдениях из фикстур C15.
+
+## C23.02 — разовый portable-сбор (`surveyscan-portable`)
+- `init --state DIR --tenant --site --scope`: личность (source_id, generation, key_id) и ключ Ed25519 в каталоге 0700/0600; печатает public_key для доверия при импорте. Повторный init не перезаписывает.
+- `collect --state DIR (--out FILE | --dry-run) [--no-host] [--ssh-target F]... [--winrm-target F]...`: этот хост (Linux/Windows) и удалённые цели по очереди,
+  ход в stderr, итог по секциям в stdout. Наблюдения профиля 1.2: source_kind=portable, source_record = kind/имя цели, clock_quality=estimated (офлайн-устройство
+  без гарантии времени), монотонная последовательность в state (сохраняется до экспорта, номера не переиспользуются). Каждое наблюдение проходит схему 1.2 до экспорта.
+  Ошибка цели не прерывает остальные (код выхода 3 — частичный результат); Ctrl-C прерывает без файла; пакет пишется во временный файл и публикуется
+  без перезаписи (hardlink, на FAT/exFAT — rename после проверки). Служба не устанавливается, центр/PG/Bao не нужны.
+- `verify --package FILE --public-key B64`: та же проверка, что при импорте (подпись, лимиты, digest, схема, карантин).
