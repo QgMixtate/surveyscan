@@ -25,6 +25,14 @@
 - **Hosted CI заблокирован биллингом GitHub** — ничего после bf6c299 не проверено hosted.
 - **Найденный общий пробел C09:** сводка источников карточки (InventoryDetail.Sources) строится только из проекции 1.0 — источники данных 1.2 (агенты и portable) не перечислены.
 
+## Локальный повтор CI v2 — результат на момент передачи (код 5f3d1cb, песочница с dockerd)
+Прогресс: 01 rc=0   20.5s Format, architecture, unit tests, vet and C03 contracts;02 rc=0   22.4s Agent collection ownership, heartbeat progress and capability chain race checks;03 rc=0   21.9s Build server, collector, agent and CLI;04 rc=0    5.0s Build separate Web UI;05 rc=0    1.3s Signed release bundle, independent Web version and verified staging;06 rc=0    2.6s Static systemd unit verification (not boot acceptance);07 rc=0   33.6s Start local PostgreSQL, OpenBao, backend and proxy;08 rc=0   66.2s Real PostgreSQL integration tests;09 rc=0    5.7s HTTP, dependency outage and restart checks;10 rc=0    3.5s Real binary auth, console bootstrap and restart checks;11 rc=1   11.5s Compiled collector, mTLS and signed center result;12 rc=1   11.5s Live host agent, three scheduled cycles and heartbeat;13 rc=1   11.5s Real daemon SIGKILL, offline spools and reconnect;14 rc=0    0.7s Real ENOSPC in disposable tmpfs;15 rc=0    0.9s Scoped OpenBao KV, Transit, token renewal and masked audit;16 rc=0   36.1s OpenBao seal, restart, durable ACK and renewal relay;17 rc=0    3.4s Opt-in inventory1.2 center, scoped Transit, projection and typed API;18 rc=0    5.3s Opt-in inventory1.2 collector relay, offline spool and cold restart;
+**ПРОВАЛЫ 11–13** (machine_smoke, agent_smoke, recovery_smoke): `RuntimeError: machine/collector binary did not start` — за 10 с нет ответа /health/live на TLS-порту центра
+(`.dist/surveyscan-server serve` с машинной конфигурацией); в center.log только строка старта, ошибки нет. Причина НЕ установлена: возможна особенность песочницы
+(сеть/прокси/порты), возможна регрессия после C14 (миграция 0036, приём portable, ConfigureMachine). Шаг 10 (auth_smoke, сервер без машинной конфигурации) прошёл.
+ПЕРВОЕ ДЕЛО новой сессии: воспроизвести `python scripts/machine_smoke.py` после `dev.py up`, посмотреть, слушает ли центр TLS-порт (ss -ltnp), и сравнить с кодом bf6c299
+(последний hosted-зелёный), чтобы отделить регрессию от песочницы. Стенд пользователя этим не проверен: центр vm_center там собран из старого кода.
+
 ## Стенд пользователя (что изменено для тестов — откатить после пилота)
 DC: пользователь AWM\scanwinrm (Remote Management Users), самоподписанный сертификат WIN-AREDINOV.awm.local + HTTPS-listener 5986, правило firewall от 10.170.108.2,
 ACE S-1-5-32-580 в WinRM RootSDDL. Linux: службы surveyscan-agent (run12), surveyscan-ssh1 (run-ssh12 → 127.0.0.1:22, пользователь scanprobe), surveyscan-winrm2 (run-winrm12),
