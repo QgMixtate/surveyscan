@@ -189,27 +189,64 @@ func (Store) ProjectPartial12(ctx context.Context, tx pgx.Tx, o contracts.Observ
 			return false, err
 		}
 		changed = true
+		// Пакетно: одно чтение текущих полей раздела, ранг прежнего наблюдения считается один раз на observation_id,
+		// запись — один upsert через unnest. Решение по каждому полю то же: новое значение пишется, только если
+		// наблюдение новее того, из которого взято текущее (Newer).
+		current := map[[2]string]string{}
+		rows, err := tx.Query(ctx, "SELECT record_key,field_name,observation_id::text FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=$2 AND section_name=$3", o.TenantID, asset, section.Name)
+		if err != nil {
+			return false, err
+		}
+		for rows.Next() {
+			var k, f, id string
+			if err = rows.Scan(&k, &f, &id); err != nil {
+				rows.Close()
+				return false, err
+			}
+			current[[2]string{k, f}] = id
+		}
+		rows.Close()
+		if err = rows.Err(); err != nil {
+			return false, err
+		}
+		newer := map[string]bool{}
+		var keys, fields []string
+		var values [][]byte
 		for _, row := range prepared[section.Name] {
 			for field, value := range row.fields {
-				var oldID string
-				err = tx.QueryRow(ctx, "SELECT observation_id::text FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=$2 AND section_name=$3 AND record_key=$4 AND field_name=$5", o.TenantID, asset, section.Name, row.key, field).Scan(&oldID)
-				if err == nil {
-					old, err := existingRank(ctx, tx, o.TenantID, oldID, section.Name)
-					if err != nil {
-						return false, err
+				if oldID, ok := current[[2]string{row.key, field}]; ok {
+					wins, cached := newer[oldID]
+					if !cached {
+						old, err := existingRank(ctx, tx, o.TenantID, oldID, section.Name)
+						if err != nil {
+							return false, err
+						}
+						wins = Newer(next, old)
+						newer[oldID] = wins
 					}
-					if !Newer(next, old) {
+					if !wins {
 						continue
 					}
-				} else if !errors.Is(err, pgx.ErrNoRows) {
-					return false, err
 				}
-				_, err = tx.Exec(ctx, `INSERT INTO inventory.record_facts12(tenant_id,asset_uid,section_name,record_key,field_name,value,observation_id,link_id) VALUES($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT(tenant_id,asset_uid,section_name,record_key,field_name) DO UPDATE SET value=excluded.value,observation_id=excluded.observation_id,link_id=excluded.link_id,projection_revision=inventory.record_facts12.projection_revision+1`, o.TenantID, asset, section.Name, row.key, field, value, o.ID, link)
-				if err != nil {
-					return false, err
-				}
+				keys, fields, values = append(keys, row.key), append(fields, field), append(values, []byte(value))
 			}
+		}
+		for len(keys) > 0 {
+			n := min(len(keys), 5000)
+			_, err = tx.Exec(ctx, `INSERT INTO inventory.record_facts12(tenant_id,asset_uid,section_name,record_key,field_name,value,observation_id,link_id) SELECT $1,$2,$3,k,f,v::jsonb,$7,$8 FROM unnest($4::text[],$5::text[],$6::text[]) AS u(k,f,v) ON CONFLICT(tenant_id,asset_uid,section_name,record_key,field_name) DO UPDATE SET value=excluded.value,observation_id=excluded.observation_id,link_id=excluded.link_id,projection_revision=inventory.record_facts12.projection_revision+1`, o.TenantID, asset, section.Name, keys[:n], fields[:n], textValues(values[:n]), o.ID, link)
+			if err != nil {
+				return false, err
+			}
+			keys, fields, values = keys[n:], fields[n:], values[n:]
 		}
 	}
 	return changed, nil
+}
+
+func textValues(values [][]byte) []string {
+	out := make([]string, len(values))
+	for i, v := range values {
+		out[i] = string(v)
+	}
+	return out
 }
