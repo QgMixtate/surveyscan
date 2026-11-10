@@ -89,3 +89,16 @@ WHERE b.tenant_id=$1 AND b.source_id=$2 AND s.source_kind='portable' AND s.state
 	}
 	return keyID, pub, e
 }
+
+// AuditPortableImport фиксирует загрузку portable-пакета пользователем через API (кто, какой источник).
+func (s *MachineService) AuditPortableImport(ctx context.Context, tenant, actorRef, source string) error {
+	tx, e := s.Pool.Begin(ctx)
+	if e != nil {
+		return e
+	}
+	defer tx.Rollback(ctx)
+	if e = s.Audit.Record(ctx, tx, tenant, actorRef, "source.portable_imported", "source", source); e != nil {
+		return e
+	}
+	return tx.Commit(ctx)
+}
