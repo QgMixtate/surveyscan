@@ -163,7 +163,7 @@ def main():
     p.add_argument('--platform', default='windows/amd64', choices=['windows/amd64', 'linux/amd64'])
     p.add_argument('--out', default=str(ROOT / '.local/vm-center'))
     p.add_argument('--windows-root', default='C:\\surveyscan\\vm')
-    p.add_argument('--timeout', type=int, default=4 * 3600)
+    p.add_argument('--timeout', type=int, default=7 * 24 * 3600, help='через сколько секунд центр завершится и УДАЛИТ временную БД (по умолчанию 7 суток; для soak не уменьшать)')
     p.add_argument('--selftest', action='store_true')
     args = p.parse_args()
     if args.selftest:
