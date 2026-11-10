@@ -154,3 +154,18 @@ func TestScriptFitsWinRMCommandLimit(t *testing.T) {
 		t.Fatal("script must be read-only")
 	}
 }
+
+func TestClassifyNeverEchoesTargetText(t *testing.T) {
+	cases := map[string]error{
+		"http response error: 401 - invalid content type":     ErrAuth,
+		"x509: certificate signed by unknown authority":       ErrTLS,
+		"dial tcp 10.0.0.1:5986: connect: connection refused": ErrNet,
+		"something TOPSECRET else":                            ErrRun,
+	}
+	for in, want := range cases {
+		got := classify(errors.New(in))
+		if !errors.Is(got, want) || strings.Contains(got.Error(), "TOPSECRET") {
+			t.Errorf("%q -> %v, want %v", in, got, want)
+		}
+	}
+}

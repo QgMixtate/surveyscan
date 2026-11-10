@@ -5,6 +5,9 @@ import (
 	"context"
 	"encoding/base64"
 	"errors"
+	"fmt"
+	"os"
+	"strings"
 	"time"
 	"unicode/utf16"
 
@@ -16,7 +19,25 @@ import (
 var (
 	ErrPolicy = errors.New("winrm: HTTPS with a trusted CA certificate and NTLM credentials are required")
 	ErrRun    = errors.New("winrm: remote command failed")
+	ErrAuth   = errors.New("winrm: authentication rejected by the target (HTTP 401)")
+	ErrTLS    = errors.New("winrm: TLS verification of the target certificate failed")
+	ErrNet    = errors.New("winrm: target unreachable")
+	ErrExit   = errors.New("winrm: remote PowerShell exited with a non-zero code")
 )
+
+// classify сводит ошибку транспорта к безопасной категории без текста ответа цели.
+func classify(err error) error {
+	text := strings.ToLower(err.Error())
+	switch {
+	case strings.Contains(text, "401") || strings.Contains(text, "unauthorized") || strings.Contains(text, "ntlm"):
+		return ErrAuth
+	case strings.Contains(text, "x509") || strings.Contains(text, "certificate") || strings.Contains(text, "tls"):
+		return ErrTLS
+	case strings.Contains(text, "refused") || strings.Contains(text, "timeout") || strings.Contains(text, "no route") || strings.Contains(text, "deadline"):
+		return ErrNet
+	}
+	return ErrRun
+}
 
 // SecretReader — алиас из конфигурации оператора (как у SSH/SNMP).
 type SecretReader interface {
@@ -63,8 +84,18 @@ type winrmRunner struct{ client *winrm.Client }
 func (r winrmRunner) RunPowerShell(ctx context.Context, script string, maxOut int) (string, error) {
 	out, errOut := &limitedBuf{left: maxOut}, &limitedBuf{left: 64 << 10}
 	code, err := r.client.RunWithContext(ctx, winrm.Powershell(script), out, errOut)
-	if err != nil || code != 0 {
-		return "", ErrRun // текст ошибки цели наружу не отдаём
+	if err != nil {
+		return "", classify(err) // текст ошибки цели наружу не отдаём
+	}
+	if code != 0 {
+		if os.Getenv("SURVEYSCAN_AGENT_DEBUG") == "1" { // отладка: короткий очищенный хвост stderr цели
+			tail := strings.Join(strings.Fields(errOut.b.String()), " ")
+			if len(tail) > 160 {
+				tail = tail[:160]
+			}
+			return "", fmt.Errorf("%w (code %d): %s", ErrExit, code, tail)
+		}
+		return "", fmt.Errorf("%w (code %d)", ErrExit, code)
 	}
 	return out.b.String(), nil
 }
