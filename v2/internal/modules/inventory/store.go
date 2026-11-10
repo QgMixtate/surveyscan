@@ -284,6 +284,17 @@ func (Store) Enrich(ctx context.Context, tx pgx.Tx, a *contracts.Asset) error {
 	if e = rows.Err(); e != nil {
 		return e
 	}
+	if e = rows.Err(); e != nil {
+		return e
+	}
+	rows.Close()
+	// Актив, данные которого пришли только по профилю 1.2 (run12-агенты, SSH/WinRM-цели, portable), иначе показывался
+	// бы «без имени и без сбора». Проекция 1.0 остаётся первичной: 1.2 используется, только где 1.0 пусто.
+	if a.Hostname == nil || a.OS == nil || a.LastInventory == nil {
+		if e = enrich12(ctx, tx, a, &trusted, &uncertainClock); e != nil {
+			return e
+		}
+	}
 	if a.LastInventory != nil && trusted && !uncertainClock && !a.LastInventory.After(time.Now().Add(5*time.Minute)) {
 		a.Freshness = "stale"
 		if time.Since(*a.LastInventory) <= 24*time.Hour {
@@ -308,4 +319,50 @@ func (s Store) RecordedExact(ctx context.Context, tx pgx.Tx, o contracts.Observa
 		return result, false, domain.Invalid
 	}
 	return result, true, nil
+}
+
+func enrich12(ctx context.Context, tx pgx.Tx, a *contracts.Asset, trusted, uncertain *bool) error {
+	if a.Hostname == nil {
+		var name *string
+		e := tx.QueryRow(ctx, `SELECT value #>> '{}' FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=$2 AND section_name='identity' AND field_name='hostname' AND jsonb_typeof(value)='string' ORDER BY record_key LIMIT 1`, a.TenantID, a.UID).Scan(&name)
+		if e != nil && !errors.Is(e, pgx.ErrNoRows) {
+			return e
+		}
+		if name != nil && *name != "" {
+			a.Hostname = name
+		}
+	}
+	if a.OS == nil {
+		var name, version *string
+		e := tx.QueryRow(ctx, `SELECT max(value #>> '{}') FILTER (WHERE field_name='name'),max(value #>> '{}') FILTER (WHERE field_name='version') FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=$2 AND section_name='os' AND jsonb_typeof(value)='string'`, a.TenantID, a.UID).Scan(&name, &version)
+		if e != nil {
+			return e
+		}
+		if name != nil && *name != "" {
+			value := *name
+			if version != nil && *version != "" {
+				value += " " + *version
+			}
+			if runes := []rune(value); len(runes) > 256 {
+				value = string(runes[:256])
+			}
+			a.OS = &value
+		}
+	}
+	if a.LastInventory == nil {
+		var at *time.Time
+		var clock *string
+		var anyUncertain bool
+		e := tx.QueryRow(ctx, `SELECT s.collected_at,o.clock_quality,bool_or(r.clock_uncertain) OVER () FROM inventory.record_section_state12 r JOIN inventory.observations o ON o.tenant_id=r.tenant_id AND o.observation_id=r.last_attempt_id JOIN inventory.observation_sections s ON s.tenant_id=r.tenant_id AND s.observation_id=r.last_attempt_id AND s.section_name=r.section_name WHERE r.tenant_id=$1 AND r.asset_uid=$2 AND r.last_status='partial' ORDER BY s.collected_at DESC LIMIT 1`, a.TenantID, a.UID).Scan(&at, &clock, &anyUncertain)
+		if e != nil && !errors.Is(e, pgx.ErrNoRows) {
+			return e
+		}
+		if at != nil {
+			utc := at.UTC()
+			a.LastInventory = &utc
+			*trusted = clock != nil && *clock == "trusted"
+			*uncertain = *uncertain || anyUncertain
+		}
+	}
+	return nil
 }

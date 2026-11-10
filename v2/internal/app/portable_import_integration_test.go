@@ -115,6 +115,10 @@ func TestC23PortableRegisterAndImport(t *testing.T) {
 	if len(card.Sources) != 1 || card.Sources[0].SourceID != source || card.Sources[0].Kind != "portable" {
 		t.Fatalf("C09 card must list the portable 1.2 source: %+v", card.Sources)
 	}
+	// актив только с данными 1.2: имя, ОС и время сбора берутся из проекции 1.2 (1.0 пуста)
+	if card.Snapshot.Hostname == nil || *card.Snapshot.Hostname != "хост-01" || card.Snapshot.OS == nil || *card.Snapshot.OS != "Windows Server 2022" || card.Snapshot.LastInventory == nil {
+		t.Fatalf("1.2-only asset must show hostname/os/last inventory from the 1.2 projection: %+v", card.Snapshot)
+	}
 
 	// повторная загрузка того же пакета (обрыв/повтор) не дублирует наблюдения
 	again, err := f.registry.ImportPortable(f.ctx, machine, tenant, source, pkg)

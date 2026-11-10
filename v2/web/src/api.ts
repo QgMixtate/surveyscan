@@ -9,6 +9,11 @@ export type Source=components['schemas']['Source'];
 export type SourcePage=components['schemas']['SourcePage'];
 export type SourceProfile={tenant_id:string;source_id:string;source_state:string;managed:boolean;config:{profile_revision:string;heartbeat_seconds:number;inventory_seconds:number;spool_limit_bytes:number};applied_revision:string|null;last_config_contact_at:string|null;last_contact_at:string|null;last_successful_inventory_at:string|null};
 export type Session=components['schemas']['Session'];
+export type FactEvidence12={observation_id:string;origin:{source_id:string;source_kind:'agent'|'collector'|'portable';generation_id:string};source_sequence:string;collected_at:string;clock_quality:string};
+export type RecordPage12={section:string;projection_revision:string;section_state:{status:string;clock_uncertain:boolean;last_attempt:FactEvidence12}|null;items:{record_key:string;field:string;value:unknown;evidence:FactEvidence12}[];next_cursor:string|null};
+export type TopologyNode={id:string;kind:'host'|'subnet'|'gateway';label:string;detail?:string;asset_uid?:string;router?:boolean};
+export type TopologyLink={a:string;b:string;role?:'gateway';layer:'L2'|'L3';confidence:'confirmed'|'probable'|'weak';evidence:{source:string;detail:string;origin?:string}[];conflicts?:string[]};
+export type Topology={tenant_id:string;generated_at:string;nodes:TopologyNode[];links:TopologyLink[];truncated:boolean;hosts_with_network_facts:number};
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
 }
@@ -30,6 +35,8 @@ export const api={
  asset:(uid:string)=>call<Asset>('/api/v1/assets/'+encodeURIComponent(uid),'Asset'),
  inventory:(uid:string)=>call<InventoryDetail>('/api/v1/assets/'+encodeURIComponent(uid)+'/inventory','InventoryDetail'),
  profile:(source:string)=>call<SourceProfile>('/api/v1/sources/'+encodeURIComponent(source)+'/profile','SourceProfile'),
+ records12:(uid:string,section:string,cursor:string|null=null)=>call<RecordPage12>('/api/v1/assets/'+encodeURIComponent(uid)+'/inventory/facts/'+encodeURIComponent(section)+'?limit=100'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'RecordFactPage12'),
+ topology:()=>call<Topology>('/api/v1/topology','Topology'),
  sources:(cursor:string|null=null)=>call<SourcePage>('/api/v1/sources?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SourcePage')
 };
 export async function checkCompatibility(){

@@ -1,0 +1,408 @@
+[
+ {
+  "name": "demo-core-router",
+  "os": {
+   "name": "Debian",
+   "version": "12",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "lan",
+    "mac": "02:de:00:00:00:01",
+    "addresses": [
+     {
+      "ip": "10.10.0.1",
+      "prefix": 24
+     }
+    ]
+   },
+   {
+    "name": "users",
+    "mac": "02:de:00:00:00:02",
+    "addresses": [
+     {
+      "ip": "10.20.0.1",
+      "prefix": 24
+     }
+    ]
+   },
+   {
+    "name": "backup",
+    "mac": "02:de:00:00:00:03",
+    "addresses": [
+     {
+      "ip": "10.30.0.1",
+      "prefix": 24
+     }
+    ]
+   },
+   {
+    "name": "wan",
+    "mac": "02:de:00:00:00:04",
+    "addresses": [
+     {
+      "ip": "203.0.113.2",
+      "prefix": 30
+     }
+    ]
+   },
+   {
+    "name": "lo",
+    "mac": "00:00:00:00:00:00",
+    "addresses": [
+     {
+      "ip": "127.0.0.1",
+      "prefix": 8
+     }
+    ]
+   }
+  ],
+  "routes": [
+   {
+    "kind": "route",
+    "family": "ipv4",
+    "destination": "0.0.0.0/0",
+    "gateway": "203.0.113.1",
+    "interface": "wan"
+   }
+  ]
+ },
+ {
+  "name": "demo-dc01",
+  "os": {
+   "name": "Windows Server",
+   "version": "2019",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet0",
+    "mac": "02:de:00:00:01:10",
+    "addresses": [
+     {
+      "ip": "10.10.0.10",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.10.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ },
+ {
+  "name": "demo-db01",
+  "os": {
+   "name": "Ubuntu",
+   "version": "24.04",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "eth0",
+    "mac": "02:de:00:00:01:21",
+    "addresses": [
+     {
+      "ip": "10.10.0.21",
+      "prefix": 24
+     }
+    ]
+   }
+  ],
+  "routes": [
+   {
+    "kind": "route",
+    "family": "ipv4",
+    "destination": "0.0.0.0/0",
+    "gateway": "10.10.0.1",
+    "interface": "eth0"
+   }
+  ]
+ },
+ {
+  "name": "demo-app01",
+  "os": {
+   "name": "Ubuntu",
+   "version": "24.04",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "eth0",
+    "mac": "02:de:00:00:01:22",
+    "addresses": [
+     {
+      "ip": "10.10.0.22",
+      "prefix": 24
+     }
+    ]
+   },
+   {
+    "name": "eth1",
+    "mac": "02:de:00:00:03:05",
+    "addresses": [
+     {
+      "ip": "10.30.0.5",
+      "prefix": 24
+     }
+    ]
+   }
+  ],
+  "routes": [
+   {
+    "kind": "route",
+    "family": "ipv4",
+    "destination": "0.0.0.0/0",
+    "gateway": "10.10.0.1",
+    "interface": "eth0"
+   }
+  ]
+ },
+ {
+  "name": "demo-files01",
+  "os": {
+   "name": "Windows Server",
+   "version": "2019",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet0",
+    "mac": "02:de:00:00:01:30",
+    "addresses": [
+     {
+      "ip": "10.10.0.30",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.10.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ },
+ {
+  "name": "demo-backup01",
+  "os": {
+   "name": "Ubuntu",
+   "version": "24.04",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "eth0",
+    "mac": "02:de:00:00:03:10",
+    "addresses": [
+     {
+      "ip": "10.30.0.10",
+      "prefix": 24
+     }
+    ]
+   }
+  ],
+  "routes": [
+   {
+    "kind": "route",
+    "family": "ipv4",
+    "destination": "0.0.0.0/0",
+    "gateway": "10.30.0.1",
+    "interface": "eth0"
+   }
+  ]
+ },
+ {
+  "name": "demo-ws-001",
+  "os": {
+   "name": "Windows 10 Pro",
+   "version": "22H2",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet",
+    "mac": "02:de:00:00:02:01",
+    "addresses": [
+     {
+      "ip": "10.20.0.101",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.20.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ },
+ {
+  "name": "demo-ws-002",
+  "os": {
+   "name": "Windows 10 Pro",
+   "version": "22H2",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet",
+    "mac": "02:de:00:00:02:02",
+    "addresses": [
+     {
+      "ip": "10.20.0.102",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.20.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ },
+ {
+  "name": "demo-ws-003",
+  "os": {
+   "name": "Windows 10 Pro",
+   "version": "22H2",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet",
+    "mac": "02:de:00:00:02:03",
+    "addresses": [
+     {
+      "ip": "10.20.0.103",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.20.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ },
+ {
+  "name": "demo-ws-004",
+  "os": {
+   "name": "Windows 10 Pro",
+   "version": "22H2",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet",
+    "mac": "02:de:00:00:02:04",
+    "addresses": [
+     {
+      "ip": "10.20.0.104",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.20.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ },
+ {
+  "name": "demo-ws-005",
+  "os": {
+   "name": "Windows 10 Pro",
+   "version": "22H2",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet",
+    "mac": "02:de:00:00:02:05",
+    "addresses": [
+     {
+      "ip": "10.20.0.105",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.20.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ },
+ {
+  "name": "demo-ws-006",
+  "os": {
+   "name": "Windows 10 Pro",
+   "version": "22H2",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet",
+    "mac": "02:de:00:00:02:06",
+    "addresses": [
+     {
+      "ip": "10.20.0.106",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.20.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ },
+ {
+  "name": "demo-ws-007",
+  "os": {
+   "name": "Windows 10 Pro",
+   "version": "22H2",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet",
+    "mac": "02:de:00:00:02:07",
+    "addresses": [
+     {
+      "ip": "10.20.0.107",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.20.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ },
+ {
+  "name": "demo-ws-008",
+  "os": {
+   "name": "Windows 10 Pro",
+   "version": "22H2",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet",
+    "mac": "02:de:00:00:02:08",
+    "addresses": [
+     {
+      "ip": "10.20.0.107",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.20.0.1"
+    ]
+   }
+  ],
+  "routes": []
+ }
+]
