@@ -68,27 +68,34 @@ def scenario(args, **s):
     (out / 'agent-config.windows.json').write_text(json.dumps(windows, indent=2))
     (out / 'agent-config.linux.json').write_text(json.dumps(dict(base, ca_certificate_file='/CHANGE/ME/ca.pem', state_directory='/CHANGE/ME/state'), indent=2))
     print(f"READY collector=https://{args.public_host}:{args.collector_port} out={out}", flush=True)
-    for name in ('prepare.json', 'grant.json'):
-        (out / name).unlink(missing_ok=True)
+    # Заявки: prepare.json -> платформа --platform (grant.json); prepare-linux.json / prepare-windows.json -> своя платформа
+    # (grant-linux.json / grant-windows.json). Так за один запуск центра регистрируются агенты обеих ОС.
+    requests = {'prepare.json': (args.platform, 'grant.json'), 'prepare-linux.json': ('linux/amd64', 'grant-linux.json'),
+                'prepare-windows.json': ('windows/amd64', 'grant-windows.json')}
+    for prepare_name, (_, grant_name) in requests.items():
+        for name in (prepare_name, grant_name):
+            (out / name).unlink(missing_ok=True)
     agent = None
     if args.selftest:
         agent = selftest_prepare(args, out, s)
-    issued = False
+    issued = set()
     deadline = time.monotonic() + args.timeout
     last = 0.0
     while not STOP and time.monotonic() < deadline:
-        if not issued and (out / 'prepare.json').exists():
+        for prepare_name, (platform, grant_name) in requests.items():
+            if prepare_name in issued or not (out / prepare_name).exists():
+                continue
             time.sleep(0.5)
-            prep = read_json(out / 'prepare.json')
+            prep = read_json(out / prepare_name)
             body = {'tenant_id': s['tenant'], 'source_id': prep['source_id'], 'source_kind': 'agent', 'site_id': s['site'],
                     'collector_id': s['collector_id'], 'ttl_seconds': 900, 'csr_sha256': prep['csr_sha256'],
-                    'signing_public_key': prep['signing_public_key'], 'inventory_platform': args.platform}
+                    'signing_public_key': prep['signing_public_key'], 'inventory_platform': platform}
             headers = {'Origin': s['origin'], 'Cookie': s['cookie'], 'X-CSRF-Token': s['session']['csrf_token']}
             code, grant, _ = s['request'](s['tls_port'], s['plain'], 'POST', '/api/v1/enrollments', body, headers)
             assert code == 201, f'grant refused: {code} {grant}'
-            write_private(out / 'grant.json', json.dumps(grant))
-            issued = True
-            print(f"GRANT issued for source {prep['source_id']} platform {args.platform} (valid 15 min) -> {out / 'grant.json'}", flush=True)
+            write_private(out / grant_name, json.dumps(grant))
+            issued.add(prepare_name)
+            print(f"GRANT issued for source {prep['source_id']} platform {platform} (valid 15 min) -> {out / grant_name}", flush=True)
             if args.selftest:
                 agent = selftest_enroll_run(args, out, agent)
         if time.monotonic() - last > 20:
