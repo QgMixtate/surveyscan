@@ -63,3 +63,26 @@ func (Store) RecordFacts12(ctx context.Context, tx pgx.Tx, tenant, asset, sectio
 	}
 	return items, false, rows.Err()
 }
+
+// SourceIDs12 возвращает источники, данные которых есть в проекции профиля 1.2 актива:
+// последние попытки секций и наблюдения, из которых взяты текущие факты. Нужна сводке
+// источников карточки C09 наравне с источниками проекции 1.0. Читать в той же транзакции
+// после авторизации актива.
+func (Store) SourceIDs12(ctx context.Context, tx pgx.Tx, tenant, asset string) ([]string, error) {
+	rows, err := tx.Query(ctx, `SELECT DISTINCT o.source_id::text FROM inventory.observations o WHERE o.tenant_id=$1 AND o.observation_id IN (
+SELECT r.last_attempt_id FROM inventory.record_section_state12 r WHERE r.tenant_id=$1 AND r.asset_uid=$2
+UNION SELECT DISTINCT f.observation_id FROM inventory.record_facts12 f WHERE f.tenant_id=$1 AND f.asset_uid=$2)`, tenant, asset)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	out := []string{}
+	for rows.Next() {
+		var id string
+		if err = rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		out = append(out, id)
+	}
+	return out, rows.Err()
+}

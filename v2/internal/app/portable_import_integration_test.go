@@ -110,10 +110,10 @@ func TestC23PortableRegisterAndImport(t *testing.T) {
 			t.Fatalf("each fact must carry its portable origin: %+v", it.Evidence)
 		}
 	}
-	// Известный общий пробел (не portable): сводка источников карточки C09 строится только из проекции 1.0,
-	// поэтому источники данных профиля 1.2 (агенты и portable) в ней не перечислены. Фиксируем текущее поведение.
-	if card := detail(t, f, asset); len(card.Sources) != 0 {
-		t.Log("C09 card now lists 1.2 sources — update this test and the journal:", card.Sources)
+	// C09: сводка источников карточки включает источники проекции 1.2 (portable, агенты 1.2).
+	card := detail(t, f, asset)
+	if len(card.Sources) != 1 || card.Sources[0].SourceID != source || card.Sources[0].Kind != "portable" {
+		t.Fatalf("C09 card must list the portable 1.2 source: %+v", card.Sources)
 	}
 
 	// повторная загрузка того же пакета (обрыв/повтор) не дублирует наблюдения

@@ -55,6 +55,14 @@ func (r *Registry) InventoryDetail(ctx context.Context, id accessport.Identity, 
 			}
 		}
 	}
+	// Источники профиля 1.2 (агенты, SSH/WinRM-цели, portable) хранят факты в отдельной проекции.
+	ids12, e := r.Inventory.SourceIDs12(ctx, tx, id.TenantID, uid)
+	if e != nil {
+		return out, e
+	}
+	for _, s := range ids12 {
+		ids[s] = true
+	}
 	sources := make([]string, 0, len(ids))
 	for id := range ids {
 		sources = append(sources, id)
