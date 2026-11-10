@@ -5,6 +5,7 @@ package winrminv
 
 import (
 	"encoding/json"
+	"errors"
 	"net/netip"
 	"regexp"
 	"strings"
@@ -48,6 +49,8 @@ type jsonSoftware struct {
 	Vendor  string `json:"vendor"`
 }
 type payload struct {
+	Fatal      string                                    `json:"fatal"`
+	Errors     []string                                  `json:"errors"`
 	Hostname   string                                    `json:"hostname"`
 	Domain     string                                    `json:"domain"`
 	UUID       string                                    `json:"uuid"`
@@ -94,9 +97,30 @@ var stateMap = map[string]string{"running": "running", "stopped": "stopped", "st
 	"continue pending": "continue_pending", "pause pending": "pause_pending", "paused": "paused"}
 var modeMap = map[string]string{"auto": "auto", "manual": "demand", "disabled": "disabled", "boot": "boot", "system": "system"}
 
-func sec(name string, rows []map[string]any, now time.Time) contracts.Section {
+// sectionSources — какие источники сценария питают секцию (для причины недоступности).
+var sectionSources = map[string][]string{"identity": {"cs", "prod"}, "os": {"os"}, "network": {"nics"}, "hardware": {"os", "cpu", "bios"},
+	"software": {"sw64", "sw32"}, "services": {"svcs"}}
+
+// reasonFor возвращает причину пустой секции по ошибкам источников: ACCESS_DENIED (категория PermissionDenied), иначе SOURCE_ERROR / SOURCE_UNAVAILABLE.
+func reasonFor(name string, errs []string) string {
+	reason := "SOURCE_UNAVAILABLE"
+	for _, e := range errs {
+		src, cat, _ := strings.Cut(e, ":")
+		for _, s := range sectionSources[name] {
+			if s == src {
+				if cat == "PermissionDenied" {
+					return "ACCESS_DENIED"
+				}
+				reason = "SOURCE_ERROR"
+			}
+		}
+	}
+	return reason
+}
+
+func sec(name string, rows []map[string]any, now time.Time, errs []string) contracts.Section {
 	if len(rows) == 0 {
-		return contracts.Section{Name: name, CollectedAt: now, Status: "unavailable", Reason: "SOURCE_UNAVAILABLE", Records: []map[string]any{}}
+		return contracts.Section{Name: name, CollectedAt: now, Status: "unavailable", Reason: reasonFor(name, errs), Records: []map[string]any{}}
 	}
 	return contracts.Section{Name: name, CollectedAt: now, Status: "partial", Reason: "REMOTE_WINRM_PARTIAL", Count: len(rows), Records: rows}
 }
@@ -106,6 +130,9 @@ func Parse(raw []byte, now time.Time) ([]contracts.Section, []contracts.Candidat
 	var p payload
 	if err := json.Unmarshal(raw, &p); err != nil {
 		return nil, nil, err
+	}
+	if p.Fatal != "" {
+		return nil, nil, errors.New("winrm: collection script failed on the target (" + str(p.Fatal, 64) + ")")
 	}
 	now = now.UTC()
 	cands := []contracts.Candidate{}
@@ -243,8 +270,8 @@ func Parse(raw []byte, now time.Time) ([]contracts.Section, []contracts.Candidat
 		}
 		soft = append(soft, row)
 	}
-	return []contracts.Section{sec("identity", identity, now), sec("os", osRows, now), sec("network", nets, now),
-		sec("hardware", hw, now), sec("software", soft, now), sec("services", svcs, now)}, cands, nil
+	return []contracts.Section{sec("identity", identity, now, p.Errors), sec("os", osRows, now, p.Errors), sec("network", nets, now, p.Errors),
+		sec("hardware", hw, now, p.Errors), sec("software", soft, now, p.Errors), sec("services", svcs, now, p.Errors)}, cands, nil
 }
 
 func cleanAddrs(in []string) []string {

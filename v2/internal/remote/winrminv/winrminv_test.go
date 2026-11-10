@@ -177,3 +177,28 @@ func TestClassifyNeverEchoesTargetText(t *testing.T) {
 		}
 	}
 }
+
+func TestAccessDeniedIsReportedNotSilent(t *testing.T) {
+	// не-админ: WMI-источники недоступны (PermissionDenied), реестр читается
+	raw := `{"hostname":"DC1","errors":["os:PermissionDenied","cs:PermissionDenied","prod:PermissionDenied","bios:PermissionDenied","cpu:PermissionDenied","nics:PermissionDenied","svcs:PermissionDenied","sw32:ObjectNotFound"],
+"nics":[],"services":[],"software":[{"view":"64","key":"k1","name":"App","version":"1","vendor":"V"}]}`
+	secs, _, err := Parse([]byte(raw), time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	by := map[string]contracts.Section{}
+	for _, s := range secs {
+		by[s.Name] = s
+	}
+	for _, n := range []string{"os", "network", "services", "hardware"} {
+		if by[n].Status != "unavailable" || by[n].Reason != "ACCESS_DENIED" {
+			t.Errorf("%s: %s/%s, want unavailable/ACCESS_DENIED", n, by[n].Status, by[n].Reason)
+		}
+	}
+	if by["software"].Status != "partial" || len(by["software"].Records) != 1 || by["identity"].Status != "partial" {
+		t.Fatal("registry-backed software and hostname identity must survive:", by["software"], by["identity"])
+	}
+	if _, _, err = Parse([]byte(`{"fatal":"PermissionDenied","errors":["fatal:PermissionDenied"]}`), time.Now()); err == nil || strings.Contains(err.Error(), "TOPSECRET") {
+		t.Fatal("fatal script failure must be an error:", err)
+	}
+}
