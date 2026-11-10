@@ -5,6 +5,7 @@
 package main
 
 import (
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"flag"
@@ -17,6 +18,7 @@ import (
 	"time"
 
 	"github.com/Azure/go-ntlmssp"
+	"github.com/masterzen/winrm"
 )
 
 type logging struct{ next http.RoundTripper }
@@ -54,12 +56,35 @@ func main() {
 	user := flag.String("user", "", "")
 	passFile := flag.String("password-file", "", "")
 	caFile := flag.String("ca-file", "", "")
+	execPS := flag.String("exec-ps", "", "выполнить PowerShell-команду клиентом masterzen/winrm и показать stdout/stderr/код")
+	execCmd := flag.String("exec-cmd", "", "выполнить команду cmd.exe так же")
 	flag.Parse()
 	pass, e1 := os.ReadFile(*passFile)
 	ca, e2 := os.ReadFile(*caFile)
 	if e1 != nil || e2 != nil {
 		fmt.Println("cannot read password/CA file")
 		os.Exit(1)
+	}
+	if *execPS != "" || *execCmd != "" {
+		portN := 5986
+		fmt.Sscanf(*port, "%d", &portN)
+		ep := winrm.NewEndpoint(*host, portN, true, false, ca, nil, nil, 30*time.Second)
+		ep.TLSServerName = *sni
+		params := winrm.DefaultParameters
+		params.TransportDecorator = func() winrm.Transporter { return &winrm.ClientNTLM{} }
+		c, err := winrm.NewClientWithParameters(ep, *user, strings.TrimRight(string(pass), "\r\n"), params)
+		if err != nil {
+			fmt.Println("client error:", err)
+			os.Exit(1)
+		}
+		var out, errb strings.Builder
+		command := *execCmd
+		if *execPS != "" {
+			command = winrm.Powershell(*execPS)
+		}
+		code, err := c.RunWithContext(context.Background(), command, &out, &errb)
+		fmt.Printf("exit=%d err=%v\nstdout(%d bytes)=%q\nstderr(%d bytes)=%q\n", code, err, out.Len(), clip(out.String()), errb.Len(), clip(errb.String()))
+		return
 	}
 	pool := x509.NewCertPool()
 	pool.AppendCertsFromPEM(ca)
@@ -77,4 +102,12 @@ func main() {
 	}
 	b, _ := io.ReadAll(io.LimitReader(res.Body, 300))
 	fmt.Printf("RESULT: final HTTP %d, content-type=%q, body-start=%q\n", res.StatusCode, res.Header.Get("Content-Type"), strings.Join(strings.Fields(string(b)), " "))
+}
+
+func clip(s string) string {
+	s = strings.Join(strings.Fields(s), " ")
+	if len(s) > 600 {
+		return s[:600]
+	}
+	return s
 }
