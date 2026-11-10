@@ -189,6 +189,7 @@ func runLoop12(ctx context.Context, cl client12, report func(string), collect fu
 				collection = nil
 				if result.err != nil {
 					report("inventory_failed")
+					reportDetail(report, "collect", result.err)
 				} else if transport == nil {
 					report("inventory_failed")
 				} else if err := cl.queue(ctx, transport, result.snapshot, result.at); err != nil {
@@ -248,6 +249,7 @@ func runLoop12(ctx context.Context, cl client12, report func(string), collect fu
 				inventoryAt = time.Now().Add(timing.WaitingProfile)
 			} else if err := cl.inventoryPreflight(ctx); err != nil {
 				report("inventory_failed")
+				reportDetail(report, "preflight", err)
 				inventoryAt = time.Now().Add(jitter(inv, jit))
 			} else {
 				collection = startCollection(ctx, collect, collectionLimit)
