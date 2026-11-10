@@ -75,10 +75,9 @@ func main() {
 	if *execPS != "" || *execCmd != "" {
 		portN := 5986
 		fmt.Sscanf(*port, "%d", &portN)
-		ep := winrm.NewEndpoint(*host, portN, true, false, ca, nil, nil, 30*time.Second)
+		ep := winrm.NewEndpoint(*host, portN, true, false, ca, nil, nil, winrminv.HTTPResponseTimeout)
 		ep.TLSServerName = *sni
-		params := winrm.DefaultParameters
-		params.TransportDecorator = func() winrm.Transporter { return &winrm.ClientNTLM{} }
+		params := winrminv.NewParameters()
 		c, err := winrm.NewClientWithParameters(ep, *user, strings.TrimRight(string(pass), "\r\n"), params)
 		if err != nil {
 			fmt.Println("client error:", err)

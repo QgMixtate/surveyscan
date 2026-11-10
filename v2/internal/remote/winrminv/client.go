@@ -119,6 +119,21 @@ func (r winrmRunner) RunPowerShell(ctx context.Context, script string, maxOut in
 	return out.b.String(), nil
 }
 
+// Таймауты long-poll: WinRM держит запрос «получить вывод» до OperationTimeout. HTTP-таймаут клиента обязан быть
+// БОЛЬШЕ: иначе клиент бросает запрос, сервер отдаёт вывод в брошенный ответ, и вывод теряется (команда «успешна»,
+// но stdout пуст). Обнаружено на живой цели: сценарий ~36 с при HTTP-таймауте 30 с возвращал пустой вывод с кодом 0.
+const (
+	OperationTimeout    = "PT20S"
+	HTTPResponseTimeout = 60 * time.Second
+)
+
+// NewParameters — параметры клиента WinRM: NTLM поверх HTTPS и согласованные таймауты (не общий DefaultParameters).
+func NewParameters() *winrm.Parameters {
+	params := winrm.NewParameters(OperationTimeout, "en-US", 153600)
+	params.TransportDecorator = func() winrm.Transporter { return &winrm.ClientNTLM{} }
+	return params
+}
+
 // StdinLoader — короткая командная строка: PowerShell читает сценарий из stdin целиком и выполняет его. Длина сценария
 // не ограничена лимитом командной строки WinRS/cmd.exe; на диск цели ничего не пишется. Сценарий обязан быть ASCII.
 var StdinLoader = winrm.Powershell("$s = [Console]::In.ReadToEnd(); Invoke-Expression $s")
@@ -153,12 +168,11 @@ func Connect(ctx context.Context, r SecretReader, t Target, p Policy) (Runner, e
 			pw[i] = 0
 		}
 	}()
-	ep := winrm.NewEndpoint(t.Host, t.Port, true, false, t.CAPEM, nil, nil, p.ConnectTimeout)
+	ep := winrm.NewEndpoint(t.Host, t.Port, true, false, t.CAPEM, nil, nil, HTTPResponseTimeout)
 	if t.TLSServerName != "" {
 		ep.TLSServerName = t.TLSServerName
 	}
-	params := winrm.DefaultParameters
-	params.TransportDecorator = func() winrm.Transporter { return &winrm.ClientNTLM{} }
+	params := NewParameters()
 	client, err := winrm.NewClientWithParameters(ep, t.User, string(pw), params)
 	if err != nil {
 		return nil, errors.New("winrm: client setup failed")

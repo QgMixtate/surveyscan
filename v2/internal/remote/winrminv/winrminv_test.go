@@ -202,3 +202,17 @@ func TestAccessDeniedIsReportedNotSilent(t *testing.T) {
 		t.Fatal("fatal script failure must be an error:", err)
 	}
 }
+
+func TestLongPollTimeoutsAreConsistent(t *testing.T) {
+	op, err := time.ParseDuration(strings.ToLower(strings.TrimSuffix(strings.TrimPrefix(OperationTimeout, "PT"), "")))
+	if err != nil {
+		t.Fatal(err)
+	}
+	// HTTP-таймаут клиента должен с запасом превышать серверный OperationTimeout, иначе вывод теряется
+	if HTTPResponseTimeout < op+10*time.Second {
+		t.Fatalf("HTTP response timeout %v must exceed WinRM OperationTimeout %v with margin", HTTPResponseTimeout, op)
+	}
+	if NewParameters().Timeout != OperationTimeout || NewParameters().TransportDecorator == nil {
+		t.Fatal("parameters must carry the operation timeout and NTLM transport")
+	}
+}
