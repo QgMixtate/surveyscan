@@ -17,3 +17,15 @@
   или unavailable/unsupported; identity/os/network/updates/protection/neighbors и привязка к source/collector — следующий шаг.
 - **Не проверено:** реальный sshd (OpenSSH), ключевая аутентификация на живой цели, ограниченные права (нет чтения product_serial/uuid),
   sudo, Bao, нагрузка, Debian/RHEL/Alpine. Тесты идут на настоящем SSH-протоколе (in-process сервер), но это не живая цель.
+
+## Доставка в центр (решение пользователя «1» от 2026-11-10, уточнено по коду)
+Выбран вариант «отдельный вид источника». Разбор кода показал: профиль 1.2 целиком (согласование профиля, подписанные батчи, очередь,
+ACK, host-binding) привязан к личности `agent`; вид `source_kind` проверяется в ~10 местах (enrollment, relay, profile12, pki, SQL CHECK).
+Поэтому реализован безопасный первый шаг: **виртуальная агентская личность на цель** — `surveyscan-agent run-ssh12 --config agent.json
+--ssh-target target.json` (цикл runLoop12 тот же, функция сбора подменена на sshlinux; состояние привязано к хосту коллектора).
+На проводе вид остаётся `agent` (платформа linux/amd64), контракты и миграции НЕ менялись. Центр пока не отличает SSH-цель от обычного агента.
+Следующий шаг (отдельная миграция, не сделан): поле `acquisition` ('agent'|'ssh') у sources.agents + отображение в центре; затем при необходимости
+полноценный `source_kind=remote_ssh` (enum схемы, CHECK в 0004_sources, enrollment/relay/profile12/pki, обновление ожиданий schema/backup/boot).
+Конфиг цели (`target.json`, 0600, DisallowUnknownFields): addr, user, host_key_sha256 (обязателен), ровно один из password_file / private_key_file
+(+passphrase_file); файлы секретов — приватные (privatefile). Bao для виртуальной личности не используется (CollectWithCredentials — для будущей
+выдачи через центр).

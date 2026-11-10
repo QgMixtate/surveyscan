@@ -32,12 +32,13 @@ func run() error {
 		return err
 	}
 	if len(os.Args) < 2 {
-		return fmt.Errorf("используйте prepare/enroll/bind-host/renew/run/run12 --config /secure/agent.json")
+		return fmt.Errorf("используйте prepare/enroll/bind-host/renew/run/run12/run-ssh12 --config /secure/agent.json")
 	}
 	command := os.Args[1]
 	flags := flag.NewFlagSet(command, flag.ContinueOnError)
 	configPath := flags.String("config", "", "private config")
 	grantPath := flags.String("grant-file", "", "private enrollment grant")
+	sshTarget := flags.String("ssh-target", "", "private SSH target config (run-ssh12)")
 	if e := flags.Parse(os.Args[2:]); e != nil {
 		return e
 	}
@@ -92,6 +93,16 @@ func run() error {
 	case "run12":
 		// Явное включение цикла по профилю 1.2 на Linux; на Windows run уже использует 1.2.
 		return runAgent12(ctx, c, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
+	case "run-ssh12":
+		// Безагентная Linux-цель по SSH под отдельной личностью (профиль 1.2); только Linux-хост коллектора.
+		if *sshTarget == "" {
+			return fmt.Errorf("требуется --ssh-target")
+		}
+		target, e := agent.LoadSSHTarget(*sshTarget)
+		if e != nil {
+			return e
+		}
+		return runSSH12(ctx, c, target, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
 	default:
 		return fmt.Errorf("неизвестная команда агента")
 	}
