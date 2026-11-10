@@ -99,6 +99,22 @@ func TestC23PortableRegisterAndImport(t *testing.T) {
 	if n := countObservations(t, f, source); n != 2 {
 		t.Fatal("observations stored:", n)
 	}
+	// факты спроецированы сразу при импорте и видны через API чтения записей 1.2 и сводку источников актива
+	asset := report.Records[0].AssetID
+	page, err := f.registry.InventoryRecordFacts(f.ctx, f.identity, asset, "hardware", "", 50)
+	if err != nil || len(page.Items) == 0 {
+		t.Fatal("portable facts must be readable for the asset card:", err, len(page.Items))
+	}
+	for _, it := range page.Items {
+		if it.Evidence.Origin.SourceID != source || it.Evidence.Origin.SourceKind != "portable" || it.Evidence.Observation == "" {
+			t.Fatalf("each fact must carry its portable origin: %+v", it.Evidence)
+		}
+	}
+	// Известный общий пробел (не portable): сводка источников карточки C09 строится только из проекции 1.0,
+	// поэтому источники данных профиля 1.2 (агенты и portable) в ней не перечислены. Фиксируем текущее поведение.
+	if card := detail(t, f, asset); len(card.Sources) != 0 {
+		t.Log("C09 card now lists 1.2 sources — update this test and the journal:", card.Sources)
+	}
 
 	// повторная загрузка того же пакета (обрыв/повтор) не дублирует наблюдения
 	again, err := f.registry.ImportPortable(f.ctx, machine, tenant, source, pkg)
