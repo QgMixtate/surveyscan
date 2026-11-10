@@ -95,7 +95,7 @@ type winrmRunner struct{ client *winrm.Client }
 
 func (r winrmRunner) RunPowerShell(ctx context.Context, script string, maxOut int) (string, error) {
 	out, errOut := &limitedBuf{left: maxOut}, &limitedBuf{left: 64 << 10}
-	code, err := r.client.RunWithContext(ctx, winrm.Powershell(script), out, errOut)
+	code, err := r.client.RunWithContextWithInput(ctx, StdinLoader, out, errOut, strings.NewReader(script))
 	if err != nil {
 		return "", classify(err) // текст ошибки цели наружу не отдаём
 	}
@@ -118,6 +118,10 @@ func (r winrmRunner) RunPowerShell(ctx context.Context, script string, maxOut in
 	}
 	return out.b.String(), nil
 }
+
+// StdinLoader — короткая командная строка: PowerShell читает сценарий из stdin целиком и выполняет его. Длина сценария
+// не ограничена лимитом командной строки WinRS/cmd.exe; на диск цели ничего не пишется. Сценарий обязан быть ASCII.
+var StdinLoader = winrm.Powershell("$s = [Console]::In.ReadToEnd(); Invoke-Expression $s")
 
 // EncodedLength — длина командной строки powershell -EncodedCommand для сценария (WinRM/cmd.exe ограничен ≈8191).
 func EncodedLength(script string) int {

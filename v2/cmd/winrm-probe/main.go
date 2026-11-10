@@ -59,6 +59,7 @@ func main() {
 	passFile := flag.String("password-file", "", "")
 	caFile := flag.String("ca-file", "", "")
 	execPS := flag.String("exec-ps", "", "выполнить PowerShell-команду клиентом masterzen/winrm и показать stdout/stderr/код")
+	viaStdin := flag.Bool("stdin", false, "передать команду PowerShell через stdin (загрузчик winrminv.StdinLoader), а не командной строкой")
 	execScript := flag.Bool("exec-script", false, "выполнить реальный сценарий сбора winrminv.Script")
 	execCmd := flag.String("exec-cmd", "", "выполнить команду cmd.exe так же")
 	flag.Parse()
@@ -88,7 +89,12 @@ func main() {
 		if *execPS != "" {
 			command = winrm.Powershell(*execPS)
 		}
-		code, err := c.RunWithContext(context.Background(), command, &out, &errb)
+		var code int
+		if *viaStdin && *execPS != "" {
+			code, err = c.RunWithContextWithInput(context.Background(), winrminv.StdinLoader, &out, &errb, strings.NewReader(*execPS))
+		} else {
+			code, err = c.RunWithContext(context.Background(), command, &out, &errb)
+		}
 		fmt.Printf("exit=%d err=%v\nstdout(%d bytes)=%q\nstderr(%d bytes)=%q\n", code, err, out.Len(), clip(out.String()), errb.Len(), clip(errb.String()))
 		if *execScript {
 			fmt.Printf("script encoded length=%d (limit about 8191)\n", winrminv.EncodedLength(winrminv.Script))
