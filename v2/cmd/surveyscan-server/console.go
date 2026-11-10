@@ -12,6 +12,9 @@ import (
 )
 
 func console(ctx context.Context, pool *pgxpool.Pool, command string, args []string) error {
+	if command == "portable-register" || command == "portable-import" {
+		return portableConsole(ctx, pool, command, args)
+	}
 	f := flag.NewFlagSet(command, flag.ContinueOnError)
 	f.SetOutput(io.Discard)
 	tenant := f.String("tenant", "", "")

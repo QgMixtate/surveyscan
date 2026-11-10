@@ -78,15 +78,22 @@ func TestRunExportsVerifiablePackageAndIsolatesFailures(t *testing.T) {
 	if err != nil || len(res.Accepted) != 1 || len(res.Quarantined) != 0 {
 		t.Fatal("package must import cleanly:", err, res.Quarantined)
 	}
+	var so struct {
+		Payload json.RawMessage `json:"payload"`
+	}
+	_ = json.Unmarshal(res.Accepted[0], &so)
 	var o struct {
 		Origin struct {
 			Kind string `json:"source_kind"`
 		} `json:"origin"`
+		Record struct {
+			Namespace string `json:"namespace"`
+		} `json:"source_record"`
 		Clock string `json:"clock_quality"`
 		Seq   string `json:"source_sequence"`
 	}
-	_ = json.Unmarshal(res.Accepted[0], &o)
-	if o.Origin.Kind != "portable" || o.Clock != "estimated" || o.Seq != "1" {
+	_ = json.Unmarshal(so.Payload, &o)
+	if o.Origin.Kind != "portable" || o.Clock != "estimated" || o.Seq != "1" || o.Record.Namespace != "host" {
 		t.Fatalf("%+v", o)
 	}
 	key, _ := os.ReadFile(filepath.Join(dir, "signing.key"))

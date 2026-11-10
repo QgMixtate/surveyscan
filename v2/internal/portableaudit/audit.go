@@ -204,11 +204,14 @@ func Run(ctx context.Context, dir string, targets []Target, out string, progress
 		}
 		o := contracts.Observation{Version: contracts.Version{Major: 1, Minor: 2}, ID: identifier.New(), TenantID: id.Tenant,
 			Origin: contracts.Origin{SourceID: id.SourceID, SourceKind: "portable", GenerationID: id.Generation},
-			Record: contracts.SourceRecord{Namespace: t.Kind, LocalID: t.Name}, Scope: contracts.Scope{SiteID: id.Site, ScopeID: id.Scope},
+			Record: contracts.SourceRecord{Namespace: "host", LocalID: t.Kind + ":" + t.Name}, Scope: contracts.Scope{SiteID: id.Site, ScopeID: id.Scope},
 			Sequence: strconv.FormatUint(seq, 10), CollectedAt: collected, Clock: "estimated", Candidates: snap.Candidates, Sections: snap.Sections}
 		raw, err := wire.RecordJSON(o)
 		if err == nil {
 			_, err = v.Payload(raw)
+		}
+		if err == nil {
+			raw, err = portable.SignObservation(key, raw) // запись подписана так же, как у агента: центр проверяет её привязкой ключа
 		}
 		if err != nil {
 			res.Err = "observation rejected by the 1.2 schema"

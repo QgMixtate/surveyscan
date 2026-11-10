@@ -31,7 +31,7 @@ func run(args []string) error {
 	if command == "bootstrap-issuer" {
 		return bootstrapIssuer(args[1:])
 	}
-	isConsole := command == "bootstrap-admin" || command == "create-user" || command == "set-user-state" || command == "reset-password"
+	isConsole := command == "bootstrap-admin" || command == "create-user" || command == "set-user-state" || command == "reset-password" || command == "portable-register" || command == "portable-import"
 	if len(args) > 1 && !isConsole {
 		return fmt.Errorf("unexpected arguments")
 	}
@@ -70,7 +70,7 @@ func run(args []string) error {
 		return nil
 	}
 	if command != "serve" && command != "migrate" && command != "schema-check" && !isConsole {
-		return fmt.Errorf("supported commands: serve, migrate, schema-catalog, schema-check, version, bootstrap-admin, create-user, set-user-state, reset-password")
+		return fmt.Errorf("supported commands: serve, migrate, schema-catalog, schema-check, version, bootstrap-admin, create-user, set-user-state, reset-password, portable-register, portable-import")
 	}
 	db, err := config.Database()
 	if err != nil {

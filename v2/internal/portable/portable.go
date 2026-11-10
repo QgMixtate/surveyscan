@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/QgMixtate/surveyscan/v2/contracts"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
 )
 
@@ -62,30 +63,79 @@ type Manifest struct {
 
 var idPattern = regexp.MustCompile(`^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
 
-// KeyID — идентификатор открытого ключа (SHA-256 в hex, первые 16 байт).
+// KeyID — идентификатор открытого ключа: первые 16 байт SHA-256 в форме UUID (как key_id привязки ключа в центре).
 func KeyID(pub ed25519.PublicKey) string {
 	sum := sha256.Sum256(pub)
-	return hex.EncodeToString(sum[:16])
+	h := hex.EncodeToString(sum[:16])
+	return h[:8] + "-" + h[8:12] + "-" + h[12:16] + "-" + h[16:20] + "-" + h[20:]
 }
 
-// Write собирает подписанный пакет. observations — готовые JSON наблюдений (поле observation_id обязательно).
+// observationDomain — доменный префикс подписи наблюдения (тот же, что у агента и проверки в центре).
+const observationDomain = "SURVEYSCAN-OBSERVATION-V1\n"
+
+// SignObservation подписывает JSON наблюдения так же, как агент: JCS-канонизация, SHA-256, Ed25519 по домену.
+func SignObservation(priv ed25519.PrivateKey, payload []byte) ([]byte, error) {
+	canonical, err := wire.Canonical(payload)
+	if err != nil {
+		return nil, ErrFormat
+	}
+	sum := sha256.Sum256(canonical)
+	sig := ed25519.Sign(priv, append([]byte(observationDomain), canonical...))
+	return wire.RecordJSON(contracts.SignedObservation{Payload: canonical, Digest: hex.EncodeToString(sum[:]),
+		KeyID: KeyID(priv.Public().(ed25519.PublicKey)), Signature: base64.RawURLEncoding.EncodeToString(sig)})
+}
+
+// openSigned проверяет подписанную запись ключом pub и возвращает её полезную нагрузку.
+func openSigned(raw []byte, pub ed25519.PublicKey, keyID string) ([]byte, bool) {
+	var so contracts.SignedObservation
+	if json.Unmarshal(raw, &so) != nil || so.KeyID != keyID || len(so.Payload) == 0 {
+		return nil, false
+	}
+	canonical, err := wire.Canonical(so.Payload)
+	if err != nil || !bytes.Equal(canonical, so.Payload) {
+		return nil, false
+	}
+	sum := sha256.Sum256(canonical)
+	sig, err := base64.RawURLEncoding.Strict().DecodeString(so.Signature)
+	if err != nil || so.Digest != hex.EncodeToString(sum[:]) || !ed25519.Verify(pub, append([]byte(observationDomain), canonical...), sig) {
+		return nil, false
+	}
+	return canonical, true
+}
+
+func signedID(raw []byte) string {
+	var so contracts.SignedObservation
+	if json.Unmarshal(raw, &so) != nil {
+		return ""
+	}
+	var head struct {
+		ID string `json:"observation_id"`
+	}
+	if json.Unmarshal(so.Payload, &head) != nil {
+		return ""
+	}
+	return head.ID
+}
+
+// Write собирает подписанный пакет. observations — подписанные наблюдения (SignObservation тем же ключом).
 func Write(w io.Writer, priv ed25519.PrivateKey, tenant, source string, created time.Time, observations [][]byte) error {
 	pub := priv.Public().(ed25519.PublicKey)
 	m := Manifest{Format: FormatVersion, Tenant: tenant, SourceID: source, KeyID: KeyID(pub), CreatedAt: created.UTC()}
 	files := map[string][]byte{}
 	for _, raw := range observations {
-		var head struct {
-			ID string `json:"observation_id"`
-		}
-		if err := json.Unmarshal(raw, &head); err != nil || !idPattern.MatchString(head.ID) {
+		id := signedID(raw)
+		if !idPattern.MatchString(id) {
 			return ErrFormat
 		}
-		if _, dup := files["obs/"+head.ID+".json"]; dup {
+		if _, ok := openSigned(raw, pub, m.KeyID); !ok {
+			return ErrFormat // в пакет не попадают записи, подписанные не ключом пакета
+		}
+		if _, dup := files["obs/"+id+".json"]; dup {
 			return ErrFormat
 		}
 		sum := sha256.Sum256(raw)
-		m.Items = append(m.Items, Item{ID: head.ID, SHA256: hex.EncodeToString(sum[:]), Size: int64(len(raw))})
-		files["obs/"+head.ID+".json"] = raw
+		m.Items = append(m.Items, Item{ID: id, SHA256: hex.EncodeToString(sum[:]), Size: int64(len(raw))})
+		files["obs/"+id+".json"] = raw
 	}
 	sort.Slice(m.Items, func(i, j int) bool { return m.Items[i].ID < m.Items[j].ID })
 	mb, err := json.Marshal(m)
@@ -135,7 +185,7 @@ type Rejected struct {
 
 type Result struct {
 	Manifest    Manifest
-	Accepted    [][]byte // новые наблюдения, прошедшие все проверки (по порядку manifest)
+	Accepted    [][]byte // подписанные наблюдения (SignedObservation), прошедшие все проверки (по порядку manifest)
 	Duplicates  []string // тот же ID и тот же digest — пропущены
 	Quarantined []Rejected
 }
@@ -255,19 +305,25 @@ func Import(data []byte, trust map[string]ed25519.PublicKey, known Known, lim Li
 			}
 			continue
 		}
+		payload, ok := openSigned(raw, pub, m.KeyID)
+		if !ok {
+			res.Quarantined = append(res.Quarantined, Rejected{it.ID, "RECORD_SIGNATURE_INVALID"})
+			continue
+		}
 		var head struct {
 			ID     string `json:"observation_id"`
 			Tenant string `json:"tenant_id"`
 			Origin struct {
 				SourceID string `json:"source_id"`
+				Kind     string `json:"source_kind"`
 			} `json:"origin"`
 		}
-		if json.Unmarshal(raw, &head) != nil || head.ID != it.ID || head.Tenant != m.Tenant || head.Origin.SourceID != m.SourceID {
+		if json.Unmarshal(payload, &head) != nil || head.ID != it.ID || head.Tenant != m.Tenant || head.Origin.SourceID != m.SourceID || head.Origin.Kind != "portable" {
 			res.Quarantined = append(res.Quarantined, Rejected{it.ID, "IDENTITY_MISMATCH"})
 			continue
 		}
 		if v != nil {
-			if _, err := v.Payload(raw); err != nil {
+			if _, err := v.Payload(payload); err != nil {
 				res.Quarantined = append(res.Quarantined, Rejected{it.ID, fmt.Sprint("SCHEMA_INVALID")})
 				continue
 			}

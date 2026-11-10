@@ -31,6 +31,7 @@ func fixtureObs(t *testing.T, id, collected string) []byte {
 	for _, f := range fx {
 		if f.ID == "all-sections" {
 			f.Payload["observation_id"] = id
+			f.Payload["origin"].(map[string]any)["source_kind"] = "portable"
 			if collected != "" {
 				f.Payload["collected_at"] = collected
 				for _, sec := range f.Payload["sections"].([]any) {
@@ -63,8 +64,16 @@ const (
 
 func build(t *testing.T, priv ed25519.PrivateKey, obs ...[]byte) []byte {
 	tenant, source := tenantSource(t, obs[0])
+	signed := [][]byte{}
+	for _, o := range obs {
+		so, err := SignObservation(priv, o)
+		if err != nil {
+			t.Fatal(err)
+		}
+		signed = append(signed, so)
+	}
 	var buf bytes.Buffer
-	if err := Write(&buf, priv, tenant, source, time.Now(), obs); err != nil {
+	if err := Write(&buf, priv, tenant, source, time.Now(), signed); err != nil {
 		t.Fatal(err)
 	}
 	return buf.Bytes()
@@ -121,7 +130,7 @@ func TestTamperedObservationGoesToQuarantine(t *testing.T) {
 	pkg := build(t, priv, fixtureObs(t, id1, ""), fixtureObs(t, id2, ""))
 	rewritten := rewrite(t, pkg, func(name string, b []byte) []byte {
 		if name == "obs/"+id1+".json" {
-			return append([]byte(nil), []byte(strings.Replace(string(b), "agent", "agenx", 1))...)
+			return append([]byte(nil), []byte(strings.Replace(string(b), "portable", "portablX", 1))...)
 		}
 		return b
 	}, nil)
@@ -196,5 +205,29 @@ func TestSchemaInvalidObservationIsQuarantinedAndNoSecretsInPackage(t *testing.T
 	good := build(t, priv, fixtureObs(t, id1, ""))
 	if bytes.Contains(good, priv.Seed()) || bytes.Contains(good, []byte("password")) {
 		t.Fatal("package must not contain key material or password fields")
+	}
+}
+
+func TestRecordSignedByOtherKeyIsRejected(t *testing.T) {
+	priv, trust := keys()
+	other, _ := keys()
+	so, err := SignObservation(other, fixtureObs(t, id1, ""))
+	if err != nil {
+		t.Fatal(err)
+	}
+	tenant, source := tenantSource(t, fixtureObs(t, id1, ""))
+	var buf bytes.Buffer
+	if err = Write(&buf, priv, tenant, source, time.Now(), [][]byte{so}); !errors.Is(err, ErrFormat) {
+		t.Fatal("writer must refuse records signed by a foreign key:", err)
+	}
+	_ = trust
+}
+
+func TestKeyIDIsUUID(t *testing.T) {
+	_, trust := keys()
+	for k := range trust {
+		if !idPattern.MatchString(k) {
+			t.Fatal("key id must be a UUID (centre ingest binding key_id):", k)
+		}
 	}
 }
