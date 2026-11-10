@@ -19,7 +19,7 @@ import time
 from pathlib import Path
 
 from bao_fixture import fixture
-from dev import ROOT, STATE, bao_request, initialize
+from dev import ROOT, STATE, bao_request, initialize, unseal
 from machine_smoke import main as harness
 
 STOP = False
@@ -100,6 +100,9 @@ def scenario(args, **s):
     if args.selftest:
         agent = selftest_prepare(args, out, s)
     issued = {}  # имя файла -> source_id, для которого grant уже выдан (новый prepare с другим source_id обрабатывается заново)
+    issued_file = out / '.issued.json'  # постоянный стенд помнит выданные grant между перезапусками
+    if getattr(args, 'persistent', False) and issued_file.exists():
+        issued = json.loads(issued_file.read_text())
     warned = set()
     deadline = time.monotonic() + args.timeout
     last = 0.0
@@ -135,6 +138,8 @@ def scenario(args, **s):
                 continue
             write_private(out / grant_name, json.dumps(grant))
             issued[prepare_name] = prep['source_id']
+            if getattr(args, 'persistent', False):
+                write_private(issued_file, json.dumps(issued))
             print(f"GRANT issued for source {prep['source_id']} platform {platform} acquisition {acquisition_for(prepare_name)} (valid 15 min) -> {out / grant_name}", flush=True)
             if args.selftest:
                 agent = selftest_enroll_run(args, out, agent)
@@ -205,6 +210,8 @@ def main():
     p.add_argument('--windows-root', default='C:\\surveyscan\\vm')
     p.add_argument('--timeout', type=int, default=7 * 24 * 3600, help='через сколько секунд центр завершится и УДАЛИТ временную БД (по умолчанию 7 суток; для soak не уменьшать)')
     p.add_argument('--selftest', action='store_true')
+    p.add_argument('--persistent', action='store_true', help='постоянный стенд: БД, CA, ключи OpenBao и регистрации агентов сохраняются между перезапусками (обновление центра без переподключения агентов)')
+    p.add_argument('--state', default=str(ROOT / '.local/vm-center-state'), help='каталог постоянного стенда (секреты, 0700; не публиковать)')
     args = p.parse_args()
     if args.selftest:
         args.platform = 'linux/amd64'
@@ -215,6 +222,9 @@ def main():
     signal.signal(signal.SIGINT, _stop)
     initialize()
     ensure_stack()
+    if args.persistent and not args.selftest:
+        persistent(args)
+        return
     with tempfile.TemporaryDirectory(prefix='vmc-', dir=STATE) as temp:
         directory = Path(temp)
         with fixture(directory) as f:
@@ -224,6 +234,49 @@ def main():
             settings = {'config': f['config'], 'ca_certificate': str(issuer / 'ca.pem'), 'server_certificate': str(issuer / 'server.pem'),
                         'server_private': str(issuer / 'server.key'), 'center_id': __import__('uuid').uuid4().__str__(), 'center_public': f['profile']['keys']['center']['public_key']}
             harness(agent_scenario=lambda **s: scenario(args, **s), bao_settings=settings, report_directory=STATE, inventory12=True, collector_inventory12=True)
+
+
+def fresh_token(config_path):
+    # Токен центра периодический (1 ч): пока центр стоял, он мог истечь. Выпускаем новый с той же узкой политикой.
+    cfg = json.loads(Path(config_path).read_text())
+    root = json.loads((STATE / 'bao-init.json').read_text())['root_token']
+    import urllib.request
+    request = urllib.request.Request('http://127.0.0.1:58200/v1/auth/token/create', method='POST', headers={'X-Vault-Token': root, 'Content-Type': 'application/json'},
+                                     data=json.dumps({'policies': [cfg['policy']], 'no_default_policy': True, 'period': '1h', 'renewable': True, 'no_parent': True}).encode())
+    with urllib.request.urlopen(request, timeout=10) as response:
+        token = json.load(response)['auth']['client_token']
+    path = Path(cfg['token_file'])
+    temp = path.with_suffix('.new')
+    fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, 'w') as f:
+        f.write(token + '\n')
+    os.replace(temp, path)
+
+
+def persistent(args):
+    # Постоянный стенд: первый запуск создаёт ресурсы OpenBao (без удаления при выходе), CA центра, БД, админа и collector;
+    # последующие — только новые миграции, свежий токен OpenBao и новые бинарники. Агентов переподключать не нужно.
+    state = Path(args.state)
+    state.mkdir(parents=True, exist_ok=True)
+    os.chmod(state, 0o700)
+    vm, settings_file = state / 'bao', state / 'vm.json'
+    unseal()
+    if not settings_file.exists():
+        vm.mkdir(exist_ok=True)
+        with fixture(vm, keep=True) as f:
+            issuer = vm / 'issuer'
+            r = subprocess.run([str(ROOT / '.dist/surveyscan-server'), 'bootstrap-issuer', '--config', f['config'], '--output-directory', str(issuer)], capture_output=True, timeout=30)
+            assert r.returncode == 0, 'scoped issuer bootstrap failed'
+            settings = {'config': f['config'], 'ca_certificate': str(issuer / 'ca.pem'), 'server_certificate': str(issuer / 'server.pem'),
+                        'server_private': str(issuer / 'server.key'), 'center_id': __import__('uuid').uuid4().__str__(), 'center_public': f['profile']['keys']['center']['public_key']}
+        settings_file.write_text(json.dumps(settings))
+        print('PERSISTENT стенд создан:', state, flush=True)
+    else:
+        print('PERSISTENT стенд найден, агентов переподключать не нужно:', state, flush=True)
+    settings = json.loads(settings_file.read_text())
+    fresh_token(settings['config'])
+    (state / 'harness').mkdir(exist_ok=True)
+    harness(agent_scenario=lambda **s: scenario(args, **s), bao_settings=settings, report_directory=STATE, inventory12=True, collector_inventory12=True, persist=state / 'harness')
 
 
 if __name__ == '__main__':

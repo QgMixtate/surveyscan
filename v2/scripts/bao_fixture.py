@@ -5,7 +5,8 @@ from dev import STATE,unseal,compose
 
 def b64(raw):return base64.urlsafe_b64encode(raw).rstrip(b'=').decode()
 @contextlib.contextmanager
-def fixture(directory):
+def fixture(directory,keep=False):
+ # keep=True — постоянный стенд vm_center: mounts/policy/основной токен не удаляются при выходе.
  unseal();address='http://127.0.0.1:58200';initial=json.loads((STATE/'bao-init.json').read_text());root=initial['root_token'];prefix='c11-'+uuid.uuid4().hex[:20];transit=prefix+'-tr';kv=prefix+'-kv';policy=prefix+'-server';token=None;extra_tokens=[];mounted=[];audit_path="/openbao/file/surveyscan-audit.jsonl"
  def call(method,path,body=None,credential=None):
   request=urllib.request.Request(address+'/v1/'+path,data=None if body is None else json.dumps(body).encode(),method=method,headers={'X-Vault-Token':credential or root,'Content-Type':'application/json'})
@@ -47,6 +48,8 @@ def fixture(directory):
   for extra in extra_tokens:
    try:call('POST','auth/token/revoke',{'token':extra})
    except Exception:pass
+  if keep:
+   return
   if token:
    try:call('POST','auth/token/revoke',{'token':token})
    except Exception:pass
