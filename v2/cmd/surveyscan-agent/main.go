@@ -39,6 +39,7 @@ func run() error {
 	configPath := flags.String("config", "", "private config")
 	grantPath := flags.String("grant-file", "", "private enrollment grant")
 	sshTarget := flags.String("ssh-target", "", "private SSH target config (run-ssh12)")
+	winrmTarget := flags.String("winrm-target", "", "private WinRM target config (run-winrm12)")
 	if e := flags.Parse(os.Args[2:]); e != nil {
 		return e
 	}
@@ -103,6 +104,16 @@ func run() error {
 			return e
 		}
 		return runSSH12(ctx, c, target, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
+	case "run-winrm12":
+		// Безагентная Windows-цель по WinRM под отдельной личностью (платформа windows/amd64 при выдаче grant).
+		if *winrmTarget == "" {
+			return fmt.Errorf("требуется --winrm-target")
+		}
+		target, e := agent.LoadWinRMTarget(*winrmTarget)
+		if e != nil {
+			return e
+		}
+		return runWinRM12(ctx, c, target, func(state string) { telemetry.Log(os.Stdout, "agent", state) })
 	default:
 		return fmt.Errorf("неизвестная команда агента")
 	}

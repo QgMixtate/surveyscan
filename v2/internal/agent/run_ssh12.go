@@ -16,6 +16,11 @@ import (
 // агента (отдельная зарегистрированная личность на цель, платформа linux/amd64), но данные собираются по SSH
 // с хоста коллектора, а не локально. Состояние привязано к хосту, где работает процесс.
 func RunSSH12(ctx context.Context, c Config, target SSHTarget, report func(string)) error {
+	return runVirtual12(ctx, c, NewSSHCollect12(target, sshlinux.Policy{}), report)
+}
+
+// runVirtual12 — общий цикл «виртуальной агентской личности» с подменённой функцией удалённого сбора.
+func runVirtual12(ctx context.Context, c Config, collect func(context.Context) (Snapshot, error), report func(string)) error {
 	unlock, e := lockState(c.State)
 	if e != nil {
 		return stage(StageState, e)
@@ -40,5 +45,10 @@ func RunSSH12(ctx context.Context, c Config, target SSHTarget, report func(strin
 	if e != nil {
 		return stage(StageSetup, e)
 	}
-	return runLoop12(ctx, cl, report, NewSSHCollect12(target, sshlinux.Policy{}), own, defaultLoop12Timing)
+	return runLoop12(ctx, cl, report, collect, own, defaultLoop12Timing)
+}
+
+// RunWinRM12 — то же для безагентной Windows-цели по WinRM (личность должна быть выдана с платформой windows/amd64).
+func RunWinRM12(ctx context.Context, c Config, target WinRMTarget, report func(string)) error {
+	return runVirtual12(ctx, c, NewWinRMCollect12(target), report)
 }

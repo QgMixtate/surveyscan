@@ -15,3 +15,7 @@ func runLinux12(ctx context.Context, c agent.Config, report func(string)) error 
 func runSSH12(ctx context.Context, c agent.Config, t agent.SSHTarget, report func(string)) error {
 	return agent.RunSSH12(ctx, c, t, report)
 }
+
+func runWinRM12(ctx context.Context, c agent.Config, t agent.WinRMTarget, report func(string)) error {
+	return agent.RunWinRM12(ctx, c, t, report)
+}
