@@ -115,9 +115,12 @@ jobs:
           sections = {s['name']: s for s in json.load(open(sys.argv[1]))['sections']}
           for name in ('identity', 'os', 'network', 'hardware', 'users_groups', 'routes_ports', 'resources'):
               assert sections[name]['status'] == 'partial' and sections[name]['records'], name
-          for name in ('updates', 'services', 'protection', 'neighbors'):
+          for name in ('updates', 'protection', 'neighbors'):
               assert sections[name]['status'] == 'unsupported', name
-          print('non-root collect12: 7 sections partial, 4 unsupported')
+          # C16.02: services из systemctl — partial со строками на хосте с systemd, unavailable без него (значения не выдумываются)
+          svc = sections['services']
+          assert (svc['status'] == 'partial' and svc['records']) or svc['status'] in ('unavailable', 'unsupported'), ('services', svc['status'])
+          print('non-root collect12: 7 sections partial, services', svc['status'], ', 3 unsupported')
           PY
       - name: Live agent TLS key rotation and committed ACK loss
         run: .contract-tools/bin/python scripts/renewal_smoke.py
