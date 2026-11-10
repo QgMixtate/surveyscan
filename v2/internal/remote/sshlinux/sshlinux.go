@@ -164,9 +164,38 @@ type session struct {
 	policy Policy
 }
 
+// newSession открывает канал сессии с ограничением по времени и контексту: ssh.Client.NewSession может ждать
+// подтверждения канала бесконечно, если отмена совпала с закрытием соединения (обнаружено повторными прогонами -race).
+func (s session) newSession(ctx context.Context) (*ssh.Session, bool) {
+	type result struct {
+		sess *ssh.Session
+		err  error
+	}
+	done := make(chan result, 1)
+	go func() {
+		sess, err := s.client.NewSession()
+		done <- result{sess, err}
+	}()
+	t := time.NewTimer(s.policy.CommandTimeout)
+	defer t.Stop()
+	select {
+	case r := <-done:
+		return r.sess, r.err == nil
+	case <-t.C:
+	case <-ctx.Done():
+	}
+	_ = s.client.Close() // разблокирует зависший вызов; поздний результат закрывается ниже
+	go func() {
+		if r := <-done; r.sess != nil {
+			r.sess.Close()
+		}
+	}()
+	return nil, false
+}
+
 func (s session) run(ctx context.Context, command string) (string, bool) {
-	sess, err := s.client.NewSession()
-	if err != nil {
+	sess, ok := s.newSession(ctx)
+	if !ok {
 		return "", false
 	}
 	defer sess.Close()
@@ -205,6 +234,10 @@ const (
 	cmdGroup    = "LC_ALL=C cat /etc/group"
 	cmdMounts   = "LC_ALL=C cat /proc/self/mountinfo"
 	cmdRoute    = "LC_ALL=C cat /proc/net/route"
+	cmdTCP      = "LC_ALL=C cat /proc/net/tcp"
+	cmdTCP6     = "LC_ALL=C cat /proc/net/tcp6"
+	cmdUDP      = "LC_ALL=C cat /proc/net/udp"
+	cmdUDP6     = "LC_ALL=C cat /proc/net/udp6"
 )
 
 var dmiNames = []string{"bios_vendor", "bios_version", "sys_vendor", "product_name", "product_serial", "product_uuid"}
@@ -355,8 +388,24 @@ func Collect(ctx context.Context, t Target, secret Secret, p Policy) ([]contract
 	} else {
 		out = append(out, failed("resources", "unavailable", "SOURCE_UNAVAILABLE"))
 	}
+	// routes_ports: маршруты и сокеты независимы — недоступность одного источника не отбрасывает другой
+	ports := []map[string]any{}
+	readAny := false
 	if rt, ok := s.run(ctx, cmdRoute); ok {
-		out = append(out, section("routes_ports", linuxinventory.Routes(rt)))
+		readAny = true
+		ports = append(ports, linuxinventory.Routes(rt)...)
+	}
+	for _, src := range []struct {
+		cmd, proto string
+		v6         bool
+	}{{cmdTCP, "tcp", false}, {cmdTCP6, "tcp", true}, {cmdUDP, "udp", false}, {cmdUDP6, "udp", true}} {
+		if text, ok := s.run(ctx, src.cmd); ok {
+			readAny = true
+			ports = append(ports, linuxinventory.Sockets(src.proto, text, src.v6)...)
+		}
+	}
+	if readAny {
+		out = append(out, section("routes_ports", ports))
 	} else {
 		out = append(out, failed("routes_ports", "unavailable", "SOURCE_UNAVAILABLE"))
 	}

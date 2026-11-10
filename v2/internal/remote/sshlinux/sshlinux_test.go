@@ -103,6 +103,7 @@ func baseOutputs() map[string]string {
 		cmdUname:    "x86_64\n",
 		cmdIPLink:   "2: eth0: <UP> mtu 1500 qdisc fq state UP\\    link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff\n",
 		cmdIPAddr:   "2: eth0    inet 192.168.1.5/24 brd 192.168.1.255 scope global eth0\n",
+		cmdTCP:      "  sl a b st\n   0: 0100007F:0016 00000000:0000 0A 0:0\n",
 		cmdCPU:      "processor\t: 0\nmodel name\t: Test CPU\n",
 		cmdMem:      "MemTotal: 2048 kB\n",
 		cmdDpkg:     "Package: bash\nStatus: install ok installed\nArchitecture: all\nVersion: 5.2-1\n",
@@ -137,6 +138,32 @@ func TestCollectOverRealSSH(t *testing.T) {
 			t.Errorf("%s: %s", n, by[n])
 		}
 	}
+}
+
+func TestRoutesAndSocketsBothCollected(t *testing.T) {
+	s := startServer(t, "pw", baseOutputs())
+	secs, err := Collect(context.Background(), Target{Addr: s.addr, User: "scan", HostKeySHA256: s.hostFP}, Secret{Password: "pw"}, Policy{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, x := range secs {
+		if x.Name == "routes_ports" {
+			kinds := map[string]bool{}
+			for _, r := range x.Records {
+				if k, ok := r["kind"].(string); ok {
+					kinds[k] = true
+				}
+				if _, ok := r["local_port"]; ok {
+					kinds["socket"] = true
+				}
+			}
+			if len(x.Records) < 2 || !kinds["socket"] {
+				t.Fatal("routes_ports must contain routes AND sockets:", x.Records)
+			}
+			return
+		}
+	}
+	t.Fatal("routes_ports missing")
 }
 
 func TestHostKeyIsMandatoryAndStrict(t *testing.T) {
