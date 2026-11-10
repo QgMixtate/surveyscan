@@ -79,6 +79,7 @@ def scenario(args, **s):
     if args.selftest:
         agent = selftest_prepare(args, out, s)
     issued = set()
+    warned = set()
     deadline = time.monotonic() + args.timeout
     last = 0.0
     while not STOP and time.monotonic() < deadline:
@@ -86,7 +87,15 @@ def scenario(args, **s):
             if prepare_name in issued or not (out / prepare_name).exists():
                 continue
             time.sleep(0.5)
-            prep = read_json(out / prepare_name)
+            try:
+                prep = read_json(out / prepare_name)
+                prep['source_id'], prep['csr_sha256'], prep['signing_public_key']
+            except (ValueError, KeyError, TypeError):
+                # файл пустой/недописан (оболочка создаёт его до записи) или от неудачного prepare: ждём, не падаем
+                if prepare_name not in warned:
+                    warned.add(prepare_name)
+                    print(f'WAIT {prepare_name} пока не содержит корректный prepare (повторю проверку)', flush=True)
+                continue
             body = {'tenant_id': s['tenant'], 'source_id': prep['source_id'], 'source_kind': 'agent', 'site_id': s['site'],
                     'collector_id': s['collector_id'], 'ttl_seconds': 900, 'csr_sha256': prep['csr_sha256'],
                     'signing_public_key': prep['signing_public_key'], 'inventory_platform': platform}
