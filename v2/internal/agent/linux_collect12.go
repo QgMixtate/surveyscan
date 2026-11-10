@@ -1,8 +1,11 @@
 package agent
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"os"
+	"os/exec"
 	"runtime"
 	"time"
 
@@ -48,6 +51,46 @@ func readText(path string, limit int64) (string, bool) {
 	return string(b), true
 }
 
+// runText запускает системную утилиту по абсолютному пути с пустым окружением и лимитом времени/вывода.
+// Любая ошибка (нет утилиты, нет прав, таймаут, переполнение) → ok=false: секция не придумывается.
+func runText(ctx context.Context, limit int, path string, args ...string) (string, bool) {
+	if _, err := os.Stat(path); err != nil {
+		return "", false
+	}
+	ctx, cancel := context.WithTimeout(ctx, 20*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(ctx, path, args...)
+	cmd.Env = []string{"LC_ALL=C", "PATH=/usr/bin:/bin"}
+	var out bytes.Buffer
+	cmd.Stdout = &limitedWriter{buf: &out, left: limit}
+	if err := cmd.Run(); err != nil {
+		return "", false
+	}
+	return out.String(), true
+}
+
+type limitedWriter struct {
+	buf  *bytes.Buffer
+	left int
+}
+
+func (w *limitedWriter) Write(p []byte) (int, error) {
+	if len(p) > w.left {
+		return 0, errors.New("output limit exceeded")
+	}
+	w.left -= len(p)
+	return w.buf.Write(p)
+}
+
+func firstExisting(paths ...string) string {
+	for _, p := range paths {
+		if _, err := os.Stat(p); err == nil {
+			return p
+		}
+	}
+	return ""
+}
+
 const (
 	procSmall = 1 << 20
 	procLarge = 8 << 20
@@ -84,10 +127,45 @@ func CollectLinux12(ctx context.Context) (Snapshot, error) {
 	if okCPU || okMem {
 		byName["hardware"] = partialSection12("hardware", linuxinventory.Hardware(cpu, mem))
 	}
-	if dpkg, ok := readText("/var/lib/dpkg/status", 64<<20); ok {
+	dpkg, okDpkg := readText("/var/lib/dpkg/status", 64<<20)
+	switch {
+	case okDpkg:
 		byName["software"] = partialSection12("software", linuxinventory.Packages(dpkg))
-	} else {
-		byName["software"] = failedSection12("software", "unsupported", "PACKAGE_MANAGER_UNSUPPORTED")
+	case firstExisting("/usr/bin/rpm", "/bin/rpm") != "":
+		if text, ok := runText(ctx, 32<<20, firstExisting("/usr/bin/rpm", "/bin/rpm"), "-qa", "--qf", `%{NAME}\t%{VERSION}-%{RELEASE}\t%{ARCH}\n`); ok {
+			byName["software"] = partialSection12("software", linuxinventory.RPMPackages(text))
+		} else {
+			byName["software"] = failedSection12("software", "unavailable", "SOURCE_UNAVAILABLE")
+		}
+	default:
+		if apk, ok := readText("/lib/apk/db/installed", 64<<20); ok {
+			byName["software"] = partialSection12("software", linuxinventory.APKPackages(apk))
+		} else {
+			byName["software"] = failedSection12("software", "unsupported", "PACKAGE_MANAGER_UNSUPPORTED")
+		}
+	}
+	if systemctl := firstExisting("/usr/bin/systemctl", "/bin/systemctl"); systemctl != "" {
+		units, okUnits := runText(ctx, 16<<20, systemctl, "list-units", "--type=service", "--all", "--plain", "--no-legend", "--no-pager")
+		files, _ := runText(ctx, 16<<20, systemctl, "list-unit-files", "--type=service", "--plain", "--no-legend", "--no-pager")
+		if okUnits {
+			byName["services"] = partialSection12("services", linuxinventory.SystemdServices(units, files))
+		} else {
+			byName["services"] = failedSection12("services", "unavailable", "SOURCE_UNAVAILABLE")
+		}
+	}
+	dmi := map[string]string{}
+	for _, name := range []string{"bios_vendor", "bios_version", "sys_vendor", "product_name", "product_serial", "product_uuid"} {
+		if text, ok := readText("/sys/class/dmi/id/"+name, 4096); ok { // serial/uuid читаются только от root
+			dmi[name] = text
+		}
+	}
+	if rows := linuxinventory.DMI(dmi); len(rows) > 0 {
+		hw := byName["hardware"]
+		if hw.Name == "" {
+			hw = partialSection12("hardware", nil)
+		}
+		merged := append(append([]map[string]any{}, hw.Records...), rows...)
+		byName["hardware"] = partialSection12("hardware", merged)
 	}
 	if passwd, ok := readText("/etc/passwd", procSmall); ok {
 		group, _ := readText("/etc/group", procSmall)

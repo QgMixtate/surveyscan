@@ -37,8 +37,9 @@ func TestParserOutputPassesObservationSchema(t *testing.T) {
 	rt := "Iface\tDestination\tGateway\tFlags\tRefCnt\tUse\tMetric\tMask\n eth0\t00000000\t0100A8C0\t0003\t0\t0\t100\t00000000\n"
 	mi := "22 1 8:1 / / rw,relatime shared:1 - ext4 /dev/sda1 rw\n"
 	rows := map[string][]map[string]any{
-		"hardware":     Hardware(cpu, "MemTotal: 2048 kB\n"),
-		"software":     Packages(pkgs),
+		"hardware":     append(Hardware(cpu, "MemTotal: 2048 kB\n"), DMI(map[string]string{"bios_vendor": "SeaBIOS", "product_uuid": "4c4c4544-0000-1000-8000-b2c04f000000"})...),
+		"services":     SystemdServices("ssh.service loaded active running SSH\n", "ssh.service enabled enabled\n"),
+		"software":     append(append(Packages(pkgs), RPMPackages("bash\t5.1-2\tx86_64\n")...), APKPackages("P:musl\nV:1.2\nA:x86_64\n")...),
 		"users_groups": Accounts("root:x:0:0:root:/root:/bin/bash\nsvc:x:101:101::/n:\n", "wheel:x:10:root,svc\n"),
 		"routes_ports": append(Sockets("tcp", tcp, false), Routes(rt)...),
 		"resources":    Mounts(mi),

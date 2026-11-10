@@ -39,10 +39,14 @@ func TestCollectLinux12LiveHostPassesObservationSchema(t *testing.T) {
 			t.Errorf("%s not collected on live host: %+v", name, byName[name].Status)
 		}
 	}
-	for _, name := range []string{"updates", "services", "protection", "neighbors"} {
+	for _, name := range []string{"updates", "protection", "neighbors"} {
 		if byName[name].Status != "unsupported" {
 			t.Errorf("%s must be explicitly unsupported", name)
 		}
+	}
+	// services зависят от systemd на хосте: partial с строками либо явно unavailable/unsupported (не придумываются).
+	if sv := byName["services"]; sv.Status == "partial" && len(sv.Records) == 0 || sv.Status != "partial" && sv.Status != "unavailable" && sv.Status != "unsupported" {
+		t.Errorf("services: unexpected %s rows=%d", sv.Status, len(sv.Records))
 	}
 	// Секреты: ни одна строка не содержит поля пароля/хэша.
 	raw, _ := json.Marshal(snap.Sections)
