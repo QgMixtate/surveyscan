@@ -174,6 +174,13 @@ func CollectWith(ctx context.Context, run Runner, p Policy) ([]contracts.Section
 	}
 	sections, cands, err := Parse([]byte(out), time.Now())
 	if err != nil {
+		if os.Getenv("SURVEYSCAN_AGENT_DEBUG") == "1" { // отладка: начало вывода цели (очищено, обрезано)
+			head := strings.Join(strings.Fields(out), " ")
+			if len(head) > 200 {
+				head = head[:200]
+			}
+			return nil, nil, fmt.Errorf("winrm: unexpected output from target (%v), len=%d, head=%q", err, len(out), head)
+		}
 		return nil, nil, errors.New("winrm: unexpected output from target")
 	}
 	return Complete12(sections), cands, nil

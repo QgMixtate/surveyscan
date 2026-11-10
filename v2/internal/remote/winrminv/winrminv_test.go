@@ -146,6 +146,14 @@ func (s store) Read(_ context.Context, a string) ([]byte, error) {
 	return nil, errors.New("denied TOPSECRET")
 }
 
+func TestScriptIsASCII(t *testing.T) {
+	for i, r := range Script {
+		if r > 127 {
+			t.Fatalf("non-ASCII rune %q at %d: the script must not depend on code pages", r, i)
+		}
+	}
+}
+
 func TestScriptFitsWinRMCommandLimit(t *testing.T) {
 	if n := EncodedLength(Script); n > 7800 {
 		t.Fatalf("encoded script is %d chars; cmd.exe limit is ~8191", n)

@@ -18,7 +18,7 @@ foreach ($v in @(@('64','HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninsta
   $items = Safe { @(Get-ItemProperty -Path ($v[1] + '\*')) }
   foreach ($i in $items) { if ($i.DisplayName) { $sw += [pscustomobject]@{ view = $v[0]; key = $i.PSChildName; name = $i.DisplayName; version = $i.DisplayVersion; vendor = $i.Publisher } } }
 }
-[pscustomobject]@{
+$result = [pscustomobject]@{
   hostname = $env:COMPUTERNAME
   domain   = if ($cs) { $cs.Domain } else { $null }
   uuid     = if ($prod) { $prod.UUID } else { $null }
@@ -29,5 +29,8 @@ foreach ($v in @(@('64','HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninsta
   nics     = @($nics | ForEach-Object { [pscustomobject]@{ index = $_.InterfaceIndex; name = $_.Description; mac = $_.MACAddress; ips = @($_.IPAddress); masks = @($_.IPSubnet); dns = @($_.DNSServerSearchOrder); gateways = @($_.DefaultIPGateway); dhcp = [bool]$_.DHCPEnabled; mtu = $_.MTU } })
   services = @($svcs | ForEach-Object { [pscustomobject]@{ name = $_.Name; display = $_.DisplayName; state = $_.State; mode = $_.StartMode; account = $_.StartName; path = $_.PathName } })
   software = $sw
-} | ConvertTo-Json -Depth 5 -Compress
+}
+# Output is ASCII only (non-ASCII -> \uXXXX) so the WinRM console code page cannot corrupt the JSON.
+$json = $result | ConvertTo-Json -Depth 5 -Compress
+[regex]::Replace($json, '[^\x00-\x7F]', { param($m) ('\u{0:x4}' -f [int][char]$m.Value) })
 `
