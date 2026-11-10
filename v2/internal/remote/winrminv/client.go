@@ -27,6 +27,18 @@ var (
 
 // classify сводит ошибку транспорта к безопасной категории без текста ответа цели.
 func classify(err error) error {
+	out := classifyKind(err)
+	if os.Getenv("SURVEYSCAN_AGENT_DEBUG") == "1" { // отладка: очищенный и обрезанный текст транспортной ошибки (пароль в нём не передаётся)
+		text := strings.Join(strings.Fields(err.Error()), " ")
+		if len(text) > 240 {
+			text = text[:240]
+		}
+		return fmt.Errorf("%w: %s", out, text)
+	}
+	return out
+}
+
+func classifyKind(err error) error {
 	text := strings.ToLower(err.Error())
 	switch {
 	case strings.Contains(text, "401") || strings.Contains(text, "unauthorized") || strings.Contains(text, "ntlm"):
