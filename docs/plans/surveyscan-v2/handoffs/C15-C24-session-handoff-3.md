@@ -33,6 +33,10 @@
    Откат: Remove-ADGroupMember "Distributed COM Users" scanwinrm; удалить ACE с SID scanwinrm тем же __SystemSecurity.
 4. **Решения пользователя:** приёмка C15.02 по V1–V4/V9 (исключения V5 обычные права, V6 Win10/11, V7 клон, откат); биллинг CI.
 
+## Проверено дополнительно (R-027, «проверь»)
+PG17 integration ok; smoke на Python 3.12 ok; upgrade_smoke ok; update_smoke — исправлена устаревшая фикстура (0036→0037), ok;
+сквозная HTTPS-загрузка portable настоящим центром (scripts/portable_http_smoke.py) ok, с контролем таймаутов.
+
 ## Не проверено (честно)
-PG17/Python 3.12/hosted CI для R-027; продление таймаутов сервера при загрузке на настоящем бинарнике; загрузка через nginx и большой пакет; UI/CLI-клиент загрузки;
-upgrade_smoke/update_smoke в полном клоне. Дальше по плану: C25 (merge/split, в т.ч. отдельный актив WinRM1).
+Hosted CI; загрузка через nginx и пакет в десятки МиБ; UI/CLI-клиент загрузки; portable_http_smoke не добавлен в workflow.
+Дальше по плану: C25 (merge/split, в т.ч. отдельный актив WinRM1).
