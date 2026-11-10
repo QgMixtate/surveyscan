@@ -2,6 +2,8 @@
 # Стенд Linux-ВМ: регистрирует агентскую личность и запускает её systemd-службой. Запускать под root.
 #   vm-linux-identity.sh agent                      — локальный агент run12 (юнит surveyscan-agent уже установлен)
 #   vm-linux-identity.sh ssh NAME ADDR USER KEYFILE — личность для SSH-цели (юнит NAME, run-ssh12); KEYFILE — приватный ключ цели
+#   vm-linux-identity.sh winrm NAME HOST USER PASSFILE CAFILE SERVERNAME — личность для Windows-цели по WinRM (юнит NAME, run-winrm12);
+#                                    PASSFILE — файл с паролем (0600), CAFILE — PEM сертификата цели, SERVERNAME — имя в сертификате
 # Нужны: запущенный vm_center.py (OUT=~/surveyscan/v2/.local/vm-center), собранные .dist/surveyscan-agent и .dist/ssh-probe,
 # установленный /opt/surveyscan/current/bin/surveyscan-agent. Секреты в вывод не печатаются.
 set -euo pipefail
@@ -13,7 +15,9 @@ case "$kind" in
   agent) NAME=surveyscan-agent; PREP="prepare-linux-$NAME.json"; GRANT="grant-linux-$NAME.json" ;;
   ssh)   NAME="${2:?NAME}"; ADDR="${3:?ADDR}"; TUSER="${4:?USER}"; KEYFILE="${5:?KEYFILE}"
          PREP="prepare-linux-$NAME.json"; GRANT="grant-linux-$NAME.json" ;;
-  *) echo "usage: $0 agent | ssh NAME ADDR USER KEYFILE" >&2; exit 2 ;;
+  winrm) NAME="${2:?NAME}"; WHOST="${3:?HOST}"; WUSER="${4:?USER}"; WPASS="${5:?PASSFILE}"; WCA="${6:?CAFILE}"; WSNI="${7:?SERVERNAME}"
+         PREP="prepare-windows-$NAME.json"; GRANT="grant-windows-$NAME.json" ;;
+  *) echo "usage: $0 agent | ssh NAME ADDR USER KEYFILE | winrm NAME HOST USER PASSFILE CAFILE SERVERNAME" >&2; exit 2 ;;
 esac
 CFG="/etc/$NAME"
 install -d -m0755 "$CFG"
@@ -57,6 +61,55 @@ LoadCredential=config:$CFG/agent.json
 LoadCredential=target:$CFG/target.json
 LoadCredential=key:$CFG/key
 ExecStart=$BIN run-ssh12 --config %d/config --ssh-target %d/target
+Restart=on-failure
+RestartSec=10s
+RestartPreventExitStatus=2
+UMask=0077
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictRealtime=yes
+LockPersonality=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+[Install]
+WantedBy=multi-user.target
+UNIT
+  systemctl daemon-reload
+fi
+if [ "$kind" = winrm ]; then
+  install -m0600 "$WPASS" "$CFG/pass"
+  install -m0600 "$WCA" "$CFG/winrm-ca.pem"
+  python3 - "$CFG" "$NAME" "$WHOST" "$WUSER" "$WSNI" <<'PY'
+import json, sys
+cfg, name, host, user, sni = sys.argv[1:6]
+json.dump({'host': host, 'user': user, 'tls_server_name': sni,
+           'password_file': f'/run/credentials/{name}.service/pass',
+           'ca_file': f'/run/credentials/{name}.service/winrmca'}, open(cfg + '/target.json', 'w'), indent=2)
+PY
+  chmod 0600 "$CFG/target.json"
+  cat > "/etc/systemd/system/$NAME.service" <<UNIT
+[Unit]
+Description=SurveyScan WinRM-collected target ($NAME)
+Wants=network-online.target
+After=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=8
+[Service]
+Type=simple
+User=surveyscan-agent
+Group=surveyscan-agent
+StateDirectory=$NAME
+StateDirectoryMode=0700
+LoadCredential=config:$CFG/agent.json
+LoadCredential=target:$CFG/target.json
+LoadCredential=pass:$CFG/pass
+LoadCredential=winrmca:$CFG/winrm-ca.pem
+ExecStart=$BIN run-winrm12 --config %d/config --winrm-target %d/target
 Restart=on-failure
 RestartSec=10s
 RestartPreventExitStatus=2
