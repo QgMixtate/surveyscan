@@ -49,18 +49,19 @@ type jsonSoftware struct {
 	Vendor  string `json:"vendor"`
 }
 type payload struct {
-	Fatal      string                                    `json:"fatal"`
-	Errors     []string                                  `json:"errors"`
-	Hostname   string                                    `json:"hostname"`
-	Domain     string                                    `json:"domain"`
-	UUID       string                                    `json:"uuid"`
-	OS         *jsonOS                                   `json:"os"`
-	BIOS       *struct{ Vendor, Version, Serial string } `json:"bios"`
-	CPULogical int                                       `json:"cpu_logical"`
-	CPUName    string                                    `json:"cpu_name"`
-	NICs       []jsonNIC                                 `json:"nics"`
-	Services   []jsonService                             `json:"services"`
-	Software   []jsonSoftware                            `json:"software"`
+	Fatal       string                                    `json:"fatal"`
+	Errors      []string                                  `json:"errors"`
+	Hostname    string                                    `json:"hostname"`
+	Domain      string                                    `json:"domain"`
+	UUID        string                                    `json:"uuid"`
+	MachineGUID string                                    `json:"machine_guid"`
+	OS          *jsonOS                                   `json:"os"`
+	BIOS        *struct{ Vendor, Version, Serial string } `json:"bios"`
+	CPULogical  int                                       `json:"cpu_logical"`
+	CPUName     string                                    `json:"cpu_name"`
+	NICs        []jsonNIC                                 `json:"nics"`
+	Services    []jsonService                             `json:"services"`
+	Software    []jsonSoftware                            `json:"software"`
 }
 
 var (
@@ -139,7 +140,8 @@ func Parse(raw []byte, now time.Time) ([]contracts.Section, []contracts.Candidat
 	var identity, osRows, nets, hw, soft, svcs []map[string]any
 	if h := str(p.Hostname, 255); h != "" {
 		row := map[string]any{"hostname": h}
-		cands = append(cands, contracts.Candidate{Kind: "hostname", Namespace: "dns", Value: h})
+		// пространства имён как у родного Windows-агента (loop12.candidatesFromSections): иначе центр не сопоставит источники
+		cands = append(cands, contracts.Candidate{Kind: "hostname", Namespace: "hostname.raw", Value: h})
 		if d := str(p.Domain, 255); d != "" {
 			row["domain"] = d
 		}
@@ -147,6 +149,9 @@ func Parse(raw []byte, now time.Time) ([]contracts.Section, []contracts.Candidat
 			u := strings.ToLower(p.UUID)
 			row["machine_uuid"] = u
 			cands = append(cands, contracts.Candidate{Kind: "bios_uuid", Namespace: "smbios", Value: u})
+		}
+		if g := strings.ToLower(strings.TrimSpace(p.MachineGUID)); uuidRe.MatchString(g) && g != "00000000-0000-0000-0000-000000000000" {
+			cands = append(cands, contracts.Candidate{Kind: "machine_uuid", Namespace: "windows-machine-guid", Value: g})
 		}
 		identity = append(identity, row)
 	}

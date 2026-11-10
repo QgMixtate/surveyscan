@@ -18,7 +18,7 @@ const fixture = `{"hostname":"WIN-SRV01","domain":"lab.local","uuid":"4C4C4544-0
 "bios":{"Vendor":"Phoenix","Version":"6.00","Serial":"To Be Filled By O.E.M."},"cpu_logical":4,"cpu_name":"Intel Xeon",
 "nics":[{"index":3,"name":"Intel Ethernet","mac":"00-0C-29-AA-BB-CC","ips":["192.168.1.10","fe80::1","2001:db8::10"],"masks":["255.255.255.0","64","64"],"dns":["192.168.1.1"],"gateways":["192.168.1.1"],"dhcp":false,"mtu":1500}],
 "services":[{"name":"WinRM","display":"Windows Remote Management","state":"Running","mode":"Auto","account":"NT AUTHORITY\\NetworkService","path":"C:\\Windows\\System32\\svchost.exe -k NetworkService"},{"name":"Odd","display":"x\u0001y","state":"Weird","mode":"Manual","account":"","path":""}],
-"software":[{"view":"64","key":"{ABC}","name":"7-Zip","version":"23.01","vendor":"Igor Pavlov"},{"view":"99","key":"bad","name":"Bad","version":"","vendor":""}]}`
+"machine_guid":"0B1C2D3E-4F50-6172-8394-A5B6C7D8E9F0","software":[{"view":"64","key":"{ABC}","name":"7-Zip","version":"23.01","vendor":"Igor Pavlov"},{"view":"99","key":"bad","name":"Bad","version":"","vendor":""}]}`
 
 func TestParseNormalizesAndDropsUnsafe(t *testing.T) {
 	secs, cands, err := Parse([]byte(fixture), time.Now())
@@ -32,7 +32,7 @@ func TestParseNormalizesAndDropsUnsafe(t *testing.T) {
 			t.Fatal("remote profile must be partial:", s.Name)
 		}
 	}
-	if len(cands) != 2 || by["identity"].Records[0]["machine_uuid"] != "4c4c4544-0000-1000-8000-b2c04f000000" {
+	if len(cands) != 3 || cands[0].Namespace != "hostname.raw" || cands[2].Namespace != "windows-machine-guid" || cands[2].Value != "0b1c2d3e-4f50-6172-8394-a5b6c7d8e9f0" || by["identity"].Records[0]["machine_uuid"] != "4c4c4544-0000-1000-8000-b2c04f000000" {
 		t.Fatal(cands, by["identity"].Records)
 	}
 	os0 := by["os"].Records[0]
@@ -120,7 +120,7 @@ func TestCollectWithFailsClosed(t *testing.T) {
 		t.Fatal("garbage output must fail without echoing it:", err)
 	}
 	secs, cands, err := CollectWith(context.Background(), fakeRun{out: fixture}, Policy{})
-	if err != nil || len(secs) != 12 || len(cands) != 2 {
+	if err != nil || len(secs) != 12 || len(cands) != 3 {
 		t.Fatal(err, len(secs))
 	}
 }
@@ -155,8 +155,9 @@ func TestScriptIsASCII(t *testing.T) {
 }
 
 func TestScriptFitsWinRMCommandLimit(t *testing.T) {
-	if n := EncodedLength(Script); n > 7800 {
-		t.Fatalf("encoded script is %d chars; cmd.exe limit is ~8191", n)
+	// сценарий идёт через stdin; в командной строке только короткий загрузчик
+	if n := len(StdinLoader); n > 1000 {
+		t.Fatalf("stdin loader command is %d chars", n)
 	}
 	if strings.Contains(Script, "Set-") || strings.Contains(Script, "Remove-") || strings.Contains(Script, "New-Item") || strings.Contains(Script, "Out-File") {
 		t.Fatal("script must be read-only")
