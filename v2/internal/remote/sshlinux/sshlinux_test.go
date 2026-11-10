@@ -97,6 +97,12 @@ func (s *fakeServer) serve(nc net.Conn, cfg *ssh.ServerConfig) {
 
 func baseOutputs() map[string]string {
 	return map[string]string{
+		cmdHostname: "web01\n",
+		cmdMachine:  "0123456789abcdef0123456789abcdef\n",
+		cmdOSRel:    "NAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\n",
+		cmdUname:    "x86_64\n",
+		cmdIPLink:   "2: eth0: <UP> mtu 1500 qdisc fq state UP\\    link/ether 52:54:00:12:34:56 brd ff:ff:ff:ff:ff:ff\n",
+		cmdIPAddr:   "2: eth0    inet 192.168.1.5/24 brd 192.168.1.255 scope global eth0\n",
 		cmdCPU:      "processor\t: 0\nmodel name\t: Test CPU\n",
 		cmdMem:      "MemTotal: 2048 kB\n",
 		cmdDpkg:     "Package: bash\nStatus: install ok installed\nArchitecture: all\nVersion: 5.2-1\n",
@@ -123,7 +129,10 @@ func TestCollectOverRealSSH(t *testing.T) {
 			t.Fatal("remote profile must be partial", x.Name)
 		}
 	}
-	for _, n := range []string{"hardware", "software", "services", "users_groups", "resources", "routes_ports"} {
+	if len(Candidates(secs)) != 2 || len(Complete12(secs)) != 12 {
+		t.Fatal("candidates / 12 sections", Candidates(secs), len(Complete12(secs)))
+	}
+	for _, n := range []string{"identity", "os", "network", "hardware", "software", "services", "users_groups", "resources", "routes_ports"} {
 		if by[n] != "partial" {
 			t.Errorf("%s: %s", n, by[n])
 		}
@@ -199,7 +208,7 @@ func TestCancelStopsCollection(t *testing.T) {
 	if !errors.Is(err, context.Canceled) || time.Since(start) > 4*time.Second {
 		t.Fatal(err, time.Since(start))
 	}
-	if len(secs) == 0 || secs[0].Name != "hardware" {
+	if len(secs) == 0 || secs[0].Name != "identity" {
 		t.Fatal("sections gathered before cancel must be kept")
 	}
 }

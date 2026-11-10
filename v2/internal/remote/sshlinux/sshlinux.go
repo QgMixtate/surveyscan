@@ -188,6 +188,12 @@ func (s session) run(ctx context.Context, command string) (string, bool) {
 
 // Command — фиксированные команды сбора. Любая ошибка команды → источник недоступен (секция unavailable).
 const (
+	cmdHostname = "LC_ALL=C hostname"
+	cmdMachine  = "LC_ALL=C cat /etc/machine-id"
+	cmdOSRel    = "LC_ALL=C cat /etc/os-release || cat /usr/lib/os-release"
+	cmdUname    = "LC_ALL=C uname -m"
+	cmdIPLink   = "LC_ALL=C ip -o link show"
+	cmdIPAddr   = "LC_ALL=C ip -o addr show"
 	cmdCPU      = "LC_ALL=C cat /proc/cpuinfo"
 	cmdMem      = "LC_ALL=C cat /proc/meminfo"
 	cmdDpkg     = "LC_ALL=C cat /var/lib/dpkg/status"
@@ -284,6 +290,28 @@ func Collect(ctx context.Context, t Target, secret Secret, p Policy) ([]contract
 	s := session{client: client, policy: p}
 	var out []contracts.Section
 
+	host, okHost := s.run(ctx, cmdHostname)
+	machine, _ := s.run(ctx, cmdMachine)
+	if okHost {
+		out = append(out, section("identity", linuxinventory.Identity(host, machine)))
+	} else {
+		out = append(out, failed("identity", "unavailable", "SOURCE_UNAVAILABLE"))
+	}
+	osr, okOS := s.run(ctx, cmdOSRel)
+	uname, _ := s.run(ctx, cmdUname)
+	if okOS {
+		out = append(out, section("os", linuxinventory.OS(osr, uname)))
+	} else {
+		out = append(out, failed("os", "unavailable", "SOURCE_UNAVAILABLE"))
+	}
+	ipLink, okLink := s.run(ctx, cmdIPLink)
+	ipAddr, _ := s.run(ctx, cmdIPAddr)
+	if okLink {
+		out = append(out, section("network", linuxinventory.Network(ipLink, ipAddr)))
+	} else {
+		out = append(out, failed("network", "unavailable", "SOURCE_UNAVAILABLE"))
+	}
+
 	cpu, okCPU := s.run(ctx, cmdCPU)
 	mem, okMem := s.run(ctx, cmdMem)
 	hw := []map[string]any{}
@@ -336,4 +364,50 @@ func Collect(ctx context.Context, t Target, secret Secret, p Policy) ([]contract
 		return out, err // частичный результат + причина (отмена/срок)
 	}
 	return out, nil
+}
+
+// SectionOrder — порядок 12 секций профиля 1.2.
+var SectionOrder = []string{"identity", "os", "network", "hardware", "software", "updates", "services", "users_groups", "routes_ports", "resources", "protection", "neighbors"}
+
+// Complete12 приводит результат Collect к ровно 12 секциям профиля 1.2: недостающие явно unsupported
+// (updates/protection/neighbors не собираются по SSH) или unavailable — значения не выдумываются.
+func Complete12(sections []contracts.Section) []contracts.Section {
+	have := map[string]contracts.Section{}
+	for _, s := range sections {
+		have[s.Name] = s
+	}
+	out := make([]contracts.Section, 0, len(SectionOrder))
+	for _, name := range SectionOrder {
+		if s, ok := have[name]; ok {
+			out = append(out, s)
+			continue
+		}
+		switch name {
+		case "updates", "protection", "neighbors":
+			out = append(out, failed(name, "unsupported", "SECTION_UNSUPPORTED"))
+		default:
+			out = append(out, failed(name, "unavailable", "SOURCE_UNAVAILABLE"))
+		}
+	}
+	return out
+}
+
+// Candidates извлекает признаки идентификации из секции identity (hostname, machine-id). machine-id — признак,
+// а не asset_uid; namespace тот же, что у локального Linux-агента.
+func Candidates(sections []contracts.Section) []contracts.Candidate {
+	out := []contracts.Candidate{}
+	for _, s := range sections {
+		if s.Name != "identity" {
+			continue
+		}
+		for _, r := range s.Records {
+			if h, ok := r["hostname"].(string); ok && h != "" {
+				out = append(out, contracts.Candidate{Kind: "hostname", Namespace: "dns", Value: h})
+			}
+			if m, ok := r["machine_uuid"].(string); ok && m != "" {
+				out = append(out, contracts.Candidate{Kind: "machine_uuid", Namespace: "linux-machine-id", Value: m})
+			}
+		}
+	}
+	return out
 }
