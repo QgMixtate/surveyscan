@@ -19,6 +19,8 @@ import (
 
 	"github.com/Azure/go-ntlmssp"
 	"github.com/masterzen/winrm"
+
+	"github.com/QgMixtate/surveyscan/v2/internal/remote/winrminv"
 )
 
 type logging struct{ next http.RoundTripper }
@@ -57,6 +59,7 @@ func main() {
 	passFile := flag.String("password-file", "", "")
 	caFile := flag.String("ca-file", "", "")
 	execPS := flag.String("exec-ps", "", "выполнить PowerShell-команду клиентом masterzen/winrm и показать stdout/stderr/код")
+	execScript := flag.Bool("exec-script", false, "выполнить реальный сценарий сбора winrminv.Script")
 	execCmd := flag.String("exec-cmd", "", "выполнить команду cmd.exe так же")
 	flag.Parse()
 	pass, e1 := os.ReadFile(*passFile)
@@ -64,6 +67,9 @@ func main() {
 	if e1 != nil || e2 != nil {
 		fmt.Println("cannot read password/CA file")
 		os.Exit(1)
+	}
+	if *execScript {
+		*execPS = winrminv.Script
 	}
 	if *execPS != "" || *execCmd != "" {
 		portN := 5986
@@ -84,6 +90,9 @@ func main() {
 		}
 		code, err := c.RunWithContext(context.Background(), command, &out, &errb)
 		fmt.Printf("exit=%d err=%v\nstdout(%d bytes)=%q\nstderr(%d bytes)=%q\n", code, err, out.Len(), clip(out.String()), errb.Len(), clip(errb.String()))
+		if *execScript {
+			fmt.Printf("script encoded length=%d (limit about 8191)\n", winrminv.EncodedLength(winrminv.Script))
+		}
 		return
 	}
 	pool := x509.NewCertPool()
