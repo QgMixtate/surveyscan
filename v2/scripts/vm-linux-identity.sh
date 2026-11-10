@@ -32,6 +32,14 @@ path = cfg + ('/config.json' if name == 'surveyscan-agent' else '/agent.json')
 json.dump(c, open(path, 'w'), indent=2)
 print(path)
 PY
+if [ "$kind" = winrm ]; then
+  # виртуальная личность Windows-цели на Linux-хосте: платформа запроса профиля — платформа цели
+  python3 - "$CFG/agent.json" <<'PY'
+import json, sys
+p = sys.argv[1]
+c = json.load(open(p)); c['inventory_platform'] = 'windows/amd64'; json.dump(c, open(p, 'w'), indent=2)
+PY
+fi
 if [ "$NAME" = surveyscan-agent ]; then CONF="$CFG/config.json"; else CONF="$CFG/agent.json"; fi
 chmod 0600 "$CONF"
 if [ "$kind" = ssh ]; then

@@ -2,12 +2,14 @@ package agent
 
 import (
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/QgMixtate/surveyscan/v2/internal/remote/sshlinux"
 )
 
@@ -62,5 +64,37 @@ func TestSSHCollectFailsClosedWithoutLeakingSecret(t *testing.T) {
 	target.PasswordFile = loose
 	if _, err = NewSSHCollect12(target, sshlinux.Policy{})(ctx); err == nil {
 		t.Fatal("non-private secret file must be rejected")
+	}
+}
+
+func TestConfigInventoryPlatformOverride(t *testing.T) {
+	dir := t.TempDir()
+	base := Config{Tenant: identifier.New(), Site: identifier.New(), Scope: identifier.New(), CollectorSource: identifier.New(),
+		CollectorURL: "https://collector.invalid:18443", State: dir, CA: "/etc/ca.pem"}
+	write := func(c Config) string {
+		raw, _ := json.Marshal(c)
+		p := filepath.Join(dir, "c.json")
+		_ = os.Remove(p)
+		if err := writeAtomic(p, raw); err != nil {
+			t.Fatal(err)
+		}
+		return p
+	}
+	// по умолчанию — платформа хоста
+	c, err := ReadConfig(write(base))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if (&Client{cfg: c}).platform() != platform12() {
+		t.Fatal("default platform must be the host platform")
+	}
+	// виртуальная личность Windows-цели на Linux-хосте объявляет платформу цели
+	base.InventoryPlatform = "windows/amd64"
+	if c, err = ReadConfig(write(base)); err != nil || (&Client{cfg: c}).platform() != "windows/amd64" {
+		t.Fatal("explicit platform must be used", err)
+	}
+	base.InventoryPlatform = "plan9/mips"
+	if _, err = ReadConfig(write(base)); err == nil {
+		t.Fatal("unsupported platform must be rejected")
 	}
 }

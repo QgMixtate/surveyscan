@@ -45,6 +45,9 @@ type Config struct {
 	HeartbeatSeconds int    `json:"heartbeat_seconds"`
 	Jitter           int    `json:"jitter_percent"`
 	Limit            int64  `json:"spool_limit_bytes"`
+	// InventoryPlatform — платформа, под которой личность зарегистрирована в центре. Нужна только виртуальной личности
+	// (run-ssh12/run-winrm12 для цели другой ОС); по умолчанию — платформа хоста агента.
+	InventoryPlatform string `json:"inventory_platform,omitempty"`
 }
 type Preparation struct {
 	Source string `json:"source_id"`
@@ -65,6 +68,14 @@ type Client struct {
 	http        *http.Client
 	wire        *wire.Validator
 	sequence    counters
+}
+
+// platform возвращает платформу для запроса профиля: явную из конфига (виртуальная личность) или платформу хоста.
+func (c *Client) platform() string {
+	if c.cfg.InventoryPlatform != "" {
+		return c.cfg.InventoryPlatform
+	}
+	return platform12()
 }
 
 func writeAtomic(path string, b []byte) error { return diskspool.Atomic(path, b) }
@@ -102,6 +113,9 @@ func ReadConfig(path string) (Config, error) {
 	u, e := url.Parse(c.CollectorURL)
 	if e != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") {
 		return c, errors.New("HTTPS collector origin required")
+	}
+	if c.InventoryPlatform != "" && c.InventoryPlatform != contracts.InventoryPlatform12 && c.InventoryPlatform != contracts.InventoryPlatformLinux12 {
+		return c, errors.New("unsupported inventory_platform")
 	}
 	c.CollectorURL = strings.TrimRight(c.CollectorURL, "/")
 	if c.InventorySeconds == 0 {
