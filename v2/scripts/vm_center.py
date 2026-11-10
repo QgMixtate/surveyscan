@@ -93,14 +93,18 @@ def scenario(args, **s):
     agent = None
     if args.selftest:
         agent = selftest_prepare(args, out, s)
-    issued = set()
+    issued = {}  # имя файла -> source_id, для которого grant уже выдан (новый prepare с другим source_id обрабатывается заново)
     warned = set()
     deadline = time.monotonic() + args.timeout
     last = 0.0
     while not STOP and time.monotonic() < deadline:
         for prepare_name, (platform, grant_name) in grant_requests(out, args.platform).items():
             if prepare_name in issued:
-                continue
+                try:
+                    if read_json(out / prepare_name).get('source_id') == issued[prepare_name]:
+                        continue
+                except (ValueError, OSError):
+                    continue
             time.sleep(0.5)
             try:
                 prep = read_json(out / prepare_name)
@@ -118,11 +122,11 @@ def scenario(args, **s):
             code, grant, _ = s['request'](s['tls_port'], s['plain'], 'POST', '/api/v1/enrollments', body, headers)
             if code != 201:
                 # отказ (например, источник уже зарегистрирован) не должен ронять центр с чужими агентами
-                issued.add(prepare_name)
+                issued[prepare_name] = prep['source_id']
                 print(f'GRANT REFUSED for {prepare_name}: HTTP {code}', flush=True)
                 continue
             write_private(out / grant_name, json.dumps(grant))
-            issued.add(prepare_name)
+            issued[prepare_name] = prep['source_id']
             print(f"GRANT issued for source {prep['source_id']} platform {platform} (valid 15 min) -> {out / grant_name}", flush=True)
             if args.selftest:
                 agent = selftest_enroll_run(args, out, agent)

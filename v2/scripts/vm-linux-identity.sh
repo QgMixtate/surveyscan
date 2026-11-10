@@ -10,7 +10,7 @@ BIN=/opt/surveyscan/current/bin/surveyscan-agent
 PROBE="$(dirname "$OUT")/../.dist/ssh-probe"
 kind="${1:-}"
 case "$kind" in
-  agent) NAME=surveyscan-agent; PREP="prepare-linux.json"; GRANT="grant-linux.json" ;;
+  agent) NAME=surveyscan-agent; PREP="prepare-linux-$NAME.json"; GRANT="grant-linux-$NAME.json" ;;
   ssh)   NAME="${2:?NAME}"; ADDR="${3:?ADDR}"; TUSER="${4:?USER}"; KEYFILE="${5:?KEYFILE}"
          PREP="prepare-linux-$NAME.json"; GRANT="grant-linux-$NAME.json" ;;
   *) echo "usage: $0 agent | ssh NAME ADDR USER KEYFILE" >&2; exit 2 ;;
@@ -78,6 +78,11 @@ UNIT
   systemctl daemon-reload
 fi
 systemctl stop "$NAME" 2>/dev/null || true
+# Личность от прежнего центра (другой CA) заменить нельзя: RESET=1 удаляет состояние (только для стенда!)
+if [ -e "/var/lib/$NAME/identity.json" ]; then
+  if [ "${RESET:-0}" = 1 ]; then rm -rf "/var/lib/$NAME"; echo "state /var/lib/$NAME removed (RESET=1)"
+  else echo "FAIL: /var/lib/$NAME уже содержит личность. Если центр перезапускали, повторите с RESET=1 (состояние будет удалено)"; exit 1; fi
+fi
 SR=(systemd-run --quiet --wait --pipe --collect -p User=surveyscan-agent -p "StateDirectory=$NAME" -p StateDirectoryMode=0700 -p UMask=0077)
 TMP="$(mktemp /root/prepare.XXXXXX)"
 "${SR[@]}" -p "LoadCredential=config:$CONF" sh -c "exec $BIN prepare --config \"\$CREDENTIALS_DIRECTORY/config\"" > "$TMP"
