@@ -54,4 +54,4 @@ Ubuntu 24.04 (10.170.108.2, центр `vm_center.py` в tmux `center`) и Windo
 ## Следующие шаги
 
 C25.03 → C25.04 → C26 (AM/CMDB). Параллельно — проверки на стенде по мере готовности.
-Передача между сессиями: [handoff-3](plans/surveyscan-v2/handoffs/C15-C24-session-handoff-3.md).
+Передача между сессиями: [handoff-4](plans/surveyscan-v2/handoffs/C25-session-handoff-4.md).
