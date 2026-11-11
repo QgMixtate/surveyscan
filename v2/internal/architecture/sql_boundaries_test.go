@@ -163,6 +163,11 @@ func TestGuardRejectsBoundaryCounterexamples(t *testing.T) {
 		{"internal/modules/assets/bad.go", "package assets; const q = `DELETE FROM \"sources\".sources`"},
 		{"internal/modules/assets/bad.go", "package assets; const q = `INSERT INTO users(user_id) VALUES($1)`"},
 		{"internal/modules/assets/bad.go", `package assets; func change(){ tx.Exec(ctx, suppliedSQL) }`},
+		// C26: модуль cmdb не пишет в активы, ответственность и проекции инвентаризации (только читает их)
+		{"internal/modules/cmdb/bad.go", "package cmdb; const q = `UPDATE assets.assets SET merged_into=NULL`"},
+		{"internal/modules/cmdb/bad.go", "package cmdb; const q = `INSERT INTO responsibility.responsibility_assignments(tenant_id) VALUES($1)`"},
+		{"internal/modules/cmdb/bad.go", "package cmdb; const q = `DELETE FROM inventory.record_facts12`"},
+		{"internal/modules/cmdb/bad.go", `package cmdb; import "` + modulePrefix + `assets"`},
 		{"internal/platform/bad.go", `package platform; import "` + modulePrefix + `assets/port"`},
 		{"internal/usercli/bad.go", `package usercli; import "github.com/jackc/pgx/v5"`},
 	} {
