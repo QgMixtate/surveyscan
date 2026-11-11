@@ -112,11 +112,11 @@ func TestC15PlatformMigrationPreservesExistingCatalogAndData(t *testing.T) {
 	ctx, c, current := database(t)
 	old := []migrate.Migration{}
 	for _, m := range current {
-		if m.ID < "0035" { // каталог до C15-платформы; 0035+ — дописанные позже миграции (0037 — R-027)
+		if m.ID < "0035" { // каталог до C15-платформы; 0035+ — дописанные позже миграции (0037 — R-027, 0038 — C25.03)
 			old = append(old, m)
 		}
 	}
-	if len(old) != 35 || len(current) != 38 {
+	if len(old) != 35 || len(current) != 39 {
 		t.Fatal("unexpected catalogs")
 	}
 	apply(t, ctx, c, old)
@@ -125,8 +125,8 @@ func TestC15PlatformMigrationPreservesExistingCatalogAndData(t *testing.T) {
 	if err := c.QueryRow(ctx, snapshot).Scan(&before); err != nil {
 		t.Fatal(err)
 	}
-	if n, err := migrate.Apply(ctx, c, current); err != nil || n != 3 {
-		t.Fatal("not three appends", n, err)
+	if n, err := migrate.Apply(ctx, c, current); err != nil || n != 4 {
+		t.Fatal("not four appends", n, err)
 	}
 	if err := c.QueryRow(ctx, snapshot).Scan(&after); err != nil || before != after {
 		t.Fatal("old SQL ledger mutated", err)

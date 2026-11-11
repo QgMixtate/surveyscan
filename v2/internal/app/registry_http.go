@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/QgMixtate/surveyscan/v2/contracts"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/access"
+	"github.com/QgMixtate/surveyscan/v2/internal/modules/assets"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/domain"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"io"
@@ -16,9 +17,24 @@ import (
 	"strings"
 )
 
+// redirectMerged — для GET по UID поглощённого актива: 308 на тот же путь с каноническим UID (C25.03).
+func redirectMerged(w http.ResponseWriter, req *http.Request, e error) bool {
+	var merged assets.ErrMerged
+	if !errors.As(e, &merged) || req.Method != http.MethodGet {
+		return false
+	}
+	target := *req.URL
+	target.Path = strings.Replace(req.URL.Path, "/assets/"+req.PathValue("asset_uid"), "/assets/"+merged.Into, 1)
+	target.RawPath = ""
+	w.Header().Set("Cache-Control", "no-store")
+	http.Redirect(w, req, target.RequestURI(), http.StatusPermanentRedirect)
+	return true
+}
 func registryError(w http.ResponseWriter, e error) {
 	status, code := 503, "TEMPORARILY_UNAVAILABLE"
 	switch {
+	case errors.As(e, new(assets.ErrMerged)):
+		status, code = 409, "ASSET_MERGED"
 	case errors.Is(e, domain.NotFound):
 		status, code = 404, "NOT_FOUND"
 	case errors.Is(e, domain.Unauthorized):
@@ -54,6 +70,9 @@ func (r *Registry) Handlers() map[string]http.Handler {
 			id, _ := access.Identity(req.Context())
 			a, e := r.Get(req.Context(), id, uid)
 			if e != nil {
+				if redirectMerged(w, req, e) {
+					return
+				}
 				registryError(w, e)
 				return
 			}

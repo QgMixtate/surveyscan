@@ -91,6 +91,9 @@ func (r *Registry) inventoryHandler() http.Handler {
 		id, _ := access.Identity(ctx)
 		out, e := r.InventoryDetail(ctx, id, req.PathValue("asset_uid"))
 		if e != nil {
+			if redirectMerged(w, req, e) {
+				return
+			}
 			registryError(w, e)
 			return
 		}

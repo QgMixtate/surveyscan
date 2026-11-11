@@ -133,6 +133,9 @@ func (r *Registry) inventoryRecordsHandler12() http.Handler {
 			return
 		}
 		if err != nil {
+			if redirectMerged(w, req, err) {
+				return
+			}
 			registryError(w, err)
 			return
 		}

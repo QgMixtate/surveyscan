@@ -82,7 +82,7 @@ func (Store) AssetScope(ctx context.Context, tx pgx.Tx, tenant, asset string) (s
 	if !identifier.Valid(asset) {
 		return "", "", domain.NotFound
 	}
-	e := tx.QueryRow(ctx, "SELECT site_id::text,scope_id::text FROM assets.assets WHERE tenant_id=$1 AND asset_uid=$2", tenant, asset).Scan(&site, &scope)
+	e := tx.QueryRow(ctx, "SELECT site_id::text,scope_id::text FROM assets.assets WHERE tenant_id=$1 AND asset_uid=$2 AND merged_into IS NULL", tenant, asset).Scan(&site, &scope)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return "", "", domain.NotFound
 	}

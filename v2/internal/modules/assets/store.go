@@ -96,6 +96,16 @@ func (Store) Resolve(ctx context.Context, tx pgx.Tx, o contracts.Observation) (R
 		}
 	}
 	scopeConflict := false
+	if o.Asserted != nil {
+		// C25.03: утверждённый источником UID мог быть слит — сравниваем канонический
+		canonical, e := Store{}.Canonical(ctx, tx, o.TenantID, *o.Asserted)
+		if e != nil && !errors.Is(e, domain.NotFound) {
+			return result, e
+		}
+		if e == nil {
+			o.Asserted = &canonical
+		}
+	}
 	if o.Asserted != nil && (uid == nil || *uid != *o.Asserted) {
 		return result, domain.Unauthorized
 	}
@@ -141,7 +151,11 @@ func (Store) Resolve(ctx context.Context, tx pgx.Tx, o contracts.Observation) (R
 		}
 		if uid != nil && (c.Kind == "machine_uuid" || c.Kind == "bios_uuid" || c.Kind == "serial") {
 			var contradiction bool
-			e = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM assets.asset_identifiers WHERE tenant_id=$1 AND asset_uid=$2 AND kind=$3 AND namespace=$4 AND normalized_value<>$5 AND valid_to IS NULL)", o.TenantID, *uid, c.Kind, c.Namespace, c.Value).Scan(&contradiction)
+			// C25.03: записи, перенесённые на актив оператором (слияние/перепривязка), друг другу не противоречат —
+			// сравнение с ними только внутри самой записи (клон или переустановка той же записи ловится по-прежнему)
+			e = tx.QueryRow(ctx, `WITH moved AS (SELECT DISTINCT unnest(source_record_keys) AS k FROM assets.asset_operations WHERE tenant_id=$1 AND to_asset_uid=$2)
+SELECT EXISTS(SELECT 1 FROM assets.asset_identifiers i WHERE i.tenant_id=$1 AND i.asset_uid=$2 AND i.kind=$3 AND i.namespace=$4 AND i.normalized_value<>$5 AND i.valid_to IS NULL
+AND (i.source_record_key=$6 OR NOT EXISTS(SELECT 1 FROM moved WHERE k=$6 OR k=i.source_record_key)))`, o.TenantID, *uid, c.Kind, c.Namespace, c.Value, result.RecordKey).Scan(&contradiction)
 			if e != nil {
 				return result, e
 			}
@@ -292,14 +306,23 @@ func (Store) History(ctx context.Context, tx pgx.Tx, tenant, asset, version, rea
 func (Store) Get(ctx context.Context, tx pgx.Tx, tenant, uid string) (contracts.Asset, error) {
 	var a contracts.Asset
 	a.Sections = []contracts.SectionState{}
-	e := tx.QueryRow(ctx, "SELECT a.tenant_id::text,a.asset_uid::text,a.site_id::text,b.revision::text,b.display_name,b.purpose,b.criticality,b.tags FROM assets.assets a JOIN assets.asset_business_fields b USING(tenant_id,asset_uid) WHERE a.tenant_id=$1 AND a.asset_uid=$2", tenant, uid).Scan(&a.TenantID, &a.UID, &a.SiteID, &a.Revision, &a.Business.DisplayName, &a.Business.Purpose, &a.Business.Criticality, &a.Business.Tags)
+	var merged *string
+	e := tx.QueryRow(ctx, "SELECT a.tenant_id::text,a.asset_uid::text,a.site_id::text,b.revision::text,b.display_name,b.purpose,b.criticality,b.tags,a.merged_into::text FROM assets.assets a JOIN assets.asset_business_fields b USING(tenant_id,asset_uid) WHERE a.tenant_id=$1 AND a.asset_uid=$2", tenant, uid).Scan(&a.TenantID, &a.UID, &a.SiteID, &a.Revision, &a.Business.DisplayName, &a.Business.Purpose, &a.Business.Criticality, &a.Business.Tags, &merged)
 	if errors.Is(e, pgx.ErrNoRows) {
 		e = domain.NotFound
+	}
+	if e == nil && merged != nil {
+		// C25.03: поглощённый актив читается только через канонический UID
+		into, ce := Store{}.Canonical(ctx, tx, tenant, *merged)
+		if ce != nil {
+			return a, ce
+		}
+		return a, ErrMerged{Into: into}
 	}
 	return a, e
 }
 func (Store) IDs(ctx context.Context, tx pgx.Tx, tenant, after string, limit int) ([]string, error) {
-	rows, e := tx.Query(ctx, "SELECT asset_uid::text FROM assets.assets WHERE tenant_id=$1 AND ($2='' OR asset_uid>NULLIF($2,'')::uuid) ORDER BY asset_uid LIMIT $3", tenant, after, limit)
+	rows, e := tx.Query(ctx, "SELECT asset_uid::text FROM assets.assets WHERE tenant_id=$1 AND merged_into IS NULL AND ($2='' OR asset_uid>NULLIF($2,'')::uuid) ORDER BY asset_uid LIMIT $3", tenant, after, limit)
 	if e != nil {
 		return nil, e
 	}
