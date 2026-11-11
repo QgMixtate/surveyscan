@@ -13,11 +13,14 @@ export type FactEvidence12={observation_id:string;origin:{source_id:string;sourc
 export type RecordPage12={section:string;projection_revision:string;section_state:{status:string;clock_uncertain:boolean;last_attempt:FactEvidence12}|null;items:{record_key:string;field:string;value:unknown;evidence:FactEvidence12}[];next_cursor:string|null};
 export type TopologyNode={id:string;kind:'host'|'subnet'|'gateway';label:string;detail?:string;asset_uid?:string;router?:boolean};
 export type TopologyLink={a:string;b:string;role?:'gateway';layer:'L2'|'L3';confidence:'confirmed'|'probable'|'weak';evidence:{source:string;detail:string;origin?:string}[];conflicts?:string[]};
+export type Conflict={conflict_id:string;reason_code:string;state:'open'|'resolved'|'dismissed';revision:string;source_record_key:string;source_id:string;namespace:string;source_local_id:string;resolution_state:string;asset_uid:string|null;candidate_asset_uids:string[];pending_observations:number;observed_hostname?:string};
+export type ConflictPage={tenant_id:string;state:string;items:Conflict[];next_cursor:string|null};
+export type ConflictResult={conflict_id:string;action:string;asset_uid:string|null;replayed_observations:number};
 export type Topology={tenant_id:string;generated_at:string;nodes:TopologyNode[];links:TopologyLink[];truncated:boolean;hosts_with_network_facts:number};
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
 }
-const messages:Record<string,string>={AUTHENTICATION_REQUIRED:'Сессия завершилась. Войдите снова.',INVALID_CREDENTIALS:'Не удалось войти. Проверьте имя и пароль.',FORBIDDEN:'Недостаточно прав для этого действия.',NOT_FOUND:'Объект не найден или недоступен.',REVISION_MISMATCH:'Карточка изменилась. Обновите данные.',RATE_LIMITED:'Слишком много запросов. Повторите немного позже.',CONTRACT_MISMATCH:'Версии интерфейса и API несовместимы. Обратитесь к администратору.',INVALID_RESPONSE:'Сервер вернул ответ неизвестного формата.',NETWORK_ERROR:'Нет связи с сервером. Проверьте соединение.',CAPABILITY_NOT_ENABLED:'Эта возможность пока недоступна.'};
+const messages:Record<string,string>={CONFLICT:'Состояние изменилось: обновите список.',INVALID_RESOLUTION:'Это действие недоступно для выбранного конфликта.',AUTHENTICATION_REQUIRED:'Сессия завершилась. Войдите снова.',INVALID_CREDENTIALS:'Не удалось войти. Проверьте имя и пароль.',FORBIDDEN:'Недостаточно прав для этого действия.',NOT_FOUND:'Объект не найден или недоступен.',REVISION_MISMATCH:'Карточка изменилась. Обновите данные.',RATE_LIMITED:'Слишком много запросов. Повторите немного позже.',CONTRACT_MISMATCH:'Версии интерфейса и API несовместимы. Обратитесь к администратору.',INVALID_RESPONSE:'Сервер вернул ответ неизвестного формата.',NETWORK_ERROR:'Нет связи с сервером. Проверьте соединение.',CAPABILITY_NOT_ENABLED:'Эта возможность пока недоступна.'};
 export function errorMessage(error:unknown){return error instanceof ApiError?(messages[error.code]??'Не удалось выполнить запрос. Повторите позже.'):'Не удалось выполнить запрос. Повторите позже.'}
 async function call<T>(path:string,name:string|undefined,init:RequestInit={}):Promise<T>{
  let response:Response;
@@ -36,6 +39,8 @@ export const api={
  inventory:(uid:string)=>call<InventoryDetail>('/api/v1/assets/'+encodeURIComponent(uid)+'/inventory','InventoryDetail'),
  profile:(source:string)=>call<SourceProfile>('/api/v1/sources/'+encodeURIComponent(source)+'/profile','SourceProfile'),
  records12:(uid:string,section:string,cursor:string|null=null)=>call<RecordPage12>('/api/v1/assets/'+encodeURIComponent(uid)+'/inventory/facts/'+encodeURIComponent(section)+'?limit=100'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'RecordFactPage12'),
+ conflicts:(state:string,cursor:string|null=null)=>call<ConflictPage>('/api/v1/reconciliation/conflicts?state='+encodeURIComponent(state)+'&limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'ConflictPage'),
+ resolveConflict:(id:string,csrf:string,body:{action:string;asset_uid?:string;revision?:string})=>call<ConflictResult>('/api/v1/reconciliation/conflicts/'+encodeURIComponent(id)+'/resolve','ConflictResult',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  topology:()=>call<Topology>('/api/v1/topology','Topology'),
  sources:(cursor:string|null=null)=>call<SourcePage>('/api/v1/sources?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SourcePage')
 };

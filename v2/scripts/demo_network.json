@@ -404,5 +404,29 @@
    }
   ],
   "routes": []
+ },
+ {
+  "name": "DEMO-WS-001.",
+  "os": {
+   "name": "Windows 10 Pro",
+   "version": "22H2",
+   "architecture": "amd64"
+  },
+  "network": [
+   {
+    "name": "Ethernet",
+    "mac": "02:de:00:00:09:01",
+    "addresses": [
+     {
+      "ip": "10.20.0.150",
+      "prefix": 24
+     }
+    ],
+    "gateways": [
+     "10.20.0.1"
+    ]
+   }
+  ],
+  "routes": []
  }
 ]

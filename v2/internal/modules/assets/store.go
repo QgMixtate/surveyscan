@@ -253,6 +253,13 @@ func (Store) Resolve(ctx context.Context, tx pgx.Tx, o contracts.Observation) (R
 	}
 	return result, nil
 }
+
+// LinkReason — связь наблюдения с активом с явной причиной (например, MANUAL_RECONCILIATION при разборе конфликта).
+func (Store) LinkReason(ctx context.Context, tx pgx.Tx, o contracts.Observation, asset, reason string) (string, error) {
+	id := identifier.New()
+	_, e := tx.Exec(ctx, "INSERT INTO assets.observation_links(tenant_id,link_id,observation_id,asset_uid,reason_code) VALUES($1,$2,$3,$4,$5)", o.TenantID, id, o.ID, asset, reason)
+	return id, e
+}
 func (Store) Link(ctx context.Context, tx pgx.Tx, o contracts.Observation, asset string) (string, error) {
 	id := identifier.New()
 	_, e := tx.Exec(ctx, "INSERT INTO assets.observation_links(tenant_id,link_id,observation_id,asset_uid,reason_code) VALUES($1,$2,$3,$4,'SOURCE_MAPPING')", o.TenantID, id, o.ID, asset)

@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:surveyscan:c25:reconciliation:1:0",
+  "title": "Очередь разбора конфликтов сопоставления (C25.02)",
+  "$defs": {
+    "uuid": {"type": "string", "format": "uuid"},
+    "ConflictPage": {
+      "type": "object",
+      "properties": {
+        "tenant_id": {"$ref": "#/$defs/uuid"},
+        "state": {"enum": ["open", "resolved", "dismissed"]},
+        "items": {"type": "array", "maxItems": 100, "items": {"$ref": "#/$defs/Conflict"}},
+        "next_cursor": {"oneOf": [{"$ref": "#/$defs/uuid"}, {"type": "null"}]}
+      },
+      "required": ["tenant_id", "state", "items", "next_cursor"],
+      "additionalProperties": false
+    },
+    "Conflict": {
+      "type": "object",
+      "properties": {
+        "conflict_id": {"$ref": "#/$defs/uuid"},
+        "reason_code": {"type": "string", "maxLength": 64},
+        "state": {"enum": ["open", "resolved", "dismissed"]},
+        "revision": {"type": "string", "pattern": "^[1-9][0-9]{0,19}$"},
+        "source_record_key": {"$ref": "#/$defs/uuid"},
+        "source_id": {"$ref": "#/$defs/uuid"},
+        "namespace": {"type": "string", "maxLength": 64},
+        "source_local_id": {"type": "string", "maxLength": 512},
+        "resolution_state": {"enum": ["unresolved", "conflict", "resolved"]},
+        "asset_uid": {"oneOf": [{"$ref": "#/$defs/uuid"}, {"type": "null"}]},
+        "candidate_asset_uids": {"type": "array", "maxItems": 16, "items": {"$ref": "#/$defs/uuid"}},
+        "pending_observations": {"type": "integer", "minimum": 0},
+        "observed_hostname": {"type": "string", "maxLength": 255}
+      },
+      "required": ["conflict_id", "reason_code", "state", "revision", "source_record_key", "source_id", "namespace", "source_local_id", "resolution_state", "asset_uid", "candidate_asset_uids", "pending_observations"],
+      "additionalProperties": false
+    },
+    "ConflictResult": {
+      "type": "object",
+      "properties": {
+        "conflict_id": {"$ref": "#/$defs/uuid"},
+        "action": {"enum": ["attach", "create_asset", "confirm", "dismiss"]},
+        "asset_uid": {"oneOf": [{"$ref": "#/$defs/uuid"}, {"type": "null"}]},
+        "replayed_observations": {"type": "integer", "minimum": 0}
+      },
+      "required": ["conflict_id", "action", "asset_uid", "replayed_observations"],
+      "additionalProperties": false
+    }
+  }
+}

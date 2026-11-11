@@ -11,5 +11,6 @@ const exports=Object.fromEntries(names.map(name=>[name,schema.$id+'#/$defs/'+nam
 exports.SourceProfile=c12.$id+'#/$defs/SourceProfile';
 exports.InventoryDetail=extension.$id+'#/$defs/InventoryDetail';
 const records12=JSON.parse(readFileSync(new URL('../../contracts/c15-records.schema.json',import.meta.url)));ajv.addSchema(records12);exports.RecordFactPage12=records12.$id;
+const reconciliation=JSON.parse(readFileSync(new URL('../../contracts/c25-reconciliation.schema.json',import.meta.url)));ajv.addSchema(reconciliation);exports.ConflictPage=reconciliation.$id+'#/$defs/ConflictPage';exports.ConflictResult=reconciliation.$id+'#/$defs/ConflictResult';
 const topology=JSON.parse(readFileSync(new URL('../../contracts/c22-topology.schema.json',import.meta.url)));ajv.addSchema(topology);exports.Topology=topology.$id;
 writeFileSync(new URL('../src/generated/wire.cjs',import.meta.url),standalone(ajv,exports));

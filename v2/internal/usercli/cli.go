@@ -259,14 +259,14 @@ func read(path string) (profile, error) {
 }
 func execute(ctx context.Context, args []string, out io.Writer) error {
 	if len(args) == 1 && (args[0] == "help" || args[0] == "--help") {
-		return emit(out, map[string]any{"commands": []string{"login --server URL --username USER --password-file PRIVATE --context-file PRIVATE [--ca-file CA]", "context show --context-file PRIVATE", "assets list --context-file PRIVATE [--limit 1..200 --cursor CURSOR]", "assets get --context-file PRIVATE --id UUID", "sources list|get|status --context-file PRIVATE [--id UUID]", "profiles get --context-file PRIVATE --id UUID", "profiles set --context-file PRIVATE --id UUID --revision REV --profile-file JSON", "sources portable-import --context-file PRIVATE --id SOURCE_UUID --package FILE", "diagnostics --context-file PRIVATE", "local-status --diagnostics-file PRIVATE", "status --context-file PRIVATE", "logout --context-file PRIVATE", "version"}, "output": "JSON by default; --output table for resource commands", "exit_codes": map[string]int{"success": 0, "arguments_or_private_context": 2, "authentication_or_policy": 3, "not_found": 4, "network_tls_timeout_or_dependency": 5, "other_api_failure": 6}})
+		return emit(out, map[string]any{"commands": []string{"login --server URL --username USER --password-file PRIVATE --context-file PRIVATE [--ca-file CA]", "context show --context-file PRIVATE", "assets list --context-file PRIVATE [--limit 1..200 --cursor CURSOR]", "assets get --context-file PRIVATE --id UUID", "sources list|get|status --context-file PRIVATE [--id UUID]", "profiles get --context-file PRIVATE --id UUID", "profiles set --context-file PRIVATE --id UUID --revision REV --profile-file JSON", "sources portable-import --context-file PRIVATE --id SOURCE_UUID --package FILE", "reconciliation list --context-file PRIVATE [--state open|resolved|dismissed]", "reconciliation resolve --context-file PRIVATE --id CONFLICT_UUID --action attach|create_asset|confirm|dismiss [--asset ASSET_UUID] [--revision REV]", "diagnostics --context-file PRIVATE", "local-status --diagnostics-file PRIVATE", "status --context-file PRIVATE", "logout --context-file PRIVATE", "version"}, "output": "JSON by default; --output table for resource commands", "exit_codes": map[string]int{"success": 0, "arguments_or_private_context": 2, "authentication_or_policy": 3, "not_found": 4, "network_tls_timeout_or_dependency": 5, "other_api_failure": 6}})
 	}
 	if len(args) == 0 {
 		return fail(2, "COMMAND_REQUIRED")
 	}
 	operation := args[0]
 	args = args[1:]
-	if operation == "assets" || operation == "sources" || operation == "context" || operation == "profiles" {
+	if operation == "assets" || operation == "sources" || operation == "context" || operation == "profiles" || operation == "reconciliation" {
 		if len(args) == 0 {
 			return fail(2, "SUBCOMMAND_REQUIRED")
 		}
@@ -288,6 +288,9 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 	optionsFile := f.String("profile-file", "", "")
 	revision := f.String("revision", "", "")
 	packageFile := f.String("package", "", "")
+	state := f.String("state", "open", "")
+	action := f.String("action", "", "")
+	asset := f.String("asset", "", "")
 	format := f.String("output", "json", "")
 	if f.Parse(args) != nil || f.NArg() != 0 || (*contextFile == "" && operation != "local-status") {
 		return fail(2, "INVALID_ARGUMENTS")
@@ -412,6 +415,35 @@ func execute(ctx context.Context, args []string, out io.Writer) error {
 			headers.Set("If-Match", fmt.Sprintf(`"profile:%s:%s"`, *id, *revision))
 		}
 		raw, _, e := call(ctx, c, p, method, "/api/v1/sources/"+*id+"/profile", body, headers)
+		if e != nil {
+			return e
+		}
+		if e = render(out, raw, operation, *format); e != nil {
+			return fail(5, "OUTPUT_UNAVAILABLE")
+		}
+		return nil
+	}
+	if operation == "reconciliation list" || operation == "reconciliation resolve" {
+		// C25.02: очередь ручного разбора конфликтов сопоставления
+		var raw []byte
+		if operation == "reconciliation list" {
+			if *state != "open" && *state != "resolved" && *state != "dismissed" {
+				return fail(2, "INVALID_STATE")
+			}
+			raw, _, e = call(ctx, c, p, "GET", "/api/v1/reconciliation/conflicts?state="+*state+"&limit=100", nil)
+		} else {
+			if !identifier.Valid(*id) || *action == "" || *asset != "" && !identifier.Valid(*asset) {
+				return fail(2, "INVALID_ARGUMENTS")
+			}
+			body := map[string]string{"action": *action}
+			if *asset != "" {
+				body["asset_uid"] = *asset
+			}
+			if *revision != "" {
+				body["revision"] = *revision
+			}
+			raw, _, e = call(ctx, c, p, "POST", "/api/v1/reconciliation/conflicts/"+*id+"/resolve", body)
+		}
 		if e != nil {
 			return e
 		}

@@ -234,3 +234,41 @@ func TestPortableImportResumesUntilComplete(t *testing.T) {
 		t.Fatal("merged report must keep first non-duplicate result per record:", out)
 	}
 }
+
+// C25.02: команды очереди разбора — список по состоянию и решение с CSRF и телом JSON.
+func TestReconciliationCommands(t *testing.T) {
+	conflict, asset := identifier.New(), identifier.New()
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case r.Method == "GET" && r.URL.Path == "/api/v1/reconciliation/conflicts" && r.URL.Query().Get("state") == "dismissed":
+			_, _ = w.Write([]byte(`{"items":[],"next_cursor":null}`))
+		case r.Method == "POST" && r.URL.Path == "/api/v1/reconciliation/conflicts/"+conflict+"/resolve" && r.Header.Get("X-CSRF-Token") == "csrf":
+			var body map[string]string
+			if json.NewDecoder(r.Body).Decode(&body) != nil || body["action"] != "attach" || body["asset_uid"] != asset {
+				w.WriteHeader(422)
+				return
+			}
+			_, _ = w.Write([]byte(`{"conflict_id":"` + conflict + `","action":"attach","asset_uid":"` + asset + `","replayed_observations":1}`))
+		default:
+			w.WriteHeader(400)
+		}
+	}))
+	defer server.Close()
+	path := filepath.Join(t.TempDir(), "context.json")
+	if e := writeNew(path, profile{Version: 1, Server: server.URL, DevHTTP: true, Tenant: identifier.New(), User: identifier.New(), Cookie: "surveyscan_session=s", CSRF: "csrf", Expires: time.Now().Add(time.Hour)}); e != nil {
+		t.Fatal(e)
+	}
+	if code, out, err := invoke(context.Background(), "reconciliation", "list", "--context-file", path, "--state", "dismissed"); code != 0 || !strings.Contains(out, "items") {
+		t.Fatal("list", code, out, err)
+	}
+	if code, out, err := invoke(context.Background(), "reconciliation", "resolve", "--context-file", path, "--id", conflict, "--action", "attach", "--asset", asset); code != 0 || !strings.Contains(out, "replayed_observations") {
+		t.Fatal("resolve", code, out, err)
+	}
+	if code, _, _ := invoke(context.Background(), "reconciliation", "resolve", "--context-file", path, "--id", "bad", "--action", "attach"); code != 2 {
+		t.Fatal("invalid id must be an argument error", code)
+	}
+	if code, _, _ := invoke(context.Background(), "reconciliation", "list", "--context-file", path, "--state", "weird"); code != 2 {
+		t.Fatal("invalid state must be an argument error", code)
+	}
+}

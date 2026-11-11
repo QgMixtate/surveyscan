@@ -21,5 +21,7 @@ try{
  await page.getByRole('button',{name:/Схема сети/}).click();await expect(page.locator('.topo-node').first()).toBeVisible();await shot('05-topology');
  await page.locator('.topo-node.router').first().click();await shot('06-topology-router');
  await page.getByLabel('Найти на схеме').fill('10.20.0.107');await page.locator('.topo-node',{hasText:'demo-ws-007'}).click();await shot('07-topology-conflict');
+ // разбор конфликтов: демо-хост DEMO-WS-001. совпал по имени с demo-ws-001 только слабым признаком
+ await page.getByRole('button',{name:/Разбор конфликтов/}).click();await expect(page.locator('.conflict').first()).toBeVisible();await shot('08-reconcile');
  if(errors.length)throw new Error('browser errors: '+errors.join('; '));
 }finally{await browser.close()}
