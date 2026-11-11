@@ -14,11 +14,13 @@
 - **Интерфейсы:** отдельный Web UI (реестр, карточка актива с инвентаризацией из 12 разделов, источники, **схема сети L3**), CLI `surveyscanctl`, HTTP API с JSON-Schema-контрактами.
 - **Стек:** Go 1.27, PostgreSQL 17, OpenBao 2.7, React 19 + TypeScript (без CDN, закрытый контур), nginx; dev-стенд на Docker Compose.
 
-Документация:
-- [Сборка и dev-стенд v2](v2/README.md)
+Документация — [оглавление docs/](docs/README.md). Главное:
+- [Текущее состояние](docs/STATUS.md) — где мы сейчас, затыки, следующие шаги
 - [Спецификация](docs/specifications/go-asset-management-v2.md) и [план работ](docs/plans/surveyscan-v2/README.md)
-- [Текущее состояние](docs/STATUS.md), [журнал работ](docs/REQUESTS.md), [последняя передача](docs/plans/surveyscan-v2/handoffs/C15-C24-session-handoff-3.md)
-- [Стенд на ВМ (Ubuntu + Windows Server)](docs/plans/surveyscan-v2/handoffs/C15-vm-stand-runbook.md)
+- [Сборка и dev-стенд v2](v2/README.md), [стенд на ВМ](docs/plans/surveyscan-v2/handoffs/C15-vm-stand-runbook.md)
+
+Ветки: `main` — проверенное состояние, `develop` — рабочая (все коммиты идут сюда), `legacy/v1` — прежняя Python-версия.
+Файлы `AGENTS.md` и `CLAUDE.md` в корне — инструкции для ИИ-ассистентов, которые ведут разработку.
 
 Быстрый просмотр продукта на одной машине (настоящий центр + Web UI + демо-данные):
 
