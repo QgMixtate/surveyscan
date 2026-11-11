@@ -13,6 +13,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/access"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/audit"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/imports"
+	"github.com/QgMixtate/surveyscan/v2/internal/modules/inventory"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/sources"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/bao"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
@@ -21,19 +22,22 @@ import (
 	"io"
 	"net"
 	"os"
+	"time"
 )
 
 type MachineConfig struct {
-	Inventory12       bool   `json:"inventory12_enabled"`
-	BaoConfig         string `json:"openbao_config_file"`
-	CenterKeyID       string `json:"center_signing_key_id"`
-	DevMode           bool   `json:"dev_mode"`
-	Listen            string `json:"listen"`
-	CACertificate     string `json:"ca_certificate_file"`
-	CAKey             string `json:"ca_private_key_file"`
-	ServerCertificate string `json:"server_certificate_file"`
-	ServerKey         string `json:"server_private_key_file"`
-	CenterKey         string `json:"center_signing_key_file"`
+	Inventory12 bool `json:"inventory12_enabled"`
+	// C26, 3А: порог давности приоритета источников в часах (нет — 24, 0 — только приоритет)
+	PriorityStaleHours *int   `json:"priority_stale_after_hours,omitempty"`
+	BaoConfig          string `json:"openbao_config_file"`
+	CenterKeyID        string `json:"center_signing_key_id"`
+	DevMode            bool   `json:"dev_mode"`
+	Listen             string `json:"listen"`
+	CACertificate      string `json:"ca_certificate_file"`
+	CAKey              string `json:"ca_private_key_file"`
+	ServerCertificate  string `json:"server_certificate_file"`
+	ServerKey          string `json:"server_private_key_file"`
+	CenterKey          string `json:"center_signing_key_file"`
 }
 type CenterKeyFile struct {
 	ID      string `json:"key_id"`
@@ -185,6 +189,12 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 
 		centerID = center.ID
 		public = privateKey.Public().(ed25519.PublicKey)
+	}
+	if cfg.PriorityStaleHours != nil {
+		if *cfg.PriorityStaleHours < 0 || *cfg.PriorityStaleHours > 24*365 {
+			return "", nil, errors.New("priority_stale_after_hours must be 0..8760")
+		}
+		inventory.SetPriorityStaleAfter(time.Duration(*cfg.PriorityStaleHours) * time.Hour)
 	}
 	var inventoryProtocol *wire.InventoryDecoder
 	if cfg.Inventory12 {

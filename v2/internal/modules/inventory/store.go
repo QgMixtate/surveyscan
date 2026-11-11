@@ -10,6 +10,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/domain"
 	"github.com/jackc/pgx/v5"
 	"strconv"
+	"sync/atomic"
 	"time"
 )
 
@@ -85,9 +86,31 @@ func Newer(next, old rank) bool {
 		return true
 	}
 	if next.Priority != old.Priority {
+		// C26, решение 3А: приоритет источника действует, пока данные сопоставимы по свежести. Если время сбора
+		// расходится больше порога, побеждают более свежие данные (остановившийся агент не держит карточку).
+		if stale := time.Duration(priorityStaleAfter.Load()); stale > 0 {
+			if d := next.Collected.Sub(old.Collected); d > stale {
+				return true
+			} else if -d > stale {
+				return false
+			}
+		}
 		return next.Priority > old.Priority
 	}
 	return next.Collected.After(old.Collected)
+}
+
+// DefaultPriorityStaleAfter — порог давности приоритета по умолчанию (решение пользователя 3А, R-027).
+const DefaultPriorityStaleAfter = 24 * time.Hour
+
+var priorityStaleAfter = func() *atomic.Int64 { v := &atomic.Int64{}; v.Store(int64(DefaultPriorityStaleAfter)); return v }()
+
+// SetPriorityStaleAfter задаёт порог при старте центра; 0 — только приоритет (поведение до C26).
+func SetPriorityStaleAfter(d time.Duration) {
+	if d < 0 {
+		d = 0
+	}
+	priorityStaleAfter.Store(int64(d))
 }
 func existingRank(ctx context.Context, tx pgx.Tx, tenant, obs, section string) (rank, error) {
 	var r rank

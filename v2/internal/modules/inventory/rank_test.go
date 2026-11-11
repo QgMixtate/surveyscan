@@ -40,3 +40,31 @@ func TestSequenceAndCrossSourceProjectionOrder(t *testing.T) {
 		t.Fatal("equal cross-source rank depended on arrival")
 	}
 }
+
+// C26, решение 3А: более приоритетный источник главнее, пока его данные не старше более свежих на порог.
+func TestPriorityStaleness(t *testing.T) {
+	now := time.Now()
+	agent := rank{Source: "agent", Generation: "g", Record: "r", Sequence: "5", Clock: "trusted", Priority: 3, Collected: now.Add(-48 * time.Hour)}
+	ssh := rank{Source: "ssh", Generation: "g", Record: "s", Sequence: "9", Clock: "trusted", Priority: 2, Collected: now}
+	if !Newer(ssh, agent) {
+		t.Fatal("fresh lower-priority data must beat stale higher-priority data")
+	}
+	if Newer(agent, ssh) {
+		t.Fatal("late delivery of stale agent data must not take the card back")
+	}
+	agent.Collected = now.Add(-time.Hour)
+	if Newer(ssh, agent) || !Newer(agent, ssh) {
+		t.Fatal("within the threshold priority decides")
+	}
+	ssh.Clock = "estimated"
+	agent.Collected = now.Add(-48 * time.Hour)
+	if Newer(ssh, agent) {
+		t.Fatal("untrusted clock never wins on staleness")
+	}
+	ssh.Clock = "trusted"
+	SetPriorityStaleAfter(0)
+	defer SetPriorityStaleAfter(DefaultPriorityStaleAfter)
+	if Newer(ssh, agent) {
+		t.Fatal("threshold 0 restores pure priority")
+	}
+}
