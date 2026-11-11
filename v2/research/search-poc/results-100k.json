@@ -1,0 +1,356 @@
+{
+ "docs": 100000,
+ "repeat": 50,
+ "ops_rubric": {
+  "bluge": {
+   "build": 8,
+   "cross": 4,
+   "maintenance": 1,
+   "license": 2,
+   "facts": "Go, встраивается в монолит без CGO; последний релиз v0.2.2 — 2022-07-04 (>24 мес.); Apache-2.0"
+  },
+  "tantivy": {
+   "build": 4,
+   "cross": 3,
+   "maintenance": 6,
+   "license": 2,
+   "facts": "Rust: отдельный процесс (sidecar) или FFI через CGO; 0.27.0 — 2026-10-17, частые релизы; MIT"
+  }
+ },
+ "scores": {
+  "bluge": {
+   "correctness": 28.125,
+   "morph_identifiers": 13.5,
+   "latency_p95": 3.906145930988029,
+   "indexing": 1.0122365720273154,
+   "resources": 6.969875824705307,
+   "operations": 15,
+   "total": 68.5,
+   "gates_passed": true
+  },
+  "tantivy": {
+   "correctness": 28.125,
+   "morph_identifiers": 13.5,
+   "latency_p95": 15.0,
+   "indexing": 10.0,
+   "resources": 8.224653176371726,
+   "operations": 15,
+   "total": 89.8,
+   "gates_passed": true
+  }
+ },
+ "metrics": {
+  "bluge": {
+   "mean_p95_us": 11702,
+   "index_s": 7.86,
+   "rebuild_s": 7.57,
+   "update_delete_s": 0.091,
+   "index_mib": 37.7,
+   "peak_rss_mib": 336,
+   "acl": {
+    "stale_index_hits_without_recheck": 167,
+    "after_recheck": 0
+   },
+   "gates": {
+    "tenant_isolation": true,
+    "deletes_invisible": true,
+    "acl_recheck_no_leak": true
+   }
+  },
+  "tantivy": {
+   "mean_p95_us": 3047,
+   "index_s": 0.78,
+   "rebuild_s": 0.78,
+   "update_delete_s": 0.05,
+   "index_mib": 14.9,
+   "peak_rss_mib": 521,
+   "acl": {
+    "stale_index_hits_without_recheck": 167,
+    "after_recheck": 0
+   },
+   "gates": {
+    "tenant_isolation": true,
+    "deletes_invisible": true,
+    "acl_recheck_no_leak": true
+   }
+  }
+ },
+ "per_query": {
+  "bluge": {
+   "A:host_exact": [
+    true,
+    70
+   ],
+   "A:host_prefix": [
+    true,
+    397
+   ],
+   "A:ip_exact": [
+    true,
+    319
+   ],
+   "A:ip_subnet": [
+    true,
+    6629
+   ],
+   "A:fqdn_part": [
+    true,
+    217
+   ],
+   "A:serial_ci": [
+    true,
+    99
+   ],
+   "A:host_cyrillic": [
+    true,
+    105
+   ],
+   "A:ru_morph": [
+    true,
+    14528
+   ],
+   "A:ru_morph2": [
+    true,
+    8342
+   ],
+   "A:sw_en": [
+    true,
+    88249
+   ],
+   "A:sw_ru": [
+    true,
+    21656
+   ],
+   "A:sw_filter": [
+    true,
+    27680
+   ],
+   "A:owner_ru": [
+    false,
+    60
+   ],
+   "A:typo": [
+    true,
+    10222
+   ],
+   "A:tenant_isolation": [
+    true,
+    77
+   ],
+   "B:host_exact": [
+    true,
+    544
+   ],
+   "B:host_prefix": [
+    true,
+    552
+   ],
+   "B:ip_exact": [
+    true,
+    530
+   ],
+   "B:ip_subnet": [
+    true,
+    11039
+   ],
+   "B:fqdn_part": [
+    true,
+    643
+   ],
+   "B:serial_ci": [
+    true,
+    197
+   ],
+   "B:host_cyrillic": [
+    true,
+    178
+   ],
+   "B:ru_morph": [
+    true,
+    19078
+   ],
+   "B:ru_morph2": [
+    true,
+    8955
+   ],
+   "B:sw_en": [
+    true,
+    73897
+   ],
+   "B:sw_ru": [
+    true,
+    24415
+   ],
+   "B:sw_filter": [
+    true,
+    21906
+   ],
+   "B:owner_ru": [
+    false,
+    223
+   ],
+   "B:typo": [
+    true,
+    14743
+   ],
+   "B:tenant_isolation": [
+    true,
+    453
+   ],
+   "B:renamed_new": [
+    true,
+    202
+   ],
+   "B:renamed_old": [
+    true,
+    662
+   ],
+   "B:deleted_host": [
+    true,
+    301
+   ],
+   "B:zabbix_after_update": [
+    true,
+    40705
+   ]
+  },
+  "tantivy": {
+   "A:host_exact": [
+    true,
+    6.0
+   ],
+   "A:host_prefix": [
+    true,
+    18.0
+   ],
+   "A:ip_exact": [
+    true,
+    10.0
+   ],
+   "A:ip_subnet": [
+    true,
+    400.0
+   ],
+   "A:fqdn_part": [
+    true,
+    10.0
+   ],
+   "A:serial_ci": [
+    true,
+    5.0
+   ],
+   "A:host_cyrillic": [
+    true,
+    7.0
+   ],
+   "A:ru_morph": [
+    true,
+    4962.0
+   ],
+   "A:ru_morph2": [
+    true,
+    1988.0
+   ],
+   "A:sw_en": [
+    true,
+    26308.0
+   ],
+   "A:sw_ru": [
+    true,
+    6379.0
+   ],
+   "A:sw_filter": [
+    true,
+    4918.0
+   ],
+   "A:owner_ru": [
+    false,
+    5.0
+   ],
+   "A:typo": [
+    true,
+    1217.0
+   ],
+   "A:tenant_isolation": [
+    true,
+    8.0
+   ],
+   "B:host_exact": [
+    true,
+    14.0
+   ],
+   "B:host_prefix": [
+    true,
+    26.0
+   ],
+   "B:ip_exact": [
+    true,
+    22.0
+   ],
+   "B:ip_subnet": [
+    true,
+    516.0
+   ],
+   "B:fqdn_part": [
+    true,
+    24.0
+   ],
+   "B:serial_ci": [
+    true,
+    12.0
+   ],
+   "B:host_cyrillic": [
+    true,
+    16.0
+   ],
+   "B:ru_morph": [
+    true,
+    5896.0
+   ],
+   "B:ru_morph2": [
+    true,
+    3924.0
+   ],
+   "B:sw_en": [
+    true,
+    20363.0
+   ],
+   "B:sw_ru": [
+    true,
+    6769.0
+   ],
+   "B:sw_filter": [
+    true,
+    4690.0
+   ],
+   "B:owner_ru": [
+    false,
+    15.0
+   ],
+   "B:typo": [
+    true,
+    1312.0
+   ],
+   "B:tenant_isolation": [
+    true,
+    12.0
+   ],
+   "B:renamed_new": [
+    true,
+    14.0
+   ],
+   "B:renamed_old": [
+    true,
+    12.0
+   ],
+   "B:deleted_host": [
+    true,
+    16.0
+   ],
+   "B:zabbix_after_update": [
+    true,
+    13716.0
+   ]
+  }
+ }
+}
