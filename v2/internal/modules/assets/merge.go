@@ -170,3 +170,26 @@ FROM assets.source_records r WHERE r.tenant_id=$1 AND r.asset_uid=$2 ORDER BY r.
 	}
 	return out, rows.Err()
 }
+
+// ManualClass — ручной класс актива и ревизия бизнес-полей (C26.02).
+func (Store) ManualClass(ctx context.Context, tx pgx.Tx, tenant, asset string) (*string, string, error) {
+	var class *string
+	var revision string
+	e := tx.QueryRow(ctx, "SELECT asset_class,revision::text FROM assets.asset_business_fields WHERE tenant_id=$1 AND asset_uid=$2", tenant, asset).Scan(&class, &revision)
+	if errors.Is(e, pgx.ErrNoRows) {
+		e = domain.NotFound
+	}
+	return class, revision, e
+}
+
+// SetClass задаёт или снимает (nil) ручной класс при совпадении ревизии бизнес-полей; сбор это поле не меняет (AM-04).
+func (Store) SetClass(ctx context.Context, tx pgx.Tx, tenant, asset, revision string, class *string) error {
+	tag, e := tx.Exec(ctx, "UPDATE assets.asset_business_fields SET asset_class=$4,revision=revision+1 WHERE tenant_id=$1 AND asset_uid=$2 AND revision::text=$3", tenant, asset, revision, class)
+	if e != nil {
+		return e
+	}
+	if tag.RowsAffected() != 1 {
+		return domain.Revision
+	}
+	return nil
+}

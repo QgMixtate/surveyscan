@@ -119,6 +119,9 @@ func (r *Registry) MergeAssets(ctx context.Context, id accessport.Identity, req 
 	if e = r.Assets.RetargetConflicts(ctx, tx, tenant, absorbed.UID, target.UID); e != nil {
 		return out, e
 	}
+	if _, e = r.CMDB.RetargetAsset(ctx, tx, tenant, absorbed.UID, target.UID, actor); e != nil {
+		return out, e
+	}
 	if e = r.Assets.MergeBusiness(ctx, tx, tenant, absorbed.UID, target.UID); e != nil {
 		return out, e
 	}

@@ -11,6 +11,7 @@ import (
 	access "github.com/QgMixtate/surveyscan/v2/internal/modules/access/port"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/assets"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/audit"
+	"github.com/QgMixtate/surveyscan/v2/internal/modules/cmdb"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/inventory"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/responsibility"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/sources"
@@ -34,6 +35,7 @@ type Registry struct {
 	Assets            assets.Store
 	Inventory         inventory.Store
 	Owners            responsibility.Store
+	CMDB              cmdb.Store
 	Audit             audit.Store
 	Events            EventSink
 	Wire              *wire.Validator

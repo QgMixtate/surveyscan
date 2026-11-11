@@ -5,6 +5,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/access"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/assets"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/audit"
+	"github.com/QgMixtate/surveyscan/v2/internal/modules/cmdb"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/imports"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/inventory"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/responsibility"
@@ -16,7 +17,7 @@ import (
 )
 
 func Migrations() ([]migrate.Migration, error) {
-	providers := []func() ([]migrate.Migration, error){foundation.Migrations, access.Migrations, responsibility.Migrations, scope.Migrations, sources.Migrations, assets.Migrations, inventory.Migrations, imports.Migrations, audit.Migrations, messaging.Migrations}
+	providers := []func() ([]migrate.Migration, error){foundation.Migrations, access.Migrations, responsibility.Migrations, scope.Migrations, sources.Migrations, assets.Migrations, inventory.Migrations, cmdb.Migrations, imports.Migrations, audit.Migrations, messaging.Migrations}
 	var all []migrate.Migration
 	for _, provider := range providers {
 		ms, err := provider()

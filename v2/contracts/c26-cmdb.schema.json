@@ -1,0 +1,734 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:surveyscan:c26:cmdb:1:0",
+ "title": "CMDB: класс актива, ПО, компоненты, сервисы и связи (C26, ADR decisions/C26-cmdb-model.md)",
+ "$defs": {
+  "uuid": {
+   "type": "string",
+   "format": "uuid"
+  },
+  "Evidence": {
+   "type": "object",
+   "properties": {
+    "observation_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "source_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "source_kind": {
+     "enum": [
+      "agent",
+      "collector",
+      "portable"
+     ]
+    },
+    "collected_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "clock_quality": {
+     "enum": [
+      "trusted",
+      "estimated",
+      "unknown",
+      "skewed"
+     ]
+    }
+   },
+   "required": [
+    "observation_id",
+    "source_id",
+    "source_kind",
+    "collected_at",
+    "clock_quality"
+   ],
+   "additionalProperties": false
+  },
+  "End": {
+   "type": "object",
+   "properties": {
+    "kind": {
+     "enum": [
+      "asset",
+      "service"
+     ]
+    },
+    "id": {
+     "type": "string",
+     "format": "uuid"
+    }
+   },
+   "required": [
+    "kind",
+    "id"
+   ],
+   "additionalProperties": false
+  },
+  "Relation": {
+   "type": "object",
+   "properties": {
+    "relation_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "relation_type": {
+     "enum": [
+      "runs_on",
+      "uses",
+      "depends_on",
+      "hosts",
+      "connected_to"
+     ]
+    },
+    "from": {
+     "$ref": "#/$defs/End"
+    },
+    "to": {
+     "$ref": "#/$defs/End"
+    },
+    "origin": {
+     "enum": [
+      "manual",
+      "observed"
+     ]
+    },
+    "confidence": {
+     "enum": [
+      "confirmed",
+      "probable",
+      "weak"
+     ]
+    },
+    "note": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 1024
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "valid_from": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "valid_to": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "actor_ref": {
+     "type": "string",
+     "maxLength": 256
+    }
+   },
+   "required": [
+    "relation_id",
+    "relation_type",
+    "from",
+    "to",
+    "origin",
+    "confidence",
+    "note",
+    "valid_from",
+    "valid_to",
+    "actor_ref"
+   ],
+   "additionalProperties": false
+  },
+  "AssetCMDB": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "asset_uid": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "class": {
+     "type": "object",
+     "properties": {
+      "observed": {
+       "enum": [
+        "server",
+        "workstation",
+        "network_device",
+        "printer",
+        "virtual_machine",
+        "unknown"
+       ]
+      },
+      "observed_reason": {
+       "type": "string",
+       "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+      },
+      "manual": {
+       "oneOf": [
+        {
+         "enum": [
+          "server",
+          "workstation",
+          "network_device",
+          "printer",
+          "virtual_machine",
+          "unknown"
+         ]
+        },
+        {
+         "type": "null"
+        }
+       ]
+      },
+      "effective": {
+       "enum": [
+        "server",
+        "workstation",
+        "network_device",
+        "printer",
+        "virtual_machine",
+        "unknown"
+       ]
+      }
+     },
+     "required": [
+      "observed",
+      "observed_reason",
+      "manual",
+      "effective"
+     ],
+     "additionalProperties": false
+    },
+    "business_revision": {
+     "type": "string",
+     "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "software_count": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "component_count": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "relations": {
+     "type": "array",
+     "maxItems": 500,
+     "items": {
+      "$ref": "#/$defs/Relation"
+     }
+    }
+   },
+   "required": [
+    "tenant_id",
+    "asset_uid",
+    "class",
+    "business_revision",
+    "software_count",
+    "component_count",
+    "relations"
+   ],
+   "additionalProperties": false
+  },
+  "Installation": {
+   "type": "object",
+   "properties": {
+    "record_key": {
+     "type": "string",
+     "pattern": "^[0-9a-f]{64}$"
+    },
+    "name": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "version": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "publisher": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "architecture": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "package_source": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "evidence": {
+     "$ref": "#/$defs/Evidence"
+    }
+   },
+   "required": [
+    "record_key",
+    "name",
+    "version",
+    "publisher",
+    "architecture",
+    "package_source",
+    "evidence"
+   ],
+   "additionalProperties": false
+  },
+  "SoftwarePage": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "asset_uid": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "items": {
+     "type": "array",
+     "maxItems": 500,
+     "items": {
+      "$ref": "#/$defs/Installation"
+     }
+    },
+    "next_cursor": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 128
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "tenant_id",
+    "asset_uid",
+    "items",
+    "next_cursor"
+   ],
+   "additionalProperties": false
+  },
+  "Component": {
+   "type": "object",
+   "properties": {
+    "section": {
+     "enum": [
+      "hardware",
+      "resources"
+     ]
+    },
+    "record_key": {
+     "type": "string",
+     "pattern": "^[0-9a-f]{64}$"
+    },
+    "kind": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "name": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "vendor": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "model": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "serial": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "size_bytes": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "evidence": {
+     "$ref": "#/$defs/Evidence"
+    }
+   },
+   "required": [
+    "section",
+    "record_key",
+    "kind",
+    "name",
+    "vendor",
+    "model",
+    "serial",
+    "size_bytes",
+    "evidence"
+   ],
+   "additionalProperties": false
+  },
+  "ComponentList": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "asset_uid": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "items": {
+     "type": "array",
+     "maxItems": 2000,
+     "items": {
+      "$ref": "#/$defs/Component"
+     }
+    }
+   },
+   "required": [
+    "tenant_id",
+    "asset_uid",
+    "items"
+   ],
+   "additionalProperties": false
+  },
+  "Product": {
+   "type": "object",
+   "properties": {
+    "name": {
+     "type": "string",
+     "maxLength": 4096
+    },
+    "publisher": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "installations": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "assets": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "versions": {
+     "type": "array",
+     "maxItems": 20,
+     "items": {
+      "type": "string"
+     }
+    },
+    "asset_uids": {
+     "type": "array",
+     "maxItems": 50,
+     "items": {
+      "type": "string",
+      "format": "uuid"
+     }
+    }
+   },
+   "required": [
+    "name",
+    "publisher",
+    "installations",
+    "assets",
+    "versions",
+    "asset_uids"
+   ],
+   "additionalProperties": false
+  },
+  "ProductList": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "query": {
+     "type": "string",
+     "minLength": 2,
+     "maxLength": 128
+    },
+    "items": {
+     "type": "array",
+     "maxItems": 100,
+     "items": {
+      "$ref": "#/$defs/Product"
+     }
+    }
+   },
+   "required": [
+    "tenant_id",
+    "query",
+    "items"
+   ],
+   "additionalProperties": false
+  },
+  "Service": {
+   "type": "object",
+   "properties": {
+    "service_uid": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "name": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 256
+    },
+    "description": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "criticality": {
+     "enum": [
+      "unknown",
+      "low",
+      "medium",
+      "high",
+      "critical"
+     ]
+    },
+    "revision": {
+     "type": "string",
+     "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "created_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "retired_at": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "service_uid",
+    "name",
+    "description",
+    "criticality",
+    "revision",
+    "created_at",
+    "retired_at"
+   ],
+   "additionalProperties": false
+  },
+  "ServicePage": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "items": {
+     "type": "array",
+     "maxItems": 200,
+     "items": {
+      "$ref": "#/$defs/Service"
+     }
+    },
+    "next_cursor": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "uuid"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "tenant_id",
+    "items",
+    "next_cursor"
+   ],
+   "additionalProperties": false
+  },
+  "ServiceDetail": {
+   "type": "object",
+   "properties": {
+    "service_uid": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "name": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 256
+    },
+    "description": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 4096
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "criticality": {
+     "enum": [
+      "unknown",
+      "low",
+      "medium",
+      "high",
+      "critical"
+     ]
+    },
+    "revision": {
+     "type": "string",
+     "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "created_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "retired_at": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "relations": {
+     "type": "array",
+     "maxItems": 500,
+     "items": {
+      "$ref": "#/$defs/Relation"
+     }
+    }
+   },
+   "required": [
+    "service_uid",
+    "name",
+    "description",
+    "criticality",
+    "revision",
+    "created_at",
+    "retired_at",
+    "tenant_id",
+    "relations"
+   ],
+   "additionalProperties": false
+  }
+ }
+}
