@@ -76,7 +76,10 @@ func TestMergeAndSplitAssets(t *testing.T) {
 	// снимок проекции 1.2 актива: раздел/запись/поле/значение/наблюдение
 	snapshot := func(asset string) string {
 		var s *string
-		if err := f.pool.QueryRow(f.ctx, `SELECT string_agg(section_name||'|'||record_key||'|'||field_name||'|'||value::text||'|'||observation_id::text,E'\n' ORDER BY section_name,record_key,field_name) FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=$2`, tenant, asset).Scan(&s); err != nil {
+		if err := f.pool.QueryRow(f.ctx, `SELECT string_agg(x,E'\n' ORDER BY x) FROM (
+SELECT section_name||'|'||record_key||'|'||field_name||'|'||value::text||'|'||observation_id::text x FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=$2
+UNION ALL SELECT 'state|'||section_name||'|'||last_attempt_id::text||'|'||last_status||'|'||clock_uncertain::text FROM inventory.record_section_state12 WHERE tenant_id=$1 AND asset_uid=$2
+UNION ALL SELECT 'source|'||section_name||'|'||source_id::text||'|'||last_attempt_id::text||'|'||last_status||'|'||collected_at::text FROM inventory.record_section_source_state12 WHERE tenant_id=$1 AND asset_uid=$2) s`, tenant, asset).Scan(&s); err != nil {
 			t.Fatal(err)
 		}
 		if s == nil {
@@ -116,6 +119,28 @@ func TestMergeAndSplitAssets(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// у поглощаемого актива — явный ответственный (у цели — по умолчанию площадки)
+	owner := identifier.New()
+	if _, err := f.pool.Exec(f.ctx, "INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES($1,$2,'team','Бухгалтерия','buh@example.test')", tenant, owner); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := f.pool.Begin(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, sql := range []string{
+		"UPDATE responsibility.responsibility_assignments SET valid_to=now() WHERE tenant_id=$1 AND asset_uid=$2 AND role='accountable' AND valid_to IS NULL AND $3::uuid IS NOT NULL",
+		"INSERT INTO responsibility.responsibility_assignments(tenant_id,assignment_id,asset_uid,subject_id,role,reason_code,actor_ref) VALUES($1,gen_random_uuid(),$2,$3,'accountable','MANUAL','test')",
+	} {
+		if _, err = tx.Exec(f.ctx, sql, tenant, a2, owner); err != nil {
+			tx.Rollback(f.ctx)
+			t.Fatal(err)
+		}
+	}
+	if err = tx.Commit(f.ctx); err != nil {
+		t.Fatal(err)
+	}
+
 	// отказы: тот же актив, неизвестный актив (в т.ч. чужого тенанта — не находится), устаревшая версия
 	if _, err := f.registry.MergeAssets(f.ctx, f.identity, app.MergeRequest{Target: a1, Absorbed: a1}); !errors.Is(err, domain.Invalid) {
 		t.Fatal("self merge must be invalid", err)
@@ -147,10 +172,13 @@ func TestMergeAndSplitAssets(t *testing.T) {
 	if q("SELECT count(*) FROM assets.source_records WHERE tenant_id=$1 AND asset_uid=$2", tenant, a1) != 2 || snapshot(a2) != "" || snapshot(a1) == "" {
 		t.Fatal("records and projection must move to the target")
 	}
-	if q("SELECT count(*) FROM assets.asset_changes WHERE tenant_id=$1 AND asset_uid=$2 AND reason_code='ASSET_MERGE'", tenant, a1) != 1 ||
+	if q("SELECT count(*) FROM assets.asset_changes WHERE tenant_id=$1 AND asset_uid=$2 AND reason_code='ASSET_MERGE'", tenant, a1) != 2 || // факты + смена ответственного
 		q("SELECT count(*) FROM assets.asset_changes WHERE tenant_id=$1 AND asset_uid=$2 AND reason_code='MERGED_INTO_ASSET'", tenant, a2) != 1 ||
 		q("SELECT count(*) FROM assets.asset_operations WHERE tenant_id=$1 AND kind='merge' AND from_asset_uid=$2 AND to_asset_uid=$3", tenant, a2, a1) != 1 {
 		t.Fatal("merge must be recorded in history and operations")
+	}
+	if card.Accountable != owner || q("SELECT count(*) FROM responsibility.responsibility_assignments WHERE tenant_id=$1 AND asset_uid=$2 AND role='accountable' AND valid_to IS NULL AND subject_id=$3", tenant, a2, owner) != 1 {
+		t.Fatal("explicit accountable of the absorbed asset replaces the site fallback of the target", card.Accountable)
 	}
 	if _, err = f.registry.MergeAssets(f.ctx, f.identity, app.MergeRequest{Target: a2, Absorbed: a1}); !errors.Is(err, domain.Conflict) {
 		t.Fatal("merged asset cannot take part in operations", err)
@@ -252,6 +280,16 @@ func TestMergeAndSplitAssets(t *testing.T) {
 	instance, _ := jsonschema.UnmarshalJSON(strings.NewReader(string(raw)))
 	if err = schema.Validate(instance); err != nil {
 		t.Fatal("merge result violates its contract:", err, string(raw))
+	}
+	code, raw, _ = br.request(t, "GET", "/api/v1/assets/"+a1+"/source-records", "", "", "", nil)
+	expect(t, 200, code)
+	records, err := compiler.Compile("urn:surveyscan:c25:reconciliation:1:0#/$defs/SourceRecordPage")
+	if err != nil {
+		t.Fatal(err)
+	}
+	instance, _ = jsonschema.UnmarshalJSON(strings.NewReader(string(raw)))
+	if err = records.Validate(instance); err != nil || !strings.Contains(string(raw), r1) || !strings.Contains(string(raw), r2) {
+		t.Fatal("source records page:", err, string(raw))
 	}
 	code, _, _ = br.request(t, "POST", "/api/v1/assets/"+a1+"/split", `{"source_record_keys":["`+r1+`"],"extra":1}`, session.CSRFToken, "https://ui.example", nil)
 	expect(t, 400, code) // неизвестное поле

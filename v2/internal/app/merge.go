@@ -138,6 +138,18 @@ func (r *Registry) MergeAssets(ctx context.Context, id accessport.Identity, req 
 	if out.Rebuilt, e = r.Inventory.Rebuild(ctx, tx, tenant, target.UID); e != nil {
 		return out, e
 	}
+	subject, e := r.Owners.MergeFrom(ctx, tx, tenant, absorbed.UID, target.UID, actor)
+	if e != nil {
+		return out, e
+	}
+	if subject != "" {
+		if version, e = r.Assets.Bump(ctx, tx, tenant, target.UID); e != nil {
+			return out, e
+		}
+		if e = r.assetEvent(ctx, tx, tenant, target.UID, version, "responsibility.assigned.v1", "Responsibility", "ASSET_MERGE", actor, out.OperationID, subject); e != nil {
+			return out, e
+		}
+	}
 	if version, e = r.Assets.Bump(ctx, tx, tenant, target.UID); e != nil {
 		return out, e
 	}
@@ -303,6 +315,59 @@ func (r *Registry) splitHandler() http.Handler {
 		out, e := r.SplitAsset(ctx, id, req.PathValue("asset_uid"), body)
 		if e != nil {
 			operationError(w, e)
+			return
+		}
+		registryJSON(w, out)
+	})
+}
+
+type SourceRecordPage struct {
+	Tenant  string                `json:"tenant_id"`
+	Asset   string                `json:"asset_uid"`
+	Version string                `json:"version"`
+	Items   []assets.SourceRecord `json:"items"`
+}
+
+func (r *Registry) AssetSourceRecords(ctx context.Context, id accessport.Identity, uid string) (SourceRecordPage, error) {
+	out := SourceRecordPage{Tenant: id.TenantID, Asset: uid, Items: []assets.SourceRecord{}}
+	if !identifier.Valid(uid) {
+		return out, domain.NotFound
+	}
+	tx, e := r.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead})
+	if e != nil {
+		return out, e
+	}
+	defer tx.Rollback(ctx)
+	if _, e = r.Auth.Authorize(ctx, tx, id.CredentialID, id.TenantID, "assets:read"); e != nil {
+		return out, e
+	}
+	if _, e = r.Assets.Get(ctx, tx, id.TenantID, uid); e != nil {
+		return out, e
+	}
+	if e = tx.QueryRow(ctx, "SELECT aggregate_version::text FROM assets.assets WHERE tenant_id=$1 AND asset_uid=$2", id.TenantID, uid).Scan(&out.Version); e != nil {
+		return out, e
+	}
+	if out.Items, e = r.Assets.SourceRecords(ctx, tx, id.TenantID, uid); e != nil {
+		return out, e
+	}
+	return out, tx.Commit(ctx)
+}
+
+func (r *Registry) sourceRecordsHandler() http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if req.URL.RawQuery != "" {
+			access.APIError(w, 400, "INVALID_QUERY")
+			return
+		}
+		ctx, cancel := context.WithTimeout(req.Context(), 10*time.Second)
+		defer cancel()
+		id, _ := access.Identity(req.Context())
+		out, e := r.AssetSourceRecords(ctx, id, req.PathValue("asset_uid"))
+		if e != nil {
+			if redirectMerged(w, req, e) {
+				return
+			}
+			registryError(w, e)
 			return
 		}
 		registryJSON(w, out)

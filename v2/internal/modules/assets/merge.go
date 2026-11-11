@@ -142,3 +142,31 @@ func (Store) Operation(ctx context.Context, tx pgx.Tx, tenant, kind, from, to st
 	_, e := tx.Exec(ctx, "INSERT INTO assets.asset_operations(tenant_id,operation_id,kind,from_asset_uid,to_asset_uid,source_record_keys,actor_ref) VALUES($1,$2,$3,$4,$5,$6::uuid[],$7)", tenant, id, kind, from, to, records, actor)
 	return id, e
 }
+
+// SourceRecord — запись источника, сопоставленная с активом (для разделения и перепривязки, C25.03).
+type SourceRecord struct {
+	Key          string `json:"source_record_key"`
+	SourceID     string `json:"source_id"`
+	Namespace    string `json:"namespace"`
+	LocalID      string `json:"source_local_id"`
+	Observations int    `json:"observations"`
+}
+
+func (Store) SourceRecords(ctx context.Context, tx pgx.Tx, tenant, asset string) ([]SourceRecord, error) {
+	rows, e := tx.Query(ctx, `SELECT r.source_record_key::text,r.source_id::text,r.namespace,r.source_local_id,
+(SELECT count(*) FROM assets.observation_links l JOIN inventory.observations o ON o.tenant_id=l.tenant_id AND o.observation_id=l.observation_id WHERE l.tenant_id=r.tenant_id AND l.asset_uid=r.asset_uid AND l.valid_to IS NULL AND o.source_record_key=r.source_record_key)
+FROM assets.source_records r WHERE r.tenant_id=$1 AND r.asset_uid=$2 ORDER BY r.source_id,r.namespace,r.source_local_id LIMIT 1000`, tenant, asset)
+	if e != nil {
+		return nil, e
+	}
+	defer rows.Close()
+	out := []SourceRecord{}
+	for rows.Next() {
+		var r SourceRecord
+		if e = rows.Scan(&r.Key, &r.SourceID, &r.Namespace, &r.LocalID, &r.Observations); e != nil {
+			return nil, e
+		}
+		out = append(out, r)
+	}
+	return out, rows.Err()
+}

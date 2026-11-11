@@ -113,6 +113,13 @@ func preparePartial12(o contracts.Observation) (map[string][]record12, error) {
 	if _, err = v.Payload(b); err != nil {
 		return nil, err
 	}
+	return splitRecords12(o, true)
+}
+
+// splitRecords12 раскладывает разделы наблюдения на записи и поля. canonical=false — для пересборки из сохранённых
+// наблюдений (C25.03): payload уже прошёл схему при приёме, а значение пишется в jsonb, где форма записи JSON не
+// важна; повторная проверка схемы и RFC 8785 были основной ценой пересборки.
+func splitRecords12(o contracts.Observation, canonical bool) (map[string][]record12, error) {
 	out := map[string][]record12{}
 	for _, section := range o.Sections {
 		// Complete snapshots require provider coverage and scoped deletion first.
@@ -128,6 +135,14 @@ func preparePartial12(o contracts.Observation) (map[string][]record12, error) {
 			seen[key] = true
 			r := record12{key: key, fields: map[string]json.RawMessage{}}
 			for field, value := range row {
+				if !canonical {
+					b, err := json.Marshal(value)
+					if err != nil {
+						return nil, domain.Invalid
+					}
+					r.fields[field] = b
+					continue
+				}
 				b, err := json.Marshal(map[string]any{"value": value})
 				if err != nil {
 					return nil, domain.Invalid

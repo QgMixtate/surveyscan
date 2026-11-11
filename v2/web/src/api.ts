@@ -16,15 +16,18 @@ export type TopologyLink={a:string;b:string;role?:'gateway';layer:'L2'|'L3';conf
 export type Conflict={conflict_id:string;reason_code:string;state:'open'|'resolved'|'dismissed';revision:string;source_record_key:string;source_id:string;namespace:string;source_local_id:string;resolution_state:string;asset_uid:string|null;candidate_asset_uids:string[];pending_observations:number;observed_hostname?:string};
 export type ConflictPage={tenant_id:string;state:string;items:Conflict[];next_cursor:string|null};
 export type ConflictResult={conflict_id:string;action:string;asset_uid:string|null;replayed_observations:number};
+export type SourceRecord={source_record_key:string;source_id:string;namespace:string;source_local_id:string;observations:number};
+export type SourceRecordPage={tenant_id:string;asset_uid:string;version:string;items:SourceRecord[]};
+export type AssetOperation={operation_id:string;kind:'merge'|'split';from_asset_uid:string;to_asset_uid:string;created:boolean;moved_records:number;relinked_observations:number;rebuilt_observations:number};
 export type Topology={tenant_id:string;generated_at:string;nodes:TopologyNode[];links:TopologyLink[];truncated:boolean;hosts_with_network_facts:number};
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
 }
-const messages:Record<string,string>={CONFLICT:'Состояние изменилось: обновите список.',INVALID_RESOLUTION:'Это действие недоступно для выбранного конфликта.',AUTHENTICATION_REQUIRED:'Сессия завершилась. Войдите снова.',INVALID_CREDENTIALS:'Не удалось войти. Проверьте имя и пароль.',FORBIDDEN:'Недостаточно прав для этого действия.',NOT_FOUND:'Объект не найден или недоступен.',REVISION_MISMATCH:'Карточка изменилась. Обновите данные.',RATE_LIMITED:'Слишком много запросов. Повторите немного позже.',CONTRACT_MISMATCH:'Версии интерфейса и API несовместимы. Обратитесь к администратору.',INVALID_RESPONSE:'Сервер вернул ответ неизвестного формата.',NETWORK_ERROR:'Нет связи с сервером. Проверьте соединение.',CAPABILITY_NOT_ENABLED:'Эта возможность пока недоступна.'};
+const messages:Record<string,string>={ASSET_MERGED:'Карточка уже объединена с другой: откройте актуальную.',INVALID_OPERATION:'Операция недоступна: проверьте выбранные записи и UID.',CONFLICT:'Состояние изменилось: обновите список.',INVALID_RESOLUTION:'Это действие недоступно для выбранного конфликта.',AUTHENTICATION_REQUIRED:'Сессия завершилась. Войдите снова.',INVALID_CREDENTIALS:'Не удалось войти. Проверьте имя и пароль.',FORBIDDEN:'Недостаточно прав для этого действия.',NOT_FOUND:'Объект не найден или недоступен.',REVISION_MISMATCH:'Карточка изменилась. Обновите данные.',RATE_LIMITED:'Слишком много запросов. Повторите немного позже.',CONTRACT_MISMATCH:'Версии интерфейса и API несовместимы. Обратитесь к администратору.',INVALID_RESPONSE:'Сервер вернул ответ неизвестного формата.',NETWORK_ERROR:'Нет связи с сервером. Проверьте соединение.',CAPABILITY_NOT_ENABLED:'Эта возможность пока недоступна.'};
 export function errorMessage(error:unknown){return error instanceof ApiError?(messages[error.code]??'Не удалось выполнить запрос. Повторите позже.'):'Не удалось выполнить запрос. Повторите позже.'}
 async function call<T>(path:string,name:string|undefined,init:RequestInit={}):Promise<T>{
  let response:Response;
- try{response=await fetch(path,{...init,credentials:'same-origin',cache:'no-store',signal:AbortSignal.timeout(15000),headers:{Accept:'application/json',...(init.body?{'Content-Type':'application/json'}:{}),...init.headers}})}catch{throw new ApiError(0,'NETWORK_ERROR')}
+ try{response=await fetch(path,{...init,credentials:'same-origin',cache:'no-store',signal:init.signal??AbortSignal.timeout(15000),headers:{Accept:'application/json',...(init.body?{'Content-Type':'application/json'}:{}),...init.headers}})}catch{throw new ApiError(0,'NETWORK_ERROR')}
  const raw=await response.text();if(raw.length>1048576)throw new ApiError(response.status,'INVALID_RESPONSE');
  let value:unknown;try{value=raw?JSON.parse(raw):undefined}catch{throw new ApiError(response.status,'INVALID_RESPONSE')}
  if(!response.ok){const error=value as {code?:string;request_id?:string}|undefined;throw new ApiError(response.status,error?.code??'REQUEST_FAILED',error?.request_id)}
@@ -41,6 +44,9 @@ export const api={
  records12:(uid:string,section:string,cursor:string|null=null)=>call<RecordPage12>('/api/v1/assets/'+encodeURIComponent(uid)+'/inventory/facts/'+encodeURIComponent(section)+'?limit=100'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'RecordFactPage12'),
  conflicts:(state:string,cursor:string|null=null)=>call<ConflictPage>('/api/v1/reconciliation/conflicts?state='+encodeURIComponent(state)+'&limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'ConflictPage'),
  resolveConflict:(id:string,csrf:string,body:{action:string;asset_uid?:string;revision?:string})=>call<ConflictResult>('/api/v1/reconciliation/conflicts/'+encodeURIComponent(id)+'/resolve','ConflictResult',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ sourceRecords:(uid:string)=>call<SourceRecordPage>('/api/v1/assets/'+encodeURIComponent(uid)+'/source-records','SourceRecordPage'),
+ mergeAssets:(csrf:string,body:{target_asset_uid:string;absorbed_asset_uid:string;target_version?:string})=>call<AssetOperation>('/api/v1/assets/merge','AssetOperation',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf},signal:AbortSignal.timeout(130000)}),
+ splitAsset:(uid:string,csrf:string,body:{source_record_keys:string[];target_asset_uid?:string;version?:string})=>call<AssetOperation>('/api/v1/assets/'+encodeURIComponent(uid)+'/split','AssetOperation',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf},signal:AbortSignal.timeout(130000)}),
  topology:()=>call<Topology>('/api/v1/topology','Topology'),
  sources:(cursor:string|null=null)=>call<SourcePage>('/api/v1/sources?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SourcePage')
 };
