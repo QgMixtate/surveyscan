@@ -19,7 +19,16 @@ func (Store) RecordState12(ctx context.Context, tx pgx.Tx, tenant, asset, sectio
 	state := &contracts.RecordState12{}
 	p := &state.Attempt
 	var revision string
-	err := tx.QueryRow(ctx, `SELECT r.projection_revision::text,r.last_status,r.clock_uncertain,o.observation_id::text,o.source_id::text,o.payload->'origin'->>'source_kind',o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality FROM inventory.record_section_state12 r JOIN inventory.observations o ON o.tenant_id=r.tenant_id AND o.observation_id=r.last_attempt_id JOIN inventory.observation_sections s ON s.tenant_id=r.tenant_id AND s.observation_id=r.last_attempt_id AND s.section_name=r.section_name WHERE r.tenant_id=$1 AND r.asset_uid=$2 AND r.section_name=$3`, tenant, asset, section).Scan(&revision, &state.Status, &state.ClockUncertain, &p.Observation, &p.Origin.SourceID, &p.Origin.SourceKind, &p.Origin.GenerationID, &p.Sequence, &p.Collected, &p.Clock)
+	// R-027 (1А): статус раздела — лучшая из последних попыток источников актива, при равенстве — более поздняя.
+	// Попытки всех источников отдаются списком sources. Если по-источниковых попыток ещё нет — последняя попытка любого.
+	err := tx.QueryRow(ctx, `WITH best AS (
+ SELECT x.last_attempt_id,x.last_status FROM inventory.record_section_source_state12 x WHERE x.tenant_id=$1 AND x.asset_uid=$2 AND x.section_name=$3
+ ORDER BY CASE x.last_status WHEN 'partial' THEN 0 WHEN 'unavailable' THEN 1 WHEN 'unsupported' THEN 2 ELSE 3 END, x.collected_at DESC, x.source_id LIMIT 1)
+SELECT r.projection_revision::text,COALESCE(b.last_status,r.last_status),r.clock_uncertain,o.observation_id::text,o.source_id::text,o.payload->'origin'->>'source_kind',o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality
+FROM inventory.record_section_state12 r LEFT JOIN best b ON true
+JOIN inventory.observations o ON o.tenant_id=r.tenant_id AND o.observation_id=COALESCE(b.last_attempt_id,r.last_attempt_id)
+JOIN inventory.observation_sections s ON s.tenant_id=r.tenant_id AND s.observation_id=o.observation_id AND s.section_name=r.section_name
+WHERE r.tenant_id=$1 AND r.asset_uid=$2 AND r.section_name=$3`, tenant, asset, section).Scan(&revision, &state.Status, &state.ClockUncertain, &p.Observation, &p.Origin.SourceID, &p.Origin.SourceKind, &p.Origin.GenerationID, &p.Sequence, &p.Collected, &p.Clock)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return "0", nil, nil
 	}
@@ -27,7 +36,20 @@ func (Store) RecordState12(ctx context.Context, tx pgx.Tx, tenant, asset, sectio
 		return "", nil, err
 	}
 	p.Collected = p.Collected.UTC()
-	return revision, state, nil
+	rows, err := tx.Query(ctx, `SELECT source_id::text,last_status,collected_at FROM inventory.record_section_source_state12 WHERE tenant_id=$1 AND asset_uid=$2 AND section_name=$3 ORDER BY source_id LIMIT 16`, tenant, asset, section)
+	if err != nil {
+		return "", nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var x contracts.SectionSource12
+		if err = rows.Scan(&x.SourceID, &x.Status, &x.Collected); err != nil {
+			return "", nil, err
+		}
+		x.Collected = x.Collected.UTC()
+		state.Sources = append(state.Sources, x)
+	}
+	return revision, state, rows.Err()
 }
 
 func (Store) RecordFacts12(ctx context.Context, tx pgx.Tx, tenant, asset, section, afterRecord, afterField string, limit int) ([]contracts.RecordFact12, bool, error) {

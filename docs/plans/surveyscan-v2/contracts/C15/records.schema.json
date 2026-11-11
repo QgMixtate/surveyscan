@@ -68,6 +68,39 @@
             },
             "last_attempt": {
               "$ref": "#/$defs/FactEvidence"
+            },
+            "sources": {
+              "type": "array",
+              "maxItems": 16,
+              "description": "R-027: last attempt of this section by each source of the asset; status above is the best of them (partial > unavailable > unsupported > not_requested).",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "source_id": {
+                    "type": "string",
+                    "format": "uuid"
+                  },
+                  "status": {
+                    "enum": [
+                      "partial",
+                      "unavailable",
+                      "unsupported",
+                      "not_requested"
+                    ]
+                  },
+                  "collected_at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+                  }
+                },
+                "required": [
+                  "source_id",
+                  "status",
+                  "collected_at"
+                ],
+                "additionalProperties": false
+              }
             }
           },
           "required": [

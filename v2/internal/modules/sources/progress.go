@@ -13,16 +13,34 @@ func (Store) RecordSuccess(ctx context.Context, tx pgx.Tx, o contracts.Observati
 		return nil
 	}
 	var at time.Time
+	collected := false
 	for _, s := range o.Sections {
 		if s.Status == "not_requested" {
 			continue
 		}
-		if s.Status != "ok" || !s.Complete || s.CollectedAt.After(time.Now().Add(5*time.Minute)) {
+		if s.CollectedAt.After(time.Now().Add(5 * time.Minute)) {
+			return nil
+		}
+		if o.Version.Minor == 2 {
+			// Профиль 1.2 частичный по замыслу (R-027, решение 2А): успех — ни один раздел не «недоступен»
+			// (не поддерживаемые платформой разделы успеху не мешают) и хотя бы один раздел собран.
+			switch s.Status {
+			case "partial":
+				collected = true
+			case "unsupported":
+				continue
+			default:
+				return nil
+			}
+		} else if s.Status != "ok" || !s.Complete {
 			return nil
 		}
 		if s.CollectedAt.After(at) {
 			at = s.CollectedAt
 		}
+	}
+	if o.Version.Minor == 2 && !collected {
+		return nil
 	}
 	if at.IsZero() {
 		return nil

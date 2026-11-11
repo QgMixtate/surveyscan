@@ -49,7 +49,7 @@ def main():
                     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
                         tar.extractall(source, filter='data')
                     source = source / 'v2'
-                    (source / 'internal/platform/messaging/schema/0037_c13_update_acceptance.sql').write_text(
+                    (source / 'internal/platform/messaging/schema/0038_c13_update_acceptance.sql').write_text(
                         'CREATE TABLE messaging.c13_update_acceptance (row_id bigint PRIMARY KEY);\n')
                 distribution = work / ('dist-' + version)
                 distribution.mkdir()

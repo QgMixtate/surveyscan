@@ -168,6 +168,11 @@ func (Store) ProjectPartial12(ctx context.Context, tx pgx.Tx, o contracts.Observ
 		if o.Clock == "skewed" || section.CollectedAt.After(time.Now().Add(5*time.Minute)) {
 			continue
 		}
+		// Последняя попытка раздела этим источником (R-027, 1А): статус раздела карточки — лучший среди источников,
+		// поэтому попытка каждого источника хранится отдельно и независимо от ранга между источниками.
+		if _, err = tx.Exec(ctx, `INSERT INTO inventory.record_section_source_state12(tenant_id,asset_uid,section_name,source_id,last_attempt_id,last_status,collected_at) VALUES($1,$2,$3,$4,$5,$6,$7) ON CONFLICT(tenant_id,asset_uid,section_name,source_id) DO UPDATE SET last_attempt_id=excluded.last_attempt_id,last_status=excluded.last_status,collected_at=excluded.collected_at WHERE excluded.collected_at>inventory.record_section_source_state12.collected_at`, o.TenantID, asset, section.Name, o.Origin.SourceID, o.ID, section.Status, section.CollectedAt); err != nil {
+			return false, err
+		}
 		next := rank{o.Origin.SourceID, o.Origin.GenerationID, record, o.Sequence, o.Clock, priority, section.CollectedAt}
 		var previous string
 		err = tx.QueryRow(ctx, "SELECT last_attempt_id::text FROM inventory.record_section_state12 WHERE tenant_id=$1 AND asset_uid=$2 AND section_name=$3", o.TenantID, asset, section.Name).Scan(&previous)

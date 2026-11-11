@@ -112,21 +112,21 @@ func TestC15PlatformMigrationPreservesExistingCatalogAndData(t *testing.T) {
 	ctx, c, current := database(t)
 	old := []migrate.Migration{}
 	for _, m := range current {
-		if m.ID != "0035_inventory_platform" && m.ID != "0036_acquisition" {
+		if m.ID < "0035" { // каталог до C15-платформы; 0035+ — дописанные позже миграции (0037 — R-027)
 			old = append(old, m)
 		}
 	}
-	if len(old) != 35 || len(current) != 37 {
+	if len(old) != 35 || len(current) != 38 {
 		t.Fatal("unexpected catalogs")
 	}
 	apply(t, ctx, c, old)
-	const snapshot = `SELECT jsonb_agg(to_jsonb(m) ORDER BY id)::text FROM platform.schema_migrations m WHERE id NOT IN ('0035_inventory_platform','0036_acquisition')`
+	const snapshot = `SELECT jsonb_agg(to_jsonb(m) ORDER BY id)::text FROM platform.schema_migrations m WHERE id < '0035'`
 	var before, after string
 	if err := c.QueryRow(ctx, snapshot).Scan(&before); err != nil {
 		t.Fatal(err)
 	}
-	if n, err := migrate.Apply(ctx, c, current); err != nil || n != 2 {
-		t.Fatal("not two appends", n, err)
+	if n, err := migrate.Apply(ctx, c, current); err != nil || n != 3 {
+		t.Fatal("not three appends", n, err)
 	}
 	if err := c.QueryRow(ctx, snapshot).Scan(&after); err != nil || before != after {
 		t.Fatal("old SQL ledger mutated", err)

@@ -173,6 +173,33 @@ func TestC25ManualReconciliationQueue(t *testing.T) {
 	if _, err = f.registry.ResolveConflict(f.ctx, f.identity, page.Items[0].ID, app.ConflictResolution{Action: "dismiss", Revision: firstRevision}); err != nil {
 		t.Fatal(err)
 	}
+	// R-027 (решение 4А): «Отложить» держится, пока не изменятся кандидаты — повтор того же конфликта не возвращает его
+	openOf := func(s src) int {
+		t.Helper()
+		var n int
+		if err := f.pool.QueryRow(f.ctx, "SELECT count(*) FROM assets.reconciliation_conflicts c JOIN assets.source_records r USING(tenant_id,source_record_key) WHERE c.tenant_id=$1 AND r.source_id=$2 AND c.state='open'", tenant, s.id).Scan(&n); err != nil {
+			t.Fatal(err)
+		}
+		return n
+	}
+	if d, _ := send(e, "4", "srv-e", host("srv-a")); d != "recorded_pending_resolution" || openOf(e) != 0 {
+		t.Fatal("dismissed conflict must not reopen on the same candidates", d, openOf(e))
+	}
+	g := newSource()
+	if d, _ := send(g, "1", "srv-g", contracts.Candidate{Kind: "machine_uuid", Namespace: "linux-machine-id", Value: "4c4c4544-0000-1000-8000-" + identifier.New()[24:]}, host("srv-g")); d != "applied" {
+		t.Fatal("separate asset for srv-g", d)
+	}
+	if d, _ := send(e, "5", "srv-e", host("srv-a"), host("srv-g")); d != "recorded_pending_resolution" || openOf(e) != 1 {
+		t.Fatal("changed candidates must reopen the dismissed record", d, openOf(e))
+	}
+	page, _ = f.registry.Conflicts(f.ctx, f.identity, "open", "", 50)
+	for _, it := range page.Items {
+		if it.SourceID == e.id {
+			if _, err = f.registry.ResolveConflict(f.ctx, f.identity, it.ID, app.ConflictResolution{Action: "dismiss"}); err != nil {
+				t.Fatal(err)
+			}
+		}
+	}
 
 	// HTTP: чтение — assets:read, решение — сессия с CSRF
 	auth, err := access.NewHTTP(f.users, "https://ui.example", false)

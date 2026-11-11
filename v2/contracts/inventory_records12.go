@@ -1,6 +1,9 @@
 package contracts
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"time"
+)
 
 // RecordFact12 carries a typed JSON field and that field's own provenance.
 // record_key is a provider locator, never a global asset or component UID.
@@ -11,10 +14,19 @@ type RecordFact12 struct {
 	Evidence FactEvidence    `json:"evidence"`
 }
 
+// RecordState12: status и last_attempt — лучшая из последних попыток источников актива
+// (partial > unavailable > unsupported > not_requested); Sources — последняя попытка каждого источника (R-027).
 type RecordState12 struct {
-	Status         string       `json:"status"`
-	ClockUncertain bool         `json:"clock_uncertain"`
-	Attempt        FactEvidence `json:"last_attempt"`
+	Status         string            `json:"status"`
+	ClockUncertain bool              `json:"clock_uncertain"`
+	Attempt        FactEvidence      `json:"last_attempt"`
+	Sources        []SectionSource12 `json:"sources,omitempty"`
+}
+
+type SectionSource12 struct {
+	SourceID  string    `json:"source_id"`
+	Status    string    `json:"status"`
+	Collected time.Time `json:"collected_at"`
 }
 
 type RecordFactPage12 struct {

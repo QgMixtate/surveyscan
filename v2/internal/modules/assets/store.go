@@ -224,7 +224,12 @@ func (Store) Resolve(ctx context.Context, tx pgx.Tx, o contracts.Observation) (R
 			return result, e
 		}
 		if tag.RowsAffected() == 0 {
-			_, e = tx.Exec(ctx, "INSERT INTO assets.reconciliation_conflicts(tenant_id,conflict_id,source_record_key,candidate_asset_uids,reason_code,state) VALUES($1,$2,$3,$4,$5,'open')", o.TenantID, identifier.New(), result.RecordKey, candidates, result.Reason)
+			// R-027 (решение 4А): «Отложить» держится, пока не изменятся кандидаты или причина — повтор того же
+			// конфликта от следующего наблюдения не возвращает его в очередь (наблюдение остаётся ожидающим).
+			// Сравнение — с любым отложенным конфликтом записи с теми же кандидатами и причиной.
+			_, e = tx.Exec(ctx, `INSERT INTO assets.reconciliation_conflicts(tenant_id,conflict_id,source_record_key,candidate_asset_uids,reason_code,state)
+SELECT $1,$2,$3,$4,$5,'open' WHERE NOT EXISTS(SELECT 1 FROM assets.reconciliation_conflicts d
+ WHERE d.tenant_id=$1 AND d.source_record_key=$3 AND d.state='dismissed' AND d.candidate_asset_uids=$4::uuid[] AND d.reason_code=$5)`, o.TenantID, identifier.New(), result.RecordKey, candidates, result.Reason)
 			if e != nil {
 				return result, e
 			}
