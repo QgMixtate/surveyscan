@@ -116,6 +116,24 @@ WHERE tenant_id=$1 AND state='open' AND $2::uuid=ANY(candidate_asset_uids)`, ten
 	return e
 }
 
+// SettleRecords (C25.03, стенд R-027) — после слияния: открытые конфликты записей актива, у которых кроме него не
+// осталось кандидатов, закрываются (решение оператора «это один актив»), и возвращаются записи актива без открытых
+// конфликтов — их ожидающие наблюдения привязываются к активу вызывающей стороной.
+func (Store) SettleRecords(ctx context.Context, tx pgx.Tx, tenant, asset string) ([]string, error) {
+	if _, e := tx.Exec(ctx, `UPDATE assets.reconciliation_conflicts c SET state='resolved',revision=c.revision+1 FROM assets.source_records r
+WHERE c.tenant_id=$1 AND c.state='open' AND r.tenant_id=c.tenant_id AND r.source_record_key=c.source_record_key AND r.asset_uid=$2
+AND c.candidate_asset_uids <@ ARRAY[$2::uuid]`, tenant, asset); e != nil {
+		return nil, e
+	}
+	rows, e := tx.Query(ctx, `SELECT r.source_record_key::text FROM assets.source_records r WHERE r.tenant_id=$1 AND r.asset_uid=$2
+AND NOT EXISTS(SELECT 1 FROM assets.reconciliation_conflicts c WHERE c.tenant_id=r.tenant_id AND c.source_record_key=r.source_record_key AND c.state='open')
+ORDER BY 1`, tenant, asset)
+	if e != nil {
+		return nil, e
+	}
+	return pgx.CollectRows(rows, pgx.RowTo[string])
+}
+
 // MergeBusiness переносит ручные поля: у целевого актива свои значения сохраняются, пустые заполняются из
 // поглощённого, теги объединяются (не более 32), критичность — более высокая из двух.
 func (Store) MergeBusiness(ctx context.Context, tx pgx.Tx, tenant, from, to string) error {

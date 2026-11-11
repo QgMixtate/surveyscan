@@ -207,8 +207,31 @@ AND (i.source_record_key=$6 OR NOT EXISTS(SELECT 1 FROM moved WHERE k=$6 OR k=i.
 			}
 		}
 	}
+	// C25.03 (стенд R-027): активы, разделённые оператором, — его решение «это разные активы». Совпадение записи,
+	// уже сопоставленной с одним из них, с идентификатором другого (общий machine_uuid после разделения записей
+	// одной машины) — не конфликт: иначе каждое наблюдение обеих записей уходило бы в очередь и не применялось.
+	separated := map[string]bool{}
+	if uid != nil && len(hits) > 0 {
+		rows, e := tx.Query(ctx, `SELECT CASE WHEN from_asset_uid=$2 THEN to_asset_uid ELSE from_asset_uid END::text FROM assets.asset_operations
+WHERE tenant_id=$1 AND kind='split' AND (from_asset_uid=$2 OR to_asset_uid=$2)`, o.TenantID, *uid)
+		if e != nil {
+			return result, e
+		}
+		for rows.Next() {
+			var other string
+			if e = rows.Scan(&other); e != nil {
+				rows.Close()
+				return result, e
+			}
+			separated[other] = true
+		}
+		rows.Close()
+		if e = rows.Err(); e != nil {
+			return result, e
+		}
+	}
 	for hit := range hits {
-		if uid == nil || hit != *uid {
+		if uid == nil || hit != *uid && !separated[hit] {
 			conflict = true
 		}
 	}

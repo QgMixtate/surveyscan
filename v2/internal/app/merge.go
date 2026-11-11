@@ -122,6 +122,24 @@ func (r *Registry) MergeAssets(ctx context.Context, id accessport.Identity, req 
 	if _, e = r.CMDB.RetargetAsset(ctx, tx, tenant, absorbed.UID, target.UID, actor); e != nil {
 		return out, e
 	}
+	// конфликты, возникшие, пока активы были раздельными, закрываются, ожидавшие наблюдения привязываются к целевому
+	// активу (проекция пересобирается ниже по всем активным связям)
+	settled, e := r.Assets.SettleRecords(ctx, tx, tenant, target.UID)
+	if e != nil {
+		return out, e
+	}
+	for _, record := range settled {
+		pending, e := r.Inventory.PendingObservations(ctx, tx, tenant, record, 10000)
+		if e != nil {
+			return out, e
+		}
+		for _, p := range pending {
+			if _, e = r.Assets.LinkReason(ctx, tx, p.Observation, target.UID, "ASSET_MERGE"); e != nil {
+				return out, e
+			}
+			out.Relinked++
+		}
+	}
 	if e = r.Assets.MergeBusiness(ctx, tx, tenant, absorbed.UID, target.UID); e != nil {
 		return out, e
 	}
@@ -288,13 +306,25 @@ func operationError(w http.ResponseWriter, e error) {
 	registryError(w, e)
 }
 
+// assetOperationTimeout — срок слияния/разделения: пересборка проекций на живых данных занимает десятки секунд
+// (стенд R-027: ~600 наблюдений записи — 23–26 с), это больше общего WriteTimeout сервера (10/15 с).
+const assetOperationTimeout = 120 * time.Second
+
+// assetOperationContext продлевает срок записи ответа под операцию: иначе сервер обрывает соединение посреди ответа,
+// хотя транзакция завершается (клиент видел ошибку TLS при успешной операции, стенд R-027).
+func assetOperationContext(w http.ResponseWriter, req *http.Request) (context.Context, context.CancelFunc) {
+	deadline := time.Now().Add(assetOperationTimeout)
+	_ = http.NewResponseController(w).SetWriteDeadline(deadline.Add(10 * time.Second))
+	return context.WithDeadline(context.WithoutCancel(req.Context()), deadline)
+}
+
 func (r *Registry) mergeHandler() http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		var body MergeRequest
 		if !readOperationBody(w, req, &body) {
 			return
 		}
-		ctx, cancel := context.WithTimeout(context.WithoutCancel(req.Context()), 120*time.Second)
+		ctx, cancel := assetOperationContext(w, req)
 		defer cancel()
 		id, _ := access.Identity(req.Context())
 		out, e := r.MergeAssets(ctx, id, body)
@@ -312,7 +342,7 @@ func (r *Registry) splitHandler() http.Handler {
 		if !readOperationBody(w, req, &body) {
 			return
 		}
-		ctx, cancel := context.WithTimeout(context.WithoutCancel(req.Context()), 120*time.Second)
+		ctx, cancel := assetOperationContext(w, req)
 		defer cancel()
 		id, _ := access.Identity(req.Context())
 		out, e := r.SplitAsset(ctx, id, req.PathValue("asset_uid"), body)
