@@ -2,3 +2,6 @@
 v2/web/src/generated/** linguist-generated=true
 v2/contracts/*.json linguist-generated=true
 docs/** linguist-documentation=true
+# Скрипты проверок, dev-стенда и стенда установки (Python) — служебная обвязка, не код продукта
+v2/scripts/** linguist-vendored=true
+v2/deploy/bootstand/** linguist-vendored=true
