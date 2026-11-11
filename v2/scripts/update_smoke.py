@@ -248,7 +248,7 @@ def main():
                 result = updater.apply(root, public, controller)
                 assert controller.applied_migrations == 1 and result['phase'] == 'recovery_required'
                 assert updater.active(base) == versions[3] and (base / 'update.fence').exists()
-                assert s['sql']('SELECT count(*) FROM platform.schema_migrations') == '38'
+                assert s['sql']('SELECT count(*) FROM platform.schema_migrations') == '39'
                 assert not controller.check_schema(base / 'releases' / versions[2] / 'bin/surveyscan-server')
                 controller.fail_version = None
                 result = updater.apply(root, public, controller, recover=True)
