@@ -215,9 +215,17 @@ func (Store) Resolve(ctx context.Context, tx pgx.Tx, o contracts.Observation) (R
 		if len(candidates) == 0 && uid != nil {
 			candidates = append(candidates, *uid)
 		}
-		_, e = tx.Exec(ctx, "INSERT INTO assets.reconciliation_conflicts(tenant_id,conflict_id,source_record_key,candidate_asset_uids,reason_code,state) VALUES($1,$2,$3,$4,$5,'open')", o.TenantID, identifier.New(), result.RecordKey, candidates, result.Reason)
+		// Одна открытая запись конфликта на запись источника: новые наблюдения обновляют кандидатов, а не плодят строки
+		// (стенд R-027: 2188 открытых конфликтов на две записи за сутки).
+		tag, e := tx.Exec(ctx, "UPDATE assets.reconciliation_conflicts SET candidate_asset_uids=$3,reason_code=$4,revision=revision+1 WHERE tenant_id=$1 AND source_record_key=$2 AND state='open'", o.TenantID, result.RecordKey, candidates, result.Reason)
 		if e != nil {
 			return result, e
+		}
+		if tag.RowsAffected() == 0 {
+			_, e = tx.Exec(ctx, "INSERT INTO assets.reconciliation_conflicts(tenant_id,conflict_id,source_record_key,candidate_asset_uids,reason_code,state) VALUES($1,$2,$3,$4,$5,'open')", o.TenantID, identifier.New(), result.RecordKey, candidates, result.Reason)
+			if e != nil {
+				return result, e
+			}
 		}
 		if uid == nil {
 			_, e = tx.Exec(ctx, "UPDATE assets.source_records SET resolution_state='conflict',revision=revision+1 WHERE tenant_id=$1 AND source_record_key=$2", o.TenantID, result.RecordKey)

@@ -143,6 +143,24 @@ func TestC25ManualReconciliationQueue(t *testing.T) {
 		t.Fatalf("resolved: %+v", page.Items)
 	}
 
+	// регрессия стенда R-027: каждое наблюдение записи в конфликте создавало новую строку конфликта
+	e := newSource()
+	for _, seq := range []string{"1", "2", "3"} {
+		if d, _ := send(e, seq, "srv-e", host("srv-a")); d != "recorded_pending_resolution" {
+			t.Fatal("pending", seq, d)
+		}
+	}
+	if err = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM assets.reconciliation_conflicts c JOIN assets.source_records r USING(tenant_id,source_record_key) WHERE c.tenant_id=$1 AND r.source_id=$2 AND c.state='open'", tenant, e.id).Scan(&n); err != nil || n != 1 {
+		t.Fatal("one open conflict row per source record expected, got", n, err)
+	}
+	page, _ = f.registry.Conflicts(f.ctx, f.identity, "open", "", 50)
+	if len(page.Items) != 1 || page.Items[0].SourceID != e.id || page.Items[0].PendingObservations != 3 {
+		t.Fatalf("queue must show one item with 3 pending observations: %+v", page.Items)
+	}
+	if _, err = f.registry.ResolveConflict(f.ctx, f.identity, page.Items[0].ID, app.ConflictResolution{Action: "dismiss"}); err != nil {
+		t.Fatal(err)
+	}
+
 	// HTTP: чтение — assets:read, решение — сессия с CSRF
 	auth, err := access.NewHTTP(f.users, "https://ui.example", false)
 	if err != nil {

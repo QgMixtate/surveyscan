@@ -27,7 +27,8 @@ type Conflict struct {
 	Candidates []string `json:"candidate_asset_uids"`
 }
 
-// Conflicts возвращает страницу конфликтов tenant в состоянии state (open|resolved|dismissed), по conflict_id.
+// Conflicts возвращает страницу конфликтов tenant в состоянии state (open|resolved|dismissed), по conflict_id —
+// по одной строке на запись источника (старые базы могли накопить дубли до исправления R-027).
 func (Store) Conflicts(ctx context.Context, tx pgx.Tx, tenant, state, after string, limit int) ([]Conflict, error) {
 	if state != "open" && state != "resolved" && state != "dismissed" {
 		return nil, domain.Invalid
@@ -39,8 +40,9 @@ func (Store) Conflicts(ctx context.Context, tx pgx.Tx, tenant, state, after stri
 		return nil, domain.Invalid
 	}
 	rows, e := tx.Query(ctx, `SELECT c.conflict_id::text,c.reason_code,c.state,c.revision::text,c.source_record_key::text,r.source_id::text,r.namespace,r.source_local_id,r.resolution_state,r.asset_uid::text,c.candidate_asset_uids::text[]
-FROM assets.reconciliation_conflicts c JOIN assets.source_records r USING(tenant_id,source_record_key)
-WHERE c.tenant_id=$1 AND c.state=$2 AND c.conflict_id>$3::uuid ORDER BY c.conflict_id LIMIT $4`, tenant, state, after, limit)
+FROM (SELECT DISTINCT ON (source_record_key) * FROM assets.reconciliation_conflicts WHERE tenant_id=$1 AND state=$2 ORDER BY source_record_key, revision DESC, conflict_id) c
+JOIN assets.source_records r USING(tenant_id,source_record_key)
+WHERE c.conflict_id>$3::uuid ORDER BY c.conflict_id LIMIT $4`, tenant, state, after, limit)
 	if e != nil {
 		return nil, e
 	}
