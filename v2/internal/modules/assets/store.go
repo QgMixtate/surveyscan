@@ -217,7 +217,9 @@ func (Store) Resolve(ctx context.Context, tx pgx.Tx, o contracts.Observation) (R
 		}
 		// Одна открытая запись конфликта на запись источника: новые наблюдения обновляют кандидатов, а не плодят строки
 		// (стенд R-027: 2188 открытых конфликтов на две записи за сутки).
-		tag, e := tx.Exec(ctx, "UPDATE assets.reconciliation_conflicts SET candidate_asset_uids=$3,reason_code=$4,revision=revision+1 WHERE tenant_id=$1 AND source_record_key=$2 AND state='open'", o.TenantID, result.RecordKey, candidates, result.Reason)
+		// Ревизия растёт только при изменении кандидатов/причины: иначе каждое наблюдение (раз в минуту) делало бы
+		// устаревшей ревизию, открытую оператором в очереди, и разбор получал бы 409.
+		tag, e := tx.Exec(ctx, "UPDATE assets.reconciliation_conflicts SET candidate_asset_uids=$3,reason_code=$4,revision=CASE WHEN candidate_asset_uids IS DISTINCT FROM $3::uuid[] OR reason_code<>$4 THEN revision+1 ELSE revision END WHERE tenant_id=$1 AND source_record_key=$2 AND state='open'", o.TenantID, result.RecordKey, candidates, result.Reason)
 		if e != nil {
 			return result, e
 		}

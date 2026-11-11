@@ -3,6 +3,7 @@
 package privatefile
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -26,7 +27,8 @@ func TestStrictByDefault(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, m := range []os.FileMode{0o640, 0o440, 0o644, 0o604} {
-		if _, err := Read(write(t, dir, "bad", m), 10); err == nil {
+		// отдельный файл на режим: перезапись файла 0440 не-root пользователем даёт EACCES (под root тест этого не видел)
+		if _, err := Read(write(t, dir, fmt.Sprintf("bad-%o", m), m), 10); err == nil {
 			t.Errorf("mode %o must be refused outside a systemd credentials dir", m)
 		}
 	}
