@@ -5,11 +5,10 @@ collector. Collector сохраняет пакеты и доставляет и�
 история, ответственность и outbox находятся в PostgreSQL. Секретные операции выполняет OpenBao.
 Отдельный статический Web UI и `surveyscanctl` работают через API.
 
-C01–C13 приняты в пределах E1; **C14 ещё выполняется**. Реальный суточный прогон запущен
-5 ноября2026 в00:31:49UTC, run `10812e7a-8a6a-4dae-9dd5-b0583f503c83`.
-Не останавливать/запечатывать общий dev PG/Bao и не запускать outage-тесты на этом стенде,
-пока он выполняется. [Текущий статус](../docs/STATUS.md), [передача C14](../docs/plans/surveyscan-v2/handoffs/C14.md),
-[матрица приёмки](../docs/plans/surveyscan-v2/evidence/C14-plan.json). Незавершённые сутки не считаются PASS.
+C01–C14 приняты (первый рабочий SMB-контур на Linux, эпоха E1). Написаны и проверены, но ещё не приняты: агенты Windows/Linux
+с профилем инвентаризации 1.2, SSH/WinRM/SNMPv3, discovery/presence, схема сети L3, portable-аудит с HTTPS-загрузкой,
+сведение источников по сильным идентификаторам (C15–C25.01). Актуальный статус — [STATUS](../docs/STATUS.md),
+журнал — [REQUESTS](../docs/REQUESTS.md), передача — [handoff-3](../docs/plans/surveyscan-v2/handoffs/C15-C24-session-handoff-3.md).
 
 ## Сборка и локальный dev-стенд
 
