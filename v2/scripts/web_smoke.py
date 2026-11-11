@@ -29,6 +29,7 @@ def browser_scenario(**s):
   do_POST=dispatch
   do_DELETE=dispatch
   do_PATCH=dispatch
+  do_PUT=dispatch
  server=http.server.ThreadingHTTPServer(('127.0.0.1',port),Handler);thread=threading.Thread(target=server.serve_forever,daemon=True);thread.start();path=s['directory']/'browser-input.json';fd=os.open(path,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
  with os.fdopen(fd,'w') as f:json.dump({k:s[k] for k in ('origin','username','password','asset')},f)
  try:

@@ -33,6 +33,15 @@ export type ProductList={tenant_id:string;query:string;items:Product[]};
 export type CIService={service_uid:string;name:string;description:string|null;criticality:'unknown'|'low'|'medium'|'high'|'critical';revision:string;created_at:string;retired_at:string|null};
 export type ServicePage={tenant_id:string;items:CIService[];next_cursor:string|null};
 export type ServiceDetail=CIService&{tenant_id:string;relations:Relation[]};
+export type RoleName='accountable'|'business_owner'|'technical'|'custodian';
+export type Subject={subject_id:string;kind:'person'|'team';name:string;contact:string;active:boolean;username:string|null;revision:string;site_fallback:boolean;members:number};
+export type SubjectPage={tenant_id:string;items:Subject[];next_cursor:string|null};
+export type SubjectResult={subject:Subject;reassigned_assignments:number};
+export type Assignment={role:RoleName;subject_id:string;subject_name:string;subject_kind:'person'|'team';valid_from:string;valid_to:string|null;reason_code:string;note:string|null;actor_ref:string};
+export type AssetAssignments={tenant_id:string;asset_uid:string;version:string;active:Assignment[];history:Assignment[]};
+export type BulkAssignResult={applied:number;unchanged:number;stale_asset_uids:string[]};
+export type WorklistItem={asset_uid:string;version:string;display_name:string|null;observed_hostname:string|null;assignments:Assignment[]};
+export type WorklistPage={tenant_id:string;scope:'mine'|'team'|'unassigned'|'attention';items:WorklistItem[];next_cursor:string|null};
 export type Topology={tenant_id:string;generated_at:string;nodes:TopologyNode[];links:TopologyLink[];truncated:boolean;hosts_with_network_facts:number};
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
@@ -72,6 +81,14 @@ export const api={
  patchService:(uid:string,csrf:string,body:{revision:string;name?:string;description?:string;criticality?:string;retire?:boolean})=>call<ServiceDetail>('/api/v1/services/'+encodeURIComponent(uid),'ServiceDetail',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  createRelation:(csrf:string,body:{relation_type:string;from:CIEnd;to:CIEnd;note?:string})=>call<Relation>('/api/v1/relations','Relation',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  retireRelation:(id:string,csrf:string)=>call<Relation>('/api/v1/relations/'+encodeURIComponent(id),'Relation',{method:'DELETE',headers:{'X-CSRF-Token':csrf}}),
+ subjects:(kind:''|'person'|'team'='',inactive=false)=>call<SubjectPage>('/api/v1/subjects?limit=200'+(kind?'&kind='+kind:'')+(inactive?'&include_inactive=true':''),'SubjectPage'),
+ createSubject:(csrf:string,body:{kind:'person'|'team';name:string;contact:string;username?:string})=>call<SubjectResult>('/api/v1/subjects','SubjectResult',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ patchSubject:(id:string,csrf:string,body:{revision:string;name?:string;contact?:string;username?:string;deactivate?:boolean})=>call<SubjectResult>('/api/v1/subjects/'+encodeURIComponent(id),'SubjectResult',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ member:(team:string,person:string,csrf:string,add:boolean)=>call<Subject>('/api/v1/subjects/'+encodeURIComponent(team)+'/members/'+encodeURIComponent(person),'Subject',{method:add?'PUT':'DELETE',headers:{'X-CSRF-Token':csrf}}),
+ assignments:(uid:string)=>call<AssetAssignments>('/api/v1/assets/'+encodeURIComponent(uid)+'/assignments','AssetAssignments'),
+ assign:(uid:string,csrf:string,body:{role:RoleName;subject_id:string|null;note?:string;expected_version:string})=>call<AssetAssignments>('/api/v1/assets/'+encodeURIComponent(uid)+'/assignments','AssetAssignments',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ bulkAssign:(csrf:string,body:{role:RoleName;subject_id:string;note?:string;items:{asset_uid:string;expected_version:string}[]})=>call<BulkAssignResult>('/api/v1/assignments/bulk','BulkAssignResult',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ worklist:(scope:string,cursor:string|null=null)=>call<WorklistPage>('/api/v1/worklist?limit=100&scope='+encodeURIComponent(scope)+(cursor?'&cursor='+encodeURIComponent(cursor):''),'WorklistPage'),
  topology:()=>call<Topology>('/api/v1/topology','Topology'),
  sources:(cursor:string|null=null)=>call<SourcePage>('/api/v1/sources?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SourcePage')
 };
