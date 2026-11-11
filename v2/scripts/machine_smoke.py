@@ -85,7 +85,15 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
     password=secrets.token_urlsafe(32);password_file=save('password',password+'\n');command('bootstrap-admin','--tenant',tenant,'--tenant-name','C07 synthetic','--username','admin','--password-file',password_file)
     sql(f"INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES('{tenant}','{subject}','team','fallback','synthetic@example.invalid'); INSERT INTO scope.sites(tenant_id,site_id,name,fallback_subject_id) VALUES('{tenant}','{site}','synthetic','{subject}'); INSERT INTO scope.network_scopes(tenant_id,scope_id,site_id,namespace) VALUES('{tenant}','{scope}','{site}','default');",db)
    center_process=start('center',[str(ROOT/'.dist/surveyscan-server'),'serve']);plain=context();ready(tls_port,plain);checks.append('compiled center starts with explicit private loopback PKI')
-   status,session,cookie=request(tls_port,plain,'POST','/api/v1/auth/sessions',{'username':'admin','password':password},{'Origin':browser_origin});assert status==201;cookie=cookie.split(';',1)[0]
+   # постоянный стенд (R-027): прежняя сессия обвязки закрывается до входа — иначе каждый перезапуск оставляет активную
+   # сессию admin, и после 5 перезапусков вход упирается в лимит сессий пользователя (центр не стартует)
+   previous=directory/'harness-session.json'
+   if persist and previous.exists():
+    try:
+     old=json.loads(previous.read_text());request(tls_port,plain,'DELETE','/api/v1/auth/session',None,{'Origin':browser_origin,'Cookie':old['cookie'],'X-CSRF-Token':old['csrf']})
+    except Exception:pass  # просроченная или уже отозванная сессия — не препятствие для старта
+   status,session,cookie=request(tls_port,plain,'POST','/api/v1/auth/sessions',{'username':'admin','password':password},{'Origin':browser_origin});assert status==201,('admin login',status);cookie=cookie.split(';',1)[0]
+   if persist:save('harness-session.json',json.dumps({'cookie':cookie,'csrf':session['csrf_token']}))
    def enroll_material():
     key=ed25519.Ed25519PrivateKey.generate();signing=ed25519.Ed25519PrivateKey.generate();csr=x509.CertificateSigningRequestBuilder().subject_name(x509.Name([x509.NameAttribute(NameOID.COMMON_NAME,'untrusted-subject')])).sign(key,None)
     return key,signing,csr
