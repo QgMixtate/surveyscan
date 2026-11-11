@@ -19,11 +19,25 @@ export type ConflictResult={conflict_id:string;action:string;asset_uid:string|nu
 export type SourceRecord={source_record_key:string;source_id:string;namespace:string;source_local_id:string;observations:number};
 export type SourceRecordPage={tenant_id:string;asset_uid:string;version:string;items:SourceRecord[]};
 export type AssetOperation={operation_id:string;kind:'merge'|'split';from_asset_uid:string;to_asset_uid:string;created:boolean;moved_records:number;relinked_observations:number;rebuilt_observations:number};
+export type Evidence={observation_id:string;source_id:string;source_kind:'agent'|'collector'|'portable';collected_at:string;clock_quality:string};
+export type AssetClassName='server'|'workstation'|'network_device'|'printer'|'virtual_machine'|'unknown';
+export type CIEnd={kind:'asset'|'service';id:string};
+export type Relation={relation_id:string;relation_type:'runs_on'|'uses'|'depends_on'|'hosts'|'connected_to';from:CIEnd;to:CIEnd;origin:'manual'|'observed';confidence:'confirmed'|'probable'|'weak';note:string|null;valid_from:string;valid_to:string|null;actor_ref:string};
+export type AssetCMDB={tenant_id:string;asset_uid:string;class:{observed:AssetClassName;observed_reason:string;manual:AssetClassName|null;effective:AssetClassName};business_revision:string;software_count:number;component_count:number;relations:Relation[]};
+export type Installation={record_key:string;name:string|null;version:string|null;publisher:string|null;architecture:string|null;package_source:string|null;evidence:Evidence};
+export type SoftwarePage={tenant_id:string;asset_uid:string;items:Installation[];next_cursor:string|null};
+export type Component={section:'hardware'|'resources';record_key:string;kind:string|null;name:string|null;vendor:string|null;model:string|null;serial:string|null;size_bytes:string|null;evidence:Evidence};
+export type ComponentList={tenant_id:string;asset_uid:string;items:Component[]};
+export type Product={name:string;publisher:string|null;installations:number;assets:number;versions:string[];asset_uids:string[]};
+export type ProductList={tenant_id:string;query:string;items:Product[]};
+export type CIService={service_uid:string;name:string;description:string|null;criticality:'unknown'|'low'|'medium'|'high'|'critical';revision:string;created_at:string;retired_at:string|null};
+export type ServicePage={tenant_id:string;items:CIService[];next_cursor:string|null};
+export type ServiceDetail=CIService&{tenant_id:string;relations:Relation[]};
 export type Topology={tenant_id:string;generated_at:string;nodes:TopologyNode[];links:TopologyLink[];truncated:boolean;hosts_with_network_facts:number};
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
 }
-const messages:Record<string,string>={ASSET_MERGED:'Карточка уже объединена с другой: откройте актуальную.',INVALID_OPERATION:'Операция недоступна: проверьте выбранные записи и UID.',CONFLICT:'Состояние изменилось: обновите список.',INVALID_RESOLUTION:'Это действие недоступно для выбранного конфликта.',AUTHENTICATION_REQUIRED:'Сессия завершилась. Войдите снова.',INVALID_CREDENTIALS:'Не удалось войти. Проверьте имя и пароль.',FORBIDDEN:'Недостаточно прав для этого действия.',NOT_FOUND:'Объект не найден или недоступен.',REVISION_MISMATCH:'Карточка изменилась. Обновите данные.',RATE_LIMITED:'Слишком много запросов. Повторите немного позже.',CONTRACT_MISMATCH:'Версии интерфейса и API несовместимы. Обратитесь к администратору.',INVALID_RESPONSE:'Сервер вернул ответ неизвестного формата.',NETWORK_ERROR:'Нет связи с сервером. Проверьте соединение.',CAPABILITY_NOT_ENABLED:'Эта возможность пока недоступна.'};
+const messages:Record<string,string>={INVALID_INPUT:'Проверьте введённые данные.',ASSET_MERGED:'Карточка уже объединена с другой: откройте актуальную.',INVALID_OPERATION:'Операция недоступна: проверьте выбранные записи и UID.',CONFLICT:'Состояние изменилось: обновите список.',INVALID_RESOLUTION:'Это действие недоступно для выбранного конфликта.',AUTHENTICATION_REQUIRED:'Сессия завершилась. Войдите снова.',INVALID_CREDENTIALS:'Не удалось войти. Проверьте имя и пароль.',FORBIDDEN:'Недостаточно прав для этого действия.',NOT_FOUND:'Объект не найден или недоступен.',REVISION_MISMATCH:'Карточка изменилась. Обновите данные.',RATE_LIMITED:'Слишком много запросов. Повторите немного позже.',CONTRACT_MISMATCH:'Версии интерфейса и API несовместимы. Обратитесь к администратору.',INVALID_RESPONSE:'Сервер вернул ответ неизвестного формата.',NETWORK_ERROR:'Нет связи с сервером. Проверьте соединение.',CAPABILITY_NOT_ENABLED:'Эта возможность пока недоступна.'};
 export function errorMessage(error:unknown){return error instanceof ApiError?(messages[error.code]??'Не удалось выполнить запрос. Повторите позже.'):'Не удалось выполнить запрос. Повторите позже.'}
 async function call<T>(path:string,name:string|undefined,init:RequestInit={}):Promise<T>{
  let response:Response;
@@ -47,6 +61,17 @@ export const api={
  sourceRecords:(uid:string)=>call<SourceRecordPage>('/api/v1/assets/'+encodeURIComponent(uid)+'/source-records','SourceRecordPage'),
  mergeAssets:(csrf:string,body:{target_asset_uid:string;absorbed_asset_uid:string;target_version?:string})=>call<AssetOperation>('/api/v1/assets/merge','AssetOperation',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf},signal:AbortSignal.timeout(130000)}),
  splitAsset:(uid:string,csrf:string,body:{source_record_keys:string[];target_asset_uid?:string;version?:string})=>call<AssetOperation>('/api/v1/assets/'+encodeURIComponent(uid)+'/split','AssetOperation',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf},signal:AbortSignal.timeout(130000)}),
+ assetCMDB:(uid:string)=>call<AssetCMDB>('/api/v1/assets/'+encodeURIComponent(uid)+'/cmdb','AssetCMDB'),
+ setAssetClass:(uid:string,csrf:string,body:{asset_class:AssetClassName|null;revision:string})=>call<AssetCMDB>('/api/v1/assets/'+encodeURIComponent(uid)+'/classification','AssetCMDB',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ software:(uid:string,filter:string,cursor:string|null)=>call<SoftwarePage>('/api/v1/assets/'+encodeURIComponent(uid)+'/software?limit=100'+(filter?'&filter='+encodeURIComponent(filter):'')+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SoftwarePage'),
+ components:(uid:string)=>call<ComponentList>('/api/v1/assets/'+encodeURIComponent(uid)+'/components','ComponentList'),
+ products:(q:string)=>call<ProductList>('/api/v1/software?q='+encodeURIComponent(q),'ProductList'),
+ services:(cursor:string|null=null)=>call<ServicePage>('/api/v1/services?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'ServicePage'),
+ service:(uid:string)=>call<ServiceDetail>('/api/v1/services/'+encodeURIComponent(uid),'ServiceDetail'),
+ createService:(csrf:string,body:{name:string;description?:string;criticality?:string})=>call<ServiceDetail>('/api/v1/services','ServiceDetail',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ patchService:(uid:string,csrf:string,body:{revision:string;name?:string;description?:string;criticality?:string;retire?:boolean})=>call<ServiceDetail>('/api/v1/services/'+encodeURIComponent(uid),'ServiceDetail',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ createRelation:(csrf:string,body:{relation_type:string;from:CIEnd;to:CIEnd;note?:string})=>call<Relation>('/api/v1/relations','Relation',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ retireRelation:(id:string,csrf:string)=>call<Relation>('/api/v1/relations/'+encodeURIComponent(id),'Relation',{method:'DELETE',headers:{'X-CSRF-Token':csrf}}),
  topology:()=>call<Topology>('/api/v1/topology','Topology'),
  sources:(cursor:string|null=null)=>call<SourcePage>('/api/v1/sources?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SourcePage')
 };

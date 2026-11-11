@@ -40,7 +40,8 @@ type Component struct {
 	Evidence  Evidence `json:"evidence"`
 }
 
-// Software — установки ПО актива по имени (стабильная сортировка: имя, ключ записи), курсор — ключ последней записи.
+// Software — установки ПО актива: стабильная сортировка по имени без учёта регистра, затем ключ записи;
+// курсор — ключ последней записи (keyset по паре имя+ключ).
 func (Store) Software(ctx context.Context, tx pgx.Tx, tenant, asset, filter, after string, limit int) ([]Installation, error) {
 	rows, e := tx.Query(ctx, `SELECT i.record_key,i.name,i.version,i.publisher,i.architecture,i.package_source,
 o.observation_id::text,o.source_id::text,o.payload->'origin'->>'source_kind',s.collected_at,o.clock_quality
@@ -48,7 +49,8 @@ FROM inventory.software_installations12 i
 JOIN inventory.observations o ON o.tenant_id=i.tenant_id AND o.observation_id=i.observation_id
 JOIN inventory.observation_sections s ON s.tenant_id=i.tenant_id AND s.observation_id=i.observation_id AND s.section_name='software'
 WHERE i.tenant_id=$1 AND i.asset_uid=$2 AND ($3='' OR lower(i.name) LIKE '%'||lower($3)||'%' OR lower(i.publisher) LIKE '%'||lower($3)||'%')
-AND ($4='' OR i.record_key>$4) ORDER BY i.record_key LIMIT $5`, tenant, asset, filter, after, limit)
+AND ($4='' OR (lower(COALESCE(i.name,'')),i.record_key)>(SELECT lower(COALESCE(c.name,'')),c.record_key FROM inventory.software_installations12 c WHERE c.tenant_id=$1 AND c.asset_uid=$2 AND c.record_key=$4))
+ORDER BY lower(COALESCE(i.name,'')),i.record_key LIMIT $5`, tenant, asset, filter, after, limit)
 	if e != nil {
 		return nil, e
 	}

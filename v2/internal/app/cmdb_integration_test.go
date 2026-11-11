@@ -155,7 +155,7 @@ func TestC26CMDB(t *testing.T) {
 
 	// 2. ПО: курсорная пагинация без пропусков и повторов, фильтр, provenance
 	seen := map[string]bool{}
-	cursor, pages := "", 0
+	cursor, pages, last := "", 0, ""
 	for {
 		path := "/api/v1/assets/" + a + "/software?limit=40"
 		if cursor != "" {
@@ -171,6 +171,10 @@ func TestC26CMDB(t *testing.T) {
 				t.Fatal("duplicate or missing provenance", i)
 			}
 			seen[i.RecordKey] = true
+			if strings.ToLower(*i.Name) < last {
+				t.Fatal("software must be ordered by name across pages", *i.Name, last)
+			}
+			last = strings.ToLower(*i.Name)
 		}
 		if page.NextCursor == nil {
 			break

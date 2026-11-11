@@ -15,7 +15,7 @@ try{
  if(demo.length<2)throw new Error('need two demo assets');
  const [a,b]=demo;console.log('MERGE',b.observed_hostname,'->',a.observed_hostname);
  // слияние: карточка A, UID карточки B
- await page.locator('.asset-link',{hasText:a.observed_hostname}).first().click();const card=page.getByRole('dialog');await expect(card).toContainText('Сопоставление и слияние');
+ await page.locator('.asset-link',{hasText:a.observed_hostname}).first().click();const card=page.getByRole('dialog');await card.getByRole('tab',{name:'Сопоставление',exact:true}).click();await expect(card).toContainText('Сопоставление и слияние');
  await expect(card.locator('.source-record')).toHaveCount(1);
  await card.getByLabel('UID другой карточки').fill(b.asset_uid);await card.locator('.merge-field').scrollIntoViewIfNeeded();await shot('c25-01-merge-before');
  await card.getByRole('button',{name:'Присоединить карточку к этой'}).click();
@@ -33,7 +33,7 @@ try{
  if(!created||split.length!==before.length||split.some(x=>x.asset_uid===b.asset_uid))throw new Error('split must create a NEW asset UID');
  console.log('SPLIT new',created.asset_uid,'old merged',b.asset_uid,'hostname',created.observed_hostname);
  await card.locator('.source-records').scrollIntoViewIfNeeded();await shot('c25-03-split');
- await card.getByRole('button',{name:'Открыть новый актив'}).click();await expect(card).toContainText(created.asset_uid);await shot('c25-04-new-asset');
+ await card.getByRole('button',{name:'Открыть новый актив'}).click();await expect(card).toContainText('Сопоставление и слияние');await shot('c25-04-new-asset');
  if(errors.length)throw new Error('page errors: '+errors.join('; '));
  console.log('C25.03 UI OK');
 }finally{await browser.close()}
