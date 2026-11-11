@@ -53,3 +53,9 @@ CA центра, ресурсы OpenBao, учётную запись админ�
 Если центр стоял дольше часа — не страшно: токен OpenBao перевыпускается при старте. Сброс стенда: остановить центр и удалить `.local/vm-center-state`.
 Проверено в песочнице: центр → Linux-агент (prepare/grant/enroll/run12) → остановка центра → повторный запуск → тот же агент без переподключения
 продолжил доставку (observations 1 → 3, assets 1, новых grant нет). machine_smoke, vm_center --selftest, c15_center_smoke без флага — без изменений (rc=0).
+
+## Состояние стенда (2026-11-11, R-027)
+Переход на `--persistent` выполнен 11.11 11:46 UTC (сборка fc9397a), 4 источника переподключены. Особенности ВМ: репозиторий — `/root/surveyscan`,
+центр работает от root (`sudo tmux attach -t center`); у root нет доступа к приватному GitHub — код доставлять `git bundle` с рабочей машины
+(`git bundle create dev.bundle origin/develop` → scp → `git fetch dev.bundle refs/remotes/origin/develop:refs/remotes/origin/develop && git checkout -B develop origin/develop`)
+или настроить deploy key. При разборе target.json для повторной регистрации не использовать `eval`: имя `AWM\scanwinrm` теряет обратный слеш.
