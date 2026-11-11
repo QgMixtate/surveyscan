@@ -3,7 +3,7 @@
 ## Начало чата
 
 1. Прочитать актуальные GitHub AGENTS.md, docs/STATUS.md и последние docs/REQUESTS.md.
-2. Прочитать CLAUDE.md как карту legacy-кода; сведения об окружении сверять с машиной.
+2. Прочитать CLAUDE.md как карту кода v2; сведения об окружении сверять с машиной.
 3. Проверить remote/ветку/HEAD/dirty state, активные ветки/PR; origin/main без fetch
    может быть устаревшим. В main ещё нет всей работы активных draft PR.
 4. Для v2 читать TASK_INDEX.md, текущий packages/Cxx.md и нужные spec sections,
@@ -73,10 +73,8 @@ private keys/не перезаписывать E1 reports/не останавл�
 
 ## Legacy v1
 
-Правила snapshot/dashboard относятся к Python v1, не v2. UI/документы по-русски;
-SPA — локальныеUMD безCDN. После app.jsx пересобирать app.js Babel runtime classic.
-Карточки сохраняются в dashboardJSON, рабочая БД задачи удаляется после выполнения.
-Секреты УЗ не попадают в логи/результаты/отчёты. Legacy v1/connector сохранять.
+С 2026-11-11 (решение пользователя) v1 (Python) удалён из основной линии и сохранён в ветке `legacy/v1`.
+Не восстанавливать его в main без поручения; данные v1 нужны для C32 (миграция). UI/документы по-русски.
 
 Полная прежняя история checkpoints перенесена без потерь в
 [AGENTS_HISTORY.md](docs/plans/surveyscan-v2/AGENTS_HISTORY.md); читать только при

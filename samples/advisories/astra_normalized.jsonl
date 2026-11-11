@@ -1,8 +1,0 @@
-# СИНТЕТИЧЕСКИЙ нормализованный фид бюллетеней Astra Linux SE 1.7 (демо).
-# Реальный формат бюллетеней Astra уточняется у вендора; этот JSONL — универсальный вход
-# для любого фида, где нет готового OVAL. Ключ — БИНАРНЫЙ пакет (как в dpkg), версия — полная.
-# openssh-server: исправление бэкпортнуто В ТУ ЖЕ установленную версию -> находка снимется.
-{"distro": "astra", "release": "1.7", "package": "openssh-server", "cve": "CVE-2099-0001", "fixed_version": "1:8.4p1-5+deb11u3+ci202312171324+astra2", "status": "fixed", "advisory_id": "ALSE-2024-0101", "url": "https://wiki.astralinux.ru/bulletins/ALSE-2024-0101"}
-{"distro": "astra", "release": "1.7", "package": "openssh-client", "cve": "CVE-2099-0001", "fixed_version": "1:8.4p1-5+deb11u3+ci202312171324+astra2", "status": "fixed", "advisory_id": "ALSE-2024-0101", "url": "https://wiki.astralinux.ru/bulletins/ALSE-2024-0101"}
-# sudo: установлено 1.9.5p2-3+deb11u1, исправлено позже -> ПОДТВЕРЖДЕНО уязвимо, цель обновления известна.
-{"distro": "astra", "release": "1.7", "package": "sudo", "cve": "CVE-2099-0002", "fixed_version": "1.9.5p2-3+deb11u1+astra2", "status": "fixed", "advisory_id": "ALSE-2024-0147", "url": "https://wiki.astralinux.ru/bulletins/ALSE-2024-0147"}
