@@ -51,6 +51,9 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 		mux.Handle("GET /api/v1/assets/{asset_uid}/inventory/facts/{section}", auth.Wrap("assets:read", false, registry[0].inventoryRecordsHandler12()))
 		mux.Handle("GET /api/v1/reconciliation/conflicts", auth.Wrap("assets:read", false, registry[0].conflictsHandler()))
 		mux.Handle("POST /api/v1/reconciliation/conflicts/{conflict_id}/resolve", auth.Wrap("assets:write", false, registry[0].resolveConflictHandler()))
+		for route, r := range registry[0].ownershipHandlers() {
+			mux.Handle(route, auth.Wrap(r.permission, false, r.handler))
+		}
 		for route, handler := range registry[0].cmdbHandlers() {
 			permission := "assets:write"
 			if route[:4] == "GET " {

@@ -136,7 +136,7 @@ func TestMigrationRepeatPersistenceAndDrift(t *testing.T) {
 	if e = migrate.Check(ctx, other, ms); e != nil {
 		t.Fatal(e)
 	}
-	if e = c.QueryRow(ctx, "SELECT count(*) FROM information_schema.tables WHERE table_schema IN ('access','responsibility','scope','sources','assets','inventory','cmdb','imports','audit','messaging') AND table_type='BASE TABLE'").Scan(&count); e != nil || count != 53 { // 53: +inventory.record_section_source_state12 (0037, R-027), +assets.asset_operations (0038, C25.03), +cmdb.services/relations/changes (0041, C26)
+	if e = c.QueryRow(ctx, "SELECT count(*) FROM information_schema.tables WHERE table_schema IN ('access','responsibility','scope','sources','assets','inventory','cmdb','imports','audit','messaging') AND table_type='BASE TABLE'").Scan(&count); e != nil || count != 54 { // 54: +responsibility.team_members (0042, C27); +inventory.record_section_source_state12 (0037, R-027), +assets.asset_operations (0038, C25.03), +cmdb.services/relations/changes (0041, C26)
 		t.Fatal(count, e)
 	}
 	exec(t, ctx, c, "UPDATE platform.schema_migrations SET sha256=repeat('0',64) WHERE id=(SELECT min(id) FROM platform.schema_migrations)")

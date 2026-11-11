@@ -1,0 +1,347 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:surveyscan:c27:ownership:1:0",
+ "title": "Ответственность и оргструктура (C27, ADR decisions/C27-ownership.md)",
+ "$defs": {
+  "Subject": {
+   "type": "object",
+   "properties": {
+    "subject_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "kind": {
+     "enum": [
+      "person",
+      "team"
+     ]
+    },
+    "name": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 512
+    },
+    "contact": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 512
+    },
+    "active": {
+     "type": "boolean"
+    },
+    "username": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 128
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "revision": {
+     "type": "string",
+     "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "site_fallback": {
+     "type": "boolean"
+    },
+    "members": {
+     "type": "integer",
+     "minimum": 0
+    }
+   },
+   "required": [
+    "subject_id",
+    "kind",
+    "name",
+    "contact",
+    "active",
+    "username",
+    "revision",
+    "site_fallback",
+    "members"
+   ],
+   "additionalProperties": false
+  },
+  "Assignment": {
+   "type": "object",
+   "properties": {
+    "role": {
+     "enum": [
+      "accountable",
+      "business_owner",
+      "technical",
+      "custodian"
+     ]
+    },
+    "subject_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "subject_name": {
+     "type": "string",
+     "maxLength": 512
+    },
+    "subject_kind": {
+     "enum": [
+      "person",
+      "team"
+     ]
+    },
+    "valid_from": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "valid_to": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "reason_code": {
+     "type": "string",
+     "pattern": "^[A-Z][A-Z0-9_]{0,63}$"
+    },
+    "note": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 1024
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "actor_ref": {
+     "type": "string",
+     "maxLength": 256
+    }
+   },
+   "required": [
+    "role",
+    "subject_id",
+    "subject_name",
+    "subject_kind",
+    "valid_from",
+    "valid_to",
+    "reason_code",
+    "note",
+    "actor_ref"
+   ],
+   "additionalProperties": false
+  },
+  "SubjectPage": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "items": {
+     "type": "array",
+     "maxItems": 200,
+     "items": {
+      "$ref": "#/$defs/Subject"
+     }
+    },
+    "next_cursor": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "uuid"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "tenant_id",
+    "items",
+    "next_cursor"
+   ],
+   "additionalProperties": false
+  },
+  "SubjectResult": {
+   "type": "object",
+   "properties": {
+    "subject": {
+     "$ref": "#/$defs/Subject"
+    },
+    "reassigned_assignments": {
+     "type": "integer",
+     "minimum": 0
+    }
+   },
+   "required": [
+    "subject",
+    "reassigned_assignments"
+   ],
+   "additionalProperties": false
+  },
+  "AssetAssignments": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "asset_uid": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "version": {
+     "type": "string",
+     "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "active": {
+     "type": "array",
+     "maxItems": 4,
+     "items": {
+      "$ref": "#/$defs/Assignment"
+     }
+    },
+    "history": {
+     "type": "array",
+     "maxItems": 500,
+     "items": {
+      "$ref": "#/$defs/Assignment"
+     }
+    }
+   },
+   "required": [
+    "tenant_id",
+    "asset_uid",
+    "version",
+    "active",
+    "history"
+   ],
+   "additionalProperties": false
+  },
+  "BulkAssignResult": {
+   "type": "object",
+   "properties": {
+    "applied": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "unchanged": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "stale_asset_uids": {
+     "type": "array",
+     "maxItems": 200,
+     "items": {
+      "type": "string",
+      "format": "uuid"
+     }
+    }
+   },
+   "required": [
+    "applied",
+    "unchanged",
+    "stale_asset_uids"
+   ],
+   "additionalProperties": false
+  },
+  "WorklistPage": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "scope": {
+     "enum": [
+      "mine",
+      "team",
+      "unassigned",
+      "attention"
+     ]
+    },
+    "items": {
+     "type": "array",
+     "maxItems": 100,
+     "items": {
+      "type": "object",
+      "properties": {
+       "asset_uid": {
+        "type": "string",
+        "format": "uuid"
+       },
+       "version": {
+        "type": "string",
+        "pattern": "^[1-9][0-9]{0,19}$"
+       },
+       "display_name": {
+        "oneOf": [
+         {
+          "type": "string",
+          "maxLength": 512
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "observed_hostname": {
+        "oneOf": [
+         {
+          "type": "string",
+          "maxLength": 255
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "assignments": {
+        "type": "array",
+        "maxItems": 4,
+        "items": {
+         "$ref": "#/$defs/Assignment"
+        }
+       }
+      },
+      "required": [
+       "asset_uid",
+       "version",
+       "display_name",
+       "observed_hostname",
+       "assignments"
+      ],
+      "additionalProperties": false
+     }
+    },
+    "next_cursor": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "uuid"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "tenant_id",
+    "scope",
+    "items",
+    "next_cursor"
+   ],
+   "additionalProperties": false
+  }
+ }
+}
