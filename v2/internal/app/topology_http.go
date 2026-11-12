@@ -66,7 +66,8 @@ type topologyEntry struct {
 
 type topologyCache struct {
 	mu      sync.Mutex
-	entries map[string]*topologyEntry
+	entries map[string]*topologyEntry // текущее (возможно, ещё считающееся) вычисление
+	last    map[string]*topologyEntry // последнее успешное — отдаётся во время пересчёта
 }
 
 func (r *Registry) Topology(ctx context.Context, id accessport.Identity) (Topology, error) {
@@ -84,21 +85,29 @@ func (r *Registry) Topology(ctx context.Context, id accessport.Identity) (Topolo
 	c := &r.topology
 	c.mu.Lock()
 	if c.entries == nil {
-		c.entries = map[string]*topologyEntry{}
+		c.entries, c.last = map[string]*topologyEntry{}, map[string]*topologyEntry{}
 	}
 	entry := c.entries[id.TenantID]
-	if entry == nil || entry.err != nil && isDone(entry.ready) || isDone(entry.ready) && time.Since(entry.at) > topologyCacheTTL {
-		entry = &topologyEntry{ready: make(chan struct{})}
-		c.entries[id.TenantID] = entry
+	if entry == nil || isDone(entry.ready) && (entry.err != nil || time.Since(entry.at) > topologyCacheTTL) {
+		if entry != nil && entry.err == nil {
+			c.last[id.TenantID] = entry // устаревшая схема отдаётся, пока считается новая
+		}
+		next := &topologyEntry{ready: make(chan struct{})}
+		c.entries[id.TenantID] = next
 		go func() {
 			compute, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Minute)
 			defer cancel()
-			entry.value, entry.err = r.computeTopology(compute, id.TenantID)
-			entry.at = time.Now()
-			close(entry.ready)
+			next.value, next.err = r.computeTopology(compute, id.TenantID)
+			next.at = time.Now()
+			close(next.ready)
 		}()
+		entry = next
 	}
+	stale := c.last[id.TenantID]
 	c.mu.Unlock()
+	if !isDone(entry.ready) && stale != nil {
+		return stale.value, nil
+	}
 	select {
 	case <-entry.ready:
 		return entry.value, entry.err

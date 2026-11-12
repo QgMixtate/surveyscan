@@ -65,6 +65,9 @@ struct SearchRequest {
     #[serde(default, deserialize_with = "null_default")]
     filters: HashMap<String, String>,
     limit: usize,
+    // фрагменты нужны только показываемой странице: строить их для всех кандидатов дорого (C30.03)
+    #[serde(default)]
+    snippets: Option<usize>,
 }
 
 #[derive(Serialize)]
@@ -77,6 +80,7 @@ struct Hit {
     highlights: Vec<[usize; 2]>, // в символах (не байтах) — для браузера
 }
 
+#[derive(Clone, Copy)]
 struct Fields {
     id: Field,
     tenant: Field,
@@ -244,23 +248,35 @@ impl Generation {
         Box::new(BooleanQuery::new(must))
     }
 
-    fn search(&self, req: &SearchRequest) -> tantivy::Result<(usize, Vec<Hit>)> {
-        let searcher = self.reader.searcher();
-        let query = self.compile(req);
-        let (total, top) = searcher.search(&*query, &(Count, TopDocs::with_limit(req.limit.clamp(1, 1000)).order_by_score()))?;
-        let mut snippets = SnippetGenerator::create(&searcher, &*query, self.fields.text)?;
-        snippets.set_max_num_chars(160);
-        let mut hits = vec![];
-        for (score, addr) in top {
-            let d: TantivyDocument = searcher.doc(addr)?;
-            let snippet = snippets.snippet_from_doc(&d);
-            let fragment = snippet.fragment().to_string();
-            let highlights = snippet.highlighted().iter().map(|r| [fragment[..r.start].chars().count(), fragment[..r.end].chars().count()]).collect();
-            let text = |f: Field| d.get_first(f).and_then(|v| v.as_str()).unwrap_or_default().to_string();
-            hits.push(Hit { asset_uid: text(self.fields.id), score, os: text(self.fields.os), class: text(self.fields.class), fragment, highlights });
-        }
-        Ok((total, hits))
+    fn snapshot(&self) -> (tantivy::Searcher, Fields) {
+        (self.reader.searcher(), self.fields)
     }
+}
+
+// Поиск выполняется вне общей блокировки: снимок читателя берётся под блокировкой, сам запрос — параллельно с записью.
+fn search(searcher: &tantivy::Searcher, fields: &Fields, query: &dyn Query, req: &SearchRequest) -> tantivy::Result<(usize, Vec<Hit>)> {
+    let (total, top) = searcher.search(query, &(Count, TopDocs::with_limit(req.limit.clamp(1, 1000)).order_by_score()))?;
+    let wanted = req.snippets.unwrap_or(req.limit).min(top.len());
+    let mut snippets = if wanted > 0 { Some(SnippetGenerator::create(searcher, query, fields.text)?) } else { None };
+    if let Some(g) = snippets.as_mut() {
+        g.set_max_num_chars(160);
+    }
+    let mut hits = vec![];
+    for (i, (score, addr)) in top.into_iter().enumerate() {
+        let d: TantivyDocument = searcher.doc(addr)?;
+        let (fragment, highlights) = match snippets.as_ref().filter(|_| i < wanted) {
+            Some(g) => {
+                let snippet = g.snippet_from_doc(&d);
+                let fragment = snippet.fragment().to_string();
+                let highlights = snippet.highlighted().iter().map(|r| [fragment[..r.start].chars().count(), fragment[..r.end].chars().count()]).collect();
+                (fragment, highlights)
+            }
+            None => (String::new(), vec![]),
+        };
+        let text = |f: Field| d.get_first(f).and_then(|v| v.as_str()).unwrap_or_default().to_string();
+        hits.push(Hit { asset_uid: text(fields.id), score, os: text(fields.os), class: text(fields.class), fragment, highlights });
+    }
+    Ok((total, hits))
 }
 
 struct State {
@@ -302,6 +318,22 @@ fn error(status: u16, code: &str) -> tiny_http::Response<std::io::Cursor<Vec<u8>
 }
 
 fn handle(state: &Mutex<State>, method: &str, url: &str, body: &[u8]) -> tiny_http::Response<std::io::Cursor<Vec<u8>>> {
+    if (method, url) == ("POST", "/v1/search") {
+        let r = (|| -> Result<_, Box<dyn std::error::Error>> {
+            let req: SearchRequest = serde_json::from_slice(body)?;
+            let (searcher, fields, query) = {
+                let s = state.lock().unwrap();
+                let (searcher, fields) = s.active.snapshot();
+                (searcher, fields, s.active.compile(&req))
+            };
+            let (total, hits) = search(&searcher, &fields, &*query, &req)?;
+            Ok(json(200, &serde_json::json!({"total": total, "hits": hits})))
+        })();
+        return r.unwrap_or_else(|e| {
+            eprintln!("request failed: {e}");
+            error(400, "INVALID_REQUEST")
+        });
+    }
     let mut s = state.lock().unwrap();
     let r = (|| -> Result<tiny_http::Response<std::io::Cursor<Vec<u8>>>, Box<dyn std::error::Error>> {
         Ok(match (method, url) {
@@ -313,11 +345,6 @@ fn handle(state: &Mutex<State>, method: &str, url: &str, body: &[u8]) -> tiny_ht
                     b.apply(&req)?; // двойная запись: пересборка не теряет изменений, пришедших во время неё
                 }
                 json(200, &serde_json::json!({"applied": applied, "stale": stale, "deleted": deleted}))
-            }
-            ("POST", "/v1/search") => {
-                let req: SearchRequest = serde_json::from_slice(body)?;
-                let (total, hits) = s.active.search(&req)?;
-                json(200, &serde_json::json!({"total": total, "hits": hits}))
             }
             ("POST", "/v1/rebuild/begin") => {
                 let next = s.active.number + 1;
@@ -372,14 +399,26 @@ fn main() {
     assert!(addr.ip().is_loopback(), "search service listens on loopback only");
     let token = std::fs::read_to_string(&args[3]).expect("token file").trim().to_string();
     assert!(token.len() >= 32, "token must be at least 32 characters");
-    let state = Mutex::new(State::open(PathBuf::from(&args[2])).expect("open index"));
-    let server = tiny_http::Server::http(addr).expect("listen");
+    let state = std::sync::Arc::new(Mutex::new(State::open(PathBuf::from(&args[2])).expect("open index")));
+    let server = std::sync::Arc::new(tiny_http::Server::http(addr).expect("listen"));
+    let token = std::sync::Arc::new(token);
     eprintln!("surveyscan-search READY {addr} format={FORMAT}");
-    for mut req in server.incoming_requests() {
-        let authorized = req.headers().iter().any(|h| h.field.equiv("X-Search-Token") && h.value.as_str() == token);
-        let mut body = vec![];
-        let ok = std::io::Read::read_to_end(&mut std::io::Read::take(req.as_reader(), 64 << 20), &mut body).is_ok();
-        let resp = if !authorized { error(401, "UNAUTHORIZED") } else if !ok { error(400, "INVALID_REQUEST") } else { handle(&state, req.method().as_str(), req.url(), &body) };
-        let _ = req.respond(resp);
+    // несколько обработчиков: поиск идёт параллельно, запись в индекс — под общей блокировкой (C30.03)
+    let workers: Vec<_> = (0..8)
+        .map(|_| {
+            let (server, state, token) = (server.clone(), state.clone(), token.clone());
+            std::thread::spawn(move || {
+                while let Ok(mut req) = server.recv() {
+                    let authorized = req.headers().iter().any(|h| h.field.equiv("X-Search-Token") && h.value.as_str() == token.as_str());
+                    let mut body = vec![];
+                    let ok = std::io::Read::read_to_end(&mut std::io::Read::take(req.as_reader(), 64 << 20), &mut body).is_ok();
+                    let resp = if !authorized { error(401, "UNAUTHORIZED") } else if !ok { error(400, "INVALID_REQUEST") } else { handle(&state, req.method().as_str(), req.url(), &body) };
+                    let _ = req.respond(resp);
+                }
+            })
+        })
+        .collect();
+    for w in workers {
+        let _ = w.join();
     }
 }

@@ -224,17 +224,32 @@ COALESCE((SELECT array_agg(DISTINCT v.name) FROM cmdb.relations rel JOIN cmdb.se
 // IndexSearchOne — один шаг потребителя outbox поиска для тенанта (false — событий нет). Сервис недоступен —
 // событие не потребляется (попытки не тратятся, в dead letter не уходит).
 func (r *Registry) IndexSearchOne(ctx context.Context, tenant string) (bool, error) {
+	n, e := r.IndexSearchBatch(ctx, tenant, 1)
+	return n > 0, e
+}
+
+// IndexSearchBatch — пачка событий outbox тенанта одним обращением к сервису (C30.03: по одному событию с фиксацией
+// индекса на каждое потребитель не успевал за фоновым импортом). Активы в пачке не повторяются.
+func (r *Registry) IndexSearchBatch(ctx context.Context, tenant string, max int) (int, error) {
 	if r.Search == nil {
-		return false, ErrSearchUnavailable
+		return 0, ErrSearchUnavailable
 	}
 	if _, e := r.Search.Status(ctx); e != nil {
-		return false, e
+		return 0, e
 	}
-	return messaging.ConsumeOne(ctx, r.Pool, tenant, SearchConsumer, func(ctx context.Context, tx pgx.Tx, event messaging.Event) error {
-		if event.Aggregate != "asset" {
+	return messaging.ConsumeBatch(ctx, r.Pool, tenant, SearchConsumer, max, func(ctx context.Context, tx pgx.Tx, events []messaging.Event) error {
+		seen := map[string]bool{}
+		var uids []string
+		for _, ev := range events {
+			if ev.Aggregate == "asset" && !seen[ev.AssetID] {
+				seen[ev.AssetID] = true
+				uids = append(uids, ev.AssetID)
+			}
+		}
+		if len(uids) == 0 {
 			return nil
 		}
-		return r.pushSearch(ctx, tx, event.Tenant, []string{event.AssetID}, "/v1/apply")
+		return r.pushSearch(ctx, tx, tenant, uids, "/v1/apply")
 	})
 }
 
@@ -366,7 +381,7 @@ func (r *Registry) SearchAssets(ctx context.Context, id accessport.Identity, que
 	if filters == nil {
 		filters = map[string]string{}
 	}
-	e = r.Search.call(ctx, "/v1/search", map[string]any{"tenant": id.TenantID, "query": query, "filters": filters, "limit": searchWindow}, &resp)
+	e = r.Search.call(ctx, "/v1/search", map[string]any{"tenant": id.TenantID, "query": query, "filters": filters, "limit": searchWindow, "snippets": min(offset+limit+20, searchWindow)}, &resp)
 	if e == nil {
 		out.Mode, hits = "fulltext", resp.Hits
 	} else if errors.Is(e, ErrSearchUnavailable) {
@@ -574,9 +589,9 @@ func (r *Registry) SearchMaintain(ctx context.Context, log func(string)) {
 			tenants, e := messaging.PendingTenantsFor(task, r.Pool, SearchConsumer)
 			if e == nil {
 				for _, tenant := range tenants {
-					for range 200 {
-						worked, e := r.IndexSearchOne(task, tenant)
-						if e != nil || !worked {
+					for range 20 {
+						n, e := r.IndexSearchBatch(task, tenant, 200)
+						if e != nil || n == 0 {
 							break
 						}
 					}

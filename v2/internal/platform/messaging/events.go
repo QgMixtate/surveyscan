@@ -127,3 +127,54 @@ func PendingTenantsFor(ctx context.Context, pool *pgxpool.Pool, consumer string)
 	}
 	return out, rows.Err()
 }
+
+// ConsumeBatch — пакетный потребитель для эффектов, не зависящих от порядка версий внутри агрегата (C30.03: индекс
+// поиска строит документ по текущему состоянию PostgreSQL с текущей версией). До max непримененных событий тенанта
+// передаются эффекту одной пачкой; при успехе все отмечаются applied в той же транзакции, при ошибке ничего не
+// отмечается (попытки не расходуются, dead letter не возникает — эффект идемпотентен и повторяется следующим проходом).
+func ConsumeBatch(ctx context.Context, pool *pgxpool.Pool, tenant, consumer string, max int, effect func(context.Context, pgx.Tx, []Event) error) (int, error) {
+	tx, e := pool.Begin(ctx)
+	if e != nil {
+		return 0, e
+	}
+	defer tx.Rollback(ctx)
+	if _, e = tx.Exec(ctx, "SELECT pg_advisory_xact_lock(hashtextextended($1,0))", "consumer:"+tenant+":"+consumer); e != nil {
+		return 0, e
+	}
+	rows, e := tx.Query(ctx, `SELECT e.event_id::text,e.tenant_id::text,e.producer_module,e.aggregate_type,e.aggregate_id::text,e.aggregate_version::text,e.event_type,e.correlation_id::text,e.payload
+FROM messaging.outbox_events e WHERE e.tenant_id=$1 AND NOT EXISTS(SELECT 1 FROM messaging.consumer_checkpoints c WHERE c.tenant_id=e.tenant_id AND c.event_id=e.event_id AND c.consumer_name=$2 AND c.state='applied')
+ORDER BY e.occurred_at,e.event_id LIMIT $3`, tenant, consumer, max)
+	if e != nil {
+		return 0, e
+	}
+	var events []Event
+	for rows.Next() {
+		var ev Event
+		var payload []byte
+		if e = rows.Scan(&ev.ID, &ev.Tenant, &ev.Producer, &ev.Aggregate, &ev.AssetID, &ev.Version, &ev.Type, &ev.Correlation, &payload); e != nil {
+			rows.Close()
+			return 0, e
+		}
+		if e = json.Unmarshal(payload, &ev.Data); e != nil {
+			rows.Close()
+			return 0, e
+		}
+		events = append(events, ev)
+	}
+	rows.Close()
+	if e = rows.Err(); e != nil || len(events) == 0 {
+		return 0, e
+	}
+	if e = effect(ctx, tx, events); e != nil {
+		return 0, e
+	}
+	ids := make([]string, len(events))
+	for i, ev := range events {
+		ids[i] = ev.ID
+	}
+	if _, e = tx.Exec(ctx, `INSERT INTO messaging.consumer_checkpoints(tenant_id,consumer_name,event_id,state,attempts,applied_at) SELECT $1,$2,id,'applied',1,clock_timestamp() FROM unnest($3::uuid[]) AS id
+ON CONFLICT(tenant_id,consumer_name,event_id) DO UPDATE SET state='applied',applied_at=clock_timestamp(),lease_until=NULL`, tenant, consumer, ids); e != nil {
+		return 0, e
+	}
+	return len(events), tx.Commit(ctx)
+}
