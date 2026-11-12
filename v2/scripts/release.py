@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 ROOT = Path(__file__).resolve().parents[1]
 BINARIES = {'surveyscan-server': 'server', 'surveyscan-agent': 'agent',
             'surveyscan-collector': 'collector', 'surveyscanctl': 'cli'}
+SEARCH = 'surveyscan-search'  # C33.02: необязательный компонент (C29), Rust; сборка с SURVEYSCAN_VERSION/REVISION/DIRTY
 VERSION = re.compile(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[a-zA-Z0-9][a-zA-Z0-9.-]*)?')
 MAX_FILES = 10000
 MAX_BYTES = 512 * 1024 * 1024
@@ -96,6 +97,42 @@ def sign(bundle, key):
     (bundle / 'manifest.sig').chmod(0o644)
 
 
+REVOCATIONS = 'surveyscan-revocations-v1'
+
+
+def revoke(output, key, revoked, previous=None):
+    """Подписанный список отозванных выпусков (C33.02): updater не готовит отозванную версию; список только растёт."""
+    entries = {}
+    if previous is not None:
+        for item in read_json(previous / 'revocations.json')['revoked']:
+            entries[item['version']] = item
+    for item in revoked:
+        version_, _, reason = item.partition(':')
+        require(VERSION.fullmatch(version_) is not None and 0 < len(reason) <= 256, 'VERSION:REASON required')
+        entries.setdefault(version_, {'version': version_, 'reason': reason})
+    require(not output.exists() and not output.is_symlink(), 'new output directory required')
+    output.mkdir(parents=True)
+    write_json(output / 'revocations.json', {'format': REVOCATIONS, 'revoked': sorted(entries.values(), key=lambda e: e['version'])})
+    info = key.lstat()
+    require(stat.S_ISREG(info.st_mode) and info.st_uid == os.getuid() and not stat.S_IMODE(info.st_mode) & 0o077,
+            'owner-only private signing key required')
+    signature = openssl('pkeyutl', '-sign', '-rawin', '-inkey', key, '-in', output / 'revocations.json')
+    require(len(signature) == 64, 'Ed25519 signing key required')
+    (output / 'revocations.sig').write_bytes(signature)
+    return {'revoked': sorted(entries)}
+
+
+def revoked_versions(directory, public_key):
+    """Проверенный подписью набор отозванных версий."""
+    signature, document = directory / 'revocations.sig', directory / 'revocations.json'
+    require(signature.is_file() and not signature.is_symlink() and signature.stat().st_size == 64, 'signed revocation list required')
+    require_ed25519(openssl('pkey', '-pubin', '-in', public_key, '-outform', 'DER'))
+    openssl('pkeyutl', '-verify', '-pubin', '-rawin', '-inkey', public_key, '-in', document, '-sigfile', signature)
+    data = read_json(document)
+    require(data.get('format') == REVOCATIONS and isinstance(data.get('revoked'), list), 'unsupported revocation list')
+    return {item['version'] for item in data['revoked']}
+
+
 def require_ed25519(der):
     require(len(der) == 44 and der[:12] == bytes.fromhex('302a300506032b6570032100'),
             'Ed25519 key required')
@@ -137,6 +174,10 @@ def verify_payload(manifest, manifest_path, signature, payload, public_key, inst
     require(actual == expected, 'artifact set, digest, size or mode mismatch')
     for name in BINARIES:
         require(actual.get('bin/' + name, {}).get('mode') == 0o755, 'missing executable component')
+    has_search = 'search' in manifest.get('components', {})
+    require(has_search == ('bin/' + SEARCH in actual), 'search component and binary must come together')
+    if has_search:
+        require(actual['bin/' + SEARCH].get('mode') == 0o755, 'missing executable component')
     require({'web/index.html', 'web/version.json', 'sbom.spdx.json', 'CHECKSUMS.sha256'} <= actual.keys(),
             'missing Web UI or release metadata')
     sums = ''.join(f'{data["sha256"]}  {name}\n' for name, data in actual.items()
@@ -173,6 +214,25 @@ def sbom(payload, versions, go):
                 relationships.append({'spdxElementId': 'SPDXRef-' + name, 'relationshipType': 'DEPENDS_ON',
                                       'relatedSpdxElement': module_id})
     packages.extend(modules.values())
+    if 'search' in versions:
+        packages.append({'SPDXID': 'SPDXRef-' + SEARCH, 'name': SEARCH, 'versionInfo': versions['search']['version'],
+                         'downloadLocation': 'NOASSERTION', 'filesAnalyzed': False, 'licenseConcluded': 'NOASSERTION',
+                         'licenseDeclared': 'NOASSERTION', 'copyrightText': 'NOASSERTION',
+                         'checksums': [{'algorithm': 'SHA256', 'checksumValue': digest(payload / 'bin' / SEARCH)}]})
+        relationships.append({'spdxElementId': 'SPDXRef-DOCUMENT', 'relationshipType': 'DESCRIBES',
+                              'relatedSpdxElement': 'SPDXRef-' + SEARCH})
+        import tomllib
+        cargo = tomllib.loads((ROOT / 'search/Cargo.lock').read_text())
+        for crate in cargo.get('package', []):
+            if crate['name'] == SEARCH:
+                continue
+            identifier = 'SPDXRef-crate-' + hashlib.sha256((crate['name'] + '@' + crate['version']).encode()).hexdigest()[:24]
+            packages.append({'SPDXID': identifier, 'name': crate['name'], 'versionInfo': crate['version'],
+                             'downloadLocation': 'NOASSERTION', 'filesAnalyzed': False, 'licenseConcluded': 'NOASSERTION',
+                             'licenseDeclared': 'NOASSERTION', 'copyrightText': 'NOASSERTION',
+                             'comment': 'Cargo.lock entry; source=' + crate.get('source', 'local') + '; checksum=' + crate.get('checksum', 'none')})
+            relationships.append({'spdxElementId': 'SPDXRef-' + SEARCH, 'relationshipType': 'DEPENDS_ON',
+                                  'relatedSpdxElement': identifier})
     lock = read_json(ROOT / 'web/package-lock.json')
     for path, data in lock['packages'].items():
         if not path:
@@ -203,7 +263,7 @@ def sbom(payload, versions, go):
             'packages': packages, 'relationships': relationships}
 
 
-def build(output, version, distribution, web, go):
+def build(output, version, distribution, web, go, search=None):
     require(VERSION.fullmatch(version) is not None, 'semantic version required')
     require(not output.exists() and not output.is_symlink(), 'new output directory required')
     output.parent.mkdir(parents=True, exist_ok=True)
@@ -224,6 +284,16 @@ def build(output, version, distribution, web, go):
             versions[name] = json.loads(subprocess.check_output([str(payload / 'bin' / name), 'version'], timeout=10))
             require(versions[name]['component'] == component and versions[name]['version'] == version,
                     'build all four binaries with requested VERSION first')
+        if search is not None:
+            require(search.is_file() and not search.is_symlink(), 'regular locally built search binary required')
+            with search.open('rb') as stream:
+                header = stream.read(20)
+            require(header[:6] == b'\x7fELF\x02\x01' and header[18:20] == b'\x3e\x00', 'Linux amd64 ELF binary required')
+            shutil.copyfile(search, payload / 'bin' / SEARCH)
+            (payload / 'bin' / SEARCH).chmod(0o755)
+            versions['search'] = json.loads(subprocess.check_output([str(payload / 'bin' / SEARCH), 'version'], timeout=10))
+            require(versions['search'].get('component') == 'search' and versions['search'].get('version') == version,
+                    'build surveyscan-search with SURVEYSCAN_VERSION set to the release version')
         versions['web'] = read_json(web / 'version.json')
         require(VERSION.fullmatch(versions['web']['version']) is not None
                 and re.fullmatch('[0-9a-f]{40}', versions['web']['revision']), 'versioned Web provenance required')
@@ -231,7 +301,7 @@ def build(output, version, distribution, web, go):
         require(len(revisions) == 1 and re.fullmatch('[0-9a-f]{40}', revisions.pop()), 'component revision mismatch')
         require(all(v.get('source_dirty') in ('true', 'false') for v in versions.values()), 'source provenance required')
         source_revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
-        require(all(versions[name]['revision'] == source_revision for name in BINARIES),
+        require(all(versions[name]['revision'] == source_revision for name in [*BINARIES, *(['search'] if search else [])]),
                 'rebuild Go components after changing source revision')
         for field, name in [('openapi_sha256', 'openapi.json'), ('c09_sha256', 'c09.openapi.json'),
                             ('c12_sha256', 'c12.openapi.json')]:
@@ -325,6 +395,12 @@ def main():
     p.add_argument('--dist', type=Path, default=ROOT / '.dist')
     p.add_argument('--web', type=Path, default=ROOT / 'web/dist')
     p.add_argument('--go', type=Path, default=Path(os.environ.get('GO', 'go')))
+    p.add_argument('--search', type=Path, help='optional surveyscan-search binary (C29)')
+    p = commands.add_parser('revoke')
+    p.add_argument('--output', required=True, type=Path)
+    p.add_argument('--key', required=True, type=Path)
+    p.add_argument('--previous', type=Path, help='previous signed revocation list to extend')
+    p.add_argument('--revoke', required=True, nargs='+', metavar='VERSION:REASON')
     for command in ('sign', 'verify', 'stage'):
         p = commands.add_parser(command)
         p.add_argument('--bundle', required=True, type=Path)
@@ -333,7 +409,9 @@ def main():
             p.add_argument('--root', required=True, type=Path)
     args = parser.parse_args()
     if args.command == 'build':
-        result = build(args.output, args.version, args.dist, args.web, args.go)
+        result = build(args.output, args.version, args.dist, args.web, args.go, args.search)
+    elif args.command == 'revoke':
+        result = revoke(args.output, args.key, args.revoke, args.previous)
     elif args.command == 'sign':
         sign(args.bundle, args.key)
         result = {'signed': True}

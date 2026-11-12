@@ -21,7 +21,7 @@ import urllib.parse
 import urllib.request
 import uuid
 
-from release import digest, read_json, require, verify, verify_payload, VERSION
+from release import digest, read_json, require, revoked_versions, verify, verify_payload, VERSION
 
 
 def sync(directory):
@@ -126,8 +126,10 @@ def state(base, record, phase):
     save(base / 'update.json', record)
 
 
-def prepare(root, bundle, key, checkpoint=None):
+def prepare(root, bundle, key, checkpoint=None, revocations=None):
     incoming = verify(bundle, key)
+    if revocations is not None:  # C33.02: отозванный выпуск не готовится
+        require(incoming['version'] not in revoked_versions(revocations, key), 'release version is revoked')
     with locked(root) as base:
         if (base / 'update.json').exists():
             old = read_json(base / 'update.json')
@@ -317,6 +319,7 @@ def main():
     p.add_argument('--public-key', type=Path, required=True)
     p.add_argument('--bundle', type=Path)
     p.add_argument('--checkpoint', type=Path)
+    p.add_argument('--revocations', type=Path, help='signed revocation list directory (release.py revoke)')
     p.add_argument('--health-url')
     p.add_argument('--ca-file', type=Path)
     p.add_argument('--dev-loopback-http', action='store_true')
@@ -324,12 +327,14 @@ def main():
     a = p.parse_args()
     if a.command == 'prepare':
         require(a.bundle is not None, 'bundle required')
-        result = prepare(a.root, a.bundle, a.public_key, a.checkpoint)
+        result = prepare(a.root, a.bundle, a.public_key, a.checkpoint, a.revocations)
     elif a.command == 'status':
         with locked(a.root) as base:
             _, manifest = installed(base, active(base), a.public_key)
             result = {'active': manifest['version'], 'fenced': (base / 'update.fence').exists(),
                       'journal': read_json(base / 'update.json') if (base / 'update.json').exists() else None}
+            if a.revocations is not None:
+                result['active_revoked'] = manifest['version'] in revoked_versions(a.revocations, a.public_key)
     else:
         require(a.health_url is not None, 'health URL required')
         result = apply(a.root, a.public_key, SystemdController(a.root, a.health_url, a.ca_file, a.dev_loopback_http, a.components), a.command == 'recover')

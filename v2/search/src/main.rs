@@ -391,6 +391,17 @@ fn handle(state: &Mutex<State>, method: &str, url: &str, body: &[u8]) -> tiny_ht
 
 fn main() {
     let args: Vec<String> = std::env::args().collect();
+    if args.len() == 2 && args[1] == "version" {
+        // C33.02: происхождение для подписанного релиза — версия и ревизия задаются при сборке (release.py)
+        println!(
+            "{{\"component\":\"search\",\"version\":\"{}\",\"revision\":\"{}\",\"source_dirty\":\"{}\",\"format\":\"{}\"}}",
+            option_env!("SURVEYSCAN_VERSION").unwrap_or(env!("CARGO_PKG_VERSION")),
+            option_env!("SURVEYSCAN_REVISION").unwrap_or("unknown"),
+            option_env!("SURVEYSCAN_DIRTY").unwrap_or("unknown"),
+            FORMAT
+        );
+        return;
+    }
     if args.len() != 4 {
         eprintln!("usage: surveyscan-search LISTEN(127.0.0.1:PORT) DATA_DIR TOKEN_FILE");
         std::process::exit(2);

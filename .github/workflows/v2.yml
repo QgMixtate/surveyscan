@@ -51,6 +51,8 @@ jobs:
           git diff --exit-code -- src/generated  # типы и валидаторы Web совпадают с контрактами
           npm run build
       - name: Signed release bundle, independent Web version and verified staging
+        env:
+          SURVEYSCAN_RELEASE_SEARCH: "1"
         run: GO=go python scripts/release_smoke.py
       - name: Static systemd unit verification (not boot acceptance)
         run: python scripts/unit_check.py

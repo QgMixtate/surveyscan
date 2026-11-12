@@ -116,6 +116,41 @@ def main():
         release.install(bundle, public, work / 'install-two')
         assert release.digest(work / 'install-two/release-manifest.json') == release.digest(root / 'release-manifest.json')
         checks.append('same signed bundle stages twice without rebuild or regenerated machine identity')
+        # C33.02: необязательный сервис поиска в том же подписанном выпуске; SBOM включает Cargo.lock
+        if os.environ.get('SURVEYSCAN_RELEASE_SEARCH') == '1':
+            revision = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=release.ROOT, text=True).strip()
+            env = dict(os.environ, SURVEYSCAN_VERSION=version, SURVEYSCAN_REVISION=revision, SURVEYSCAN_DIRTY=manifest['components']['surveyscan-server']['source_dirty'])
+            subprocess.run(['cargo', 'build', '--release', '--locked'], cwd=release.ROOT / 'search', env=env, check=True, capture_output=True, timeout=1800)
+            with_search = work / 'bundle-search'
+            release.build(with_search, version, release.ROOT / '.dist', release.ROOT / 'web/dist', Path(os.environ['GO']), release.ROOT / 'search/target/release/surveyscan-search')
+            release.sign(with_search, key)
+            signed = release.verify(with_search, public)
+            assert signed['components']['search']['revision'] == revision and signed['components']['search']['version'] == version
+            bom = release.read_json(with_search / 'payload/sbom.spdx.json')
+            assert any(p['name'] == 'tantivy' for p in bom['packages']) and any(p['name'] == 'surveyscan-search' for p in bom['packages'])
+            (with_search / 'payload/bin/surveyscan-search').rename(work / 'saved-search')
+            refused(lambda: release.verify(with_search, public))
+            checks.append('search service (C29) ships in the same signed release with matching version/revision; SPDX lists Cargo.lock crates; missing search binary refused')
+        # C33.02: подписанный список отзыва; отозванный выпуск не готовится updater
+        import updater
+        revoked = work / 'revocations'
+        release.revoke(revoked, key, [version + ':test revocation'])
+        assert version in release.revoked_versions(revoked, public)
+        refused(lambda: release.revoked_versions(revoked, foreign))
+        extended = work / 'revocations-2'
+        release.revoke(extended, key, ['9.9.9:later'], revoked)
+        assert release.revoked_versions(extended, public) == {version, '9.9.9'}
+        doc = (revoked / 'revocations.json').read_text()
+        (revoked / 'revocations.json').write_text(doc.replace(version, '0.0.1'))
+        refused(lambda: release.revoked_versions(revoked, public))
+        (revoked / 'revocations.json').write_text(doc)
+        refused(lambda: release.revoke(work / 'bad', key, ['not-a-version:x']))
+        try:
+            updater.prepare(root, bundle, public, None, revoked)
+            raise AssertionError('revoked release prepared')
+        except ValueError as e:
+            assert str(e) == 'release version is revoked', e
+        checks.append('signed revocation list: foreign key and tampering refused, list only grows, updater refuses to prepare a revoked release')
         # Duplicate keys must not select a different version/path interpretation between parsers.
         (bundle / 'manifest.json').write_bytes(b'{"format":1,"format":2}')
         (bundle / 'manifest.sig').unlink()
