@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C14 done bounded E1; C15.01 design done; C15.02 in_progress in separate Windows branch;57/200 done; C32 not_required (4) → closed 61/200",
+  "status": "C01-C14 done bounded E1; C15.01 design done; C15.02 in_progress in separate Windows branch;E3 (C25–C30) accepted 2026-11-12; 81/200 done; C32 not_required (4) → closed 85/200",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -2104,7 +2104,7 @@
           "output": "Namespace/uniqueness/source-trust правила по типам активов",
           "verification": "IP/MAC/hostname по отдельности не универсальный ключ",
           "estimation_basis": "Physical/VM/network/cloud examples",
-          "status": "planned",
+          "status": "done",
           "work_group": "Подготовка и проектирование"
         },
         {
@@ -2117,7 +2117,7 @@
           "output": "Кандидаты и ручное подтверждение с аудитом",
           "verification": "Нельзя молча склеить конфликтующие serial/UUID",
           "estimation_basis": "Несколько источников и overlapping scopes",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2130,7 +2130,7 @@
           "output": "Canonical UID, aliases, перенос связей и provenance",
           "verification": "Старые UID разрешаются; split не переиспользует UID",
           "estimation_basis": "Две карточки merge и разделение ошибочного merge",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2143,12 +2143,13 @@
           "output": "Rollback/compensating history и concurrent edits",
           "verification": "Наблюдения не потеряны, межtenant merge запрещён",
           "estimation_basis": "Conflict, merge/split, outbox/search replay fixtures",
-          "status": "planned",
+          "status": "done",
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "acceptance": "Принято пользователем 2026-11-12 (R-027): E3 — песочница + стенд (задания №1–3, №5), все SLO D-18 выполнены; протокол decisions/C30-e3-acceptance-protocol.md"
     },
     {
       "id": "C26",
@@ -2169,7 +2170,7 @@
           "output": "ADR CMDB границ и типизированные отношения",
           "verification": "Рабочая трактовка smdb подтверждена либо явно ограничена",
           "estimation_basis": "Asset/CI/component/service/software types",
-          "status": "planned",
+          "status": "done",
           "work_group": "Подготовка и проектирование"
         },
         {
@@ -2182,7 +2183,7 @@
           "output": "Software product/installations, components и business fields",
           "verification": "Сбор не затирает управленческие поля",
           "estimation_basis": "Основные фильтруемые поля нормализованы, вариативные в JSONB",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2195,7 +2196,7 @@
           "output": "Вкладки/сравнение наблюдений/relations и optimistic concurrency",
           "verification": "Long/empty/partial данные доступны с provenance",
           "estimation_basis": "Типы активов и контракты выбранного объёма",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2208,12 +2209,13 @@
           "output": "Migration/contract/UI tests и архитектурные проверки",
           "verification": "Модули не пишут в чужие таблицы",
           "estimation_basis": "Связи, события, cursor pagination и large lists",
-          "status": "planned",
+          "status": "done",
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "acceptance": "Принято пользователем 2026-11-12 (R-027): E3 — песочница + стенд (задания №1–3, №5), все SLO D-18 выполнены; протокол decisions/C30-e3-acceptance-protocol.md"
     },
     {
       "id": "C27",
@@ -2234,7 +2236,7 @@
           "output": "Person/team, business owner/technical/custodian и ownership ADR",
           "verification": "Collector не считается ответственным лицом",
           "estimation_basis": "1 локальный org source; внешний sync позже C31",
-          "status": "planned",
+          "status": "done",
           "work_group": "Подготовка и проектирование"
         },
         {
@@ -2247,7 +2249,7 @@
           "output": "Atomic assignment, intervals/history, fallback при уходе сотрудника",
           "verification": "У актива не возникает периода без accountable role",
           "estimation_basis": "Person→person/team и deactivation cases",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2260,7 +2262,7 @@
           "output": "На мне/на команде/не распределено и bulk assign по правам",
           "verification": "Bulk не обходит tenant и optimistic concurrency",
           "estimation_basis": "Фильтры и поддержанные массовые операции",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2273,12 +2275,13 @@
           "output": "Audit и concurrent assignment tests",
           "verification": "Не потеряны исторические интервалы и основания",
           "estimation_basis": "2 оператора, removed user, group owner absent",
-          "status": "planned",
+          "status": "done",
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "acceptance": "Принято пользователем 2026-11-12 (R-027): E3 — песочница + стенд (задания №1–3, №5), все SLO D-18 выполнены; протокол decisions/C30-e3-acceptance-protocol.md"
     },
     {
       "id": "C28",
@@ -2299,7 +2302,7 @@
           "output": "RU/EN/IP/FQDN/serial fields, filters/ranking и workload",
           "verification": "Критерии и веса выбора известны до результатов",
           "estimation_basis": "Репрезентативный корпус с ACL/tenant и tombstones",
-          "status": "planned",
+          "status": "done",
           "work_group": "Подготовка и проектирование"
         },
         {
@@ -2312,7 +2315,7 @@
           "output": "Tantivy и Bluge adapters без замены PG source of truth",
           "verification": "Одинаковые операции и данные у обоих движков",
           "estimation_basis": "Два кандидата; build/runtime/license matrix",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2325,7 +2328,7 @@
           "output": "Latency/resources/rebuild/update/delete и ACL leakage tests",
           "verification": "Отзыв доступа не зависит от устаревшего индекса",
           "estimation_basis": "Corpus size/железо/нагрузка опубликованы, без маркетинговых SLA",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2338,12 +2341,13 @@
           "output": "ADR с writer/readers, snapshots и последствиями CGO/Rust",
           "verification": "Решение опирается на факты, а не только язык backend",
           "estimation_basis": "1 выбранный engine; оставшиеся риски перечислены",
-          "status": "planned",
+          "status": "done",
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "acceptance": "Принято пользователем 2026-11-12 (R-027): E3 — песочница + стенд (задания №1–3, №5), все SLO D-18 выполнены; протокол decisions/C30-e3-acceptance-protocol.md"
     },
     {
       "id": "C29",
@@ -2366,7 +2370,7 @@
           "output": "Idempotent upsert/delete/merge aliases с checkpoint",
           "verification": "Crash/replay не теряет и не дублирует актуальное состояние",
           "estimation_basis": "Выбранный engine, aggregate versions и tombstones",
-          "status": "planned",
+          "status": "done",
           "work_group": "Подготовка и проектирование"
         },
         {
@@ -2379,7 +2383,7 @@
           "output": "Snapshot/checkpoint/catch-up, lag и exact-PG fallback policy",
           "verification": "Fallback не называется эквивалентным FTS",
           "estimation_basis": "Rebuild на копии данных и отказ индекса",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2392,7 +2396,7 @@
           "output": "Query/filters/facets/snippets с tenant/ACL enforcement",
           "verification": "Чужие counts/snippets и отозванные данные не раскрываются",
           "estimation_basis": "Все публичные search surfaces и pagination",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2405,12 +2409,13 @@
           "output": "Real PG/outbox/index integration и concurrent changes",
           "verification": "Rebuild сходится с authoritative PG",
           "estimation_basis": "Deletion, merge, revoked ACL, burst imports",
-          "status": "planned",
+          "status": "done",
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "acceptance": "Принято пользователем 2026-11-12 (R-027): E3 — песочница + стенд (задания №1–3, №5), все SLO D-18 выполнены; протокол decisions/C30-e3-acceptance-protocol.md"
     },
     {
       "id": "C30",
@@ -2433,7 +2438,7 @@
           "output": "Registered/active users, mix, think-time, data size, hardware и SLO",
           "verification": "100 пользователей определены операционно",
           "estimation_basis": "100 concurrent active плюс background ingest, warmup/duration",
-          "status": "planned",
+          "status": "done",
           "work_group": "Подготовка и проектирование"
         },
         {
@@ -2446,7 +2451,7 @@
           "output": "Карточки/поиск/фильтры/правки/топология/импорт",
           "verification": "Нет нулевых операций или искусственно пустого корпуса",
           "estimation_basis": "Одна согласованная смесь с реальными API",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2459,7 +2464,7 @@
           "output": "Профили SQL/pool/worker/search и исправления по данным",
           "verification": "Публикуются p95/p99/errors/resources/queue lag",
           "estimation_basis": "Один initial run и адресные повторные измерения",
-          "status": "planned",
+          "status": "done",
           "work_group": "Реализация"
         },
         {
@@ -2472,12 +2477,13 @@
           "output": "Протокол функциональных/контрактных/performance проверок",
           "verification": "Без протокола нет заявления о ёмкости",
           "estimation_basis": "AC E3 и эксплуатационные ограничения",
-          "status": "planned",
+          "status": "done",
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "done",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "acceptance": "Принято пользователем 2026-11-12 (R-027): E3 — песочница + стенд (задания №1–3, №5), все SLO D-18 выполнены; протокол decisions/C30-e3-acceptance-protocol.md"
     },
     {
       "id": "C31",
@@ -3801,7 +3807,13 @@
       "C10",
       "C11",
       "C12",
-      "C13"
+      "C13",
+      "C25",
+      "C26",
+      "C27",
+      "C28",
+      "C29",
+      "C30"
     ],
     "done_tasks": [
       "C01.01",
@@ -3856,7 +3868,31 @@
       "C13.02",
       "C13.03",
       "C13.04",
-      "C14.01"
+      "C14.01",
+      "C25.01",
+      "C25.02",
+      "C25.03",
+      "C25.04",
+      "C26.01",
+      "C26.02",
+      "C26.03",
+      "C26.04",
+      "C27.01",
+      "C27.02",
+      "C27.03",
+      "C27.04",
+      "C28.01",
+      "C28.02",
+      "C28.03",
+      "C28.04",
+      "C29.01",
+      "C29.02",
+      "C29.03",
+      "C29.04",
+      "C30.01",
+      "C30.02",
+      "C30.03",
+      "C30.04"
     ],
     "next_package": "C14",
     "product_implementation_started": true,

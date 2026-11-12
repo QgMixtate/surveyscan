@@ -30,12 +30,12 @@
 | [C22](packages/C22.md) | E2 | Доказательная топология L2/L3 | C19, C20, C21 | [Запрос](prompts/C22.md) | planned |
 | [C23](packages/C23.md) | E2 | Portable-аудит и безопасный offline-пакет | C10, C11, C17, C18, C19 | [Запрос](prompts/C23.md) | planned |
 | [C24](packages/C24.md) | E2 | Приёмка агентного и безагентного сбора | C15, C16, C22, C23 | [Запрос](prompts/C24.md) | planned |
-| [C25](packages/C25.md) | E3 | Полная reconciliation, merge и split | C24 | [Запрос](prompts/C25.md) | planned |
-| [C26](packages/C26.md) | E3 | AM/CMDB, ПО, компоненты и связи | C25 | [Запрос](prompts/C26.md) | planned |
-| [C27](packages/C27.md) | E3 | Полная ответственность и оргструктура | C26 | [Запрос](prompts/C27.md) | planned |
-| [C28](packages/C28.md) | E3 | PoC полнотекстового поиска: Tantivy / Bluge | C25 | [Запрос](prompts/C28.md) | planned |
-| [C29](packages/C29.md) | E3 | Поисковая проекция, API и UI | C26, C28 | [Запрос](prompts/C29.md) | planned |
-| [C30](packages/C30.md) | E3 | Нагрузка 100 активных пользователей и E3 приёмка | C27, C29 | [Запрос](prompts/C30.md) | planned |
+| [C25](packages/C25.md) | E3 | Полная reconciliation, merge и split | C24 | [Запрос](prompts/C25.md) | done (E3 принята 2026-11-12) |
+| [C26](packages/C26.md) | E3 | AM/CMDB, ПО, компоненты и связи | C25 | [Запрос](prompts/C26.md) | done (E3 принята 2026-11-12) |
+| [C27](packages/C27.md) | E3 | Полная ответственность и оргструктура | C26 | [Запрос](prompts/C27.md) | done (E3 принята 2026-11-12) |
+| [C28](packages/C28.md) | E3 | PoC полнотекстового поиска: Tantivy / Bluge | C25 | [Запрос](prompts/C28.md) | done (E3 принята 2026-11-12) |
+| [C29](packages/C29.md) | E3 | Поисковая проекция, API и UI | C26, C28 | [Запрос](prompts/C29.md) | done (E3 принята 2026-11-12) |
+| [C30](packages/C30.md) | E3 | Нагрузка 100 активных пользователей и E3 приёмка | C27, C29 | [Запрос](prompts/C30.md) | done (E3 принята 2026-11-12) |
 | [C31](packages/C31.md) | E4 | Интеграции и внешние контракты | C30 | [Запрос](prompts/C31.md) | planned |
 | [C32](packages/C32.md) | E4 | Миграция данных Python v1 | C30 | [Запрос](prompts/C32.md) | not_required (решение 2026-11-12) |
 | [C33](packages/C33.md) | E4 | Промышленная поставка и сопровождение | C31, C32 | [Запрос](prompts/C33.md) | planned |
