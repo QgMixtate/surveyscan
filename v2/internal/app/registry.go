@@ -36,6 +36,7 @@ type Registry struct {
 	Inventory         inventory.Store
 	Owners            responsibility.Store
 	CMDB              cmdb.Store
+	topology          topologyCache
 	Search            *SearchClient // C29: nil — сервис поиска не настроен (только точный запасной режим)
 	Audit             audit.Store
 	Events            EventSink

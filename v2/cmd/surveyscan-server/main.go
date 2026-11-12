@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -114,7 +115,14 @@ func run(args []string) error {
 	}
 	poolConfig.ConnConfig = db.Copy()
 	poolConfig.ConnConfig.ConnectTimeout = 3 * time.Second
-	poolConfig.MaxConns = 8
+	// C30.03: 8 соединений не держали профиль 100 пользователей (ожидание соединения > 5 с → 503). По умолчанию 32,
+	// переопределяется SURVEYSCAN_DB_MAX_CONNS (1..200); у PostgreSQL по умолчанию max_connections=100.
+	poolConfig.MaxConns = 32
+	if v := os.Getenv("SURVEYSCAN_DB_MAX_CONNS"); v != "" {
+		if n, e := strconv.Atoi(v); e == nil && n >= 1 && n <= 200 {
+			poolConfig.MaxConns = int32(n)
+		}
+	}
 	poolConfig.MinConns = 0
 	pool, err := pgxpool.NewWithConfig(ctx, poolConfig)
 	if err != nil {

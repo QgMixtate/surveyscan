@@ -56,7 +56,7 @@ func (Store) NetworkHosts(ctx context.Context, tx pgx.Tx, tenant string, limit i
 	}
 	// Проекция 1.2: network (по записи — имя/mac/адреса/шлюзы), identity/os (имя, ОС), routes_ports kind=route.
 	rows, err := tx.Query(ctx, `SELECT f.asset_uid::text,f.section_name,f.record_key,f.field_name,f.value,o.source_id::text FROM inventory.record_facts12 f JOIN inventory.observations o ON o.tenant_id=f.tenant_id AND o.observation_id=f.observation_id
-WHERE f.tenant_id=$1 AND f.asset_uid IN (SELECT DISTINCT asset_uid FROM inventory.record_facts12 WHERE tenant_id=$1 AND section_name='network' UNION SELECT DISTINCT asset_uid FROM inventory.current_facts WHERE tenant_id=$1 AND section_name='network' ORDER BY 1 LIMIT $2+1)
+WHERE f.tenant_id=$1 AND f.asset_uid IN (SELECT asset_uid FROM inventory.record_section_state12 WHERE tenant_id=$1 AND section_name='network' UNION SELECT asset_uid FROM inventory.section_state WHERE tenant_id=$1 AND section_name='network' ORDER BY 1 LIMIT $2+1)
 AND (f.section_name='network' AND f.field_name IN ('name','mac','addresses','gateways')
  OR f.section_name='identity' AND f.field_name='hostname' OR f.section_name='os' AND f.field_name IN ('name','version')
  OR f.section_name='routes_ports' AND f.field_name IN ('kind','destination','gateway','interface'))`, tenant, limit)
@@ -125,7 +125,7 @@ AND (f.section_name='network' AND f.field_name IN ('name','mac','addresses','gat
 	}
 	// Проекция 1.0: current_facts network (<интерфейс>.addresses/.mac), identity.hostname, os.
 	rows, err = tx.Query(ctx, `SELECT c.asset_uid::text,c.section_name,c.fact_key,c.value,o.source_id::text FROM inventory.current_facts c JOIN inventory.observations o ON o.tenant_id=c.tenant_id AND o.observation_id=c.observation_id
-WHERE c.tenant_id=$1 AND c.section_name IN ('network','identity','os') AND c.asset_uid IN (SELECT DISTINCT asset_uid FROM inventory.record_facts12 WHERE tenant_id=$1 AND section_name='network' UNION SELECT DISTINCT asset_uid FROM inventory.current_facts WHERE tenant_id=$1 AND section_name='network' ORDER BY 1 LIMIT $2+1)`, tenant, limit)
+WHERE c.tenant_id=$1 AND c.section_name IN ('network','identity','os') AND c.asset_uid IN (SELECT asset_uid FROM inventory.record_section_state12 WHERE tenant_id=$1 AND section_name='network' UNION SELECT asset_uid FROM inventory.section_state WHERE tenant_id=$1 AND section_name='network' ORDER BY 1 LIMIT $2+1)`, tenant, limit)
 	if err != nil {
 		return nil, false, err
 	}

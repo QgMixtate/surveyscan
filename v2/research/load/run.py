@@ -103,7 +103,8 @@ def scenario(**s):
     (work / 'load.json').write_text(json.dumps(cfg)); os.chmod(work / 'load.json', 0o600)
     stop = threading.Event(); samples, imports = [], []
     center = s['center_process'].pid
-    search_pid = subprocess.run(['pgrep', '-f', 'surveyscan-search'], capture_output=True, text=True).stdout.split()
+    pid_file = Path(s['directory']) / 'search.pid'
+    search_pid = [pid_file.read_text().strip()] if pid_file.exists() else []
     db = sql('SELECT current_database()')
 
     def proc(pid):

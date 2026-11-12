@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/netip"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/access"
@@ -51,17 +52,78 @@ type Topology struct {
 	Hosts     int            `json:"hosts_with_network_facts"`
 }
 
+// C30.03: схема строится по всем сетевым фактам тенанта — дорого (стенд нагрузки: p50 24 с при 2 000 хостах и
+// 100 пользователях). Результат кэшируется на тенант на topologyCacheTTL, одновременные запросы ждут одно вычисление;
+// права проверяются на каждом запросе, возраст схемы виден в generated_at.
+const topologyCacheTTL = 30 * time.Second
+
+type topologyEntry struct {
+	at    time.Time
+	value Topology
+	err   error
+	ready chan struct{}
+}
+
+type topologyCache struct {
+	mu      sync.Mutex
+	entries map[string]*topologyEntry
+}
+
 func (r *Registry) Topology(ctx context.Context, id accessport.Identity) (Topology, error) {
-	out := Topology{Tenant: id.TenantID, Generated: time.Now().UTC(), Nodes: []TopologyNode{}, Links: []TopologyLink{}}
-	tx, e := r.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead})
+	tx, e := r.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.ReadCommitted}) // авторизация обновляет сессию — не read-only
+	if e != nil {
+		return Topology{}, e
+	}
+	if _, e = r.Auth.Authorize(ctx, tx, id.CredentialID, id.TenantID, "assets:read"); e != nil {
+		tx.Rollback(ctx)
+		return Topology{}, e
+	}
+	if e = tx.Commit(ctx); e != nil {
+		return Topology{}, e
+	}
+	c := &r.topology
+	c.mu.Lock()
+	if c.entries == nil {
+		c.entries = map[string]*topologyEntry{}
+	}
+	entry := c.entries[id.TenantID]
+	if entry == nil || entry.err != nil && isDone(entry.ready) || isDone(entry.ready) && time.Since(entry.at) > topologyCacheTTL {
+		entry = &topologyEntry{ready: make(chan struct{})}
+		c.entries[id.TenantID] = entry
+		go func() {
+			compute, cancel := context.WithTimeout(context.WithoutCancel(ctx), 2*time.Minute)
+			defer cancel()
+			entry.value, entry.err = r.computeTopology(compute, id.TenantID)
+			entry.at = time.Now()
+			close(entry.ready)
+		}()
+	}
+	c.mu.Unlock()
+	select {
+	case <-entry.ready:
+		return entry.value, entry.err
+	case <-ctx.Done():
+		return Topology{}, ctx.Err()
+	}
+}
+
+func isDone(ch chan struct{}) bool {
+	select {
+	case <-ch:
+		return true
+	default:
+		return false
+	}
+}
+
+func (r *Registry) computeTopology(ctx context.Context, tenant string) (Topology, error) {
+	out := Topology{Tenant: tenant, Generated: time.Now().UTC(), Nodes: []TopologyNode{}, Links: []TopologyLink{}}
+	tx, e := r.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead, AccessMode: pgx.ReadOnly})
 	if e != nil {
 		return out, e
 	}
 	defer tx.Rollback(ctx)
-	if _, e = r.Auth.Authorize(ctx, tx, id.CredentialID, id.TenantID, "assets:read"); e != nil {
-		return out, e
-	}
-	hosts, truncated, e := r.Inventory.NetworkHosts(ctx, tx, id.TenantID, topologyMaxAssets)
+	hosts, truncated, e := r.Inventory.NetworkHosts(ctx, tx, tenant, topologyMaxAssets)
 	if e != nil {
 		return out, e
 	}

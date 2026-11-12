@@ -88,6 +88,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
     search_port=freeport();token_file=save('search-token',secrets.token_hex(24))
     search_log=(directory/'search.log').open('ab');search_process=subprocess.Popen([os.environ['SURVEYSCAN_SEARCH_BIN'],f'127.0.0.1:{search_port}',str(directory/'search-index'),token_file],stdout=search_log,stderr=search_log)
     atexit.register(search_process.kill)
+    (directory/'search.pid').write_text(str(search_process.pid))
     cfg=json.loads(Path(machine_file).read_text());cfg.update(search_url=f'http://127.0.0.1:{search_port}',search_token_file=token_file);Path(machine_file).write_text(json.dumps(cfg))
    center_process=start('center',[str(ROOT/'.dist/surveyscan-server'),'serve']);plain=context();ready(tls_port,plain);checks.append('compiled center starts with explicit private loopback PKI')
    # постоянный стенд (R-027): прежняя сессия обвязки закрывается до входа — иначе каждый перезапуск оставляет активную
