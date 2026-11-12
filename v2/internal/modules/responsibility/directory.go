@@ -399,3 +399,10 @@ func (Store) LastRun(ctx context.Context, tx pgx.Tx, tenant string) (*time.Time,
 	e := tx.QueryRow(ctx, "SELECT max(started_at) FROM responsibility.directory_sync_runs WHERE tenant_id=$1", tenant).Scan(&t)
 	return t, e
 }
+
+// PruneSyncRuns оставляет последние keep прогонов каждого тенанта.
+func PruneSyncRuns(ctx context.Context, tx pgx.Tx, keep int) (int64, error) {
+	tag, e := tx.Exec(ctx, `DELETE FROM responsibility.directory_sync_runs r USING (SELECT tenant_id,run_id,row_number() OVER (PARTITION BY tenant_id ORDER BY started_at DESC,run_id) AS n
+FROM responsibility.directory_sync_runs) x WHERE r.tenant_id=x.tenant_id AND r.run_id=x.run_id AND x.n > $1`, keep)
+	return tag.RowsAffected(), e
+}

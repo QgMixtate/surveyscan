@@ -200,8 +200,9 @@ func run(args []string) error {
 	}
 	if background {
 		registry.OnWebhooksEnabled(func() { go registry.WebhookMaintain(ctx, func(m string) { fmt.Println(m) }) })
-		go registry.WatchIntegrations(ctx)                                    // уведомления, включённые в Web через api-процесс, подхватываются здесь
-		go registry.DirectoryMaintain(ctx, func(m string) { fmt.Println(m) }) // C31.05: тенанты с настройками из Web или конфигурации
+		go registry.WatchIntegrations(ctx) // уведомления, включённые в Web через api-процесс, подхватываются здесь
+		go registry.DirectoryMaintain(ctx, func(m string) { fmt.Println(m) })
+		go registry.RetentionMaintain(ctx, func(m string) { fmt.Println(m) }) // C36.03 // C31.05: тенанты с настройками из Web или конфигурации
 		if registry.Search != nil {
 			go registry.SearchMaintain(ctx, func(m string) { fmt.Println(m) })
 		}

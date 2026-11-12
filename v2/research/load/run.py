@@ -22,8 +22,20 @@ def log(*a):
     print(time.strftime('%H:%M:%S'), *a, flush=True)
 
 
+SPLIT = os.environ.get('SURVEYSCAN_LOAD_SPLIT') == '1'  # C35.04: центр обвязки — api, фоновая работа — отдельный worker
+if SPLIT:
+    os.environ['SURVEYSCAN_V2_ROLE'] = 'api'
+
+
 def scenario(**s):
     work = Path(tempfile.mkdtemp(prefix='c30-'))
+    if SPLIT:
+        wlog = (Path(s['directory']) / 'worker.log').open('ab')
+        worker = subprocess.Popen([str(ROOT / '.dist/surveyscan-server'), 'serve'], cwd=ROOT, stdout=wlog, stderr=wlog,
+                                  env=dict(s['server_environment'], SURVEYSCAN_V2_ROLE='worker', SURVEYSCAN_V2_LISTEN=f'127.0.0.1:{freeport()}'))
+        import atexit
+        atexit.register(worker.terminate)
+        log('split mode: api (harness center) + worker pid', worker.pid)
     sql, command, tenant = s['sql'], s['command'], s['tenant']
     site, scope = sql("SELECT site_id::text||' '||scope_id::text FROM scope.network_scopes LIMIT 1").split()
     ctx = ssl.create_default_context(cafile=s['ca_file'])
@@ -179,7 +191,7 @@ def scenario(**s):
         slow = sql("SELECT string_agg(left(regexp_replace(query,'\\s+',' ','g'),140)||' | calls='||calls||' mean_ms='||round(mean_exec_time::numeric,1),E'\\n' ORDER BY total_exec_time DESC) FROM (SELECT * FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 12) x")
     except Exception as e:  # расширение может быть не включено — фиксируем это, а не скрываем
         slow = 'pg_stat_statements unavailable: ' + str(e)[:200]
-    report = {'passport': 'docs/plans/surveyscan-v2/decisions/C30-load-passport.md', 'assets': len(assets), 'load': result, 'resources': resources, 'slow_queries': slow, 'samples': samples}
+    report = {'mode': 'split api+worker' if SPLIT else 'combined', 'passport': 'docs/plans/surveyscan-v2/decisions/C30-load-passport.md', 'assets': len(assets), 'load': result, 'resources': resources, 'slow_queries': slow, 'samples': samples}
     (OUT / 'report.json').write_text(json.dumps(report, ensure_ascii=False, indent=1))
     log('DONE', json.dumps({k: result[k] for k in ('requests', 'throughput_rps', 'p95_ms', 'p99_ms', 'errors')}))
 

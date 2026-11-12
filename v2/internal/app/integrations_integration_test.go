@@ -267,20 +267,15 @@ func TestC31DirectorySync(t *testing.T) {
 	}
 
 	// 5а. C35.02: прогон тенанта уже идёт в другом процессе центра (его блокировка в PostgreSQL) — 409, без прогона
-	holder, err := f.pool.Acquire(f.ctx)
-	if err != nil {
-		t.Fatal(err)
-	}
 	key := "surveyscan:directory-sync:" + tenant
-	if _, err = holder.Exec(f.ctx, "SELECT pg_advisory_lock(hashtextextended($1,0))", key); err != nil {
+	if _, err = f.pool.Exec(f.ctx, "INSERT INTO messaging.work_leases VALUES($1,gen_random_uuid(),now(),now()+interval '5 minutes')", key); err != nil {
 		t.Fatal(err)
 	}
 	var runsBefore, runsAfter int
 	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM responsibility.directory_sync_runs WHERE tenant_id=$1", tenant).Scan(&runsBefore)
 	call(env.admin, "POST", "/api/v1/directory-sync/run", `{"mode":"full"}`, 409)
 	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM responsibility.directory_sync_runs WHERE tenant_id=$1", tenant).Scan(&runsAfter)
-	_, _ = holder.Exec(f.ctx, "SELECT pg_advisory_unlock(hashtextextended($1,0))", key)
-	holder.Release()
+	_, _ = f.pool.Exec(f.ctx, "DELETE FROM messaging.work_leases WHERE lease_key=$1", key)
 	if runsAfter != runsBefore {
 		t.Fatal("busy sync must not record a run")
 	}

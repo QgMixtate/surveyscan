@@ -265,16 +265,13 @@ func TestC29SearchProjection(t *testing.T) {
 	}
 
 	// 6а. C35.02: пересборку уже ведёт другой процесс центра — второй её не начинает
-	holder, err := f.pool.Acquire(f.ctx)
-	if err != nil {
+	if _, err := f.pool.Exec(f.ctx, "INSERT INTO messaging.work_leases VALUES('surveyscan:search-rebuild',gen_random_uuid(),now(),now()+interval '5 minutes')"); err != nil {
 		t.Fatal(err)
 	}
-	_, _ = holder.Exec(f.ctx, "SELECT pg_advisory_lock(hashtextextended('surveyscan:search-rebuild',0))")
-	if _, err = f.registry.RebuildSearch(f.ctx); !errors.Is(err, app.ErrBusy) {
+	if _, err := f.registry.RebuildSearch(f.ctx); !errors.Is(err, app.ErrBusy) {
 		t.Fatal("concurrent rebuild must be refused", err)
 	}
-	_, _ = holder.Exec(f.ctx, "SELECT pg_advisory_unlock(hashtextextended('surveyscan:search-rebuild',0))")
-	holder.Release()
+	_, _ = f.pool.Exec(f.ctx, "DELETE FROM messaging.work_leases WHERE lease_key='surveyscan:search-rebuild'")
 
 	// 7. пересборка из PostgreSQL сходится с источником истины (и убирает поддельную запись)
 	indexed, err := f.registry.RebuildSearch(f.ctx)

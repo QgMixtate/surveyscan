@@ -80,7 +80,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
     command('migrate');password=(directory/'password').read_text().strip()  # постоянный стенд: только новые миграции
    else:
     sql('CREATE DATABASE '+db);created=True
-    assert 'applied_migrations=46' in command('migrate')
+    assert 'applied_migrations=47' in command('migrate')
    if not state:
     password=secrets.token_urlsafe(32);password_file=save('password',password+'\n');command('bootstrap-admin','--tenant',tenant,'--tenant-name','C07 synthetic','--username','admin','--password-file',password_file)
     sql(f"INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES('{tenant}','{subject}','team','fallback','synthetic@example.invalid'); INSERT INTO scope.sites(tenant_id,site_id,name,fallback_subject_id) VALUES('{tenant}','{site}','synthetic','{subject}'); INSERT INTO scope.network_scopes(tenant_id,scope_id,site_id,namespace) VALUES('{tenant}','{scope}','{site}','default');",db)

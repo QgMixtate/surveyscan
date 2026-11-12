@@ -3,33 +3,51 @@ package app
 import (
 	"context"
 	"errors"
+	"time"
+
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/messaging"
 )
 
-// C35.02: межпроцессная взаимоисключающая работа при нескольких worker/combined экземплярах центра. Блокировка —
-// advisory lock PostgreSQL на выделенном соединении (держится, пока идёт работа; падение процесса снимает её
-// вместе с соединением). Не полагается на память процесса.
+// C35.02/C36.01: межпроцессная взаимоисключающая работа при нескольких worker/combined экземплярах центра — аренда
+// строки messaging.work_leases (без состояния сессии БД, совместимо с пулом в режиме транзакций). Держатель продлевает
+// аренду каждые leaseTTL/4; упавший процесс теряет её по истечении leaseTTL.
 
 var ErrBusy = errors.New("the same work is running in another center process")
 
+const leaseTTL = 2 * time.Minute
+
 // exclusive выполняет fn, только если ни один процесс сейчас не выполняет работу key; иначе — ErrBusy.
 func (r *Registry) exclusive(ctx context.Context, key string, fn func(context.Context) error) error {
-	conn, e := r.Pool.Acquire(ctx)
+	key = "surveyscan:" + key
+	holder, e := messaging.AcquireLease(ctx, r.Pool, key, leaseTTL)
+	if errors.Is(e, messaging.ErrLeaseBusy) {
+		return ErrBusy
+	}
 	if e != nil {
 		return e
 	}
-	defer conn.Release()
-	var got bool
-	if e = conn.QueryRow(ctx, "SELECT pg_try_advisory_lock(hashtextextended($1,0))", "surveyscan:"+key).Scan(&got); e != nil {
-		return e
-	}
-	if !got {
-		return ErrBusy
-	}
-	defer func() {
-		// соединение возвращается в пул: снимаем блокировку явно (при обрыве соединения её снимет PostgreSQL)
-		if _, e := conn.Exec(context.WithoutCancel(ctx), "SELECT pg_advisory_unlock(hashtextextended($1,0))", "surveyscan:"+key); e != nil {
-			conn.Conn().Close(context.WithoutCancel(ctx))
+	work, cancel := context.WithCancel(ctx)
+	defer cancel()
+	renewed := make(chan struct{})
+	go func() {
+		defer close(renewed)
+		ticker := time.NewTicker(leaseTTL / 4)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-work.Done():
+				return
+			case <-ticker.C:
+				if ok, _ := messaging.RenewLease(work, r.Pool, key, holder, leaseTTL); !ok {
+					cancel() // аренда потеряна: прекращаем работу, чтобы не выполнять её вдвоём
+					return
+				}
+			}
 		}
 	}()
-	return fn(ctx)
+	e = fn(work)
+	cancel()
+	<-renewed
+	_ = messaging.ReleaseLease(context.WithoutCancel(ctx), r.Pool, key, holder)
+	return e
 }
