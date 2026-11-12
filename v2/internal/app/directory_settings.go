@@ -29,11 +29,12 @@ type DirectoryWebSettings struct {
 	IntervalMinutes  int    `json:"interval_minutes,omitempty"`
 	FullHours        int    `json:"full_sync_hours,omitempty"`
 	CAPEM            string `json:"ca_certificate_pem,omitempty"`
+	TLSServerName    string `json:"tls_server_name,omitempty"` // имя в сертификате, если адрес — IP
 }
 
 func (s DirectoryWebSettings) config(tenant string) DirectorySyncConfig {
 	return DirectorySyncConfig{TenantID: tenant, URL: s.URL, BaseDN: s.BaseDN, BindDN: s.BindDN, UserFilter: s.UserFilter, GroupFilter: s.GroupFilter,
-		GUIDAttribute: s.GUIDAttribute, LoginAttribute: s.LoginAttribute, ChangedAttribute: s.ChangedAttribute, IntervalMinutes: s.IntervalMinutes, FullHours: s.FullHours}
+		GUIDAttribute: s.GUIDAttribute, LoginAttribute: s.LoginAttribute, ChangedAttribute: s.ChangedAttribute, IntervalMinutes: s.IntervalMinutes, FullHours: s.FullHours, TLSServerName: s.TLSServerName}
 }
 
 type DirectorySettingsView struct {
@@ -120,7 +121,7 @@ func (r *Registry) DirectorySettingsGet(ctx context.Context, id accessport.Ident
 		c := r.Directory.Config
 		out.Source, out.PasswordSet = "config", true
 		out.Settings = &DirectoryWebSettings{URL: c.URL, BaseDN: c.BaseDN, BindDN: c.BindDN, UserFilter: c.UserFilter, GroupFilter: c.GroupFilter, GUIDAttribute: c.GUIDAttribute,
-			LoginAttribute: c.LoginAttribute, ChangedAttribute: c.ChangedAttribute, IntervalMinutes: c.IntervalMinutes, FullHours: c.FullHours}
+			LoginAttribute: c.LoginAttribute, ChangedAttribute: c.ChangedAttribute, IntervalMinutes: c.IntervalMinutes, FullHours: c.FullHours, TLSServerName: c.TLSServerName}
 		return out, tx.Commit(ctx)
 	}
 	stored, e := r.Owners.DirectorySettings(ctx, tx, id.TenantID)

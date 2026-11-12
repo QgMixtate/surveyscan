@@ -655,6 +655,12 @@
     "ca_certificate_pem": {
      "type": "string",
      "maxLength": 32768
+    },
+    "tls_server_name": {
+     "type": "string",
+     "maxLength": 253,
+     "pattern": "^[A-Za-z0-9.-]+$",
+     "description": "Имя в сертификате контроллера, если адрес задан IP"
     }
    },
    "required": [

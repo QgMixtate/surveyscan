@@ -82,6 +82,28 @@ func TestC31WebSettings(t *testing.T) {
 	if !test.OK || test.People != 2 {
 		t.Fatalf("test: %+v", test)
 	}
+	// адрес по IP (сертификат выписан на имя): без имени — отказ TLS; с именем в сертификате — работает
+	byIP := strings.Replace(ld["URL"], "localhost", "127.0.0.1", 1)
+	settings["url"] = byIP
+	test = app.DirectoryTestResult{}
+	_ = json.Unmarshal(call(env.admin, "POST", "/api/v1/directory-sync/test", body("", &pw), 200), &test)
+	if test.OK || test.Error == nil || !strings.Contains(*test.Error, "IP SANs") {
+		t.Fatalf("IP address without tls_server_name must fail certificate check: %+v", test)
+	}
+	settings["tls_server_name"] = "localhost"
+	test = app.DirectoryTestResult{}
+	_ = json.Unmarshal(call(env.admin, "POST", "/api/v1/directory-sync/test", body("", &pw), 200), &test)
+	if !test.OK {
+		t.Fatalf("tls_server_name must allow IP address with a name certificate: %+v", test)
+	}
+	settings["tls_server_name"] = "wrong.example.test"
+	test = app.DirectoryTestResult{}
+	_ = json.Unmarshal(call(env.admin, "POST", "/api/v1/directory-sync/test", body("", &pw), 200), &test)
+	if test.OK {
+		t.Fatal("wrong tls_server_name must still fail: certificate check is not disabled")
+	}
+	settings["url"] = ld["URL"]
+	delete(settings, "tls_server_name")
 	var subjects int
 	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM responsibility.subjects WHERE tenant_id=$1 AND origin='ldap'", tenant).Scan(&subjects)
 	if subjects != 0 {

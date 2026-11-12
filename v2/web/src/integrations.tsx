@@ -31,6 +31,7 @@ export function DirectorySettingsForm({csrf,onExpired,onSaved,onClose}:{csrf:str
   <label>Тип каталога<select aria-label="Тип каталога" value={s.guid_attribute==='entryUUID'?'openldap':'ad'} onChange={e=>setS({...s,...presets[e.target.value]})}><option value="ad">Active Directory</option><option value="openldap">OpenLDAP / совместимый</option></select></label>
   <label>Фильтр людей<input aria-label="Фильтр людей" value={s.user_filter??''} onChange={set('user_filter')}/></label>
   <label>Группы как команды (фильтр, необязательно)<input aria-label="Фильтр групп" placeholder="(&(objectClass=group)(cn=IT-*))" value={s.group_filter??''} onChange={set('group_filter')}/></label>
+  <label>Имя контроллера в сертификате (если адрес — IP)<input aria-label="Имя в сертификате" placeholder="dc01.corp.example" value={s.tls_server_name??''} onChange={set('tls_server_name')}/></label>
   <label>Сертификат CA контроллера (PEM, если не доверен системой)<textarea aria-label="Сертификат CA" rows={3} placeholder="-----BEGIN CERTIFICATE-----" value={s.ca_certificate_pem??''} onChange={set('ca_certificate_pem')}/></label>
   <label>Интервал, минут<input aria-label="Интервал" type="number" min={1} max={1440} value={s.interval_minutes??15} onChange={e=>setS({...s,interval_minutes:Number(e.target.value)})}/></label>
   {test?<div className={test.ok?'notice':'error'} role="status">{test.ok?`Подключение работает: найдено людей ${test.people_found}, команд ${test.teams_found}. Ничего не изменено.`:'Не удалось: '+test.error}</div>:null}

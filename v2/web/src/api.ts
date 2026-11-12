@@ -56,7 +56,7 @@ export type WebhookList={tenant_id:string;enabled:boolean;can_enable:boolean;eve
 export type WebhookCreated={subscription:WebhookSubscription;signing_secret:string};
 export type WebhookDelivery={event_id:string;event_type:WebhookEventType;occurred_at:string;state:'pending'|'delivered'|'dead';attempts:number;next_attempt_at:string|null;last_status:number|null;last_error:string|null;delivered_at:string|null};
 export type WebhookDeliveryPage={tenant_id:string;subscription_id:string;items:WebhookDelivery[]};
-export type DirectoryWebSettings={url:string;base_dn:string;bind_dn:string;user_filter?:string;group_filter?:string;guid_attribute?:string;login_attribute?:string;changed_attribute?:string;interval_minutes?:number;full_sync_hours?:number;ca_certificate_pem?:string};
+export type DirectoryWebSettings={url:string;base_dn:string;bind_dn:string;user_filter?:string;group_filter?:string;guid_attribute?:string;login_attribute?:string;changed_attribute?:string;interval_minutes?:number;full_sync_hours?:number;ca_certificate_pem?:string;tls_server_name?:string};
 export type DirectorySettingsView={tenant_id:string;source:'none'|'web'|'config';secrets_available:boolean;revision:string|null;settings:DirectoryWebSettings|null;password_set:boolean};
 export type DirectoryTestResult={ok:boolean;people_found:number;teams_found:number;error:string|null};
 export class ApiError extends Error {

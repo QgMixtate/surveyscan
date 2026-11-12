@@ -47,6 +47,8 @@ type DirectorySyncConfig struct {
 	IntervalMinutes  int    `json:"interval_minutes,omitempty"`  // 15
 	FullHours        int    `json:"full_sync_hours,omitempty"`   // 24
 	AllowPlaintext   bool   `json:"allow_plaintext,omitempty"`
+	// Имя в сертификате контроллера, если адрес задан IP (сертификат AD выписан на DNS-имя); пусто — хост из url
+	TLSServerName string `json:"tls_server_name,omitempty"`
 }
 
 type DirectorySync struct {
@@ -118,7 +120,14 @@ func buildDirectorySync(cfg DirectorySyncConfig, password string, caPEM []byte) 
 		return nil, errors.New("ldap_sync bind password is required")
 	}
 	d := &DirectorySync{Config: cfg, password: password}
-	d.tls = &tls.Config{MinVersion: tls.VersionTLS12, ServerName: u.Hostname()}
+	serverName := u.Hostname()
+	if cfg.TLSServerName != "" {
+		if len(cfg.TLSServerName) > 253 || strings.ContainsAny(cfg.TLSServerName, " /:@") {
+			return nil, errors.New("ldap_sync.tls_server_name must be a host name")
+		}
+		serverName = cfg.TLSServerName // проверка сертификата не отключается: меняется только ожидаемое имя
+	}
+	d.tls = &tls.Config{MinVersion: tls.VersionTLS12, ServerName: serverName}
 	if len(caPEM) > 0 {
 		pool := x509.NewCertPool()
 		if !pool.AppendCertsFromPEM(caPEM) {
