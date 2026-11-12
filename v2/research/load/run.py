@@ -29,6 +29,8 @@ if SPLIT:
 
 def scenario(**s):
     work = Path(tempfile.mkdtemp(prefix='c30-'))
+    if os.environ.get('SURVEYSCAN_LOAD_PROFILE') == '1':  # C36.02: профиль запросов (нужен shared_preload_libraries)
+        s['sql']('CREATE EXTENSION IF NOT EXISTS pg_stat_statements')
     if SPLIT:
         wlog = (Path(s['directory']) / 'worker.log').open('ab')
         worker = subprocess.Popen([str(ROOT / '.dist/surveyscan-server'), 'serve'], cwd=ROOT, stdout=wlog, stderr=wlog,
@@ -162,6 +164,8 @@ def scenario(**s):
     for t in threads:
         t.start()
     started = time.time()
+    if os.environ.get('SURVEYSCAN_LOAD_PROFILE') == '1':
+        s['sql']('SELECT pg_stat_statements_reset()')  # профиль — только запросы нагрузки, без подготовки данных
     r = subprocess.run([os.environ['LOADGEN'], str(work / 'load.json')], capture_output=True, text=True, timeout=int(WARMUP + DURATION + 600))
     stop.set()
     for t in threads:
@@ -188,7 +192,7 @@ def scenario(**s):
     try:  # без расширения не обращаемся к нему (иначе ошибка в журнале PostgreSQL)
         if sql("SELECT count(*) FROM pg_extension WHERE extname='pg_stat_statements'") != '1':
             raise RuntimeError('extension not installed')
-        slow = sql("SELECT string_agg(left(regexp_replace(query,'\\s+',' ','g'),140)||' | calls='||calls||' mean_ms='||round(mean_exec_time::numeric,1),E'\\n' ORDER BY total_exec_time DESC) FROM (SELECT * FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 12) x")
+        slow = sql("SELECT string_agg(left(regexp_replace(query,'\\s+',' ','g'),200)||' | calls='||calls||' mean_ms='||round(mean_exec_time::numeric,1),E'\\n' ORDER BY total_exec_time DESC) FROM (SELECT * FROM pg_stat_statements WHERE dbid=(SELECT oid FROM pg_database WHERE datname=current_database()) ORDER BY total_exec_time DESC LIMIT 15) x")
     except Exception as e:  # расширение может быть не включено — фиксируем это, а не скрываем
         slow = 'pg_stat_statements unavailable: ' + str(e)[:200]
     report = {'mode': 'split api+worker' if SPLIT else 'combined', 'passport': 'docs/plans/surveyscan-v2/decisions/C30-load-passport.md', 'assets': len(assets), 'load': result, 'resources': resources, 'slow_queries': slow, 'samples': samples}
