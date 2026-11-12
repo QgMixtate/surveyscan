@@ -54,9 +54,14 @@ def scenario(**s):
         env = dict(os.environ, SURVEYSCAN_BIGPKG_STATE=str(work / 'state'), SURVEYSCAN_BIGPKG_OUT=str(work / name), SURVEYSCAN_BIGPKG_COUNT=str(count))
         subprocess.run(['go', 'test', '-count=1', '-run', '^TestWriteBigPackage$', './internal/portableaudit'], cwd=ROOT, env=env, check=True, capture_output=True, timeout=1800)
         return work / name
-    started = time.time(); main = package('main.zip', N); log('package', N, 'hosts', main.stat().st_size // 1048576, 'MiB', round(time.time() - started), 's')
+    started = time.time()  # пакеты по 1 000 хостов: пакет на 2 000 упирается в предел импорта portable
+    mains = [package(f'main{i}.zip', min(1000, N - i * 1000)) for i in range((N + 999) // 1000)]
+    log('packages', N, 'hosts', sum(p.stat().st_size for p in mains) // 1048576, 'MiB', round(time.time() - started), 's')
     background = [package(f'bg{i}.zip', 50) for i in range(6)]
-    started = time.time(); importing(main); log('import', round(time.time() - started), 's')
+    started = time.time()
+    for p in mains:
+        importing(p)
+    log('import', round(time.time() - started), 's')
 
     # 2. пользователи, оргструктура, сервисы
     pw = work / 'pw'; pw.write_text('load test passphrase C30 synthetic\n'); os.chmod(pw, 0o600)
