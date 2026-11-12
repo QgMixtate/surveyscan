@@ -1,0 +1,129 @@
+{
+ "passport": "docs/plans/surveyscan-v2/decisions/C30-load-passport.md",
+ "assets": 2001,
+ "load": {
+  "actions": {
+   "assign": {
+    "error_codes": {},
+    "errors": 0,
+    "expected_412": 0,
+    "max_ms": 485.874,
+    "p50_ms": 10.476,
+    "p95_ms": 234.446,
+    "p99_ms": 394.829,
+    "requests": 614
+   },
+   "card": {
+    "error_codes": {},
+    "errors": 0,
+    "expected_412": 0,
+    "max_ms": 241.597,
+    "p50_ms": 8.756,
+    "p95_ms": 29.352,
+    "p99_ms": 62.081,
+    "requests": 3026
+   },
+   "edit": {
+    "error_codes": {},
+    "errors": 0,
+    "expected_412": 0,
+    "max_ms": 568.483,
+    "p50_ms": 9.88,
+    "p95_ms": 196.618,
+    "p99_ms": 324.579,
+    "requests": 1134
+   },
+   "list": {
+    "error_codes": {},
+    "errors": 0,
+    "expected_412": 0,
+    "max_ms": 667.682,
+    "p50_ms": 72.131,
+    "p95_ms": 188.831,
+    "p99_ms": 315.958,
+    "requests": 2684
+   },
+   "search": {
+    "error_codes": {},
+    "errors": 0,
+    "expected_412": 0,
+    "max_ms": 4799.353,
+    "p50_ms": 1237.158,
+    "p95_ms": 3757.393,
+    "p99_ms": 4301.701,
+    "requests": 1022
+   },
+   "section12": {
+    "error_codes": {},
+    "errors": 0,
+    "expected_412": 0,
+    "max_ms": 812.006,
+    "p50_ms": 24.618,
+    "p95_ms": 513.497,
+    "p99_ms": 708.736,
+    "requests": 370
+   },
+   "software": {
+    "error_codes": {},
+    "errors": 0,
+    "expected_412": 0,
+    "max_ms": 618.335,
+    "p50_ms": 120.487,
+    "p95_ms": 266.466,
+    "p99_ms": 473.229,
+    "requests": 700
+   },
+   "topology": {
+    "error_codes": {},
+    "errors": 0,
+    "expected_412": 0,
+    "max_ms": 5551.846,
+    "p50_ms": 56.081,
+    "p95_ms": 3302.05,
+    "p99_ms": 4262.151,
+    "requests": 348
+   },
+   "worklist": {
+    "error_codes": {},
+    "errors": 0,
+    "expected_412": 0,
+    "max_ms": 451.743,
+    "p50_ms": 7.963,
+    "p95_ms": 143.874,
+    "p99_ms": 258.757,
+    "requests": 346
+   }
+  },
+  "error_rate": 0,
+  "errors": 0,
+  "login_errors": 0,
+  "measure_seconds": 300,
+  "p50_ms": 36.631,
+  "p95_ms": 1359.848,
+  "p99_ms": 3532.736,
+  "requests": 10244,
+  "throughput_rps": 34.14666666666667,
+  "virtual_users": 100
+ },
+ "resources": {
+  "center_cpu_percent_of_one_core": 34.4,
+  "search_cpu_percent_of_one_core": 88.2,
+  "center_rss_mib_max": 198,
+  "search_rss_mib_max": 286,
+  "pg_connections_max": 27,
+  "pg_active_max": 12,
+  "outbox_pending_max": 18,
+  "outbox_oldest_s_max": 2.11264,
+  "outbox_pending_end": 3,
+  "search_pending_max": 750,
+  "search_pending_end": 685,
+  "background_imports_s": [
+   22.4,
+   22.1,
+   19.9,
+   22.2
+  ],
+  "sampler_errors": []
+ },
+ "slow_queries": "pg_stat_statements unavailable: Command '['docker', '--host=unix:///var/run/docker.sock', 'compose', '--project-name', 'surveyscan-v2-c04', '--file', '/home/user/surveyscan/v2/deploy/compose.yaml', 'exec', '-T', 'db', 'psql', '-U', "
+}
