@@ -15,7 +15,7 @@ import (
 func (Store) Detail(ctx context.Context, tx pgx.Tx, tenant, asset string) ([]contracts.CurrentFact, []contracts.SectionDetail, error) {
 	facts := []contracts.CurrentFact{}
 	sections := []contracts.SectionDetail{}
-	rows, e := tx.Query(ctx, `SELECT f.section_name,f.fact_key,f.value,o.observation_id::text,o.source_id::text,o.payload->'origin'->>'source_kind',o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality FROM inventory.current_facts f JOIN inventory.observations o ON o.tenant_id=f.tenant_id AND o.observation_id=f.observation_id JOIN inventory.observation_sections s ON s.tenant_id=f.tenant_id AND s.observation_id=f.observation_id AND s.section_name=f.section_name WHERE f.tenant_id=$1 AND f.asset_uid=$2 ORDER BY f.section_name,f.fact_key LIMIT 2049`, tenant, asset)
+	rows, e := tx.Query(ctx, `SELECT f.section_name,f.fact_key,f.value,o.observation_id::text,o.source_id::text,(SELECT x.source_kind FROM sources.sources x WHERE x.tenant_id=o.tenant_id AND x.source_id=o.source_id),o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality FROM inventory.current_facts f JOIN inventory.observations o ON o.tenant_id=f.tenant_id AND o.observation_id=f.observation_id JOIN inventory.observation_sections s ON s.tenant_id=f.tenant_id AND s.observation_id=f.observation_id AND s.section_name=f.section_name WHERE f.tenant_id=$1 AND f.asset_uid=$2 ORDER BY f.section_name,f.fact_key LIMIT 2049`, tenant, asset)
 	if e != nil {
 		return facts, sections, e
 	}
@@ -75,7 +75,7 @@ func (Store) Detail(ctx context.Context, tx pgx.Tx, tenant, asset string) ([]con
 	}
 	evidence := func(id, section string) (*contracts.FactEvidence, error) {
 		p := &contracts.FactEvidence{}
-		err := tx.QueryRow(ctx, `SELECT o.observation_id::text,o.source_id::text,o.payload->'origin'->>'source_kind',o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality FROM inventory.observations o JOIN inventory.observation_sections s USING(tenant_id,observation_id) WHERE o.tenant_id=$1 AND o.observation_id=$2 AND s.section_name=$3`, tenant, id, section).Scan(&p.Observation, &p.Origin.SourceID, &p.Origin.SourceKind, &p.Origin.GenerationID, &p.Sequence, &p.Collected, &p.Clock)
+		err := tx.QueryRow(ctx, `SELECT o.observation_id::text,o.source_id::text,(SELECT x.source_kind FROM sources.sources x WHERE x.tenant_id=o.tenant_id AND x.source_id=o.source_id),o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality FROM inventory.observations o JOIN inventory.observation_sections s USING(tenant_id,observation_id) WHERE o.tenant_id=$1 AND o.observation_id=$2 AND s.section_name=$3`, tenant, id, section).Scan(&p.Observation, &p.Origin.SourceID, &p.Origin.SourceKind, &p.Origin.GenerationID, &p.Sequence, &p.Collected, &p.Clock)
 		p.Collected = p.Collected.UTC()
 		return p, err
 	}

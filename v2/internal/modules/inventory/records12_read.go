@@ -24,7 +24,7 @@ func (Store) RecordState12(ctx context.Context, tx pgx.Tx, tenant, asset, sectio
 	err := tx.QueryRow(ctx, `WITH best AS (
  SELECT x.last_attempt_id,x.last_status FROM inventory.record_section_source_state12 x WHERE x.tenant_id=$1 AND x.asset_uid=$2 AND x.section_name=$3
  ORDER BY CASE x.last_status WHEN 'partial' THEN 0 WHEN 'unavailable' THEN 1 WHEN 'unsupported' THEN 2 ELSE 3 END, x.collected_at DESC, x.source_id LIMIT 1)
-SELECT r.projection_revision::text,COALESCE(b.last_status,r.last_status),r.clock_uncertain,o.observation_id::text,o.source_id::text,o.payload->'origin'->>'source_kind',o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality
+SELECT r.projection_revision::text,COALESCE(b.last_status,r.last_status),r.clock_uncertain,o.observation_id::text,o.source_id::text,(SELECT x.source_kind FROM sources.sources x WHERE x.tenant_id=o.tenant_id AND x.source_id=o.source_id),o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality
 FROM inventory.record_section_state12 r LEFT JOIN best b ON true
 JOIN inventory.observations o ON o.tenant_id=r.tenant_id AND o.observation_id=COALESCE(b.last_attempt_id,r.last_attempt_id)
 JOIN inventory.observation_sections s ON s.tenant_id=r.tenant_id AND s.observation_id=o.observation_id AND s.section_name=r.section_name
@@ -57,7 +57,7 @@ func (Store) RecordFacts12(ctx context.Context, tx pgx.Tx, tenant, asset, sectio
 	if !contracts.InventorySection12(section) || limit < 1 || limit > wire.RecordPage12MaxItems {
 		return nil, false, domain.Invalid
 	}
-	rows, err := tx.Query(ctx, `SELECT f.record_key,f.field_name,f.value,o.observation_id::text,o.source_id::text,o.payload->'origin'->>'source_kind',o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality FROM inventory.record_facts12 f JOIN inventory.observations o ON o.tenant_id=f.tenant_id AND o.observation_id=f.observation_id JOIN inventory.observation_sections s ON s.tenant_id=f.tenant_id AND s.observation_id=f.observation_id AND s.section_name=f.section_name WHERE f.tenant_id=$1 AND f.asset_uid=$2 AND f.section_name=$3 AND (f.record_key COLLATE "C",f.field_name COLLATE "C")>($4,$5) ORDER BY f.record_key COLLATE "C",f.field_name COLLATE "C" LIMIT $6`, tenant, asset, section, afterRecord, afterField, limit+1)
+	rows, err := tx.Query(ctx, `SELECT f.record_key,f.field_name,f.value,o.observation_id::text,o.source_id::text,(SELECT x.source_kind FROM sources.sources x WHERE x.tenant_id=o.tenant_id AND x.source_id=o.source_id),o.generation_id::text,o.source_sequence::text,s.collected_at,o.clock_quality FROM inventory.record_facts12 f JOIN inventory.observations o ON o.tenant_id=f.tenant_id AND o.observation_id=f.observation_id JOIN inventory.observation_sections s ON s.tenant_id=f.tenant_id AND s.observation_id=f.observation_id AND s.section_name=f.section_name WHERE f.tenant_id=$1 AND f.asset_uid=$2 AND f.section_name=$3 AND (f.record_key COLLATE "C",f.field_name COLLATE "C")>($4,$5) ORDER BY f.record_key COLLATE "C",f.field_name COLLATE "C" LIMIT $6`, tenant, asset, section, afterRecord, afterField, limit+1)
 	if err != nil {
 		return nil, false, err
 	}

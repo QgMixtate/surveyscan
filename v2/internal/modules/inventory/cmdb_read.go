@@ -44,7 +44,7 @@ type Component struct {
 // курсор — ключ последней записи (keyset по паре имя+ключ).
 func (Store) Software(ctx context.Context, tx pgx.Tx, tenant, asset, filter, after string, limit int) ([]Installation, error) {
 	rows, e := tx.Query(ctx, `SELECT i.record_key,i.name,i.version,i.publisher,i.architecture,i.package_source,
-o.observation_id::text,o.source_id::text,o.payload->'origin'->>'source_kind',s.collected_at,o.clock_quality
+o.observation_id::text,o.source_id::text,(SELECT x.source_kind FROM sources.sources x WHERE x.tenant_id=o.tenant_id AND x.source_id=o.source_id),s.collected_at,o.clock_quality
 FROM inventory.software_installations12 i
 JOIN inventory.observations o ON o.tenant_id=i.tenant_id AND o.observation_id=i.observation_id
 JOIN inventory.observation_sections s ON s.tenant_id=i.tenant_id AND s.observation_id=i.observation_id AND s.section_name='software'
@@ -68,7 +68,7 @@ ORDER BY lower(COALESCE(i.name,'')),i.record_key LIMIT $5`, tenant, asset, filte
 
 func (Store) Components(ctx context.Context, tx pgx.Tx, tenant, asset string) ([]Component, error) {
 	rows, e := tx.Query(ctx, `SELECT c.section_name,c.record_key,c.kind,c.name,c.vendor,c.model,c.serial,c.size_bytes,
-o.observation_id::text,o.source_id::text,o.payload->'origin'->>'source_kind',s.collected_at,o.clock_quality
+o.observation_id::text,o.source_id::text,(SELECT x.source_kind FROM sources.sources x WHERE x.tenant_id=o.tenant_id AND x.source_id=o.source_id),s.collected_at,o.clock_quality
 FROM inventory.components12 c
 JOIN inventory.observations o ON o.tenant_id=c.tenant_id AND o.observation_id=c.observation_id
 JOIN inventory.observation_sections s ON s.tenant_id=c.tenant_id AND s.observation_id=c.observation_id AND s.section_name=c.section_name
