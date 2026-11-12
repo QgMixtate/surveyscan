@@ -286,7 +286,19 @@ func (r *Registry) SyncDirectory(ctx context.Context, forceFull bool) (responsib
 	return r.syncWith(ctx, r.Directory, forceFull)
 }
 
-func (r *Registry) syncWith(ctx context.Context, d *DirectorySync, forceFull bool) (responsibility.SyncRun, error) {
+func (r *Registry) syncWith(ctx context.Context, d *DirectorySync, forceFull bool) (run responsibility.SyncRun, err error) {
+	// C35.02: один прогон тенанта на весь контур (несколько worker-процессов не синхронизируют одно и то же дважды)
+	e := r.exclusive(ctx, "directory-sync:"+d.Config.TenantID, func(ctx context.Context) error {
+		run, err = r.syncLocked(ctx, d, forceFull)
+		return nil
+	})
+	if e != nil {
+		return run, e
+	}
+	return run, err
+}
+
+func (r *Registry) syncLocked(ctx context.Context, d *DirectorySync, forceFull bool) (responsibility.SyncRun, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	tenant := d.Config.TenantID
@@ -399,7 +411,9 @@ func (r *Registry) DirectoryMaintain(ctx context.Context, log func(string)) {
 				}
 				if last == nil || time.Since(*last) >= time.Duration(d.Config.IntervalMinutes)*time.Minute {
 					run, e := r.syncWith(task, d, false)
-					if e != nil {
+					if errors.Is(e, ErrBusy) {
+						// прогон тенанта уже ведёт другой процесс центра
+					} else if e != nil {
 						log(fmt.Sprintf("directory sync %s %s failed: %v", tenant, run.Mode, e))
 					} else {
 						log(fmt.Sprintf("directory sync %s %s: %s", tenant, run.Mode, run.Counters))
@@ -471,6 +485,9 @@ func (r *Registry) RunDirectorySync(ctx context.Context, id accessport.Identity,
 		return responsibility.SyncRun{}, domain.NotFound
 	}
 	run, e := r.syncWith(ctx, d, req.Mode == "full")
+	if errors.Is(e, ErrBusy) {
+		return run, domain.Conflict // синхронизация уже идёт в другом процессе центра
+	}
 	if run.Status == "failed" {
 		return run, nil // итог прогона — в ответе и журнале
 	}

@@ -264,6 +264,18 @@ func TestC29SearchProjection(t *testing.T) {
 		t.Fatal("burst must be fully indexed", len(search("burst").Items))
 	}
 
+	// 6а. C35.02: пересборку уже ведёт другой процесс центра — второй её не начинает
+	holder, err := f.pool.Acquire(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _ = holder.Exec(f.ctx, "SELECT pg_advisory_lock(hashtextextended('surveyscan:search-rebuild',0))")
+	if _, err = f.registry.RebuildSearch(f.ctx); !errors.Is(err, app.ErrBusy) {
+		t.Fatal("concurrent rebuild must be refused", err)
+	}
+	_, _ = holder.Exec(f.ctx, "SELECT pg_advisory_unlock(hashtextextended('surveyscan:search-rebuild',0))")
+	holder.Release()
+
 	// 7. пересборка из PostgreSQL сходится с источником истины (и убирает поддельную запись)
 	indexed, err := f.registry.RebuildSearch(f.ctx)
 	if err != nil {

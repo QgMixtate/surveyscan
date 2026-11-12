@@ -181,16 +181,30 @@ func run(args []string) error {
 			return err
 		}
 	}
+	// C35.01: роль процесса. combined — HTTP и фоновые работы (как раньше); api — только HTTP (UI/API и транспорт
+	// машин); worker — только фоновые работы (очередь событий, поиск, уведомления, каталог) и проверка живости.
+	// Несколько api и worker работают одновременно: состояние в PostgreSQL, взаимоисключение — блокировками БД (C35.02).
+	role := os.Getenv("SURVEYSCAN_V2_ROLE")
+	if role == "" {
+		role = "combined"
+	}
+	if role != "combined" && role != "api" && role != "worker" {
+		return fmt.Errorf("SURVEYSCAN_V2_ROLE must be combined, api or worker")
+	}
+	background := role != "api"
 	if registry.Machine != nil && registry.Machine.Maintain != nil {
-		go registry.Machine.Maintain(ctx)
+		go registry.Machine.Maintain(ctx) // токен OpenBao нужен любой роли
 	}
 	if e := registry.LoadIntegrations(ctx); e != nil {
 		fmt.Println("integration secrets unavailable: " + e.Error())
 	}
-	registry.OnWebhooksEnabled(func() { go registry.WebhookMaintain(ctx, func(m string) { fmt.Println(m) }) })
-	go registry.DirectoryMaintain(ctx, func(m string) { fmt.Println(m) }) // C31.05: тенанты с настройками из Web или конфигурации
-	if registry.Search != nil {
-		go registry.SearchMaintain(ctx, func(m string) { fmt.Println(m) })
+	if background {
+		registry.OnWebhooksEnabled(func() { go registry.WebhookMaintain(ctx, func(m string) { fmt.Println(m) }) })
+		go registry.WatchIntegrations(ctx)                                    // уведомления, включённые в Web через api-процесс, подхватываются здесь
+		go registry.DirectoryMaintain(ctx, func(m string) { fmt.Println(m) }) // C31.05: тенанты с настройками из Web или конфигурации
+		if registry.Search != nil {
+			go registry.SearchMaintain(ctx, func(m string) { fmt.Println(m) })
+		}
 	}
 	checks := []health.Check{dbCheck, health.Bao(bao)}
 	if registry.Machine != nil && registry.Machine.Ready != nil {
@@ -202,6 +216,9 @@ func run(args []string) error {
 	}
 	server := &http.Server{Addr: addr, Handler: handler, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 10 * time.Second, WriteTimeout: 10 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16384}
 	go func() {
+		if !background {
+			return
+		}
 		ticker := time.NewTicker(2 * time.Second)
 		defer ticker.Stop()
 		for {
@@ -226,6 +243,10 @@ func run(args []string) error {
 		}
 	}()
 	finished := make(chan error, 2)
+	if role == "worker" {
+		server.Handler = health.Handler(checks...) // worker: только проверка живости, без UI/API
+		machineTLS = nil
+	}
 	var machineServer *http.Server
 	if machineTLS != nil {
 		machineServer = &http.Server{Addr: machineListen, Handler: handler, TLSConfig: machineTLS, ReadHeaderTimeout: 5 * time.Second, ReadTimeout: 15 * time.Second, WriteTimeout: 15 * time.Second, IdleTimeout: 30 * time.Second, MaxHeaderBytes: 16384}
@@ -234,7 +255,7 @@ func run(args []string) error {
 	}
 	defer server.Close()
 	go func() { finished <- server.ListenAndServe() }()
-	fmt.Println("surveyscan v2 C06 registry server started; machine transport pending C07")
+	fmt.Println("surveyscan v2 server started, role=" + role)
 	select {
 	case err = <-finished:
 		if err != http.ErrServerClosed {

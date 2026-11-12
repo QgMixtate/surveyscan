@@ -276,10 +276,22 @@ func (r *Registry) pushSearch(ctx context.Context, tx pgx.Tx, tenant string, uid
 
 // RebuildSearch — полная пересборка индекса из PostgreSQL в новое поколение (изменения во время пересборки сервис
 // пишет в оба поколения), затем атомарное переключение. Возвращает число документов.
-func (r *Registry) RebuildSearch(ctx context.Context) (int, error) {
+func (r *Registry) RebuildSearch(ctx context.Context) (n int, err error) {
 	if r.Search == nil {
 		return 0, ErrSearchUnavailable
 	}
+	// C35.02: пересборку ведёт один процесс контура (индекс — один писатель)
+	e := r.exclusive(ctx, "search-rebuild", func(ctx context.Context) error {
+		n, err = r.rebuildSearchLocked(ctx)
+		return nil
+	})
+	if e != nil {
+		return 0, e
+	}
+	return n, err
+}
+
+func (r *Registry) rebuildSearchLocked(ctx context.Context) (int, error) {
 	if e := r.Search.call(ctx, "/v1/rebuild/begin", struct{}{}, nil); e != nil {
 		return 0, e
 	}
@@ -558,6 +570,10 @@ func (r *Registry) searchRebuildHandler() http.Handler {
 				access.APIError(w, 503, "SEARCH_UNAVAILABLE")
 				return
 			}
+			if errors.Is(e, ErrBusy) {
+				access.APIError(w, 409, "CONFLICT") // пересборка уже идёт в другом процессе центра
+				return
+			}
 			registryError(w, e)
 			return
 		}
@@ -584,7 +600,9 @@ func (r *Registry) SearchMaintain(ctx context.Context, log func(string)) {
 			var assets int
 			if e = r.Pool.QueryRow(task, "SELECT count(*) FROM assets.assets WHERE merged_into IS NULL").Scan(&assets); e == nil && (status.Format != SearchFormat || status.Docs == 0 && assets > 0) && !status.Rebuilding {
 				n, e := r.RebuildSearch(task)
-				log(fmt.Sprintf("search index rebuilt: %d assets (format %q → %q), err=%v", n, status.Format, SearchFormat, e))
+				if !errors.Is(e, ErrBusy) {
+					log(fmt.Sprintf("search index rebuilt: %d assets (format %q → %q), err=%v", n, status.Format, SearchFormat, e))
+				}
 			}
 			tenants, e := messaging.PendingTenantsFor(task, r.Pool, SearchConsumer)
 			if e == nil {

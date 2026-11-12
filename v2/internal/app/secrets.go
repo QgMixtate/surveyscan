@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"sync"
+	"time"
 
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/bao"
 )
@@ -153,5 +154,31 @@ func (r *Registry) OnWebhooksEnabled(start func()) {
 	r.startWebhooks = once
 	if r.Webhooks != nil {
 		once()
+	}
+}
+
+// WatchIntegrations — для worker-процесса: уведомления включают в Web через api-процесс, а доставку ведёт worker;
+// раз в 30 с проверяется хранилище секретов, и при появлении мастер-ключа запускается доставка.
+func (r *Registry) WatchIntegrations(ctx context.Context) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+	for r.sender() == nil {
+		select {
+		case <-ctx.Done():
+			return
+		case <-ticker.C:
+		}
+		r.hooksMu.Lock()
+		if r.Webhooks == nil && r.Secrets != nil {
+			if master, ok, e := r.Secrets.Get(ctx, centerScope, "webhook-master"); e == nil && ok {
+				if sender, e := newWebhookSender(master); e == nil {
+					r.Webhooks = sender
+					if r.startWebhooks != nil {
+						r.startWebhooks()
+					}
+				}
+			}
+		}
+		r.hooksMu.Unlock()
 	}
 }

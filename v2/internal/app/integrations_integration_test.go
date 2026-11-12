@@ -266,6 +266,28 @@ func TestC31DirectorySync(t *testing.T) {
 		t.Fatalf("deactivation must version the asset: events=%d history=%d", events, history)
 	}
 
+	// 5а. C35.02: прогон тенанта уже идёт в другом процессе центра (его блокировка в PostgreSQL) — 409, без прогона
+	holder, err := f.pool.Acquire(f.ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	key := "surveyscan:directory-sync:" + tenant
+	if _, err = holder.Exec(f.ctx, "SELECT pg_advisory_lock(hashtextextended($1,0))", key); err != nil {
+		t.Fatal(err)
+	}
+	var runsBefore, runsAfter int
+	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM responsibility.directory_sync_runs WHERE tenant_id=$1", tenant).Scan(&runsBefore)
+	call(env.admin, "POST", "/api/v1/directory-sync/run", `{"mode":"full"}`, 409)
+	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM responsibility.directory_sync_runs WHERE tenant_id=$1", tenant).Scan(&runsAfter)
+	_, _ = holder.Exec(f.ctx, "SELECT pg_advisory_unlock(hashtextextended($1,0))", key)
+	holder.Release()
+	if runsAfter != runsBefore {
+		t.Fatal("busy sync must not record a run")
+	}
+	if r := run("auto"); r.Status != "succeeded" {
+		t.Fatalf("after the other process finished: %+v", r)
+	}
+
 	// 6. сбой bind: прогон failed в журнале, пароль не раскрыт, данные не тронуты
 	bad := filepath.Join(t.TempDir(), "pw")
 	_ = os.WriteFile(bad, []byte("wrong-secret-value\n"), 0o600)
@@ -294,12 +316,12 @@ func TestC31DirectorySync(t *testing.T) {
 	env.valid(urn, "DirectorySyncStatus", raw)
 	var status app.DirectorySyncStatus
 	_ = json.Unmarshal(raw, &status)
-	if !status.Configured || len(status.Runs) != 5 || status.Runs[0].Status != "failed" || strings.Contains(string(raw), "wrong-secret") {
+	if !status.Configured || len(status.Runs) != 6 || status.Runs[0].Status != "failed" || strings.Contains(string(raw), "wrong-secret") {
 		t.Fatalf("status: %s", raw)
 	}
 	var audits int
 	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM audit.audit_events WHERE tenant_id=$1 AND action IN ('responsibility.directory_synced','responsibility.directory_sync_failed')", tenant).Scan(&audits)
-	if audits != 5 {
+	if audits != 6 {
 		t.Fatal("every run must be audited", audits)
 	}
 }
