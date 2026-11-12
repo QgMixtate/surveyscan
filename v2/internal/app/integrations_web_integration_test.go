@@ -87,7 +87,7 @@ func TestC31WebSettings(t *testing.T) {
 	settings["url"] = byIP
 	test = app.DirectoryTestResult{}
 	_ = json.Unmarshal(call(env.admin, "POST", "/api/v1/directory-sync/test", body("", &pw), 200), &test)
-	if test.OK || test.Error == nil || !strings.Contains(*test.Error, "IP SANs") {
+	if test.OK || test.Error == nil || !strings.Contains(*test.Error, "IP SANs") || !strings.Contains(*test.Error, "Имя контроллера в сертификате") {
 		t.Fatalf("IP address without tls_server_name must fail certificate check: %+v", test)
 	}
 	settings["tls_server_name"] = "localhost"

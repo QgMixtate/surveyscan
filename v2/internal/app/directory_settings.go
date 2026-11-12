@@ -249,7 +249,7 @@ func (r *Registry) DirectoryTest(ctx context.Context, id accessport.Identity, u 
 	}
 	snapshot, e := d.Read(nil)
 	if e != nil {
-		msg := e.Error()
+		msg := directoryHint(e)
 		return DirectoryTestResult{Error: &msg}, nil
 	}
 	return DirectoryTestResult{OK: true, People: len(snapshot.People), Teams: len(snapshot.Teams)}, nil

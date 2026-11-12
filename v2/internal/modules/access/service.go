@@ -217,8 +217,17 @@ func (s *Service) Login(ctx context.Context, username, password string) (out Ses
 	if e = tx.QueryRow(ctx, "SELECT count(*) FROM access.credentials WHERE user_id=$1 AND kind='session' AND revoked_at IS NULL AND expires_at>clock_timestamp() AND user_revision::text=$2", userID, revision).Scan(&active); e != nil {
 		return Session{}, "", e
 	}
-	if active >= 5 {
-		return Session{}, "", ErrLimit
+	// Не больше 5 одновременных сессий. Стенд R-027: вкладки браузера закрывают без выхода, и сессии живут 8 ч —
+	// новый вход упирался в отказ. Теперь вход вытесняет самые старые сессии этого пользователя (с аудитом).
+	for ; active >= 5; active-- {
+		var oldest string
+		stage = "session_evict"
+		if e = tx.QueryRow(ctx, "UPDATE access.credentials SET revoked_at=clock_timestamp() WHERE credential_id=(SELECT credential_id FROM access.credentials WHERE user_id=$1 AND kind='session' AND revoked_at IS NULL AND expires_at>clock_timestamp() AND user_revision::text=$2 ORDER BY created_at,credential_id LIMIT 1 FOR UPDATE) RETURNING credential_id::text", userID, revision).Scan(&oldest); e != nil {
+			return Session{}, "", e
+		}
+		if e = s.event(ctx, tx, port.Identity{TenantID: tenantID, UserID: userID}, "session.evicted", oldest); e != nil {
+			return Session{}, "", e
+		}
 	}
 	raw, csrf, id := secret(), secret(), identifier.New()
 	var expires time.Time

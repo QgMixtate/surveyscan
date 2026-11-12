@@ -317,7 +317,7 @@ func (r *Registry) syncWith(ctx context.Context, d *DirectorySync, forceFull boo
 		return run, nil
 	}
 	run.Finished, run.Status = time.Now().UTC(), "failed"
-	msg := e.Error()
+	msg := directoryHint(e)
 	run.Error = &msg
 	run.Counters, _ = json.Marshal(counters)
 	tx, e2 := r.Pool.Begin(ctx)
@@ -515,4 +515,20 @@ func (r *Registry) directoryHandlers() map[string]struct {
 			registryJSON(w, out)
 		})},
 	}
+}
+
+// directoryHint — текст ошибки с подсказкой администратору для частых причин (стенд R-027: адрес DC по IP).
+func directoryHint(e error) string {
+	msg := e.Error()
+	switch {
+	case strings.Contains(msg, "IP SANs"):
+		msg += " — сертификат контроллера выписан на имя: укажите в адресе имя контроллера (ldaps://dc01.example.local:636) или заполните «Имя контроллера в сертификате»"
+	case strings.Contains(msg, "unknown authority"):
+		msg += " — сертификат контроллера выдан неизвестным центром: вставьте сертификат CA (PEM) в настройки"
+	case strings.Contains(msg, "certificate is valid for"):
+		msg += " — имя в адресе не совпадает с сертификатом: проверьте адрес или «Имя контроллера в сертификате»"
+	case strings.Contains(msg, "bind failed"):
+		msg += " — проверьте DN учётки и пароль"
+	}
+	return msg
 }

@@ -483,3 +483,31 @@ func TestC05AuthorizationAndCredentialRevocationLockOrder(t *testing.T) {
 		t.Fatal("authorization did not finish")
 	}
 }
+
+// Стенд R-027: шестой вход не отказывает, а закрывает самую старую сессию пользователя (не больше 5 одновременно).
+func TestSessionLimitEvictsOldest(t *testing.T) {
+	ctx, s, pool := authService(t)
+	bootstrap(t, ctx, s)
+	raws := []string{}
+	for range 6 {
+		_, raw, e := s.Login(ctx, "admin", password)
+		if e != nil {
+			t.Fatal("login must not be refused at the session limit", e)
+		}
+		raws = append(raws, raw)
+	}
+	if _, e := s.Authenticate(ctx, raws[0], "session", "", false); !errors.Is(e, access.ErrAuth) {
+		t.Fatal("oldest session must be evicted", e)
+	}
+	for _, raw := range raws[1:] {
+		if _, e := s.Authenticate(ctx, raw, "session", "", false); e != nil {
+			t.Fatal("newer sessions must stay", e)
+		}
+	}
+	var active, evicted int
+	_ = pool.QueryRow(ctx, "SELECT count(*) FROM access.credentials WHERE kind='session' AND revoked_at IS NULL").Scan(&active)
+	_ = pool.QueryRow(ctx, "SELECT count(*) FROM access.security_events WHERE action='session.evicted'").Scan(&evicted)
+	if active != 5 || evicted != 1 {
+		t.Fatal("active/evicted", active, evicted)
+	}
+}
