@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C14 done bounded E1; C15.01 design done; C15.02 in_progress in separate Windows branch;57/200 done",
+  "status": "C01-C14 done bounded E1; C15.01 design done; C15.02 in_progress in separate Windows branch;57/200 done; C32 not_required (4) → closed 61/200",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -2563,7 +2563,7 @@
           "output": "Mapping snapshot/JSON/surv/credentials и gaps",
           "verification": "Потерянные исходные facts не выдумываются",
           "estimation_basis": "Поддержанные v1 fixtures, app key и export layouts",
-          "status": "planned",
+          "status": "not_required",
           "work_group": "Подготовка и проектирование"
         },
         {
@@ -2576,7 +2576,7 @@
           "output": "Idempotent import с tenant/source/status annotations",
           "verification": "Недостающие поля помечены unknown, UID mappings сохранены",
           "estimation_basis": "Одна зафиксированная версия v1 и целевая v2 schema",
-          "status": "planned",
+          "status": "not_required",
           "work_group": "Реализация"
         },
         {
@@ -2589,7 +2589,7 @@
           "output": "Защищённый перенос либо re-enrollment, rollback и shadow plan",
           "verification": "Секреты не попадают в открытый dump",
           "estimation_basis": "Доступность старого key — prerequisite, не попытка его угадать",
-          "status": "planned",
+          "status": "not_required",
           "work_group": "Реализация"
         },
         {
@@ -2602,12 +2602,13 @@
           "output": "Counts/sections/identity/ownership/history и rollback report",
           "verification": "Известный дефект apply_role_guess не обходится молча заглушкой",
           "estimation_basis": "Использовать сохранённые fixtures; исправление v1 — отдельный scope",
-          "status": "planned",
+          "status": "not_required",
           "work_group": "Проверка и передача"
         }
       ],
-      "status": "planned",
-      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+      "status": "not_required",
+      "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope.",
+      "decision": "Решение пользователя 2026-11-12 (R-027): перенос данных v1 не нужен — в v1 только стендовые машины, их собирают агенты v2; ветка legacy/v1 удалена (код v1 в истории develop, bd26e78). Справка: decisions/C32-v1-data-mapping.md"
     },
     {
       "id": "C33",
@@ -3858,6 +3859,15 @@
       "C14.01"
     ],
     "next_package": "C14",
-    "product_implementation_started": true
+    "product_implementation_started": true,
+    "not_required_packages": [
+      "C32"
+    ],
+    "not_required_tasks": [
+      "C32.01",
+      "C32.02",
+      "C32.03",
+      "C32.04"
+    ]
   }
 }

@@ -4,8 +4,8 @@
 Правила продолжения работы, журнал и границы — в [AGENTS.md](AGENTS.md); состояние — docs/STATUS.md, docs/REQUESTS.md.
 
 ## Что это
-SurveyScan v2 — постоянная инвентаризация и реестр ИТ-активов на Go (`v2/`). Legacy v1 (Python) выведен из основной линии
-и сохранён в ветке `legacy/v1` (данные — для пакета C32).
+SurveyScan v2 — постоянная инвентаризация и реестр ИТ-активов на Go (`v2/`). Legacy v1 (Python) выведен из основной линии;
+код — в истории git (bd26e78), ветка legacy/v1 удалена, перенос данных не нужен (C32 — not_required).
 
 ## Карта `v2/`
 - `cmd/` — бинарники: surveyscan-server (центр, консоль migrate/bootstrap-admin/portable-*), surveyscan-collector,

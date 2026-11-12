@@ -37,7 +37,7 @@
 | [C29](packages/C29.md) | E3 | Поисковая проекция, API и UI | C26, C28 | [Запрос](prompts/C29.md) | planned |
 | [C30](packages/C30.md) | E3 | Нагрузка 100 активных пользователей и E3 приёмка | C27, C29 | [Запрос](prompts/C30.md) | planned |
 | [C31](packages/C31.md) | E4 | Интеграции и внешние контракты | C30 | [Запрос](prompts/C31.md) | planned |
-| [C32](packages/C32.md) | E4 | Миграция данных Python v1 | C30 | [Запрос](prompts/C32.md) | planned |
+| [C32](packages/C32.md) | E4 | Миграция данных Python v1 | C30 | [Запрос](prompts/C32.md) | not_required (решение 2026-11-12) |
 | [C33](packages/C33.md) | E4 | Промышленная поставка и сопровождение | C31, C32 | [Запрос](prompts/C33.md) | planned |
 | [C34](packages/C34.md) | E4 | Пилот, внедрение и стабилизация | C33 | [Запрос](prompts/C34.md) | planned |
 | [C35](packages/C35.md) | E5 | Раздельные API/worker и несколько экземпляров | C34 | [Запрос](prompts/C35.md) | planned |
