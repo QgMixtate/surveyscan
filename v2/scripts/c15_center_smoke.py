@@ -174,7 +174,11 @@ def scenario(relay12=False, **s):
     assert applied['observation_digest'] == record['digest'] and applied['disposition'] == 'applied' and applied['spool_action'] == 'remove'
     asset = applied['asset_uid']
     assert sql('SELECT count(*) FROM inventory.observations') == '1'
-    assert sql('SELECT count(DISTINCT section_name) FROM inventory.record_facts12') == ('8' if LINUX else '12')  # Linux: 4 секции явно unsupported без строк
+    # Linux — живой снимок хоста: число разделов со строками зависит от машины (на раннере CI их не 8, как в песочнице);
+    # проверяем, что в PostgreSQL ровно те разделы, по которым агент прислал строки.
+    with_rows = sum(1 for section in payload['sections'] if section.get('records'))
+    assert with_rows >= (4 if LINUX else 12), with_rows
+    assert sql('SELECT count(DISTINCT section_name) FROM inventory.record_facts12') == str(with_rows)
     checks.append('actual mTLS courier forwards delegated signed synthetic agent1.2 to compiled center; all12sections commit inPG with history/audit/outbox and verified unchanged ACK1.0')
     path = '/api/v1/assets/' + asset + '/inventory/facts/' + ('software' if LINUX else 'services')
     code, page, _ = request(s['tls_port'], s['plain'], 'GET', path, headers={'Cookie': s['cookie']})
