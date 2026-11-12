@@ -265,6 +265,27 @@ WHERE a.tenant_id=$1 AND a.asset_uid=$2 AND ($3 OR a.valid_to IS NULL) ORDER BY 
 	return out, rows.Err()
 }
 
+// AssignmentsMany — действующие назначения активов страницы (C30, пакетное чтение «Моих задач»).
+func (Store) AssignmentsMany(ctx context.Context, tx pgx.Tx, tenant string, assets []string) (map[string][]Assignment, error) {
+	rows, e := tx.Query(ctx, `SELECT a.asset_uid::text,a.role,a.subject_id::text,s.name,s.kind,a.valid_from,a.valid_to,a.reason_code,a.note,a.actor_ref
+FROM responsibility.responsibility_assignments a JOIN responsibility.subjects s ON s.tenant_id=a.tenant_id AND s.subject_id=a.subject_id
+WHERE a.tenant_id=$1 AND a.asset_uid=ANY($2::uuid[]) AND a.valid_to IS NULL ORDER BY a.asset_uid,a.valid_from DESC,a.role`, tenant, assets)
+	if e != nil {
+		return nil, e
+	}
+	defer rows.Close()
+	out := map[string][]Assignment{}
+	for rows.Next() {
+		var uid string
+		var a Assignment
+		if e = rows.Scan(&uid, &a.Role, &a.Subject, &a.Name, &a.Kind, &a.ValidFrom, &a.ValidTo, &a.Reason, &a.Note, &a.Actor); e != nil {
+			return nil, e
+		}
+		out[uid] = append(out[uid], a)
+	}
+	return out, rows.Err()
+}
+
 // Deactivate — уход сотрудника/расформирование команды: accountable его активов переходит на резервную команду
 // площадки актива, прочие роли закрываются, участие в командах закрывается, субъект становится неактивным.
 // Резервную команду площадки деактивировать нельзя (Conflict). Возвращает изменения назначений.

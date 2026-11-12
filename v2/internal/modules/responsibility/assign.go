@@ -70,3 +70,21 @@ WHERE f.tenant_id=$1 AND f.asset_uid=$2 AND f.valid_to IS NULL AND (t.assignment
 	}
 	return accountable, nil
 }
+
+// AccountableMany — действующие ответственные активов страницы (C30, пакетное чтение).
+func (Store) AccountableMany(ctx context.Context, tx pgx.Tx, tenant string, uids []string) (map[string]string, error) {
+	rows, e := tx.Query(ctx, "SELECT asset_uid::text,subject_id::text FROM responsibility.responsibility_assignments WHERE tenant_id=$1 AND asset_uid=ANY($2::uuid[]) AND role='accountable' AND valid_to IS NULL", tenant, uids)
+	if e != nil {
+		return nil, e
+	}
+	defer rows.Close()
+	out := map[string]string{}
+	for rows.Next() {
+		var uid, subject string
+		if e = rows.Scan(&uid, &subject); e != nil {
+			return nil, e
+		}
+		out[uid] = subject
+	}
+	return out, rows.Err()
+}

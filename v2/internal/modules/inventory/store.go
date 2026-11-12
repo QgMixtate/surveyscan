@@ -244,25 +244,43 @@ func (Store) Project(ctx context.Context, tx pgx.Tx, o contracts.Observation, as
 	}
 	return changed, nil
 }
-func (Store) Enrich(ctx context.Context, tx pgx.Tx, a *contracts.Asset) error {
-	a.Freshness = "unknown"
-	rows, e := tx.Query(ctx, "SELECT section_name,fact_key,value FROM inventory.current_facts WHERE tenant_id=$1 AND asset_uid=$2", a.TenantID, a.UID)
+func (s Store) Enrich(ctx context.Context, tx pgx.Tx, a *contracts.Asset) error {
+	return s.EnrichMany(ctx, tx, []*contracts.Asset{a})
+}
+
+// EnrichMany дополняет активы одного тенанта наблюдаемыми именем, ОС, состояниями разделов и свежестью — по одному
+// запросу на вид данных для всей страницы (C30, стенд: построчное чтение давало ~7 запросов на актив).
+func (Store) EnrichMany(ctx context.Context, tx pgx.Tx, list []*contracts.Asset) error {
+	if len(list) == 0 {
+		return nil
+	}
+	tenant := list[0].TenantID
+	uids := make([]string, len(list))
+	by := map[string]*contracts.Asset{}
+	osFields := map[string]map[string]string{}
+	trusted, uncertain := map[string]bool{}, map[string]bool{}
+	for i, a := range list {
+		a.Freshness = "unknown"
+		uids[i] = a.UID
+		by[a.UID] = a
+		osFields[a.UID] = map[string]string{}
+	}
+	rows, e := tx.Query(ctx, "SELECT asset_uid::text,section_name,fact_key,value FROM inventory.current_facts WHERE tenant_id=$1 AND asset_uid=ANY($2::uuid[]) AND section_name IN ('identity','os')", tenant, uids)
 	if e != nil {
 		return e
 	}
-	osFields := map[string]string{}
 	for rows.Next() {
-		var section, key, value string
-		if e = rows.Scan(&section, &key, &value); e != nil {
+		var uid, section, key, value string
+		if e = rows.Scan(&uid, &section, &key, &value); e != nil {
 			rows.Close()
 			return e
 		}
 		if section == "identity" && key == "hostname" {
 			v := value
-			a.Hostname = &v
+			by[uid].Hostname = &v
 		}
 		if section == "os" {
-			osFields[key] = value
+			osFields[uid][key] = value
 		}
 	}
 	e = rows.Err()
@@ -270,58 +288,56 @@ func (Store) Enrich(ctx context.Context, tx pgx.Tx, a *contracts.Asset) error {
 	if e != nil {
 		return e
 	}
-	if name, ok := osFields["name"]; ok {
-		value := name
-		if ver, ok := osFields["version"]; ok {
-			value += " " + ver
+	for uid, f := range osFields {
+		if name, ok := f["name"]; ok {
+			value := name
+			if ver, ok := f["version"]; ok {
+				value += " " + ver
+			}
+			if runes := []rune(value); len(runes) > 256 {
+				value = string(runes[:256])
+			}
+			by[uid].OS = &value
 		}
-		runes := []rune(value)
-		if len(runes) > 256 {
-			value = string(runes[:256])
-		}
-		a.OS = &value
 	}
-	rows, e = tx.Query(ctx, "SELECT s.section_name,s.last_status,o.collected_at,o.clock_quality,s.clock_uncertain FROM inventory.section_state s LEFT JOIN inventory.observations o ON o.tenant_id=s.tenant_id AND o.observation_id=s.last_success_id WHERE s.tenant_id=$1 AND s.asset_uid=$2 ORDER BY s.section_name", a.TenantID, a.UID)
+	rows, e = tx.Query(ctx, "SELECT s.asset_uid::text,s.section_name,s.last_status,o.collected_at,o.clock_quality,s.clock_uncertain FROM inventory.section_state s LEFT JOIN inventory.observations o ON o.tenant_id=s.tenant_id AND o.observation_id=s.last_success_id WHERE s.tenant_id=$1 AND s.asset_uid=ANY($2::uuid[]) ORDER BY s.asset_uid,s.section_name", tenant, uids)
 	if e != nil {
 		return e
 	}
-	defer rows.Close()
-	trusted := false
-	uncertainClock := false
 	for rows.Next() {
+		var uid string
 		var state contracts.SectionState
 		var at *time.Time
 		var clock *string
-		var uncertain bool
-		if e = rows.Scan(&state.Name, &state.Status, &at, &clock, &uncertain); e != nil {
+		var unc bool
+		if e = rows.Scan(&uid, &state.Name, &state.Status, &at, &clock, &unc); e != nil {
+			rows.Close()
 			return e
 		}
+		a := by[uid]
 		a.Sections = append(a.Sections, state)
-		uncertainClock = uncertainClock || uncertain
+		uncertain[uid] = uncertain[uid] || unc
 		if at != nil && (a.LastInventory == nil || at.After(*a.LastInventory)) {
 			utc := at.UTC()
 			a.LastInventory = &utc
-			trusted = clock != nil && *clock == "trusted"
+			trusted[uid] = clock != nil && *clock == "trusted"
 		}
 	}
-	if e = rows.Err(); e != nil {
-		return e
-	}
-	if e = rows.Err(); e != nil {
-		return e
-	}
+	e = rows.Err()
 	rows.Close()
-	// Актив, данные которого пришли только по профилю 1.2 (run12-агенты, SSH/WinRM-цели, portable), иначе показывался
-	// бы «без имени и без сбора». Проекция 1.0 остаётся первичной: 1.2 используется, только где 1.0 пусто.
-	if a.Hostname == nil || a.OS == nil || a.LastInventory == nil {
-		if e = enrich12(ctx, tx, a, &trusted, &uncertainClock); e != nil {
-			return e
-		}
+	if e != nil {
+		return e
 	}
-	if a.LastInventory != nil && trusted && !uncertainClock && !a.LastInventory.After(time.Now().Add(5*time.Minute)) {
-		a.Freshness = "stale"
-		if time.Since(*a.LastInventory) <= 24*time.Hour {
-			a.Freshness = "fresh"
+	// Активы только с профилем 1.2 (run12-агенты, SSH/WinRM, portable): 1.0 первичен, 1.2 — где 1.0 пусто.
+	if e = enrich12Many(ctx, tx, tenant, list, trusted, uncertain); e != nil {
+		return e
+	}
+	for _, a := range list {
+		if a.LastInventory != nil && trusted[a.UID] && !uncertain[a.UID] && !a.LastInventory.After(time.Now().Add(5*time.Minute)) {
+			a.Freshness = "stale"
+			if time.Since(*a.LastInventory) <= 24*time.Hour {
+				a.Freshness = "fresh"
+			}
 		}
 	}
 	return nil
@@ -344,47 +360,94 @@ func (s Store) RecordedExact(ctx context.Context, tx pgx.Tx, o contracts.Observa
 	return result, true, nil
 }
 
-func enrich12(ctx context.Context, tx pgx.Tx, a *contracts.Asset, trusted, uncertain *bool) error {
-	if a.Hostname == nil {
-		var name *string
-		e := tx.QueryRow(ctx, `SELECT value #>> '{}' FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=$2 AND section_name='identity' AND field_name='hostname' AND jsonb_typeof(value)='string' ORDER BY record_key LIMIT 1`, a.TenantID, a.UID).Scan(&name)
-		if e != nil && !errors.Is(e, pgx.ErrNoRows) {
-			return e
+func enrich12Many(ctx context.Context, tx pgx.Tx, tenant string, list []*contracts.Asset, trusted, uncertain map[string]bool) error {
+	var host, osName, last []string
+	by := map[string]*contracts.Asset{}
+	for _, a := range list {
+		by[a.UID] = a
+		if a.Hostname == nil {
+			host = append(host, a.UID)
 		}
-		if name != nil && *name != "" {
-			a.Hostname = name
+		if a.OS == nil {
+			osName = append(osName, a.UID)
+		}
+		if a.LastInventory == nil {
+			last = append(last, a.UID)
 		}
 	}
-	if a.OS == nil {
-		var name, version *string
-		e := tx.QueryRow(ctx, `SELECT max(value #>> '{}') FILTER (WHERE field_name='name'),max(value #>> '{}') FILTER (WHERE field_name='version') FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=$2 AND section_name='os' AND jsonb_typeof(value)='string'`, a.TenantID, a.UID).Scan(&name, &version)
+	if len(host) > 0 {
+		rows, e := tx.Query(ctx, `SELECT DISTINCT ON (asset_uid) asset_uid::text,value #>> '{}' FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=ANY($2::uuid[]) AND section_name='identity' AND field_name='hostname' AND jsonb_typeof(value)='string' ORDER BY asset_uid,record_key`, tenant, host)
 		if e != nil {
 			return e
 		}
-		if name != nil && *name != "" {
-			value := *name
-			if version != nil && *version != "" {
-				value += " " + *version
+		for rows.Next() {
+			var uid string
+			var name *string
+			if e = rows.Scan(&uid, &name); e != nil {
+				rows.Close()
+				return e
 			}
-			if runes := []rune(value); len(runes) > 256 {
-				value = string(runes[:256])
+			if name != nil && *name != "" {
+				by[uid].Hostname = name
 			}
-			a.OS = &value
 		}
-	}
-	if a.LastInventory == nil {
-		var at *time.Time
-		var clock *string
-		var anyUncertain bool
-		e := tx.QueryRow(ctx, `SELECT s.collected_at,o.clock_quality,bool_or(r.clock_uncertain) OVER () FROM inventory.record_section_state12 r JOIN inventory.observations o ON o.tenant_id=r.tenant_id AND o.observation_id=r.last_attempt_id JOIN inventory.observation_sections s ON s.tenant_id=r.tenant_id AND s.observation_id=r.last_attempt_id AND s.section_name=r.section_name WHERE r.tenant_id=$1 AND r.asset_uid=$2 AND r.last_status='partial' ORDER BY s.collected_at DESC LIMIT 1`, a.TenantID, a.UID).Scan(&at, &clock, &anyUncertain)
-		if e != nil && !errors.Is(e, pgx.ErrNoRows) {
+		rows.Close()
+		if e = rows.Err(); e != nil {
 			return e
 		}
-		if at != nil {
-			utc := at.UTC()
-			a.LastInventory = &utc
-			*trusted = clock != nil && *clock == "trusted"
-			*uncertain = *uncertain || anyUncertain
+	}
+	if len(osName) > 0 {
+		rows, e := tx.Query(ctx, `SELECT asset_uid::text,max(value #>> '{}') FILTER (WHERE field_name='name'),max(value #>> '{}') FILTER (WHERE field_name='version') FROM inventory.record_facts12 WHERE tenant_id=$1 AND asset_uid=ANY($2::uuid[]) AND section_name='os' AND jsonb_typeof(value)='string' GROUP BY asset_uid`, tenant, osName)
+		if e != nil {
+			return e
+		}
+		for rows.Next() {
+			var uid string
+			var name, version *string
+			if e = rows.Scan(&uid, &name, &version); e != nil {
+				rows.Close()
+				return e
+			}
+			if name != nil && *name != "" {
+				value := *name
+				if version != nil && *version != "" {
+					value += " " + *version
+				}
+				if runes := []rune(value); len(runes) > 256 {
+					value = string(runes[:256])
+				}
+				by[uid].OS = &value
+			}
+		}
+		rows.Close()
+		if e = rows.Err(); e != nil {
+			return e
+		}
+	}
+	if len(last) > 0 {
+		rows, e := tx.Query(ctx, `SELECT DISTINCT ON (r.asset_uid) r.asset_uid::text,s.collected_at,o.clock_quality,bool_or(r.clock_uncertain) OVER (PARTITION BY r.asset_uid) FROM inventory.record_section_state12 r JOIN inventory.observations o ON o.tenant_id=r.tenant_id AND o.observation_id=r.last_attempt_id JOIN inventory.observation_sections s ON s.tenant_id=r.tenant_id AND s.observation_id=r.last_attempt_id AND s.section_name=r.section_name WHERE r.tenant_id=$1 AND r.asset_uid=ANY($2::uuid[]) AND r.last_status='partial' ORDER BY r.asset_uid,s.collected_at DESC`, tenant, last)
+		if e != nil {
+			return e
+		}
+		for rows.Next() {
+			var uid string
+			var at *time.Time
+			var clock *string
+			var anyUncertain bool
+			if e = rows.Scan(&uid, &at, &clock, &anyUncertain); e != nil {
+				rows.Close()
+				return e
+			}
+			if at != nil {
+				utc := at.UTC()
+				by[uid].LastInventory = &utc
+				trusted[uid] = clock != nil && *clock == "trusted"
+				uncertain[uid] = uncertain[uid] || anyUncertain
+			}
+		}
+		rows.Close()
+		if e = rows.Err(); e != nil {
+			return e
 		}
 	}
 	return nil

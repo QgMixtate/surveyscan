@@ -345,17 +345,18 @@ func (r *Registry) Worklist(ctx context.Context, id accessport.Identity, scope, 
 		next := ids[limit-1]
 		out.NextCursor = &next
 	}
-	for _, uid := range ids {
-		a, e := r.readAsset(ctx, tx, id.TenantID, uid)
-		if e != nil {
-			return out, e
-		}
-		item := WorklistItem{Asset: uid, DisplayName: a.Business.DisplayName, Hostname: a.Hostname}
-		if e = tx.QueryRow(ctx, "SELECT aggregate_version::text FROM assets.assets WHERE tenant_id=$1 AND asset_uid=$2", id.TenantID, uid).Scan(&item.Version); e != nil {
-			return out, e
-		}
-		if item.Assignments, e = r.Owners.Assignments(ctx, tx, id.TenantID, uid, false); e != nil {
-			return out, e
+	list, versions, e := r.readAssets(ctx, tx, id.TenantID, ids)
+	if e != nil {
+		return out, e
+	}
+	assignments, e := r.Owners.AssignmentsMany(ctx, tx, id.TenantID, ids)
+	if e != nil {
+		return out, e
+	}
+	for _, a := range list {
+		item := WorklistItem{Asset: a.UID, DisplayName: a.Business.DisplayName, Hostname: a.Hostname, Version: versions[a.UID], Assignments: assignments[a.UID]}
+		if item.Assignments == nil {
+			item.Assignments = []responsibility.Assignment{}
 		}
 		out.Items = append(out.Items, item)
 	}

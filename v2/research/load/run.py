@@ -173,7 +173,9 @@ def scenario(**s):
                  'search_pending_max': max(x['search_pending'] for x in measured) if measured else None,
                  'search_pending_end': measured[-1]['search_pending'] if measured else None,
                  'background_imports_s': imports, 'sampler_errors': sampler_errors[:3], 'stderr_tail': r.stderr[-500:]}
-    try:
+    try:  # без расширения не обращаемся к нему (иначе ошибка в журнале PostgreSQL)
+        if sql("SELECT count(*) FROM pg_extension WHERE extname='pg_stat_statements'") != '1':
+            raise RuntimeError('extension not installed')
         slow = sql("SELECT string_agg(left(regexp_replace(query,'\\s+',' ','g'),140)||' | calls='||calls||' mean_ms='||round(mean_exec_time::numeric,1),E'\\n' ORDER BY total_exec_time DESC) FROM (SELECT * FROM pg_stat_statements ORDER BY total_exec_time DESC LIMIT 12) x")
     except Exception as e:  # расширение может быть не включено — фиксируем это, а не скрываем
         slow = 'pg_stat_statements unavailable: ' + str(e)[:200]

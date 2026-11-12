@@ -203,6 +203,34 @@ func (r *Registry) readAsset(ctx context.Context, tx pgx.Tx, tenant, uid string)
 	a.Accountable, e = r.Owners.Accountable(ctx, tx, tenant, uid)
 	return a, e
 }
+
+// readAssets — страница активов одним набором запросов (C30, стенд: p95 списка 402 мс при ~7 запросах на актив).
+// Возвращает активы в порядке uids и версии агрегатов; у каждого актива должен быть ответственный (как в readAsset).
+func (r *Registry) readAssets(ctx context.Context, tx pgx.Tx, tenant string, uids []string) ([]contracts.Asset, map[string]string, error) {
+	list, versions, e := r.Assets.GetMany(ctx, tx, tenant, uids)
+	if e != nil || len(list) == 0 {
+		return list, versions, e
+	}
+	ptrs := make([]*contracts.Asset, len(list))
+	for i := range list {
+		ptrs[i] = &list[i]
+	}
+	if e = r.Inventory.EnrichMany(ctx, tx, ptrs); e != nil {
+		return nil, nil, e
+	}
+	owners, e := r.Owners.AccountableMany(ctx, tx, tenant, uids)
+	if e != nil {
+		return nil, nil, e
+	}
+	for i := range list {
+		owner, ok := owners[list[i].UID]
+		if !ok {
+			return nil, nil, pgx.ErrNoRows // как readAsset: актив без ответственного — нарушение инварианта
+		}
+		list[i].Accountable = owner
+	}
+	return list, versions, nil
+}
 func (r *Registry) Get(ctx context.Context, id access.Identity, uid string) (contracts.Asset, error) {
 	tx, e := r.Pool.BeginTx(ctx, pgx.TxOptions{IsoLevel: pgx.RepeatableRead})
 	if e != nil {
@@ -242,12 +270,8 @@ func (r *Registry) List(ctx context.Context, id access.Identity, after string, l
 		token := base64.RawURLEncoding.EncodeToString(cursor)
 		page.NextCursor = &token
 	}
-	for _, uid := range ids {
-		a, e := r.readAsset(ctx, tx, id.TenantID, uid)
-		if e != nil {
-			return page, e
-		}
-		page.Items = append(page.Items, a)
+	if page.Items, _, e = r.readAssets(ctx, tx, id.TenantID, ids); e != nil {
+		return page, e
 	}
 	return page, tx.Commit(ctx)
 }

@@ -384,3 +384,33 @@ func (Store) ApplyEvent(ctx context.Context, tx pgx.Tx, tenant, asset, version s
 	}
 	return nil
 }
+
+// GetMany — активы страницы (не слитые) в порядке uids; отсутствующие и слитые пропускаются (C30, пакетное чтение).
+func (Store) GetMany(ctx context.Context, tx pgx.Tx, tenant string, uids []string) ([]contracts.Asset, map[string]string, error) {
+	rows, e := tx.Query(ctx, "SELECT a.tenant_id::text,a.asset_uid::text,a.site_id::text,b.revision::text,b.display_name,b.purpose,b.criticality,b.tags,a.aggregate_version::text FROM assets.assets a JOIN assets.asset_business_fields b USING(tenant_id,asset_uid) WHERE a.tenant_id=$1 AND a.asset_uid=ANY($2::uuid[]) AND a.merged_into IS NULL", tenant, uids)
+	if e != nil {
+		return nil, nil, e
+	}
+	defer rows.Close()
+	found := map[string]contracts.Asset{}
+	versions := map[string]string{}
+	for rows.Next() {
+		var a contracts.Asset
+		var version string
+		a.Sections = []contracts.SectionState{}
+		if e = rows.Scan(&a.TenantID, &a.UID, &a.SiteID, &a.Revision, &a.Business.DisplayName, &a.Business.Purpose, &a.Business.Criticality, &a.Business.Tags, &version); e != nil {
+			return nil, nil, e
+		}
+		found[a.UID], versions[a.UID] = a, version
+	}
+	if e = rows.Err(); e != nil {
+		return nil, nil, e
+	}
+	out := make([]contracts.Asset, 0, len(uids))
+	for _, uid := range uids {
+		if a, ok := found[uid]; ok {
+			out = append(out, a)
+		}
+	}
+	return out, versions, nil
+}
