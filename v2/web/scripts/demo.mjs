@@ -48,10 +48,21 @@ try{
  await page.getByRole('button',{name:/Поиск\s*00/}).click();await page.getByLabel('Запрос').fill('openssl');await page.getByRole('button',{name:'Найти',exact:true}).click();await expect(page.locator('.search-hit').first()).toBeVisible();await shot('14-search');
  // C31: синхронизация оргструктуры из каталога (демо — мок OpenLDAP, не AD) и обмен CSV
  await page.getByRole('button',{name:/Оргструктура/}).click();
- await page.locator('.sync-panel').waitFor();if(await page.getByText('Синхронизация с Active Directory').isVisible()){await page.getByRole('button',{name:'Синхронизировать сейчас'}).click();await expect(page.locator('.sync-panel')).toContainText('Последний прогон');await expect(page.locator('tbody tr',{hasText:'Мария Петрова'})).toContainText('AD');await expect(page.locator('tbody tr',{hasText:'Linux Admins'})).toContainText('Команда (2)');await shot('15-org-ad')}
+ await page.locator('.sync-panel').waitFor();
+ if(process.env.SURVEYSCAN_TEST_LDAP_URL){ // C31.05: подключение к каталогу из Web (демо — мок OpenLDAP, не AD)
+  const fs=await import('node:fs');await page.getByRole('button',{name:'Настроить подключение к AD'}).click();
+  await page.getByLabel('Тип каталога').selectOption('openldap');await page.getByLabel('Адрес контроллера').fill(process.env.SURVEYSCAN_TEST_LDAP_URL);
+  await page.getByLabel('Base DN').fill(process.env.SURVEYSCAN_TEST_LDAP_BASE_DN);await page.getByLabel('Bind DN').fill(process.env.SURVEYSCAN_TEST_LDAP_BIND_DN);
+  await page.getByLabel('Пароль учётки').fill(fs.readFileSync(process.env.SURVEYSCAN_TEST_LDAP_PASSWORD_FILE,'utf8').trim());
+  await page.getByLabel('Фильтр групп').fill('(&(objectClass=groupOfNames)(cn=Linux Admins))');await page.getByLabel('Сертификат CA').fill(fs.readFileSync(process.env.SURVEYSCAN_TEST_LDAP_CA_FILE,'utf8'));
+  await page.getByRole('button',{name:'Проверить подключение'}).click();await expect(page.locator('.directory-form')).toContainText('Подключение работает');await shot('15a-ad-settings');
+  await page.getByRole('button',{name:'Сохранить'}).click();await expect(page.getByText('Синхронизация с Active Directory')).toBeVisible();
+  await page.getByRole('button',{name:'Синхронизировать сейчас'}).click();await expect(page.locator('.sync-panel')).toContainText('Последний прогон');
+  await expect(page.locator('tbody tr',{hasText:'Мария Петрова'})).toContainText('AD');await shot('15-org-ad')}
  // C31.03: подписка на уведомления (получатель в демо не запущен — видны неудачные попытки и паузы)
  await page.getByRole('button',{name:/Уведомления/}).click();
- await expect(page.getByRole('heading',{name:/Подписки/})).toBeVisible();if(await page.getByLabel('Адрес получателя').isVisible()){await page.getByLabel('Адрес получателя').fill('http://127.0.0.1:9/hook');await page.getByRole('button',{name:'Подписать'}).click();await expect(page.locator('.secret')).toBeVisible();await shot('18-webhook-secret');await page.getByRole('button',{name:'Сохранил'}).click()}
+ await expect(page.getByRole('heading',{name:/Подписки/})).toBeVisible();if(await page.getByRole('button',{name:'Включить уведомления'}).isVisible()){await page.getByRole('button',{name:'Включить уведомления'}).click();await expect(page.getByLabel('Адрес получателя')).toBeVisible()}
+ if(await page.getByLabel('Адрес получателя').isVisible()){await page.getByLabel('Адрес получателя').fill('http://127.0.0.1:9/hook');await page.getByRole('button',{name:'Подписать'}).click();await expect(page.locator('.secret')).toBeVisible();await shot('18-webhook-secret');await page.getByRole('button',{name:'Сохранил'}).click()}
  await page.getByRole('button',{name:/Реестр активов/}).click();await expect(page.locator('.csv-panel')).toBeVisible();
  const [download]=await Promise.all([page.waitForEvent('download'),page.getByRole('link',{name:/Выгрузить CSV/}).click()]);
  const exported=await (await import('node:fs/promises')).readFile(await download.path(),'utf8');const lines=exported.split('\r\n');

@@ -1,23 +1,60 @@
 import {useEffect,useState} from 'react';
-import {api,ApiError,errorMessage,type CSVImportResult,type DirectorySyncStatus,type SyncRun,type WebhookDelivery,type WebhookEventType,type WebhookList} from './api';
+import {api,ApiError,errorMessage,type CSVImportResult,type DirectorySettingsView,type DirectoryTestResult,type DirectoryWebSettings,type DirectorySyncStatus,type SyncRun,type WebhookDelivery,type WebhookEventType,type WebhookList} from './api';
 
 // C31.02 — интеграции в Web: синхронизация оргструктуры из Active Directory (только чтение) и CSV ручных полей активов.
 const time=(v:string)=>new Date(v).toLocaleString('ru-RU',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
 const expired=(e:unknown,onExpired:()=>void)=>{if(e instanceof ApiError&&e.status===401)onExpired()};
 const runSummary=(r:SyncRun)=>{const c=r.counters;return r.status==='failed'?'Ошибка: '+(r.error??'неизвестно'):[`людей ${c.people_seen??0}`,`команд ${c.teams_seen??0}`,`новых ${c.created??0}`,`изменено ${c.updated??0}`,`выбыло ${c.deactivated??0}`,`передано ролей ${c.assignments_reassigned??0}`].join(', ')};
 
+
+const presets:Record<string,Partial<DirectoryWebSettings>>={
+ ad:{user_filter:'(&(objectCategory=person)(objectClass=user))',guid_attribute:'objectGUID',login_attribute:'sAMAccountName',changed_attribute:'whenChanged'},
+ openldap:{user_filter:'(objectClass=inetOrgPerson)',guid_attribute:'entryUUID',login_attribute:'uid',changed_attribute:'modifyTimestamp'}};
+
+// C31.05 — настройка синхронизации в Web: пароль только записывается (в хранилище секретов центра), обратно не показывается.
+export function DirectorySettingsForm({csrf,onExpired,onSaved,onClose}:{csrf:string;onExpired:()=>void;onSaved:()=>void;onClose:()=>void}){
+ const [view,setView]=useState<DirectorySettingsView|null>(null),[s,setS]=useState<DirectoryWebSettings>({url:'',base_dn:'',bind_dn:'',...presets.ad,interval_minutes:15}),[password,setPassword]=useState('');
+ const [busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null),[test,setTest]=useState<DirectoryTestResult|null>(null);
+ useEffect(()=>{api.directorySettings().then(v=>{setView(v);if(v.settings)setS(v.settings)}).catch(e=>{setError(e);expired(e,onExpired)})},[]);
+ if(!view)return error?<div className="error" role="alert">{errorMessage(error)}</div>:null;
+ if(view.source==='config')return <div className="notice">Синхронизация задана в конфигурации центра (блок <code>ldap_sync</code>) — здесь только просмотр. <button className="text-link" onClick={onClose}>Закрыть</button></div>;
+ if(!view.secrets_available)return <div className="notice">Центр не может хранить пароль служебной учётки: не включено хранилище секретов интеграций (OpenBao, раздел <code>integrations_path</code>) — см. руководство администратора, раздел «Установка». <button className="text-link" onClick={onClose}>Закрыть</button></div>;
+ const body=()=>({revision:view.revision??'',settings:{...s,interval_minutes:Number(s.interval_minutes)||undefined},...(password?{password}:{})});
+ const set=(k:keyof DirectoryWebSettings)=>(e:{target:{value:string}})=>setS({...s,[k]:e.target.value});
+ async function act(fn:()=>Promise<void>){setBusy(true);setError(null);try{await fn()}catch(e){setError(e);expired(e,onExpired)}finally{setBusy(false)}}
+ return <form className="directory-form" onSubmit={e=>{e.preventDefault();void act(async()=>{await api.saveDirectorySettings(csrf,body());setPassword('');onSaved();onClose()})}}>
+  <h3>Подключение к Active Directory</h3>
+  <label>Адрес контроллера<input aria-label="Адрес контроллера" placeholder="ldaps://dc01.corp.example:636" value={s.url} onChange={set('url')}/></label>
+  <label>Где искать (base DN)<input aria-label="Base DN" placeholder="DC=corp,DC=example" value={s.base_dn} onChange={set('base_dn')}/></label>
+  <label>Учётка только для чтения (DN)<input aria-label="Bind DN" placeholder="CN=svc-surveyscan-read,OU=Service,DC=corp,DC=example" value={s.bind_dn} onChange={set('bind_dn')}/></label>
+  <label>Пароль учётки<input aria-label="Пароль учётки" type="password" autoComplete="new-password" placeholder={view.password_set?'сохранён — оставьте пустым, чтобы не менять':'обязательно при первой настройке'} value={password} onChange={e=>setPassword(e.target.value)}/></label>
+  <label>Тип каталога<select aria-label="Тип каталога" value={s.guid_attribute==='entryUUID'?'openldap':'ad'} onChange={e=>setS({...s,...presets[e.target.value]})}><option value="ad">Active Directory</option><option value="openldap">OpenLDAP / совместимый</option></select></label>
+  <label>Фильтр людей<input aria-label="Фильтр людей" value={s.user_filter??''} onChange={set('user_filter')}/></label>
+  <label>Группы как команды (фильтр, необязательно)<input aria-label="Фильтр групп" placeholder="(&(objectClass=group)(cn=IT-*))" value={s.group_filter??''} onChange={set('group_filter')}/></label>
+  <label>Сертификат CA контроллера (PEM, если не доверен системой)<textarea aria-label="Сертификат CA" rows={3} placeholder="-----BEGIN CERTIFICATE-----" value={s.ca_certificate_pem??''} onChange={set('ca_certificate_pem')}/></label>
+  <label>Интервал, минут<input aria-label="Интервал" type="number" min={1} max={1440} value={s.interval_minutes??15} onChange={e=>setS({...s,interval_minutes:Number(e.target.value)})}/></label>
+  {test?<div className={test.ok?'notice':'error'} role="status">{test.ok?`Подключение работает: найдено людей ${test.people_found}, команд ${test.teams_found}. Ничего не изменено.`:'Не удалось: '+test.error}</div>:null}
+  {error?<div className="error" role="alert">{errorMessage(error)}</div>:null}
+  <div className="org-form"><button type="button" className="button small secondary" disabled={busy||!s.url||!s.base_dn||!s.bind_dn} onClick={()=>void act(async()=>setTest(await api.testDirectory(csrf,body())))}>Проверить подключение</button>
+   <button className="button small" disabled={busy||!s.url||!s.base_dn||!s.bind_dn||(!view.password_set&&!password)}>Сохранить</button>
+   {view.revision?<button type="button" className="button small secondary" disabled={busy} onClick={()=>{if(window.confirm('Подтвердите: отключить синхронизацию с AD. Люди из каталога останутся, но обновляться не будут.'))void act(async()=>{await api.deleteDirectorySettings(csrf,view.revision!);onSaved();onClose()})}}>Отключить</button>:null}
+   <button type="button" className="text-link" onClick={onClose}>Отмена</button></div>
+ </form>;
+}
+
 export function DirectorySyncPanel({csrf,onExpired,onSynced}:{csrf:string;onExpired:()=>void;onSynced:()=>void}){
- const [status,setStatus]=useState<DirectorySyncStatus|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null);
+ const [status,setStatus]=useState<DirectorySyncStatus|null>(null),[busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null),[editing,setEditing]=useState(false);
  const load=()=>{api.directorySync().then(setStatus).catch(e=>{setError(e);expired(e,onExpired)})};
  useEffect(load,[]);
  async function run(mode:'full'|'auto'){setBusy(true);setError(null);try{await api.runDirectorySync(csrf,mode);onSynced()}catch(e){setError(e);expired(e,onExpired)}finally{setBusy(false);load()}}
  if(!status)return error?<div className="error" role="alert">{errorMessage(error)}</div>:null;
  const last=status.runs[0];
+ if(editing)return <DirectorySettingsForm csrf={csrf} onExpired={onExpired} onSaved={()=>{load();onSynced()}} onClose={()=>setEditing(false)}/>;
  return <div className="notice sync-panel" role="status">
   {status.configured?<><strong>Синхронизация с Active Directory</strong> — {status.source}, каждые {status.interval_minutes} мин, полная — раз в {status.full_sync_hours} ч{status.teams_enabled?', с командами из групп':''}. Людей и команды с отметкой «AD» ведёт каталог: здесь их не переименовывают и не отключают.
    <div>{last?<>Последний прогон {time(last.started_at)} ({last.mode==='full'?'полный':'изменения'}): <span className={last.status==='failed'?'error-text':''}>{runSummary(last)}</span>{last.counters.problems?.length?<details><summary>Замечания: {last.counters.problems.length}</summary><ul>{last.counters.problems.map((p,i)=><li key={i}>{p}</li>)}</ul></details>:null}</>:'Прогонов ещё не было.'}</div>
-   <div className="org-form"><button className="button small" disabled={busy} onClick={()=>void run('auto')}>{busy?'Синхронизация…':'Синхронизировать сейчас'}</button><button className="button small secondary" disabled={busy} onClick={()=>void run('full')}>Полная синхронизация</button></div></>
-  :<>Синхронизация с Active Directory не настроена: люди и команды ведутся здесь вручную. Настройка — блок <code>ldap_sync</code> конфигурации центра.</>}
+   <div className="org-form"><button className="button small" disabled={busy} onClick={()=>void run('auto')}>{busy?'Синхронизация…':'Синхронизировать сейчас'}</button><button className="button small secondary" disabled={busy} onClick={()=>void run('full')}>Полная синхронизация</button><button className="text-link" onClick={()=>setEditing(true)}>Настройки</button></div></>
+  :<>Синхронизация с Active Directory не настроена: люди и команды ведутся здесь вручную. <button className="button small" onClick={()=>setEditing(true)}>Настроить подключение к AD</button></>}
   {error?<div className="error" role="alert">{errorMessage(error)}</div>:null}
  </div>;
 }
@@ -51,7 +88,8 @@ export function WebhooksView({csrf,onExpired}:{csrf:string;onExpired:()=>void}){
  async function act(fn:()=>Promise<unknown>){setBusy(true);setError(null);try{await fn();load();if(open)loadDeliveries(open)}catch(e){setError(e);expired(e,onExpired)}finally{setBusy(false)}}
  if(!list)return error?<div className="error" role="alert">{errorMessage(error)}</div>:null;
  return <div className="table-panel"><div className="table-toolbar"><h2>Подписки <span>{list.items.length}</span></h2></div>
-  {!list.enabled?<div className="notice" role="status">Уведомления не настроены: нужен приватный файл ключа подписи (<code>webhook_secret_file</code> в конфигурации центра).</div>:null}
+  {!list.enabled?(list.can_enable?<div className="notice" role="status">Уведомления выключены. Центр создаст ключ подписи сам и будет хранить его в защищённом хранилище — показывать и копировать его не нужно. <button className="button small" disabled={busy} onClick={()=>void act(async()=>setList(await api.enableWebhooks(csrf)))}>Включить уведомления</button></div>
+   :<div className="notice" role="status">Уведомления недоступны: не включено хранилище секретов интеграций центра (OpenBao, раздел <code>integrations_path</code>) — см. руководство администратора, раздел «Установка».</div>):null}
   {error?<div className="error" role="alert">{errorMessage(error)}</div>:null}
   {secret?<div className="notice" role="status"><strong>Секрет подписи — сохраните его сейчас, больше он не показывается:</strong><div className="mono secret">{secret}</div>Получатель проверяет заголовок <code>X-SurveyScan-Signature: v1=HMAC-SHA256(секрет, timestamp + "." + тело)</code> и отбрасывает повторы по <code>X-SurveyScan-Event-Id</code>.<div><button className="button small" onClick={()=>setSecret('')}>Сохранил</button></div></div>:null}
   {list.enabled?<form className="org-form" onSubmit={e=>{e.preventDefault();void act(async()=>{const r=await api.createWebhook(csrf,{url:url.trim(),event_types:types});setSecret(r.signing_secret);setUrl('')})}}>

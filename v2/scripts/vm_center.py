@@ -253,6 +253,33 @@ def fresh_token(config_path):
     os.replace(temp, path)
 
 
+def ensure_integrations(config_path):
+    # C31.05: интеграции включаются из Web — центру нужен раздел OpenBao KV для их секретов. Стенд, созданный до
+    # C31.05, получает правило политики и integrations_path автоматически (ручной правки не требуется).
+    cfg = json.loads(Path(config_path).read_text())
+    if cfg.get('integrations_path'):
+        return
+    import urllib.request
+    root = json.loads((STATE / 'bao-init.json').read_text())['root_token']
+    def call(method, path, body=None):
+        req = urllib.request.Request('http://127.0.0.1:58200/v1/' + path, method=method, headers={'X-Vault-Token': root, 'Content-Type': 'application/json'},
+                                     data=None if body is None else json.dumps(body).encode())
+        with urllib.request.urlopen(req, timeout=10) as response:
+            raw = response.read()
+            return json.loads(raw) if raw else None
+    policy = call('GET', 'sys/policies/acl/' + cfg['policy'])['data']['policy']
+    rule = 'path ' + json.dumps(cfg['kv_mount'] + '/data/server/integrations/*') + ' { capabilities = ["create","update","read"] }'
+    if rule not in policy:
+        call('PUT', 'sys/policies/acl/' + cfg['policy'], {'policy': policy.rstrip('\n') + '\n' + rule})
+    cfg['integrations_path'] = 'server/integrations'
+    temp = Path(config_path).with_suffix('.new')
+    fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+    with os.fdopen(fd, 'w') as f:
+        f.write(json.dumps(cfg))
+    os.replace(temp, config_path)
+    print('OpenBao: раздел секретов интеграций включён (server/integrations)', flush=True)
+
+
 SERVER_VALIDITY = '168h'  # максимум bootstrap-issuer; сертификат перевыпускается при каждом старте постоянного центра
 
 
@@ -300,6 +327,7 @@ def persistent(args):
     else:
         print('PERSISTENT стенд найден, агентов переподключать не нужно:', state, flush=True)
     settings = json.loads(settings_file.read_text())
+    ensure_integrations(settings['config'])
     fresh_token(settings['config'])
     renew_server_certificate(settings)
     (state / 'harness').mkdir(exist_ok=True)

@@ -11,6 +11,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/url"
@@ -47,6 +48,9 @@ type Config struct {
 	KVMount         string               `json:"kv_mount"`
 	Keys            map[string]Key       `json:"keys"`
 	Secrets         map[string]SecretRef `json:"secrets"`
+	// C31.05: раздел KV, где центр сам хранит секреты интеграций (мастер-ключ уведомлений, пароль каталога);
+	// политика: <kv_mount>/data/<integrations_path>/* — create, update, read. Пусто — запись секретов выключена.
+	IntegrationsPath string `json:"integrations_path,omitempty"`
 }
 type Client struct {
 	secure bool
@@ -96,6 +100,9 @@ func New(cfg Config) (*Client, error) {
 		if !name.MatchString(alias) || !name.MatchString(cfg.KVMount) || !validPath(ref.Path) || !name.MatchString(ref.Field) {
 			return nil, Denied
 		}
+	}
+	if cfg.IntegrationsPath != "" && (!name.MatchString(cfg.KVMount) || !validPath(cfg.IntegrationsPath)) {
+		return nil, Denied
 	}
 	cfg.Address = strings.TrimRight(cfg.Address, "/")
 	transport := http.DefaultTransport.(*http.Transport).Clone()
@@ -149,6 +156,9 @@ func (c *Client) call(ctx context.Context, method, path, token string, value any
 	defer response.Body.Close()
 	if response.StatusCode == 401 || response.StatusCode == 403 {
 		return Denied
+	}
+	if response.StatusCode == 404 {
+		return errNotFound
 	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return Unavailable
@@ -271,6 +281,52 @@ func (c *Client) Read(ctx context.Context, alias string) ([]byte, error) {
 	}
 	return []byte(value), nil
 }
+
+// Integrations — включено ли хранение секретов интеграций в OpenBao.
+func (c *Client) Integrations() bool { return c.cfg.IntegrationsPath != "" }
+
+// ReadIntegration читает секрет интеграции (ok=false — не задан).
+func (c *Client) ReadIntegration(ctx context.Context, scope, key string) ([]byte, bool, error) {
+	if !c.Integrations() || !name.MatchString(scope) || !name.MatchString(key) {
+		return nil, false, Denied
+	}
+	token, e := c.token(ctx)
+	if e != nil {
+		return nil, false, e
+	}
+	var response struct {
+		Data struct {
+			Data map[string]string `json:"data"`
+		} `json:"data"`
+	}
+	e = c.call(ctx, "GET", c.cfg.KVMount+"/data/"+c.cfg.IntegrationsPath+"/"+scope+"/"+key, token, nil, &response)
+	if errors.Is(e, errNotFound) {
+		return nil, false, nil
+	}
+	if e != nil {
+		return nil, false, e
+	}
+	value, ok := response.Data.Data["value"]
+	if !ok || len(value) > 65536 {
+		return nil, false, Unavailable
+	}
+	return []byte(value), true, nil
+}
+
+// WriteIntegration сохраняет секрет интеграции (новая версия KV v2).
+func (c *Client) WriteIntegration(ctx context.Context, scope, key string, value []byte) error {
+	if !c.Integrations() || !name.MatchString(scope) || !name.MatchString(key) || len(value) > 65536 {
+		return Denied
+	}
+	token, e := c.token(ctx)
+	if e != nil {
+		return e
+	}
+	return c.call(ctx, "POST", c.cfg.KVMount+"/data/"+c.cfg.IntegrationsPath+"/"+scope+"/"+key, token, map[string]any{"data": map[string]string{"value": string(value)}}, nil)
+}
+
+// errNotFound — 404 KV; для прежних вызовов остаётся Unavailable (errors.Is).
+var errNotFound = fmt.Errorf("%w: not found", Unavailable)
 
 type Signer struct {
 	Client  *Client

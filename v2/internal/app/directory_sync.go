@@ -56,8 +56,23 @@ type DirectorySync struct {
 	mu       sync.Mutex // один прогон за раз
 }
 
-// NewDirectorySync проверяет конфигурацию и читает секрет.
+// NewDirectorySync проверяет конфигурацию и читает секрет и CA из файлов (блок ldap_sync конфигурации центра).
 func NewDirectorySync(cfg DirectorySyncConfig) (*DirectorySync, error) {
+	secret, e := ReadPrivate(cfg.PasswordFile, 4096)
+	if e != nil {
+		return nil, e
+	}
+	var ca []byte
+	if cfg.CAFile != "" {
+		if ca, e = os.ReadFile(cfg.CAFile); e != nil {
+			return nil, errors.New("ldap_sync.ca_certificate_file unavailable")
+		}
+	}
+	return buildDirectorySync(cfg, strings.TrimRight(string(secret), "\r\n"), ca)
+}
+
+// buildDirectorySync — проверка параметров и сборка (общая для конфигурации центра и настроек из Web, C31.05).
+func buildDirectorySync(cfg DirectorySyncConfig, password string, caPEM []byte) (*DirectorySync, error) {
 	u, e := url.Parse(cfg.URL)
 	if e != nil || u.Host == "" || u.Path != "" && u.Path != "/" {
 		return nil, errors.New("ldap_sync.url must be ldaps://host[:port]")
@@ -99,19 +114,14 @@ func NewDirectorySync(cfg DirectorySyncConfig) (*DirectorySync, error) {
 	if cfg.IntervalMinutes < 1 || cfg.IntervalMinutes > 1440 || cfg.FullHours < 1 || cfg.FullHours > 24*30 {
 		return nil, errors.New("ldap_sync interval_minutes 1..1440, full_sync_hours 1..720")
 	}
-	secret, e := ReadPrivate(cfg.PasswordFile, 4096)
-	if e != nil {
-		return nil, e
+	if password == "" {
+		return nil, errors.New("ldap_sync bind password is required")
 	}
-	d := &DirectorySync{Config: cfg, password: strings.TrimRight(string(secret), "\r\n")}
+	d := &DirectorySync{Config: cfg, password: password}
 	d.tls = &tls.Config{MinVersion: tls.VersionTLS12, ServerName: u.Hostname()}
-	if cfg.CAFile != "" {
-		pem, e := os.ReadFile(cfg.CAFile)
-		if e != nil {
-			return nil, errors.New("ldap_sync.ca_certificate_file unavailable")
-		}
+	if len(caPEM) > 0 {
 		pool := x509.NewCertPool()
-		if !pool.AppendCertsFromPEM(pem) {
+		if !pool.AppendCertsFromPEM(caPEM) {
 			return nil, errors.New("ldap_sync.ca_certificate_file has no certificates")
 		}
 		d.tls.RootCAs = pool
@@ -261,10 +271,13 @@ func (d *DirectorySync) Read(since *time.Time) (responsibility.Directory, error)
 // SyncDirectory — один прогон (full принудительно или по расписанию). Ошибка чтения или применения записывается
 // в журнал прогонов со статусом failed; изменений тогда нет.
 func (r *Registry) SyncDirectory(ctx context.Context, forceFull bool) (responsibility.SyncRun, error) {
-	d := r.Directory
-	if d == nil {
+	if r.Directory == nil {
 		return responsibility.SyncRun{}, errors.New("directory sync not configured")
 	}
+	return r.syncWith(ctx, r.Directory, forceFull)
+}
+
+func (r *Registry) syncWith(ctx context.Context, d *DirectorySync, forceFull bool) (responsibility.SyncRun, error) {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	tenant := d.Config.TenantID
@@ -343,9 +356,9 @@ func (r *Registry) applyDirectory(ctx context.Context, tenant string, snapshot r
 	return counters, tx.Commit(ctx)
 }
 
-// DirectoryMaintain — фоновая роль центра: прогон по интервалу (полный — раз в full_sync_hours).
+// DirectoryMaintain — фоновая роль центра: каждую минуту проверяет тенанты с синхронизацией (конфигурация центра
+// и настройки из Web) и запускает прогон, если прошёл интервал с прошлого прогона (полный — раз в full_sync_hours).
 func (r *Registry) DirectoryMaintain(ctx context.Context, log func(string)) {
-	interval := time.Duration(r.Directory.Config.IntervalMinutes) * time.Minute
 	timer := time.NewTimer(10 * time.Second)
 	defer timer.Stop()
 	for {
@@ -354,15 +367,41 @@ func (r *Registry) DirectoryMaintain(ctx context.Context, log func(string)) {
 			return
 		case <-timer.C:
 		}
-		task, done := context.WithTimeout(ctx, 30*time.Minute)
-		run, e := r.SyncDirectory(task, false)
-		done()
-		if e != nil {
-			log(fmt.Sprintf("directory sync %s failed: %v", run.Mode, e))
-		} else {
-			log(fmt.Sprintf("directory sync %s: %s", run.Mode, run.Counters))
+		tenants := map[string]bool{}
+		if r.Directory != nil {
+			tenants[r.Directory.Config.TenantID] = true
 		}
-		timer.Reset(interval)
+		if tx, e := r.Pool.Begin(ctx); e == nil {
+			if list, e := r.Owners.DirectoryTenants(ctx, tx); e == nil {
+				for t := range list {
+					tenants[t] = true
+				}
+			}
+			tx.Rollback(ctx)
+		}
+		for tenant := range tenants {
+			task, done := context.WithTimeout(ctx, 30*time.Minute)
+			d, _, e := r.directoryFor(task, tenant)
+			if e == nil && d != nil {
+				var last *time.Time
+				if tx, e2 := r.Pool.Begin(task); e2 == nil {
+					last, _ = r.Owners.LastRun(task, tx, tenant)
+					tx.Rollback(task)
+				}
+				if last == nil || time.Since(*last) >= time.Duration(d.Config.IntervalMinutes)*time.Minute {
+					run, e := r.syncWith(task, d, false)
+					if e != nil {
+						log(fmt.Sprintf("directory sync %s %s failed: %v", tenant, run.Mode, e))
+					} else {
+						log(fmt.Sprintf("directory sync %s %s: %s", tenant, run.Mode, run.Counters))
+					}
+				}
+			} else if e != nil {
+				log("directory sync " + tenant + " not ready: " + e.Error())
+			}
+			done()
+		}
+		timer.Reset(time.Minute)
 	}
 }
 
@@ -387,7 +426,7 @@ func (r *Registry) DirectoryStatus(ctx context.Context, id accessport.Identity) 
 		return out, e
 	}
 	defer tx.Rollback(ctx)
-	if d := r.Directory; d != nil && d.Config.TenantID == id.TenantID {
+	if d, _, e := r.directoryFor(ctx, id.TenantID); e == nil && d != nil {
 		out.Configured, out.Source, out.Interval, out.FullHours, out.Teams = true, &d.Config.URL, d.Config.IntervalMinutes, d.Config.FullHours, d.Config.GroupFilter != ""
 	}
 	if out.Runs, e = r.Owners.SyncRuns(ctx, tx, id.TenantID, 20); e != nil {
@@ -415,10 +454,14 @@ func (r *Registry) RunDirectorySync(ctx context.Context, id accessport.Identity,
 	if e != nil {
 		return responsibility.SyncRun{}, e
 	}
-	if r.Directory == nil || r.Directory.Config.TenantID != id.TenantID {
+	d, _, e := r.directoryFor(ctx, id.TenantID)
+	if e != nil {
+		return responsibility.SyncRun{}, e
+	}
+	if d == nil {
 		return responsibility.SyncRun{}, domain.NotFound
 	}
-	run, e := r.SyncDirectory(ctx, req.Mode == "full")
+	run, e := r.syncWith(ctx, d, req.Mode == "full")
 	if run.Status == "failed" {
 		return run, nil // итог прогона — в ответе и журнале
 	}

@@ -184,12 +184,11 @@ func run(args []string) error {
 	if registry.Machine != nil && registry.Machine.Maintain != nil {
 		go registry.Machine.Maintain(ctx)
 	}
-	if registry.Webhooks != nil {
-		go registry.WebhookMaintain(ctx, func(m string) { fmt.Println(m) })
+	if e := registry.LoadIntegrations(ctx); e != nil {
+		fmt.Println("integration secrets unavailable: " + e.Error())
 	}
-	if registry.Directory != nil {
-		go registry.DirectoryMaintain(ctx, func(m string) { fmt.Println(m) })
-	}
+	registry.OnWebhooksEnabled(func() { go registry.WebhookMaintain(ctx, func(m string) { fmt.Println(m) }) })
+	go registry.DirectoryMaintain(ctx, func(m string) { fmt.Println(m) }) // C31.05: тенанты с настройками из Web или конфигурации
 	if registry.Search != nil {
 		go registry.SearchMaintain(ctx, func(m string) { fmt.Println(m) })
 	}

@@ -60,6 +60,9 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 			}
 			mux.Handle(route, auth.Wrap(permission, false, handler))
 		}
+		for route, handler := range registry[0].directorySettingsHandlers() {
+			mux.Handle(route, auth.Wrap("sources:admin", false, handler))
+		}
 		for route, handler := range registry[0].webhookHandlers() {
 			mux.Handle(route, auth.Wrap("sources:admin", false, handler))
 		}

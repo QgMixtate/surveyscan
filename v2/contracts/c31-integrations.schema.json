@@ -389,13 +389,17 @@
      "items": {
       "$ref": "#/$defs/WebhookSubscription"
      }
+    },
+    "can_enable": {
+     "type": "boolean"
     }
    },
    "required": [
     "tenant_id",
     "enabled",
     "event_types",
-    "items"
+    "items",
+    "can_enable"
    ],
    "additionalProperties": false
   },
@@ -597,6 +601,175 @@
     "occurred_at",
     "aggregate",
     "data"
+   ],
+   "additionalProperties": false
+  },
+  "DirectoryWebSettings": {
+   "type": "object",
+   "properties": {
+    "url": {
+     "type": "string",
+     "pattern": "^ldaps?://",
+     "maxLength": 512
+    },
+    "base_dn": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 1024
+    },
+    "bind_dn": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 1024
+    },
+    "user_filter": {
+     "type": "string",
+     "maxLength": 2048
+    },
+    "group_filter": {
+     "type": "string",
+     "maxLength": 2048
+    },
+    "guid_attribute": {
+     "type": "string",
+     "maxLength": 64
+    },
+    "login_attribute": {
+     "type": "string",
+     "maxLength": 64
+    },
+    "changed_attribute": {
+     "type": "string",
+     "maxLength": 64
+    },
+    "interval_minutes": {
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 1440
+    },
+    "full_sync_hours": {
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 720
+    },
+    "ca_certificate_pem": {
+     "type": "string",
+     "maxLength": 32768
+    }
+   },
+   "required": [
+    "url",
+    "base_dn",
+    "bind_dn"
+   ],
+   "additionalProperties": false
+  },
+  "DirectorySettingsView": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "source": {
+     "enum": [
+      "none",
+      "web",
+      "config"
+     ]
+    },
+    "secrets_available": {
+     "type": "boolean"
+    },
+    "revision": {
+     "oneOf": [
+      {
+       "type": "string",
+       "pattern": "^[1-9][0-9]{0,19}$"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "settings": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/DirectoryWebSettings"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "password_set": {
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "tenant_id",
+    "source",
+    "secrets_available",
+    "revision",
+    "settings",
+    "password_set"
+   ],
+   "additionalProperties": false,
+   "description": "Пароль служебной учётки никогда не возвращается — только признак password_set."
+  },
+  "DirectorySettingsUpdate": {
+   "type": "object",
+   "properties": {
+    "revision": {
+     "type": "string",
+     "maxLength": 20
+    },
+    "settings": {
+     "$ref": "#/$defs/DirectoryWebSettings"
+    },
+    "password": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 1024
+    }
+   },
+   "required": [
+    "revision",
+    "settings"
+   ],
+   "additionalProperties": false
+  },
+  "DirectoryTestResult": {
+   "type": "object",
+   "properties": {
+    "ok": {
+     "type": "boolean"
+    },
+    "people_found": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "teams_found": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "error": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 2048
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "ok",
+    "people_found",
+    "teams_found",
+    "error"
    ],
    "additionalProperties": false
   }

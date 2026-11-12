@@ -52,10 +52,13 @@ export type CSVRowResult={line:number;asset_uid:string;status:'applied'|'unchang
 export type CSVImportResult={tenant_id:string;dry_run:boolean;format:string;counts:Record<CSVRowResult['status'],number>;results:CSVRowResult[]};
 export type WebhookEventType='asset.created.v1'|'asset.facts_changed.v1'|'responsibility.assigned.v1'|'observation.recorded.v1'|'source.contact_updated.v1'|'source.profile_updated.v1';
 export type WebhookSubscription={subscription_id:string;url:string;event_types:WebhookEventType[];active:boolean;revision:string;created_at:string;pending:number;delivered:number;dead:number};
-export type WebhookList={tenant_id:string;enabled:boolean;event_types:WebhookEventType[];items:WebhookSubscription[]};
+export type WebhookList={tenant_id:string;enabled:boolean;can_enable:boolean;event_types:WebhookEventType[];items:WebhookSubscription[]};
 export type WebhookCreated={subscription:WebhookSubscription;signing_secret:string};
 export type WebhookDelivery={event_id:string;event_type:WebhookEventType;occurred_at:string;state:'pending'|'delivered'|'dead';attempts:number;next_attempt_at:string|null;last_status:number|null;last_error:string|null;delivered_at:string|null};
 export type WebhookDeliveryPage={tenant_id:string;subscription_id:string;items:WebhookDelivery[]};
+export type DirectoryWebSettings={url:string;base_dn:string;bind_dn:string;user_filter?:string;group_filter?:string;guid_attribute?:string;login_attribute?:string;changed_attribute?:string;interval_minutes?:number;full_sync_hours?:number;ca_certificate_pem?:string};
+export type DirectorySettingsView={tenant_id:string;source:'none'|'web'|'config';secrets_available:boolean;revision:string|null;settings:DirectoryWebSettings|null;password_set:boolean};
+export type DirectoryTestResult={ok:boolean;people_found:number;teams_found:number;error:string|null};
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
 }
@@ -94,6 +97,11 @@ export const api={
  patchService:(uid:string,csrf:string,body:{revision:string;name?:string;description?:string;criticality?:string;retire?:boolean})=>call<ServiceDetail>('/api/v1/services/'+encodeURIComponent(uid),'ServiceDetail',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  createRelation:(csrf:string,body:{relation_type:string;from:CIEnd;to:CIEnd;note?:string})=>call<Relation>('/api/v1/relations','Relation',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  retireRelation:(id:string,csrf:string)=>call<Relation>('/api/v1/relations/'+encodeURIComponent(id),'Relation',{method:'DELETE',headers:{'X-CSRF-Token':csrf}}),
+ enableWebhooks:(csrf:string)=>call<WebhookList>('/api/v1/webhooks/enable','WebhookList',{method:'POST',body:'{}',headers:{'X-CSRF-Token':csrf}}),
+ directorySettings:()=>call<DirectorySettingsView>('/api/v1/directory-sync/settings','DirectorySettingsView'),
+ saveDirectorySettings:(csrf:string,body:{revision:string;settings:DirectoryWebSettings;password?:string})=>call<DirectorySettingsView>('/api/v1/directory-sync/settings','DirectorySettingsView',{method:'PUT',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ deleteDirectorySettings:(csrf:string,revision:string)=>call<void>('/api/v1/directory-sync/settings?revision='+encodeURIComponent(revision),undefined,{method:'DELETE',headers:{'X-CSRF-Token':csrf}}),
+ testDirectory:(csrf:string,body:{revision:string;settings:DirectoryWebSettings;password?:string})=>call<DirectoryTestResult>('/api/v1/directory-sync/test','DirectoryTestResult',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf},signal:AbortSignal.timeout(120000)}),
  webhooks:()=>call<WebhookList>('/api/v1/webhooks','WebhookList'),
  createWebhook:(csrf:string,body:{url:string;event_types:WebhookEventType[]})=>call<WebhookCreated>('/api/v1/webhooks','WebhookCreated',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  patchWebhook:(id:string,csrf:string,body:{revision:string;active?:boolean})=>call<WebhookSubscription>('/api/v1/webhooks/'+encodeURIComponent(id),'WebhookSubscription',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),

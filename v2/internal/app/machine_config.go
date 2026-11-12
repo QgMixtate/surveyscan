@@ -22,6 +22,7 @@ import (
 	"io"
 	"net"
 	"os"
+	"path/filepath"
 	"strings"
 	"time"
 )
@@ -213,6 +214,13 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 			return "", nil, e
 		}
 		r.Search = &SearchClient{BaseURL: cfg.SearchURL, Token: strings.TrimSpace(string(token))}
+	}
+	// C31.05: секреты интеграций, включаемых из Web: OpenBao KV (integrations_path) или, без OpenBao, приватный каталог
+	switch {
+	case remote != nil && remote.Integrations():
+		r.Secrets = baoSecrets{remote}
+	case remote == nil:
+		r.Secrets = FileSecrets{Dir: filepath.Join(filepath.Dir(path), "integrations")}
 	}
 	if cfg.WebhookSecretFile != "" {
 		if r.Webhooks, e = NewWebhookSender(cfg.WebhookSecretFile); e != nil {

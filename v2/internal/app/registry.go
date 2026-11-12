@@ -21,6 +21,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/wire"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"sync"
 )
 
 type EventSink interface {
@@ -40,7 +41,12 @@ type Registry struct {
 	Search            *SearchClient  // C29: nil — сервис поиска не настроен (только точный запасной режим)
 	Webhooks          *WebhookSender // C31.03: nil — уведомления не настроены (нет webhook_secret_file)
 	Hooks             messaging.Webhooks
-	Directory         *DirectorySync // C31.02: nil — синхронизация оргструктуры из каталога выключена
+	Secrets           SecretStore // C31.05: секреты интеграций (OpenBao KV или приватные файлы); nil — включение из Web недоступно
+	hooksMu           sync.RWMutex
+	startWebhooks     func()
+	dirMu             sync.Mutex
+	dirCache          map[string]cachedDirectory // C31.05: синхронизации из настроек Web по ревизии
+	Directory         *DirectorySync             // C31.02: nil — синхронизация оргструктуры из каталога выключена
 	Audit             audit.Store
 	Events            EventSink
 	Wire              *wire.Validator

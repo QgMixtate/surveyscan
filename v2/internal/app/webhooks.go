@@ -40,13 +40,23 @@ func NewWebhookSender(secretFile string) (*WebhookSender, error) {
 	if e != nil {
 		return nil, e
 	}
-	master = bytes.TrimSpace(master)
+	return newWebhookSender(bytes.TrimSpace(master))
+}
+
+func newWebhookSender(master []byte) (*WebhookSender, error) {
 	if len(master) < 32 {
-		return nil, errors.New("webhook_secret_file must hold at least 32 bytes")
+		return nil, errors.New("webhook master key must hold at least 32 bytes")
 	}
 	client := &http.Client{Timeout: 10 * time.Second, Transport: &http.Transport{TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12}, Proxy: http.ProxyFromEnvironment, MaxIdleConnsPerHost: 4},
 		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }} // перенаправления не выполняются
 	return &WebhookSender{master: master, Client: client}, nil
+}
+
+// sender — текущий отправитель (уведомления можно включить из Web во время работы центра).
+func (r *Registry) sender() *WebhookSender {
+	r.hooksMu.RLock()
+	defer r.hooksMu.RUnlock()
+	return r.Webhooks
 }
 
 // Key — ключ подписи подписки (выводится, не хранится).
@@ -128,12 +138,16 @@ func (r *Registry) DeliverWebhooks(ctx context.Context) (int, error) {
 			}
 		}
 	}
+	sender := r.sender()
+	if sender == nil {
+		return 0, nil
+	}
 	jobs, e := messaging.ClaimWebhooks(ctx, r.Pool, 20, time.Minute)
 	if e != nil {
 		return 0, e
 	}
 	for _, j := range jobs {
-		status, failure := r.Webhooks.deliver(ctx, j)
+		status, failure := sender.deliver(ctx, j)
 		if e = messaging.FinishWebhook(ctx, r.Pool, j, status, failure); e != nil {
 			return 0, e
 		}
@@ -159,10 +173,11 @@ func (r *Registry) WebhookMaintain(ctx context.Context, log func(string)) {
 }
 
 type WebhookList struct {
-	Tenant  string                          `json:"tenant_id"`
-	Enabled bool                            `json:"enabled"`
-	Types   []string                        `json:"event_types"`
-	Items   []messaging.WebhookSubscription `json:"items"`
+	Tenant    string                          `json:"tenant_id"`
+	Enabled   bool                            `json:"enabled"`
+	CanEnable bool                            `json:"can_enable"` // C31.05: можно включить из Web (есть хранилище секретов)
+	Types     []string                        `json:"event_types"`
+	Items     []messaging.WebhookSubscription `json:"items"`
 }
 
 type WebhookCreate struct {
@@ -189,7 +204,7 @@ type WebhookDeliveryPage struct {
 }
 
 func (r *Registry) ListWebhooks(ctx context.Context, id accessport.Identity) (WebhookList, error) {
-	out := WebhookList{Tenant: id.TenantID, Enabled: r.Webhooks != nil, Types: []string{}, Items: []messaging.WebhookSubscription{}}
+	out := WebhookList{Tenant: id.TenantID, Enabled: r.sender() != nil, CanEnable: r.Secrets != nil, Types: []string{}, Items: []messaging.WebhookSubscription{}}
 	for t := range messaging.WebhookEventTypes {
 		out.Types = append(out.Types, t)
 	}
@@ -206,7 +221,8 @@ func (r *Registry) ListWebhooks(ctx context.Context, id accessport.Identity) (We
 }
 
 func (r *Registry) CreateWebhook(ctx context.Context, id accessport.Identity, in WebhookCreate) (WebhookCreated, error) {
-	if r.Webhooks == nil {
+	sender := r.sender()
+	if sender == nil {
 		return WebhookCreated{}, domain.Conflict // уведомления не настроены (нет webhook_secret_file)
 	}
 	if !validWebhookURL(in.URL) {
@@ -227,7 +243,7 @@ func (r *Registry) CreateWebhook(ctx context.Context, id accessport.Identity, in
 	if e = tx.Commit(ctx); e != nil {
 		return WebhookCreated{}, e
 	}
-	return WebhookCreated{Subscription: s, Secret: base64.RawURLEncoding.EncodeToString(r.Webhooks.Key(id.TenantID, s.ID))}, nil
+	return WebhookCreated{Subscription: s, Secret: base64.RawURLEncoding.EncodeToString(sender.Key(id.TenantID, s.ID))}, nil
 }
 
 func (r *Registry) PatchWebhook(ctx context.Context, id accessport.Identity, sub string, p WebhookPatch) (messaging.WebhookSubscription, error) {

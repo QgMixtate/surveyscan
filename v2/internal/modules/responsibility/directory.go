@@ -333,3 +333,69 @@ func (Store) SyncRuns(ctx context.Context, tx pgx.Tx, tenant string, limit int) 
 }
 
 var errDirectoryManaged = domain.Conflict // субъект ведёт каталог: ручная правка запрещена
+
+// C31.05: настройки синхронизации из Web (несекретные; пароль — в хранилище секретов центра).
+type DirectorySettings struct {
+	Settings  json.RawMessage `json:"settings"`
+	Revision  string          `json:"revision"`
+	UpdatedAt time.Time       `json:"updated_at"`
+}
+
+func (Store) DirectorySettings(ctx context.Context, tx pgx.Tx, tenant string) (*DirectorySettings, error) {
+	var s DirectorySettings
+	e := tx.QueryRow(ctx, "SELECT settings,revision::text,updated_at FROM responsibility.directory_settings WHERE tenant_id=$1", tenant).Scan(&s.Settings, &s.Revision, &s.UpdatedAt)
+	if errors.Is(e, pgx.ErrNoRows) {
+		return nil, nil
+	}
+	return &s, e
+}
+
+// PutDirectorySettings создаёт (revision "") или заменяет настройки при совпадении ревизии.
+func (Store) PutDirectorySettings(ctx context.Context, tx pgx.Tx, tenant, revision string, settings json.RawMessage, actor string) error {
+	if revision == "" {
+		_, e := tx.Exec(ctx, "INSERT INTO responsibility.directory_settings(tenant_id,settings,actor_ref) VALUES($1,$2,$3)", tenant, settings, actor)
+		if uniqueViolation(e) {
+			return domain.Revision
+		}
+		return e
+	}
+	tag, e := tx.Exec(ctx, "UPDATE responsibility.directory_settings SET settings=$3,revision=revision+1,updated_at=now(),actor_ref=$4 WHERE tenant_id=$1 AND revision::text=$2", tenant, revision, settings, actor)
+	if e == nil && tag.RowsAffected() != 1 {
+		e = domain.Revision
+	}
+	return e
+}
+
+func (Store) DeleteDirectorySettings(ctx context.Context, tx pgx.Tx, tenant, revision string) error {
+	tag, e := tx.Exec(ctx, "DELETE FROM responsibility.directory_settings WHERE tenant_id=$1 AND revision::text=$2", tenant, revision)
+	if e == nil && tag.RowsAffected() != 1 {
+		e = domain.Revision
+	}
+	return e
+}
+
+// DirectoryTenants — тенанты с настройками синхронизации и начало их последнего прогона (любого итога).
+func (Store) DirectoryTenants(ctx context.Context, tx pgx.Tx) (map[string]*time.Time, error) {
+	rows, e := tx.Query(ctx, `SELECT s.tenant_id::text,(SELECT max(r.started_at) FROM responsibility.directory_sync_runs r WHERE r.tenant_id=s.tenant_id) FROM responsibility.directory_settings s`)
+	if e != nil {
+		return nil, e
+	}
+	defer rows.Close()
+	out := map[string]*time.Time{}
+	for rows.Next() {
+		var tenant string
+		var last *time.Time
+		if e = rows.Scan(&tenant, &last); e != nil {
+			return nil, e
+		}
+		out[tenant] = last
+	}
+	return out, rows.Err()
+}
+
+// LastRun — начало последнего прогона любого итога (для расписания: сбой не повторяется чаще интервала).
+func (Store) LastRun(ctx context.Context, tx pgx.Tx, tenant string) (*time.Time, error) {
+	var t *time.Time
+	e := tx.QueryRow(ctx, "SELECT max(started_at) FROM responsibility.directory_sync_runs WHERE tenant_id=$1", tenant).Scan(&t)
+	return t, e
+}
