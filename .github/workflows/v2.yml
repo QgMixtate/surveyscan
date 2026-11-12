@@ -59,9 +59,12 @@ jobs:
       - name: Build search service (Rust, Tantivy; ADR C28) for the C29 integration test
         working-directory: v2/search
         run: cargo build --release --locked
+      - name: Mock directory (OpenLDAP over LDAPS, not AD) for the C31 integration test
+        run: python scripts/ldap_mock.py up >> "$GITHUB_ENV"
       - name: Real PostgreSQL integration tests
         env:
           SURVEYSCAN_SEARCH_BIN: ${{ github.workspace }}/v2/search/target/release/surveyscan-search
+          SURVEYSCAN_REQUIRE_LDAP_MOCK: "1"
         run: make integration
       - name: HTTP, dependency outage and restart checks
         run: python scripts/smoke.py
