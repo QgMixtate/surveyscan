@@ -142,6 +142,8 @@ jobs:
         run: .contract-tools/bin/python scripts/collector_renewal_smoke.py
       - name: Split roles (C35) - api and two workers, exactly-once events, session survives api failover
         run: .contract-tools/bin/python scripts/split_smoke.py
+      - name: PostgreSQL outage under a live center (C36) - fail fast, no partial write, pool reconnects without restart
+        run: .contract-tools/bin/python scripts/pool_failover_smoke.py
       - name: Human CLI login, two tenants, pagination and remote logout
         run: .contract-tools/bin/python scripts/cli_smoke.py
       - name: Central profiles, signed source diagnostics and tenant policy
