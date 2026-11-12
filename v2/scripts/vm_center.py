@@ -253,6 +253,32 @@ def fresh_token(config_path):
     os.replace(temp, path)
 
 
+SERVER_VALIDITY = '168h'  # максимум bootstrap-issuer; сертификат перевыпускается при каждом старте постоянного центра
+
+
+def renew_server_certificate(settings):
+    # Стенд R-027 (12.11): сертификат сервера центра выпускался один раз при создании стенда на 24 ч и при перезапуске
+    # не обновлялся — через сутки центр перестал стартовать («server certificate not trusted by configured CA»).
+    # Новый сертификат подписывается тем же ключом CA в OpenBao и с тем же именем издателя, поэтому прежний ca.pem у
+    # агентов и коллектора ему доверяет; сам ca.pem стенда не меняется. Временный каталог (с закрытым ключом) удаляется.
+    import shutil
+    work = Path(tempfile.mkdtemp(prefix='renew-', dir=Path(settings['server_certificate']).parent.parent))
+    try:
+        out = work / 'issuer'
+        r = subprocess.run([str(ROOT / '.dist/surveyscan-server'), 'bootstrap-issuer', '--config', settings['config'], '--output-directory', str(out),
+                            '--server-validity', SERVER_VALIDITY], capture_output=True, timeout=30)
+        assert r.returncode == 0, 'server certificate renewal failed'
+        for name, target in (('server.pem', settings['server_certificate']), ('server.key', settings['server_private'])):
+            temp = Path(target).with_suffix('.new')
+            fd = os.open(temp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+            with os.fdopen(fd, 'wb') as f:
+                f.write((out / name).read_bytes())
+            os.replace(temp, target)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+    print(f'сертификат сервера центра перевыпущен на {SERVER_VALIDITY}', flush=True)
+
+
 def persistent(args):
     # Постоянный стенд: первый запуск создаёт ресурсы OpenBao (без удаления при выходе), CA центра, БД, админа и collector;
     # последующие — только новые миграции, свежий токен OpenBao и новые бинарники. Агентов переподключать не нужно.
@@ -265,7 +291,7 @@ def persistent(args):
         vm.mkdir(exist_ok=True)
         with fixture(vm, keep=True) as f:
             issuer = vm / 'issuer'
-            r = subprocess.run([str(ROOT / '.dist/surveyscan-server'), 'bootstrap-issuer', '--config', f['config'], '--output-directory', str(issuer)], capture_output=True, timeout=30)
+            r = subprocess.run([str(ROOT / '.dist/surveyscan-server'), 'bootstrap-issuer', '--config', f['config'], '--output-directory', str(issuer), '--server-validity', SERVER_VALIDITY], capture_output=True, timeout=30)
             assert r.returncode == 0, 'scoped issuer bootstrap failed'
             settings = {'config': f['config'], 'ca_certificate': str(issuer / 'ca.pem'), 'server_certificate': str(issuer / 'server.pem'),
                         'server_private': str(issuer / 'server.key'), 'center_id': __import__('uuid').uuid4().__str__(), 'center_public': f['profile']['keys']['center']['public_key']}
@@ -275,6 +301,7 @@ def persistent(args):
         print('PERSISTENT стенд найден, агентов переподключать не нужно:', state, flush=True)
     settings = json.loads(settings_file.read_text())
     fresh_token(settings['config'])
+    renew_server_certificate(settings)
     (state / 'harness').mkdir(exist_ok=True)
     harness(agent_scenario=lambda **s: scenario(args, **s), bao_settings=settings, report_directory=STATE, inventory12=True, collector_inventory12=True, persist=state / 'harness')
 
