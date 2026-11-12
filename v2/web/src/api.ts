@@ -50,6 +50,12 @@ export type SyncRun={run_id:string;mode:'full'|'incremental';started_at:string;f
 export type DirectorySyncStatus={tenant_id:string;configured:boolean;source:string|null;interval_minutes:number;full_sync_hours:number;teams_enabled:boolean;runs:SyncRun[]};
 export type CSVRowResult={line:number;asset_uid:string;status:'applied'|'unchanged'|'stale_revision'|'not_found'|'invalid';field:string|null;business_revision:string|null};
 export type CSVImportResult={tenant_id:string;dry_run:boolean;format:string;counts:Record<CSVRowResult['status'],number>;results:CSVRowResult[]};
+export type WebhookEventType='asset.created.v1'|'asset.facts_changed.v1'|'responsibility.assigned.v1'|'observation.recorded.v1'|'source.contact_updated.v1'|'source.profile_updated.v1';
+export type WebhookSubscription={subscription_id:string;url:string;event_types:WebhookEventType[];active:boolean;revision:string;created_at:string;pending:number;delivered:number;dead:number};
+export type WebhookList={tenant_id:string;enabled:boolean;event_types:WebhookEventType[];items:WebhookSubscription[]};
+export type WebhookCreated={subscription:WebhookSubscription;signing_secret:string};
+export type WebhookDelivery={event_id:string;event_type:WebhookEventType;occurred_at:string;state:'pending'|'delivered'|'dead';attempts:number;next_attempt_at:string|null;last_status:number|null;last_error:string|null;delivered_at:string|null};
+export type WebhookDeliveryPage={tenant_id:string;subscription_id:string;items:WebhookDelivery[]};
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
 }
@@ -88,6 +94,11 @@ export const api={
  patchService:(uid:string,csrf:string,body:{revision:string;name?:string;description?:string;criticality?:string;retire?:boolean})=>call<ServiceDetail>('/api/v1/services/'+encodeURIComponent(uid),'ServiceDetail',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  createRelation:(csrf:string,body:{relation_type:string;from:CIEnd;to:CIEnd;note?:string})=>call<Relation>('/api/v1/relations','Relation',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  retireRelation:(id:string,csrf:string)=>call<Relation>('/api/v1/relations/'+encodeURIComponent(id),'Relation',{method:'DELETE',headers:{'X-CSRF-Token':csrf}}),
+ webhooks:()=>call<WebhookList>('/api/v1/webhooks','WebhookList'),
+ createWebhook:(csrf:string,body:{url:string;event_types:WebhookEventType[]})=>call<WebhookCreated>('/api/v1/webhooks','WebhookCreated',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ patchWebhook:(id:string,csrf:string,body:{revision:string;active?:boolean})=>call<WebhookSubscription>('/api/v1/webhooks/'+encodeURIComponent(id),'WebhookSubscription',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ webhookDeliveries:(id:string,state:''|'pending'|'delivered'|'dead')=>call<WebhookDeliveryPage>('/api/v1/webhooks/'+encodeURIComponent(id)+'/deliveries'+(state?'?state='+state:''),'WebhookDeliveryPage'),
+ retryWebhook:(id:string,event:string,csrf:string)=>call<void>('/api/v1/webhooks/'+encodeURIComponent(id)+'/deliveries/'+encodeURIComponent(event)+'/retry',undefined,{method:'POST',headers:{'X-CSRF-Token':csrf}}),
  directorySync:()=>call<DirectorySyncStatus>('/api/v1/directory-sync','DirectorySyncStatus'),
  runDirectorySync:(csrf:string,mode:'full'|'auto')=>call<SyncRun>('/api/v1/directory-sync/run','SyncRun',{method:'POST',body:JSON.stringify({mode}),headers:{'X-CSRF-Token':csrf},signal:AbortSignal.timeout(300000)}),
  importCSV:(csrf:string,text:string,dry:boolean)=>call<CSVImportResult>('/api/v1/assets/import.csv?dry_run='+dry,'CSVImportResult',{method:'POST',body:text,headers:{'X-CSRF-Token':csrf,'Content-Type':'text/csv; charset=utf-8'},signal:AbortSignal.timeout(300000)}),

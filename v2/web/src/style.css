@@ -20,3 +20,5 @@
 .sync-panel{margin-bottom:16px;line-height:1.5}.sync-panel details{margin-top:4px}
 .csv-panel{margin-top:24px}.csv-panel p{margin:4px 0 12px}
 .csv-panel>p,.csv-panel>div{padding-left:24px;padding-right:24px}.csv-panel>div:last-child{padding-bottom:16px}
+.secret{margin:6px 0;padding:6px 8px;background:#fff;border-radius:6px;overflow-wrap:anywhere}
+.org-form .inline-check{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.org-form .inline-check input{width:16px;height:16px;min-width:0;padding:0;flex:none}

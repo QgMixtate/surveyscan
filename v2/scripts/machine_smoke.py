@@ -80,7 +80,7 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
     command('migrate');password=(directory/'password').read_text().strip()  # постоянный стенд: только новые миграции
    else:
     sql('CREATE DATABASE '+db);created=True
-    assert 'applied_migrations=44' in command('migrate')
+    assert 'applied_migrations=45' in command('migrate')
    if not state:
     password=secrets.token_urlsafe(32);password_file=save('password',password+'\n');command('bootstrap-admin','--tenant',tenant,'--tenant-name','C07 synthetic','--username','admin','--password-file',password_file)
     sql(f"INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES('{tenant}','{subject}','team','fallback','synthetic@example.invalid'); INSERT INTO scope.sites(tenant_id,site_id,name,fallback_subject_id) VALUES('{tenant}','{site}','synthetic','{subject}'); INSERT INTO scope.network_scopes(tenant_id,scope_id,site_id,namespace) VALUES('{tenant}','{scope}','{site}','default');",db)
@@ -90,6 +90,8 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
     atexit.register(search_process.kill)
     (directory/'search.pid').write_text(str(search_process.pid))
     cfg=json.loads(Path(machine_file).read_text());cfg.update(search_url=f'http://127.0.0.1:{search_port}',search_token_file=token_file);Path(machine_file).write_text(json.dumps(cfg))
+   if os.environ.get('SURVEYSCAN_DEMO_WEBHOOK'):  # C31.03: мастер-ключ подписей уведомлений, только демо
+    cfg=json.loads(Path(machine_file).read_text());cfg.update(webhook_secret_file=save('webhook-key',secrets.token_hex(32)));Path(machine_file).write_text(json.dumps(cfg))
    if os.environ.get('SURVEYSCAN_DEMO_LDAP') and os.environ.get('SURVEYSCAN_TEST_LDAP_URL'):  # C31: мок-каталог (scripts/ldap_mock.py), только демо
     cfg=json.loads(Path(machine_file).read_text());cfg.update(ldap_sync=dict(tenant_id=tenant,url=os.environ['SURVEYSCAN_TEST_LDAP_URL'],base_dn=os.environ['SURVEYSCAN_TEST_LDAP_BASE_DN'],bind_dn=os.environ['SURVEYSCAN_TEST_LDAP_BIND_DN'],bind_password_file=os.environ['SURVEYSCAN_TEST_LDAP_PASSWORD_FILE'],ca_certificate_file=os.environ['SURVEYSCAN_TEST_LDAP_CA_FILE'],user_filter='(objectClass=inetOrgPerson)',group_filter='(&(objectClass=groupOfNames)(cn=Linux Admins))',guid_attribute='entryUUID',login_attribute='uid',changed_attribute='modifyTimestamp'));Path(machine_file).write_text(json.dumps(cfg))
    center_process=start('center',[str(ROOT/'.dist/surveyscan-server'),'serve']);plain=context();ready(tls_port,plain);checks.append('compiled center starts with explicit private loopback PKI')

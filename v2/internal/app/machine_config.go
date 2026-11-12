@@ -34,16 +34,18 @@ type MachineConfig struct {
 	SearchURL       string `json:"search_url,omitempty"`
 	SearchTokenFile string `json:"search_token_file,omitempty"`
 	// C31.02: синхронизация оргструктуры из Active Directory (только чтение); нет — выключена
-	LDAPSync          *DirectorySyncConfig `json:"ldap_sync,omitempty"`
-	BaoConfig         string               `json:"openbao_config_file"`
-	CenterKeyID       string               `json:"center_signing_key_id"`
-	DevMode           bool                 `json:"dev_mode"`
-	Listen            string               `json:"listen"`
-	CACertificate     string               `json:"ca_certificate_file"`
-	CAKey             string               `json:"ca_private_key_file"`
-	ServerCertificate string               `json:"server_certificate_file"`
-	ServerKey         string               `json:"server_private_key_file"`
-	CenterKey         string               `json:"center_signing_key_file"`
+	LDAPSync *DirectorySyncConfig `json:"ldap_sync,omitempty"`
+	// C31.03: приватный файл (≥ 32 байт) — мастер-ключ подписей исходящих уведомлений; нет — уведомления выключены
+	WebhookSecretFile string `json:"webhook_secret_file,omitempty"`
+	BaoConfig         string `json:"openbao_config_file"`
+	CenterKeyID       string `json:"center_signing_key_id"`
+	DevMode           bool   `json:"dev_mode"`
+	Listen            string `json:"listen"`
+	CACertificate     string `json:"ca_certificate_file"`
+	CAKey             string `json:"ca_private_key_file"`
+	ServerCertificate string `json:"server_certificate_file"`
+	ServerKey         string `json:"server_private_key_file"`
+	CenterKey         string `json:"center_signing_key_file"`
 }
 type CenterKeyFile struct {
 	ID      string `json:"key_id"`
@@ -211,6 +213,11 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 			return "", nil, e
 		}
 		r.Search = &SearchClient{BaseURL: cfg.SearchURL, Token: strings.TrimSpace(string(token))}
+	}
+	if cfg.WebhookSecretFile != "" {
+		if r.Webhooks, e = NewWebhookSender(cfg.WebhookSecretFile); e != nil {
+			return "", nil, e
+		}
 	}
 	if cfg.LDAPSync != nil {
 		if r.Directory, e = NewDirectorySync(*cfg.LDAPSync); e != nil {

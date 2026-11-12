@@ -49,6 +49,9 @@ try{
  // C31: синхронизация оргструктуры из каталога (демо — мок OpenLDAP, не AD) и обмен CSV
  await page.getByRole('button',{name:/Оргструктура/}).click();
  await page.locator('.sync-panel').waitFor();if(await page.getByText('Синхронизация с Active Directory').isVisible()){await page.getByRole('button',{name:'Синхронизировать сейчас'}).click();await expect(page.locator('.sync-panel')).toContainText('Последний прогон');await expect(page.locator('tbody tr',{hasText:'Мария Петрова'})).toContainText('AD');await expect(page.locator('tbody tr',{hasText:'Linux Admins'})).toContainText('Команда (2)');await shot('15-org-ad')}
+ // C31.03: подписка на уведомления (получатель в демо не запущен — видны неудачные попытки и паузы)
+ await page.getByRole('button',{name:/Уведомления/}).click();
+ await expect(page.getByRole('heading',{name:/Подписки/})).toBeVisible();if(await page.getByLabel('Адрес получателя').isVisible()){await page.getByLabel('Адрес получателя').fill('http://127.0.0.1:9/hook');await page.getByRole('button',{name:'Подписать'}).click();await expect(page.locator('.secret')).toBeVisible();await shot('18-webhook-secret');await page.getByRole('button',{name:'Сохранил'}).click()}
  await page.getByRole('button',{name:/Реестр активов/}).click();await expect(page.locator('.csv-panel')).toBeVisible();
  const [download]=await Promise.all([page.waitForEvent('download'),page.getByRole('link',{name:/Выгрузить CSV/}).click()]);
  const exported=await (await import('node:fs/promises')).readFile(await download.path(),'utf8');const lines=exported.split('\r\n');
@@ -57,5 +60,6 @@ try{
  await page.locator('.csv-panel input[type=file]').setInputFiles({name:'assets.csv',mimeType:'text/csv',buffer:Buffer.from(edited)});
  await page.getByRole('button',{name:'Проверить'}).click();await expect(page.locator('.csv-panel')).toContainText('применится 1');await shot('16-csv-check');
  await page.getByRole('button',{name:'Применить'}).click();await expect(page.locator('.csv-panel .notice')).toContainText('Применено строк: 1');await expect(page.locator('tbody')).toContainText('Сервер из Excel');await shot('17-csv-applied');
+ await page.getByRole('button',{name:/Уведомления/}).click();await expect(page.getByRole('heading',{name:/Подписки/})).toBeVisible();if(await page.getByRole('button',{name:'Доставки'}).count()){await page.waitForTimeout(6000);await page.getByRole('button',{name:'Доставки'}).click();await expect(page.locator('tbody').nth(1)).toContainText('следующая попытка');await shot('19-webhook-deliveries')}
  if(errors.length)throw new Error('browser errors: '+errors.join('; '));
 }finally{await browser.close()}

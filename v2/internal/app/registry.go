@@ -38,6 +38,8 @@ type Registry struct {
 	CMDB              cmdb.Store
 	topology          topologyCache
 	Search            *SearchClient  // C29: nil — сервис поиска не настроен (только точный запасной режим)
+	Webhooks          *WebhookSender // C31.03: nil — уведомления не настроены (нет webhook_secret_file)
+	Hooks             messaging.Webhooks
 	Directory         *DirectorySync // C31.02: nil — синхронизация оргструктуры из каталога выключена
 	Audit             audit.Store
 	Events            EventSink

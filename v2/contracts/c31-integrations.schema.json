@@ -294,6 +294,311 @@
     "results"
    ],
    "additionalProperties": false
+  },
+  "WebhookSubscription": {
+   "type": "object",
+   "properties": {
+    "subscription_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "url": {
+     "type": "string",
+     "pattern": "^https?://",
+     "maxLength": 2048
+    },
+    "event_types": {
+     "type": "array",
+     "minItems": 1,
+     "maxItems": 16,
+     "uniqueItems": true,
+     "items": {
+      "enum": [
+       "asset.created.v1",
+       "asset.facts_changed.v1",
+       "responsibility.assigned.v1",
+       "observation.recorded.v1",
+       "source.contact_updated.v1",
+       "source.profile_updated.v1"
+      ]
+     }
+    },
+    "active": {
+     "type": "boolean"
+    },
+    "revision": {
+     "type": "string",
+     "pattern": "^[1-9][0-9]{0,19}$"
+    },
+    "created_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "pending": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "delivered": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "dead": {
+     "type": "integer",
+     "minimum": 0
+    }
+   },
+   "required": [
+    "subscription_id",
+    "url",
+    "event_types",
+    "active",
+    "revision",
+    "created_at",
+    "pending",
+    "delivered",
+    "dead"
+   ],
+   "additionalProperties": false
+  },
+  "WebhookList": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "enabled": {
+     "type": "boolean"
+    },
+    "event_types": {
+     "type": "array",
+     "items": {
+      "enum": [
+       "asset.created.v1",
+       "asset.facts_changed.v1",
+       "responsibility.assigned.v1",
+       "observation.recorded.v1",
+       "source.contact_updated.v1",
+       "source.profile_updated.v1"
+      ]
+     }
+    },
+    "items": {
+     "type": "array",
+     "maxItems": 100,
+     "items": {
+      "$ref": "#/$defs/WebhookSubscription"
+     }
+    }
+   },
+   "required": [
+    "tenant_id",
+    "enabled",
+    "event_types",
+    "items"
+   ],
+   "additionalProperties": false
+  },
+  "WebhookCreated": {
+   "type": "object",
+   "properties": {
+    "subscription": {
+     "$ref": "#/$defs/WebhookSubscription"
+    },
+    "signing_secret": {
+     "type": "string",
+     "pattern": "^[A-Za-z0-9_-]{43}$"
+    }
+   },
+   "required": [
+    "subscription",
+    "signing_secret"
+   ],
+   "additionalProperties": false
+  },
+  "WebhookDelivery": {
+   "type": "object",
+   "properties": {
+    "event_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "event_type": {
+     "enum": [
+      "asset.created.v1",
+      "asset.facts_changed.v1",
+      "responsibility.assigned.v1",
+      "observation.recorded.v1",
+      "source.contact_updated.v1",
+      "source.profile_updated.v1"
+     ]
+    },
+    "occurred_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "state": {
+     "enum": [
+      "pending",
+      "delivered",
+      "dead"
+     ]
+    },
+    "attempts": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "next_attempt_at": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "last_status": {
+     "oneOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "last_error": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 512
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "delivered_at": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "event_id",
+    "event_type",
+    "occurred_at",
+    "state",
+    "attempts",
+    "next_attempt_at",
+    "last_status",
+    "last_error",
+    "delivered_at"
+   ],
+   "additionalProperties": false
+  },
+  "WebhookDeliveryPage": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "subscription_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "items": {
+     "type": "array",
+     "maxItems": 100,
+     "items": {
+      "$ref": "#/$defs/WebhookDelivery"
+     }
+    }
+   },
+   "required": [
+    "tenant_id",
+    "subscription_id",
+    "items"
+   ],
+   "additionalProperties": false
+  },
+  "WebhookPayload": {
+   "description": "Тело POST получателю. Заголовки: X-SurveyScan-Event-Id (отбрасывать повторы), X-SurveyScan-Timestamp (секунды Unix), X-SurveyScan-Signature: v1=hex(HMAC-SHA256(secret, timestamp + '.' + body)), где secret — base64url signing_secret.",
+   "type": "object",
+   "properties": {
+    "schema": {
+     "const": "surveyscan-webhook-v1"
+    },
+    "event_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "event_type": {
+     "enum": [
+      "asset.created.v1",
+      "asset.facts_changed.v1",
+      "responsibility.assigned.v1",
+      "observation.recorded.v1",
+      "source.contact_updated.v1",
+      "source.profile_updated.v1"
+     ]
+    },
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "occurred_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "aggregate": {
+     "type": "object",
+     "properties": {
+      "type": {
+       "type": "string"
+      },
+      "id": {
+       "type": "string",
+       "format": "uuid"
+      },
+      "version": {
+       "type": "string",
+       "pattern": "^[1-9][0-9]{0,19}$"
+      }
+     },
+     "required": [
+      "type",
+      "id",
+      "version"
+     ],
+     "additionalProperties": false
+    },
+    "data": {
+     "type": "object",
+     "additionalProperties": {
+      "type": "string"
+     }
+    }
+   },
+   "required": [
+    "schema",
+    "event_id",
+    "event_type",
+    "tenant_id",
+    "occurred_at",
+    "aggregate",
+    "data"
+   ],
+   "additionalProperties": false
   }
  }
 }

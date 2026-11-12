@@ -1,5 +1,5 @@
 import {useEffect,useState} from 'react';
-import {api,ApiError,errorMessage,type CSVImportResult,type DirectorySyncStatus,type SyncRun} from './api';
+import {api,ApiError,errorMessage,type CSVImportResult,type DirectorySyncStatus,type SyncRun,type WebhookDelivery,type WebhookEventType,type WebhookList} from './api';
 
 // C31.02 — интеграции в Web: синхронизация оргструктуры из Active Directory (только чтение) и CSV ручных полей активов.
 const time=(v:string)=>new Date(v).toLocaleString('ru-RU',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
@@ -36,4 +36,30 @@ export function CSVPanel({csrf,canWrite,onExpired,onImported}:{csrf:string;canWr
   {done?<div className="notice" role="status">{done}</div>:null}
   {error?<div className="error" role="alert">{error instanceof ApiError&&error.code==='INVALID_INPUT'?'Файл не похож на выгрузку SurveyScan (первая строка «#surveyscan-assets-csv;v1»).':errorMessage(error)}</div>:null}
  </section>;
+}
+
+// C31.03 — исходящие уведомления (webhook): подписки, секрет подписи (показывается один раз), доставки и ручной повтор.
+const eventNames:Record<string,string>={'asset.created.v1':'Новый актив','asset.facts_changed.v1':'Изменение актива','responsibility.assigned.v1':'Смена ответственного','observation.recorded.v1':'Получены данные сбора','source.contact_updated.v1':'Контакт источника','source.profile_updated.v1':'Профиль источника'};
+const deliveryNames:Record<string,string>={pending:'в очереди',delivered:'доставлено',dead:'не доставлено'};
+
+export function WebhooksView({csrf,onExpired}:{csrf:string;onExpired:()=>void}){
+ const [list,setList]=useState<WebhookList|null>(null),[url,setUrl]=useState(''),[types,setTypes]=useState<WebhookEventType[]>(['asset.facts_changed.v1','responsibility.assigned.v1']);
+ const [secret,setSecret]=useState(''),[open,setOpen]=useState(''),[deliveries,setDeliveries]=useState<WebhookDelivery[]>([]),[busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null);
+ const load=()=>{api.webhooks().then(setList).catch(e=>{setError(e);expired(e,onExpired)})};
+ const loadDeliveries=(id:string)=>{api.webhookDeliveries(id,'').then(p=>setDeliveries(p.items)).catch(e=>{setError(e);expired(e,onExpired)})};
+ useEffect(load,[]);
+ async function act(fn:()=>Promise<unknown>){setBusy(true);setError(null);try{await fn();load();if(open)loadDeliveries(open)}catch(e){setError(e);expired(e,onExpired)}finally{setBusy(false)}}
+ if(!list)return error?<div className="error" role="alert">{errorMessage(error)}</div>:null;
+ return <div className="table-panel"><div className="table-toolbar"><h2>Подписки <span>{list.items.length}</span></h2></div>
+  {!list.enabled?<div className="notice" role="status">Уведомления не настроены: нужен приватный файл ключа подписи (<code>webhook_secret_file</code> в конфигурации центра).</div>:null}
+  {error?<div className="error" role="alert">{errorMessage(error)}</div>:null}
+  {secret?<div className="notice" role="status"><strong>Секрет подписи — сохраните его сейчас, больше он не показывается:</strong><div className="mono secret">{secret}</div>Получатель проверяет заголовок <code>X-SurveyScan-Signature: v1=HMAC-SHA256(секрет, timestamp + "." + тело)</code> и отбрасывает повторы по <code>X-SurveyScan-Event-Id</code>.<div><button className="button small" onClick={()=>setSecret('')}>Сохранил</button></div></div>:null}
+  {list.enabled?<form className="org-form" onSubmit={e=>{e.preventDefault();void act(async()=>{const r=await api.createWebhook(csrf,{url:url.trim(),event_types:types});setSecret(r.signing_secret);setUrl('')})}}>
+   <input aria-label="Адрес получателя" placeholder="https://itsm.example/hook" value={url} onChange={e=>setUrl(e.target.value)}/>
+   {list.event_types.map(t=><label key={t} className="inline-check"><input type="checkbox" checked={types.includes(t)} onChange={e=>setTypes(e.target.checked?[...types,t]:types.filter(x=>x!==t))}/> {eventNames[t]??t}</label>)}
+   <button className="button small" disabled={busy||!url.trim()||!types.length}>Подписать</button></form>:null}
+  <div className="table-scroll"><table><thead><tr><th>Получатель</th><th>События</th><th>Доставлено / в очереди / не доставлено</th><th>Состояние</th><th/></tr></thead><tbody>{list.items.map(s=><tr key={s.subscription_id}><td className="mono">{s.url}</td><td>{s.event_types.map(t=>eventNames[t]??t).join(', ')}</td><td>{s.delivered} / {s.pending} / <span className={s.dead?'error-text':''}>{s.dead}</span></td><td>{s.active?'Включена':'Выключена'}</td>
+   <td><button className="text-link" onClick={()=>{const next=open===s.subscription_id?'':s.subscription_id;setOpen(next);setDeliveries([]);if(next)loadDeliveries(next)}}>Доставки</button> <button className="text-link" disabled={busy} onClick={()=>void act(()=>api.patchWebhook(s.subscription_id,csrf,{revision:s.revision,active:!s.active}))}>{s.active?'Выключить':'Включить'}</button></td></tr>)}</tbody></table></div>
+  {open?<div className="table-scroll"><table><thead><tr><th>Событие</th><th>Когда</th><th>Итог</th><th>Попыток</th><th>Ответ</th><th/></tr></thead><tbody>{deliveries.map(d=><tr key={d.event_id}><td>{eventNames[d.event_type]??d.event_type}<small className="mono">{d.event_id}</small></td><td>{time(d.occurred_at)}</td><td className={d.state==='dead'?'error-text':''}>{deliveryNames[d.state]}{d.state==='pending'&&d.next_attempt_at?', следующая попытка '+time(d.next_attempt_at):''}</td><td>{d.attempts}</td><td>{d.last_error??(d.last_status?String(d.last_status):'—')}</td><td>{d.state==='dead'?<button className="text-link" disabled={busy} onClick={()=>{if(window.confirm('Подтвердите: отправить событие повторно. Действие попадёт в аудит.'))void act(()=>api.retryWebhook(open,d.event_id,csrf))}}>Повторить</button>:null}</td></tr>)}</tbody></table>{deliveries.length?null:<div className="empty" role="status">Доставок пока нет</div>}</div>:null}
+ </div>;
 }

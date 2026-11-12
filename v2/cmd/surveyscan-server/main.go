@@ -184,6 +184,9 @@ func run(args []string) error {
 	if registry.Machine != nil && registry.Machine.Maintain != nil {
 		go registry.Machine.Maintain(ctx)
 	}
+	if registry.Webhooks != nil {
+		go registry.WebhookMaintain(ctx, func(m string) { fmt.Println(m) })
+	}
 	if registry.Directory != nil {
 		go registry.DirectoryMaintain(ctx, func(m string) { fmt.Println(m) })
 	}

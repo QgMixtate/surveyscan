@@ -116,7 +116,7 @@ func TestC15PlatformMigrationPreservesExistingCatalogAndData(t *testing.T) {
 			old = append(old, m)
 		}
 	}
-	if len(old) != 35 || len(current) != 44 {
+	if len(old) != 35 || len(current) != 45 {
 		t.Fatal("unexpected catalogs")
 	}
 	apply(t, ctx, c, old)
@@ -125,8 +125,8 @@ func TestC15PlatformMigrationPreservesExistingCatalogAndData(t *testing.T) {
 	if err := c.QueryRow(ctx, snapshot).Scan(&before); err != nil {
 		t.Fatal(err)
 	}
-	if n, err := migrate.Apply(ctx, c, current); err != nil || n != 9 {
-		t.Fatal("not nine appends", n, err)
+	if n, err := migrate.Apply(ctx, c, current); err != nil || n != 10 {
+		t.Fatal("not ten appends", n, err)
 	}
 	if err := c.QueryRow(ctx, snapshot).Scan(&after); err != nil || before != after {
 		t.Fatal("old SQL ledger mutated", err)
