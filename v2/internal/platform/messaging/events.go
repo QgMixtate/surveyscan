@@ -107,7 +107,12 @@ func ConsumeOne(ctx context.Context, pool *pgxpool.Pool, tenant, consumer string
 	return true, tx.Commit(ctx)
 }
 func PendingTenants(ctx context.Context, pool *pgxpool.Pool) ([]string, error) {
-	rows, e := pool.Query(ctx, "SELECT tenant_id::text FROM messaging.outbox_events e WHERE NOT EXISTS(SELECT 1 FROM messaging.consumer_checkpoints c WHERE c.tenant_id=e.tenant_id AND c.event_id=e.event_id AND c.consumer_name='registry-version' AND c.state IN ('applied','dead_letter')) GROUP BY tenant_id ORDER BY tenant_id LIMIT 100")
+	return PendingTenantsFor(ctx, pool, "registry-version")
+}
+
+// PendingTenantsFor — тенанты с событиями, ещё не применёнными потребителем consumer (C29: потребитель поиска).
+func PendingTenantsFor(ctx context.Context, pool *pgxpool.Pool, consumer string) ([]string, error) {
+	rows, e := pool.Query(ctx, "SELECT tenant_id::text FROM messaging.outbox_events e WHERE NOT EXISTS(SELECT 1 FROM messaging.consumer_checkpoints c WHERE c.tenant_id=e.tenant_id AND c.event_id=e.event_id AND c.consumer_name=$1 AND c.state IN ('applied','dead_letter')) GROUP BY tenant_id ORDER BY tenant_id LIMIT 100", consumer)
 	if e != nil {
 		return nil, e
 	}

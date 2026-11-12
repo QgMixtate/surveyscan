@@ -22,22 +22,26 @@ import (
 	"io"
 	"net"
 	"os"
+	"strings"
 	"time"
 )
 
 type MachineConfig struct {
 	Inventory12 bool `json:"inventory12_enabled"`
 	// C26, 3А: порог давности приоритета источников в часах (нет — 24, 0 — только приоритет)
-	PriorityStaleHours *int   `json:"priority_stale_after_hours,omitempty"`
-	BaoConfig          string `json:"openbao_config_file"`
-	CenterKeyID        string `json:"center_signing_key_id"`
-	DevMode            bool   `json:"dev_mode"`
-	Listen             string `json:"listen"`
-	CACertificate      string `json:"ca_certificate_file"`
-	CAKey              string `json:"ca_private_key_file"`
-	ServerCertificate  string `json:"server_certificate_file"`
-	ServerKey          string `json:"server_private_key_file"`
-	CenterKey          string `json:"center_signing_key_file"`
+	PriorityStaleHours *int `json:"priority_stale_after_hours,omitempty"`
+	// C29: сервис поиска surveyscan-search (loopback) и приватный файл его токена; пусто — только точный поиск по PostgreSQL
+	SearchURL         string `json:"search_url,omitempty"`
+	SearchTokenFile   string `json:"search_token_file,omitempty"`
+	BaoConfig         string `json:"openbao_config_file"`
+	CenterKeyID       string `json:"center_signing_key_id"`
+	DevMode           bool   `json:"dev_mode"`
+	Listen            string `json:"listen"`
+	CACertificate     string `json:"ca_certificate_file"`
+	CAKey             string `json:"ca_private_key_file"`
+	ServerCertificate string `json:"server_certificate_file"`
+	ServerKey         string `json:"server_private_key_file"`
+	CenterKey         string `json:"center_signing_key_file"`
 }
 type CenterKeyFile struct {
 	ID      string `json:"key_id"`
@@ -195,6 +199,16 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 			return "", nil, errors.New("priority_stale_after_hours must be 0..8760")
 		}
 		inventory.SetPriorityStaleAfter(time.Duration(*cfg.PriorityStaleHours) * time.Hour)
+	}
+	if cfg.SearchURL != "" {
+		if !strings.HasPrefix(cfg.SearchURL, "http://127.0.0.1:") && !strings.HasPrefix(cfg.SearchURL, "http://[::1]:") {
+			return "", nil, errors.New("search_url must be a loopback address")
+		}
+		token, e := ReadPrivate(cfg.SearchTokenFile, 4096)
+		if e != nil {
+			return "", nil, e
+		}
+		r.Search = &SearchClient{BaseURL: cfg.SearchURL, Token: strings.TrimSpace(string(token))}
 	}
 	var inventoryProtocol *wire.InventoryDecoder
 	if cfg.Inventory12 {

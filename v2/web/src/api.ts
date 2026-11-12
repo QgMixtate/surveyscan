@@ -42,6 +42,8 @@ export type AssetAssignments={tenant_id:string;asset_uid:string;version:string;a
 export type BulkAssignResult={applied:number;unchanged:number;stale_asset_uids:string[]};
 export type WorklistItem={asset_uid:string;version:string;display_name:string|null;observed_hostname:string|null;assignments:Assignment[]};
 export type WorklistPage={tenant_id:string;scope:'mine'|'team'|'unassigned'|'attention';items:WorklistItem[];next_cursor:string|null};
+export type SearchItem={asset_uid:string;display_name:string|null;observed_hostname:string|null;observed_os:string|null;score:number|null;fragment:string;highlights:[number,number][]};
+export type SearchPage={tenant_id:string;query:string;mode:'fulltext'|'fallback_exact';notice?:string;pending_index_events:number;items:SearchItem[];facets:{os:Record<string,number>;class:Record<string,number>};next_cursor:string|null};
 export type Topology={tenant_id:string;generated_at:string;nodes:TopologyNode[];links:TopologyLink[];truncated:boolean;hosts_with_network_facts:number};
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
@@ -89,6 +91,7 @@ export const api={
  assign:(uid:string,csrf:string,body:{role:RoleName;subject_id:string|null;note?:string;expected_version:string})=>call<AssetAssignments>('/api/v1/assets/'+encodeURIComponent(uid)+'/assignments','AssetAssignments',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  bulkAssign:(csrf:string,body:{role:RoleName;subject_id:string;note?:string;items:{asset_uid:string;expected_version:string}[]})=>call<BulkAssignResult>('/api/v1/assignments/bulk','BulkAssignResult',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  worklist:(scope:string,cursor:string|null=null)=>call<WorklistPage>('/api/v1/worklist?limit=100&scope='+encodeURIComponent(scope)+(cursor?'&cursor='+encodeURIComponent(cursor):''),'WorklistPage'),
+ search:(q:string,filters:{os?:string;class?:string},cursor:string|null)=>call<SearchPage>('/api/v1/search?limit=20&q='+encodeURIComponent(q)+(filters.os?'&os='+encodeURIComponent(filters.os):'')+(filters.class?'&class='+encodeURIComponent(filters.class):'')+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SearchPage'),
  topology:()=>call<Topology>('/api/v1/topology','Topology'),
  sources:(cursor:string|null=null)=>call<SourcePage>('/api/v1/sources?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SourcePage')
 };

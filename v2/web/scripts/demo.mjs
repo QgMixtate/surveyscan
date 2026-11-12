@@ -44,5 +44,7 @@ try{
  const rows=page.locator('tbody tr input[type=checkbox]');await rows.nth(0).check();await rows.nth(1).check();await page.getByLabel('Назначить на').selectOption({label:'Иванов Иван'});await page.getByRole('button',{name:'Назначить выбранным'}).click();
  await expect(page.locator('.notice')).toContainText('Назначено: 2');await page.getByRole('tab',{name:'На мне'}).click();await expect(page.locator('tbody tr')).toHaveCount(2);await shot('12-worklist-mine');
  await page.locator('tbody .asset-link').first().click();await card.getByRole('tab',{name:'Ответственность',exact:true}).click();await expect(card).toContainText('Иванов Иван');await shot('13-card-owners',false);await page.getByRole('button',{name:'Закрыть карточку'}).click();
+ // C29: полнотекстовый поиск (если демо запущено с SURVEYSCAN_SEARCH_BIN — режим fulltext)
+ await page.getByRole('button',{name:/Поиск\s*00/}).click();await page.getByLabel('Запрос').fill('openssl');await page.getByRole('button',{name:'Найти',exact:true}).click();await expect(page.locator('.search-hit').first()).toBeVisible();await shot('14-search');
  if(errors.length)throw new Error('browser errors: '+errors.join('; '));
 }finally{await browser.close()}

@@ -56,7 +56,12 @@ jobs:
         run: python scripts/unit_check.py
       - name: Start local PostgreSQL, OpenBao, backend and proxy
         run: python scripts/dev.py up
+      - name: Build search service (Rust, Tantivy; ADR C28) for the C29 integration test
+        working-directory: v2/search
+        run: cargo build --release --locked
       - name: Real PostgreSQL integration tests
+        env:
+          SURVEYSCAN_SEARCH_BIN: ${{ github.workspace }}/v2/search/target/release/surveyscan-search
         run: make integration
       - name: HTTP, dependency outage and restart checks
         run: python scripts/smoke.py

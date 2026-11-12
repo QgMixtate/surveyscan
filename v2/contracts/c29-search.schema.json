@@ -1,0 +1,163 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:surveyscan:c29:search:1:0",
+ "title": "Поиск по реестру (C29, ADR C28): кандидаты перепроверены по PostgreSQL",
+ "$defs": {
+  "SearchPage": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "query": {
+     "type": "string",
+     "minLength": 2,
+     "maxLength": 1024
+    },
+    "mode": {
+     "enum": [
+      "fulltext",
+      "fallback_exact"
+     ]
+    },
+    "notice": {
+     "type": "string",
+     "maxLength": 512
+    },
+    "pending_index_events": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "items": {
+     "type": "array",
+     "maxItems": 100,
+     "items": {
+      "type": "object",
+      "properties": {
+       "asset_uid": {
+        "type": "string",
+        "format": "uuid"
+       },
+       "display_name": {
+        "oneOf": [
+         {
+          "type": "string",
+          "maxLength": 512
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "observed_hostname": {
+        "oneOf": [
+         {
+          "type": "string",
+          "maxLength": 255
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "observed_os": {
+        "oneOf": [
+         {
+          "type": "string",
+          "maxLength": 256
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "score": {
+        "oneOf": [
+         {
+          "type": "number"
+         },
+         {
+          "type": "null"
+         }
+        ]
+       },
+       "fragment": {
+        "type": "string",
+        "maxLength": 2048
+       },
+       "highlights": {
+        "type": "array",
+        "maxItems": 64,
+        "items": {
+         "type": "array",
+         "minItems": 2,
+         "maxItems": 2,
+         "items": {
+          "type": "integer",
+          "minimum": 0
+         }
+        }
+       }
+      },
+      "required": [
+       "asset_uid",
+       "display_name",
+       "observed_hostname",
+       "observed_os",
+       "score",
+       "fragment",
+       "highlights"
+      ],
+      "additionalProperties": false
+     }
+    },
+    "facets": {
+     "type": "object",
+     "properties": {
+      "os": {
+       "type": "object",
+       "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+       }
+      },
+      "class": {
+       "type": "object",
+       "additionalProperties": {
+        "type": "integer",
+        "minimum": 1
+       }
+      }
+     },
+     "required": [
+      "os",
+      "class"
+     ],
+     "additionalProperties": false
+    },
+    "next_cursor": {
+     "oneOf": [
+      {
+       "type": "string",
+       "pattern": "^[1-9][0-9]{0,3}$"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "tenant_id",
+    "query",
+    "mode",
+    "pending_index_events",
+    "items",
+    "facets",
+    "next_cursor"
+   ],
+   "additionalProperties": false
+  }
+ }
+}

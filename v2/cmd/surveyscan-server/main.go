@@ -176,6 +176,9 @@ func run(args []string) error {
 	if registry.Machine != nil && registry.Machine.Maintain != nil {
 		go registry.Machine.Maintain(ctx)
 	}
+	if registry.Search != nil {
+		go registry.SearchMaintain(ctx, func(m string) { fmt.Println(m) })
+	}
 	checks := []health.Check{dbCheck, health.Bao(bao)}
 	if registry.Machine != nil && registry.Machine.Ready != nil {
 		checks[1] = registry.Machine.Ready

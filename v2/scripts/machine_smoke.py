@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """C07 live binaries, private dev PKI and synthetic agent through collector; no credential output."""
-import base64,contextlib,datetime,hashlib,http.client,http.cookiejar,json,os,secrets,socket,ssl,subprocess,tempfile,time,uuid
+import atexit,base64,contextlib,datetime,hashlib,http.client,http.cookiejar,json,os,secrets,socket,ssl,subprocess,tempfile,time,uuid
 from pathlib import Path
 from cryptography import x509
 from cryptography.hazmat.primitives import serialization
@@ -84,6 +84,11 @@ def main(agent_scenario=None,web_scenario=None,browser_origin=None,bao_settings=
    if not state:
     password=secrets.token_urlsafe(32);password_file=save('password',password+'\n');command('bootstrap-admin','--tenant',tenant,'--tenant-name','C07 synthetic','--username','admin','--password-file',password_file)
     sql(f"INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact) VALUES('{tenant}','{subject}','team','fallback','synthetic@example.invalid'); INSERT INTO scope.sites(tenant_id,site_id,name,fallback_subject_id) VALUES('{tenant}','{site}','synthetic','{subject}'); INSERT INTO scope.network_scopes(tenant_id,scope_id,site_id,namespace) VALUES('{tenant}','{scope}','{site}','default');",db)
+   if os.environ.get('SURVEYSCAN_SEARCH_BIN'):  # C29: сервис поиска рядом с центром (демо/проверка полнотекстового режима)
+    search_port=freeport();token_file=save('search-token',secrets.token_hex(24))
+    search_log=(directory/'search.log').open('ab');search_process=subprocess.Popen([os.environ['SURVEYSCAN_SEARCH_BIN'],f'127.0.0.1:{search_port}',str(directory/'search-index'),token_file],stdout=search_log,stderr=search_log)
+    atexit.register(search_process.kill)
+    cfg=json.loads(Path(machine_file).read_text());cfg.update(search_url=f'http://127.0.0.1:{search_port}',search_token_file=token_file);Path(machine_file).write_text(json.dumps(cfg))
    center_process=start('center',[str(ROOT/'.dist/surveyscan-server'),'serve']);plain=context();ready(tls_port,plain);checks.append('compiled center starts with explicit private loopback PKI')
    # постоянный стенд (R-027): прежняя сессия обвязки закрывается до входа — иначе каждый перезапуск оставляет активную
    # сессию admin, и после 5 перезапусков вход упирается в лимит сессий пользователя (центр не стартует)
