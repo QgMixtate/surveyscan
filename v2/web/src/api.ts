@@ -34,7 +34,7 @@ export type CIService={service_uid:string;name:string;description:string|null;cr
 export type ServicePage={tenant_id:string;items:CIService[];next_cursor:string|null};
 export type ServiceDetail=CIService&{tenant_id:string;relations:Relation[]};
 export type RoleName='accountable'|'business_owner'|'technical'|'custodian';
-export type Subject={subject_id:string;kind:'person'|'team';name:string;contact:string;active:boolean;username:string|null;revision:string;site_fallback:boolean;members:number};
+export type Subject={subject_id:string;kind:'person'|'team';name:string;contact:string;active:boolean;username:string|null;revision:string;site_fallback:boolean;members:number;origin:'local'|'ldap';synced_at:string|null};
 export type SubjectPage={tenant_id:string;items:Subject[];next_cursor:string|null};
 export type SubjectResult={subject:Subject;reassigned_assignments:number};
 export type Assignment={role:RoleName;subject_id:string;subject_name:string;subject_kind:'person'|'team';valid_from:string;valid_to:string|null;reason_code:string;note:string|null;actor_ref:string};
@@ -45,6 +45,11 @@ export type WorklistPage={tenant_id:string;scope:'mine'|'team'|'unassigned'|'att
 export type SearchItem={asset_uid:string;display_name:string|null;observed_hostname:string|null;observed_os:string|null;score:number|null;fragment:string;highlights:[number,number][]};
 export type SearchPage={tenant_id:string;query:string;mode:'fulltext'|'fallback_exact';notice?:string;pending_index_events:number;items:SearchItem[];facets:{os:Record<string,number>;class:Record<string,number>};next_cursor:string|null};
 export type Topology={tenant_id:string;generated_at:string;nodes:TopologyNode[];links:TopologyLink[];truncated:boolean;hosts_with_network_facts:number};
+export type SyncCounters={people_seen?:number;teams_seen?:number;created?:number;updated?:number;deactivated?:number;reactivated?:number;members_added?:number;members_removed?:number;logins_linked?:number;assignments_reassigned?:number;problems?:string[]};
+export type SyncRun={run_id:string;mode:'full'|'incremental';started_at:string;finished_at:string;status:'succeeded'|'failed';counters:SyncCounters;error:string|null};
+export type DirectorySyncStatus={tenant_id:string;configured:boolean;source:string|null;interval_minutes:number;full_sync_hours:number;teams_enabled:boolean;runs:SyncRun[]};
+export type CSVRowResult={line:number;asset_uid:string;status:'applied'|'unchanged'|'stale_revision'|'not_found'|'invalid';field:string|null;business_revision:string|null};
+export type CSVImportResult={tenant_id:string;dry_run:boolean;format:string;counts:Record<CSVRowResult['status'],number>;results:CSVRowResult[]};
 export class ApiError extends Error {
  constructor(public status:number,public code:string,public requestId?:string){super(code)}
 }
@@ -83,6 +88,9 @@ export const api={
  patchService:(uid:string,csrf:string,body:{revision:string;name?:string;description?:string;criticality?:string;retire?:boolean})=>call<ServiceDetail>('/api/v1/services/'+encodeURIComponent(uid),'ServiceDetail',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  createRelation:(csrf:string,body:{relation_type:string;from:CIEnd;to:CIEnd;note?:string})=>call<Relation>('/api/v1/relations','Relation',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  retireRelation:(id:string,csrf:string)=>call<Relation>('/api/v1/relations/'+encodeURIComponent(id),'Relation',{method:'DELETE',headers:{'X-CSRF-Token':csrf}}),
+ directorySync:()=>call<DirectorySyncStatus>('/api/v1/directory-sync','DirectorySyncStatus'),
+ runDirectorySync:(csrf:string,mode:'full'|'auto')=>call<SyncRun>('/api/v1/directory-sync/run','SyncRun',{method:'POST',body:JSON.stringify({mode}),headers:{'X-CSRF-Token':csrf},signal:AbortSignal.timeout(300000)}),
+ importCSV:(csrf:string,text:string,dry:boolean)=>call<CSVImportResult>('/api/v1/assets/import.csv?dry_run='+dry,'CSVImportResult',{method:'POST',body:text,headers:{'X-CSRF-Token':csrf,'Content-Type':'text/csv; charset=utf-8'},signal:AbortSignal.timeout(300000)}),
  subjects:(kind:''|'person'|'team'='',inactive=false)=>call<SubjectPage>('/api/v1/subjects?limit=200'+(kind?'&kind='+kind:'')+(inactive?'&include_inactive=true':''),'SubjectPage'),
  createSubject:(csrf:string,body:{kind:'person'|'team';name:string;contact:string;username?:string})=>call<SubjectResult>('/api/v1/subjects','SubjectResult',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  patchSubject:(id:string,csrf:string,body:{revision:string;name?:string;contact?:string;username?:string;deactivate?:boolean})=>call<SubjectResult>('/api/v1/subjects/'+encodeURIComponent(id),'SubjectResult',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),

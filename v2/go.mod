@@ -3,7 +3,9 @@ module github.com/QgMixtate/surveyscan/v2
 go 1.27.3
 
 require (
+	github.com/Azure/go-ntlmssp v0.1.1
 	github.com/cyberphone/json-canonicalization v0.0.0-20261011152517-32a48195b9b2
+	github.com/go-ldap/ldap/v3 v3.4.15
 	github.com/go-ole/go-ole v1.3.0
 	github.com/gosnmp/gosnmp v1.38.0
 	github.com/jackc/pgx/v5 v5.12.0
@@ -14,12 +16,13 @@ require (
 )
 
 require (
-	github.com/Azure/go-ntlmssp v0.0.0-20221128193559-754e69321358 // indirect
 	github.com/ChrisTrenkamp/goxpath v0.0.0-20210404020558-97928f7e12b6 // indirect
 	github.com/bodgit/ntlmssp v0.0.0-20240506230425-31973bb52d9b // indirect
 	github.com/bodgit/windows v1.0.1 // indirect
+	github.com/go-asn1-ber/asn1-ber v1.5.8 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/gofrs/uuid v4.4.0+incompatible // indirect
+	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect

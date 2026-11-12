@@ -53,6 +53,16 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 		mux.Handle("POST /api/v1/reconciliation/conflicts/{conflict_id}/resolve", auth.Wrap("assets:write", false, registry[0].resolveConflictHandler()))
 		mux.Handle("GET /api/v1/search", auth.Wrap("assets:read", false, registry[0].searchHandler()))
 		mux.Handle("POST /api/v1/search/rebuild", auth.Wrap("sources:admin", false, registry[0].searchRebuildHandler()))
+		for route, handler := range registry[0].csvHandlers() {
+			permission := "assets:write"
+			if route[:4] == "GET " {
+				permission = "assets:read"
+			}
+			mux.Handle(route, auth.Wrap(permission, false, handler))
+		}
+		for route, r := range registry[0].directoryHandlers() {
+			mux.Handle(route, auth.Wrap(r.permission, false, r.handler))
+		}
 		for route, r := range registry[0].ownershipHandlers() {
 			mux.Handle(route, auth.Wrap(r.permission, false, r.handler))
 		}

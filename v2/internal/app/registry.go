@@ -37,7 +37,8 @@ type Registry struct {
 	Owners            responsibility.Store
 	CMDB              cmdb.Store
 	topology          topologyCache
-	Search            *SearchClient // C29: nil — сервис поиска не настроен (только точный запасной режим)
+	Search            *SearchClient  // C29: nil — сервис поиска не настроен (только точный запасной режим)
+	Directory         *DirectorySync // C31.02: nil — синхронизация оргструктуры из каталога выключена
 	Audit             audit.Store
 	Events            EventSink
 	Wire              *wire.Validator

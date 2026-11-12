@@ -46,5 +46,16 @@ try{
  await page.locator('tbody .asset-link').first().click();await card.getByRole('tab',{name:'Ответственность',exact:true}).click();await expect(card).toContainText('Иванов Иван');await shot('13-card-owners',false);await page.getByRole('button',{name:'Закрыть карточку'}).click();
  // C29: полнотекстовый поиск (если демо запущено с SURVEYSCAN_SEARCH_BIN — режим fulltext)
  await page.getByRole('button',{name:/Поиск\s*00/}).click();await page.getByLabel('Запрос').fill('openssl');await page.getByRole('button',{name:'Найти',exact:true}).click();await expect(page.locator('.search-hit').first()).toBeVisible();await shot('14-search');
+ // C31: синхронизация оргструктуры из каталога (демо — мок OpenLDAP, не AD) и обмен CSV
+ await page.getByRole('button',{name:/Оргструктура/}).click();
+ await page.locator('.sync-panel').waitFor();if(await page.getByText('Синхронизация с Active Directory').isVisible()){await page.getByRole('button',{name:'Синхронизировать сейчас'}).click();await expect(page.locator('.sync-panel')).toContainText('Последний прогон');await expect(page.locator('tbody tr',{hasText:'Мария Петрова'})).toContainText('AD');await expect(page.locator('tbody tr',{hasText:'Linux Admins'})).toContainText('Команда (2)');await shot('15-org-ad')}
+ await page.getByRole('button',{name:/Реестр активов/}).click();await expect(page.locator('.csv-panel')).toBeVisible();
+ const [download]=await Promise.all([page.waitForEvent('download'),page.getByRole('link',{name:/Выгрузить CSV/}).click()]);
+ const exported=await (await import('node:fs/promises')).readFile(await download.path(),'utf8');const lines=exported.split('\r\n');
+ const head=lines[1].split(';'),row=lines[2].split(';');row[head.indexOf('display_name')]='Сервер из Excel';row[head.indexOf('criticality')]='high';
+ const edited=[lines[0],lines[1],row.join(';')].join('\r\n')+'\r\n';
+ await page.locator('.csv-panel input[type=file]').setInputFiles({name:'assets.csv',mimeType:'text/csv',buffer:Buffer.from(edited)});
+ await page.getByRole('button',{name:'Проверить'}).click();await expect(page.locator('.csv-panel')).toContainText('применится 1');await shot('16-csv-check');
+ await page.getByRole('button',{name:'Применить'}).click();await expect(page.locator('.csv-panel .notice')).toContainText('Применено строк: 1');await expect(page.locator('tbody')).toContainText('Сервер из Excel');await shot('17-csv-applied');
  if(errors.length)throw new Error('browser errors: '+errors.join('; '));
 }finally{await browser.close()}

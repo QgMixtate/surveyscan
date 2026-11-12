@@ -50,6 +50,24 @@
     "members": {
      "type": "integer",
      "minimum": 0
+    },
+    "origin": {
+     "enum": [
+      "local",
+      "ldap"
+     ],
+     "description": "C31.02: local — ведётся в SurveyScan; ldap — из каталога (только чтение)"
+    },
+    "synced_at": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
     }
    },
    "required": [
@@ -61,7 +79,9 @@
     "username",
     "revision",
     "site_fallback",
-    "members"
+    "members",
+    "origin",
+    "synced_at"
    ],
    "additionalProperties": false
   },

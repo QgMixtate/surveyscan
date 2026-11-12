@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react';
+import {DirectorySyncPanel} from './integrations';
 import {api,ApiError,errorMessage,type AssetAssignments,type RoleName,type Subject,type WorklistItem} from './api';
 
 // C27 — ответственность в Web: роли актива и история передач, рабочие списки и массовое назначение, оргструктура.
@@ -68,8 +69,9 @@ export function OrgView({csrf,onExpired}:{csrf:string;onExpired:()=>void}){
  const [kind,setKind]=useState<'person'|'team'>('person'),[name,setName]=useState(''),[contact,setContact]=useState(''),[username,setUsername]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null),[notice,setNotice]=useState('');
  const [team,setTeam]=useState(''),[person,setPerson]=useState('');
  async function act(fn:()=>Promise<unknown>,what:string,done?:(r:unknown)=>void){if(!confirmAction(what))return;setBusy(true);setError(null);setNotice('');try{const r=await fn();done?.(r);reload()}catch(e){setError(e);expired(e,onExpired)}finally{setBusy(false)}}
- const people=subjects.filter(s=>s.kind==='person'&&s.active),teams=subjects.filter(s=>s.kind==='team'&&s.active);
+ const people=subjects.filter(s=>s.kind==='person'&&s.active),teams=subjects.filter(s=>s.kind==='team'&&s.active&&s.origin==='local');
  return <div className="table-panel"><div className="table-toolbar"><h2>Люди и команды <span>{subjects.length}</span></h2><label className="inline-check"><input type="checkbox" checked={inactive} onChange={e=>setInactive(e.target.checked)}/> показывать выбывших</label></div>
+  <DirectorySyncPanel csrf={csrf} onExpired={onExpired} onSynced={reload}/>
   {error?<div className="error" role="alert">{errorMessage(error)}</div>:null}
   {notice?<div className="notice" role="status">{notice}</div>:null}
   <form className="org-form" onSubmit={e=>{e.preventDefault();void act(()=>api.createSubject(csrf,{kind,name:name.trim(),contact:contact.trim(),username:kind==='person'&&username.trim()?username.trim():undefined}),'добавить '+(kind==='team'?'команду':'человека')+' «'+name.trim()+'»',()=>{setName('');setContact('');setUsername('')})}}>
@@ -80,6 +82,6 @@ export function OrgView({csrf,onExpired}:{csrf:string;onExpired:()=>void}){
    <button className="button small" disabled={busy||!name.trim()||!contact.trim()}>Добавить</button></form>
   <div className="org-form"><span>Состав команды:</span><select aria-label="Команда" value={team} onChange={e=>setTeam(e.target.value)}><option value="">Команда…</option>{teams.map(s=><option key={s.subject_id} value={s.subject_id}>{s.name}</option>)}</select><select aria-label="Человек" value={person} onChange={e=>setPerson(e.target.value)}><option value="">Человек…</option>{people.map(s=><option key={s.subject_id} value={s.subject_id}>{s.name}</option>)}</select>
    <button className="button small" disabled={busy||!team||!person} onClick={()=>void act(()=>api.member(team,person,csrf,true),'включить в команду')}>Включить</button><button className="button small" disabled={busy||!team||!person} onClick={()=>void act(()=>api.member(team,person,csrf,false),'исключить из команды')}>Исключить</button></div>
-  <div className="table-scroll"><table><thead><tr><th>Имя</th><th>Вид</th><th>Контакт</th><th>Вход</th><th>Состояние</th><th/></tr></thead><tbody>{subjects.map(s=><tr key={s.subject_id}><td>{s.name}</td><td>{s.kind==='team'?'Команда ('+s.members+')':'Человек'}</td><td>{s.contact}</td><td className="mono">{s.username??'—'}</td><td>{s.active?(s.site_fallback?'Резервная команда площадки':'Действует'):'Выбыл'}</td><td>{s.active&&!s.site_fallback?<button className="text-link" disabled={busy} onClick={()=>void act(()=>api.patchSubject(s.subject_id,csrf,{revision:s.revision,deactivate:true}),'отметить «'+s.name+'» выбывшим: его активы перейдут резервной команде площадки',r=>setNotice('Переназначено ролей: '+(r as {reassigned_assignments:number}).reassigned_assignments+'.'))}>Выбыл</button>:null}</td></tr>)}</tbody></table></div>
+  <div className="table-scroll"><table><thead><tr><th>Имя</th><th>Вид</th><th>Контакт</th><th>Вход</th><th>Состояние</th><th/></tr></thead><tbody>{subjects.map(s=><tr key={s.subject_id}><td>{s.name}{s.origin==='ldap'?<span className="tag" title={'Из Active Directory'+(s.synced_at?', синхронизировано '+time(s.synced_at):'')}> AD</span>:null}</td><td>{s.kind==='team'?'Команда ('+s.members+')':'Человек'}</td><td>{s.contact}</td><td className="mono">{s.username??'—'}</td><td>{s.active?(s.site_fallback?'Резервная команда площадки':'Действует'):'Выбыл'}</td><td>{s.active&&!s.site_fallback&&s.origin==='local'?<button className="text-link" disabled={busy} onClick={()=>void act(()=>api.patchSubject(s.subject_id,csrf,{revision:s.revision,deactivate:true}),'отметить «'+s.name+'» выбывшим: его активы перейдут резервной команде площадки',r=>setNotice('Переназначено ролей: '+(r as {reassigned_assignments:number}).reassigned_assignments+'.'))}>Выбыл</button>:null}</td></tr>)}</tbody></table></div>
  </div>;
 }

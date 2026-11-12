@@ -31,17 +31,19 @@ type MachineConfig struct {
 	// C26, 3А: порог давности приоритета источников в часах (нет — 24, 0 — только приоритет)
 	PriorityStaleHours *int `json:"priority_stale_after_hours,omitempty"`
 	// C29: сервис поиска surveyscan-search (loopback) и приватный файл его токена; пусто — только точный поиск по PostgreSQL
-	SearchURL         string `json:"search_url,omitempty"`
-	SearchTokenFile   string `json:"search_token_file,omitempty"`
-	BaoConfig         string `json:"openbao_config_file"`
-	CenterKeyID       string `json:"center_signing_key_id"`
-	DevMode           bool   `json:"dev_mode"`
-	Listen            string `json:"listen"`
-	CACertificate     string `json:"ca_certificate_file"`
-	CAKey             string `json:"ca_private_key_file"`
-	ServerCertificate string `json:"server_certificate_file"`
-	ServerKey         string `json:"server_private_key_file"`
-	CenterKey         string `json:"center_signing_key_file"`
+	SearchURL       string `json:"search_url,omitempty"`
+	SearchTokenFile string `json:"search_token_file,omitempty"`
+	// C31.02: синхронизация оргструктуры из Active Directory (только чтение); нет — выключена
+	LDAPSync          *DirectorySyncConfig `json:"ldap_sync,omitempty"`
+	BaoConfig         string               `json:"openbao_config_file"`
+	CenterKeyID       string               `json:"center_signing_key_id"`
+	DevMode           bool                 `json:"dev_mode"`
+	Listen            string               `json:"listen"`
+	CACertificate     string               `json:"ca_certificate_file"`
+	CAKey             string               `json:"ca_private_key_file"`
+	ServerCertificate string               `json:"server_certificate_file"`
+	ServerKey         string               `json:"server_private_key_file"`
+	CenterKey         string               `json:"center_signing_key_file"`
 }
 type CenterKeyFile struct {
 	ID      string `json:"key_id"`
@@ -209,6 +211,11 @@ func ConfigureMachine(path string, r *Registry, auth *access.Service) (string, *
 			return "", nil, e
 		}
 		r.Search = &SearchClient{BaseURL: cfg.SearchURL, Token: strings.TrimSpace(string(token))}
+	}
+	if cfg.LDAPSync != nil {
+		if r.Directory, e = NewDirectorySync(*cfg.LDAPSync); e != nil {
+			return "", nil, e
+		}
 	}
 	var inventoryProtocol *wire.InventoryDecoder
 	if cfg.Inventory12 {

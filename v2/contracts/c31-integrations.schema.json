@@ -1,0 +1,299 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:surveyscan:c31:integrations:1:0",
+ "title": "Интеграции (C31, ADR C31-integrations): синхронизация оргструктуры из каталога, CSV активов",
+ "$defs": {
+  "SyncRun": {
+   "type": "object",
+   "properties": {
+    "run_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "mode": {
+     "enum": [
+      "full",
+      "incremental"
+     ]
+    },
+    "started_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "finished_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "status": {
+     "enum": [
+      "succeeded",
+      "failed"
+     ]
+    },
+    "counters": {
+     "type": "object",
+     "properties": {
+      "people_seen": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "teams_seen": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "created": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "updated": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "deactivated": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "reactivated": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "members_added": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "members_removed": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "logins_linked": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "assignments_reassigned": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "problems": {
+       "type": "array",
+       "maxItems": 50,
+       "items": {
+        "type": "string"
+       }
+      }
+     },
+     "additionalProperties": false
+    },
+    "error": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 1024
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "run_id",
+    "mode",
+    "started_at",
+    "finished_at",
+    "status",
+    "counters",
+    "error"
+   ],
+   "additionalProperties": false
+  },
+  "DirectorySyncStatus": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "configured": {
+     "type": "boolean"
+    },
+    "source": {
+     "oneOf": [
+      {
+       "type": "string",
+       "pattern": "^ldaps?://"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "interval_minutes": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "full_sync_hours": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "teams_enabled": {
+     "type": "boolean"
+    },
+    "runs": {
+     "type": "array",
+     "maxItems": 20,
+     "items": {
+      "$ref": "#/$defs/SyncRun"
+     }
+    }
+   },
+   "required": [
+    "tenant_id",
+    "configured",
+    "source",
+    "interval_minutes",
+    "full_sync_hours",
+    "teams_enabled",
+    "runs"
+   ],
+   "additionalProperties": false
+  },
+  "DirectorySyncRequest": {
+   "type": "object",
+   "properties": {
+    "mode": {
+     "enum": [
+      "full",
+      "auto"
+     ]
+    }
+   },
+   "required": [
+    "mode"
+   ],
+   "additionalProperties": false
+  },
+  "CSVRowResult": {
+   "type": "object",
+   "properties": {
+    "line": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "asset_uid": {
+     "type": "string",
+     "maxLength": 64
+    },
+    "status": {
+     "enum": [
+      "applied",
+      "unchanged",
+      "stale_revision",
+      "not_found",
+      "invalid"
+     ]
+    },
+    "field": {
+     "oneOf": [
+      {
+       "enum": [
+        "asset_uid",
+        "business_revision",
+        "display_name",
+        "purpose",
+        "criticality",
+        "tags",
+        "asset_class",
+        "business"
+       ]
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "business_revision": {
+     "oneOf": [
+      {
+       "type": "string",
+       "pattern": "^[1-9][0-9]{0,19}$"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "line",
+    "asset_uid",
+    "status",
+    "field",
+    "business_revision"
+   ],
+   "additionalProperties": false
+  },
+  "CSVImportResult": {
+   "type": "object",
+   "properties": {
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "dry_run": {
+     "type": "boolean"
+    },
+    "format": {
+     "const": "#surveyscan-assets-csv;v1"
+    },
+    "counts": {
+     "type": "object",
+     "properties": {
+      "applied": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "unchanged": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "stale_revision": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "not_found": {
+       "type": "integer",
+       "minimum": 0
+      },
+      "invalid": {
+       "type": "integer",
+       "minimum": 0
+      }
+     },
+     "required": [
+      "applied",
+      "unchanged",
+      "stale_revision",
+      "not_found",
+      "invalid"
+     ],
+     "additionalProperties": false
+    },
+    "results": {
+     "type": "array",
+     "maxItems": 10000,
+     "items": {
+      "$ref": "#/$defs/CSVRowResult"
+     }
+    }
+   },
+   "required": [
+    "tenant_id",
+    "dry_run",
+    "format",
+    "counts",
+    "results"
+   ],
+   "additionalProperties": false
+  }
+ }
+}

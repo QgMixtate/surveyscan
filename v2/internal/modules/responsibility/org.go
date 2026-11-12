@@ -27,6 +27,9 @@ type SubjectInfo struct {
 	Revision string  `json:"revision"`
 	Fallback bool    `json:"site_fallback"`
 	Members  int     `json:"members"`
+	// C31.02: local — ведётся в SurveyScan; ldap — из каталога (только чтение), synced_at — последняя синхронизация
+	Origin   string     `json:"origin"`
+	SyncedAt *time.Time `json:"synced_at"`
 }
 
 type SubjectInput struct {
@@ -106,8 +109,8 @@ func (Store) SubjectByID(ctx context.Context, tx pgx.Tx, tenant, id string) (Sub
 	}
 	e := tx.QueryRow(ctx, `SELECT s.subject_id::text,s.kind,s.name,s.contact,s.active,u.username,s.revision::text,
 EXISTS(SELECT 1 FROM scope.sites x WHERE x.tenant_id=s.tenant_id AND x.fallback_subject_id=s.subject_id),
-(SELECT count(*) FROM responsibility.team_members m WHERE m.tenant_id=s.tenant_id AND m.team_id=s.subject_id AND m.valid_to IS NULL)::int
-FROM responsibility.subjects s LEFT JOIN access.users u ON u.tenant_id=s.tenant_id AND u.user_id=s.user_id WHERE s.tenant_id=$1 AND s.subject_id=$2`, tenant, id).Scan(&out.ID, &out.Kind, &out.Name, &out.Contact, &out.Active, &out.Username, &out.Revision, &out.Fallback, &out.Members)
+(SELECT count(*) FROM responsibility.team_members m WHERE m.tenant_id=s.tenant_id AND m.team_id=s.subject_id AND m.valid_to IS NULL)::int,s.origin,s.synced_at
+FROM responsibility.subjects s LEFT JOIN access.users u ON u.tenant_id=s.tenant_id AND u.user_id=s.user_id WHERE s.tenant_id=$1 AND s.subject_id=$2`, tenant, id).Scan(&out.ID, &out.Kind, &out.Name, &out.Contact, &out.Active, &out.Username, &out.Revision, &out.Fallback, &out.Members, &out.Origin, &out.SyncedAt)
 	if errors.Is(e, pgx.ErrNoRows) {
 		e = domain.NotFound
 	}
@@ -117,7 +120,7 @@ FROM responsibility.subjects s LEFT JOIN access.users u ON u.tenant_id=s.tenant_
 func (Store) Subjects(ctx context.Context, tx pgx.Tx, tenant, kind, after string, inactive bool, limit int) ([]SubjectInfo, error) {
 	rows, e := tx.Query(ctx, `SELECT s.subject_id::text,s.kind,s.name,s.contact,s.active,u.username,s.revision::text,
 EXISTS(SELECT 1 FROM scope.sites x WHERE x.tenant_id=s.tenant_id AND x.fallback_subject_id=s.subject_id),
-(SELECT count(*) FROM responsibility.team_members m WHERE m.tenant_id=s.tenant_id AND m.team_id=s.subject_id AND m.valid_to IS NULL)::int
+(SELECT count(*) FROM responsibility.team_members m WHERE m.tenant_id=s.tenant_id AND m.team_id=s.subject_id AND m.valid_to IS NULL)::int,s.origin,s.synced_at
 FROM responsibility.subjects s LEFT JOIN access.users u ON u.tenant_id=s.tenant_id AND u.user_id=s.user_id
 WHERE s.tenant_id=$1 AND ($2='' OR s.kind=$2) AND ($3 OR s.active) AND ($4='' OR s.subject_id>NULLIF($4,'')::uuid) ORDER BY s.subject_id LIMIT $5`, tenant, kind, inactive, after, limit)
 	if e != nil {
@@ -127,7 +130,7 @@ WHERE s.tenant_id=$1 AND ($2='' OR s.kind=$2) AND ($3 OR s.active) AND ($4='' OR
 	out := []SubjectInfo{}
 	for rows.Next() {
 		var s SubjectInfo
-		if e = rows.Scan(&s.ID, &s.Kind, &s.Name, &s.Contact, &s.Active, &s.Username, &s.Revision, &s.Fallback, &s.Members); e != nil {
+		if e = rows.Scan(&s.ID, &s.Kind, &s.Name, &s.Contact, &s.Active, &s.Username, &s.Revision, &s.Fallback, &s.Members, &s.Origin, &s.SyncedAt); e != nil {
 			return nil, e
 		}
 		out = append(out, s)
@@ -146,6 +149,9 @@ func (s Store) UpdateSubject(ctx context.Context, tx pgx.Tx, tenant, id, revisio
 	}
 	if !current.Active {
 		return current, domain.Conflict
+	}
+	if current.Origin != "local" && (in.Name != nil || in.Contact != nil) {
+		return current, errDirectoryManaged // имя и контакт ведёт каталог; связь со входом — можно
 	}
 	setLogin := in.Username != nil
 	if setLogin && *in.Username != "" && current.Kind != "person" {
@@ -171,6 +177,9 @@ user_id=CASE WHEN $6 THEN $7::uuid ELSE user_id END,revision=revision+1 WHERE te
 
 // AddMember / RemoveMember — состав команды (интервалы участия).
 func (Store) AddMember(ctx context.Context, tx pgx.Tx, tenant, team, person, actor string) error {
+	if e := localTeam(ctx, tx, tenant, team); e != nil {
+		return e
+	}
 	var ok bool
 	if e := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM responsibility.subjects WHERE tenant_id=$1 AND subject_id=$2 AND kind='team' AND active)
 AND EXISTS(SELECT 1 FROM responsibility.subjects WHERE tenant_id=$1 AND subject_id=$3 AND kind='person' AND active)`, tenant, team, person).Scan(&ok); e != nil {
@@ -189,6 +198,9 @@ AND EXISTS(SELECT 1 FROM responsibility.subjects WHERE tenant_id=$1 AND subject_
 }
 
 func (Store) RemoveMember(ctx context.Context, tx pgx.Tx, tenant, team, person string) error {
+	if e := localTeam(ctx, tx, tenant, team); e != nil {
+		return e
+	}
 	tag, e := tx.Exec(ctx, "UPDATE responsibility.team_members SET valid_to=now() WHERE tenant_id=$1 AND team_id=$2 AND person_id=$3 AND valid_to IS NULL", tenant, team, person)
 	if e == nil && tag.RowsAffected() != 1 {
 		e = domain.NotFound
@@ -261,12 +273,30 @@ func (s Store) Deactivate(ctx context.Context, tx pgx.Tx, tenant, id, revision, 
 	if e != nil {
 		return nil, e
 	}
-	if !subject.Active || subject.Fallback {
-		return nil, domain.Conflict
+	if !subject.Active || subject.Fallback || subject.Origin != "local" {
+		return nil, domain.Conflict // выбытие субъекта каталога — только из каталога
 	}
 	if subject.Revision != revision {
 		return nil, domain.Revision
 	}
+	return s.deactivate(ctx, tx, tenant, id, actor)
+}
+
+// localTeam — состав команды каталога ведёт каталог.
+func localTeam(ctx context.Context, tx pgx.Tx, tenant, team string) error {
+	var origin string
+	e := tx.QueryRow(ctx, "SELECT origin FROM responsibility.subjects WHERE tenant_id=$1 AND subject_id=$2", tenant, team).Scan(&origin)
+	if errors.Is(e, pgx.ErrNoRows) {
+		return domain.NotFound
+	}
+	if e == nil && origin != "local" {
+		e = errDirectoryManaged
+	}
+	return e
+}
+
+// deactivate — выбытие: роли переходят резервной команде площадки (accountable) или снимаются, участие закрывается.
+func (s Store) deactivate(ctx context.Context, tx pgx.Tx, tenant, id, actor string) ([]Change, error) {
 	rows, e := tx.Query(ctx, `SELECT a.asset_uid::text,a.role,x.fallback_subject_id::text FROM responsibility.responsibility_assignments a
 JOIN assets.assets t ON t.tenant_id=a.tenant_id AND t.asset_uid=a.asset_uid JOIN scope.sites x ON x.tenant_id=t.tenant_id AND x.site_id=t.site_id
 WHERE a.tenant_id=$1 AND a.subject_id=$2 AND a.valid_to IS NULL ORDER BY a.asset_uid,a.role FOR UPDATE OF a`, tenant, id)
