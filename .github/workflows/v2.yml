@@ -148,6 +148,8 @@ jobs:
         run: .contract-tools/bin/python scripts/shard_smoke.py
       - name: HA PostgreSQL (C38) - writer + streaming replica, planned switchover, writer loss, fencing watchdog, failback
         run: .contract-tools/bin/python scripts/ha_smoke.py
+      - name: DR drill (C39) - quiesced DR set, source destroyed, restore into a new cluster and catalog
+        run: .contract-tools/bin/python scripts/dr_drill.py
       - name: Human CLI login, two tenants, pagination and remote logout
         run: .contract-tools/bin/python scripts/cli_smoke.py
       - name: Central profiles, signed source diagnostics and tenant policy

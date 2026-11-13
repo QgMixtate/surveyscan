@@ -85,6 +85,10 @@ def main(report_directory=None):
                 old_shares = custody.get('keys_base64', custody.get('keys'))
                 status, source_health = request(source_address, 'sys/health')
                 assert status == 200 and not source_health['sealed']
+                # C39.02: секрет интеграции (как из Web, C31.05) — записан токеном сервера до снимка
+                integration_canary = 'C39-integration-' + uuid.uuid4().hex
+                status, _ = request(source_address, source['kv'] + '/data/server/integrations/directory', {'data': {'bind_password': integration_canary}}, token=source['token'])
+                assert status in (200, 204), status
                 status, snapshot = request(source_address, 'sys/storage/raft/snapshot', token=old_root, binary=True)
                 assert status == 200 and len(snapshot) > 100
                 fd = os.open(directory / 'raft.snapshot', os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
@@ -153,6 +157,9 @@ def main(report_directory=None):
                 status, kv = request(destination, source['kv'] + '/data/server/runtime', token=token)
                 assert status == 200 and kv['data']['data']['canary'] == source['canary']
                 checks.append('restored scoped server policy/token retrieves identical KV value without root app token')
+                status, kv = request(destination, source['kv'] + '/data/server/integrations/directory', token=token)
+                assert status == 200 and kv['data']['data']['bind_password'] == integration_canary
+                checks.append('C39.02: integration secret written from Web (C31.05) survives restore and is readable by the server policy')
                 def prove_key(key):
                     status, metadata = request(destination, source['transit'] + '/keys/' + key, token=token)
                     assert status == 200 and metadata['data']['exportable'] is False
