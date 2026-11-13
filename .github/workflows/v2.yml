@@ -144,6 +144,8 @@ jobs:
         run: .contract-tools/bin/python scripts/split_smoke.py
       - name: PostgreSQL outage under a live center (C36) - fail fast, no partial write, pool reconnects without restart
         run: .contract-tools/bin/python scripts/pool_failover_smoke.py
+      - name: Shards (C37) - two cells on two PostgreSQL clusters behind the router, tenant move with verification
+        run: .contract-tools/bin/python scripts/shard_smoke.py
       - name: Human CLI login, two tenants, pagination and remote logout
         run: .contract-tools/bin/python scripts/cli_smoke.py
       - name: Central profiles, signed source diagnostics and tenant policy

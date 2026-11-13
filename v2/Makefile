@@ -15,6 +15,7 @@ build:
 	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscan-agent ./cmd/surveyscan-agent
 	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscanctl ./cmd/surveyscanctl
 	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscan-portable ./cmd/surveyscan-portable
+	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscan-router ./cmd/surveyscan-router
 	cp contracts/*.json .dist/contracts/
 	chmod 755 .dist .dist/contracts .dist/surveyscan-* .dist/surveyscanctl
 	chmod 644 .dist/contracts/*.json

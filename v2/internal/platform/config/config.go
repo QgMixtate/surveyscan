@@ -17,11 +17,16 @@ func Database() (*pgx.ConnConfig, error) {
 	if raw == "" {
 		return nil, errors.New("SURVEYSCAN_V2_DATABASE_URL is required")
 	}
+	return DatabaseFrom(raw, os.Getenv("SURVEYSCAN_V2_DATABASE_PASSWORD_FILE"))
+}
+
+// DatabaseFrom — подключение по URL без пароля и приватному файлу пароля (C37: маршрутизатор и ячейки).
+func DatabaseFrom(raw, path string) (*pgx.ConnConfig, error) {
 	cfg, err := pgx.ParseConfig(raw)
 	if err != nil {
 		return nil, errors.New("invalid database configuration")
 	}
-	if path := os.Getenv("SURVEYSCAN_V2_DATABASE_PASSWORD_FILE"); path != "" {
+	if path != "" {
 		f, err := os.Open(path)
 		if err != nil {
 			return nil, errors.New("cannot read database password file")
