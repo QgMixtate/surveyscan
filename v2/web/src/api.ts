@@ -73,6 +73,12 @@ async function call<T>(path:string,name:string|undefined,init:RequestInit={}):Pr
  if(name){const check=validators[name];if(!check?.(value))throw new ApiError(response.status,'INVALID_RESPONSE')}
  return value as T;
 }
+// C51 — обследования сети (contracts/c51-discovery.schema.json)
+export type DiscoveryProbe='tcp'|'arp'|'icmp';
+export type DiscoveryRun={run_id:string;network_id:string;trigger:'manual'|'schedule';requested_by:string;requested_at:string;state:'queued'|'running'|'done'|'failed';finished_at:string|null;addresses:number|null;found:number|null;new_hosts:number|null;missing:number|null;errors:string[]};
+export type DiscoveryNetwork={network_id:string;site_id:string;collector_id:string;name:string;cidr:string;probes:DiscoveryProbe[];schedule_minutes:number|null;active:boolean;revision:string;last_run:DiscoveryRun|null;present_hosts:number;missing_hosts:number};
+export type DiscoveryNetworkPage={items:DiscoveryNetwork[];limits:{max_prefix:number;rate_per_second:number;min_schedule_minutes:number;tcp_ports:number[]}};
+export type DiscoveryHost={ip:string;mac:string|null;ports:number[];icmp:boolean;first_seen:string;last_seen:string;state:'present'|'missing'};
 export const api={
  login:(username:string,password:string)=>call<Session>('/api/v1/auth/sessions','Session',{method:'POST',body:JSON.stringify({username,password})}),
  logout:(csrf:string)=>call<void>('/api/v1/auth/session',undefined,{method:'DELETE',headers:{'X-CSRF-Token':csrf}}),
@@ -102,6 +108,12 @@ export const api={
  saveDirectorySettings:(csrf:string,body:{revision:string;settings:DirectoryWebSettings;password?:string})=>call<DirectorySettingsView>('/api/v1/directory-sync/settings','DirectorySettingsView',{method:'PUT',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  deleteDirectorySettings:(csrf:string,revision:string)=>call<void>('/api/v1/directory-sync/settings?revision='+encodeURIComponent(revision),undefined,{method:'DELETE',headers:{'X-CSRF-Token':csrf}}),
  testDirectory:(csrf:string,body:{revision:string;settings:DirectoryWebSettings;password?:string})=>call<DirectoryTestResult>('/api/v1/directory-sync/test','DirectoryTestResult',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf},signal:AbortSignal.timeout(120000)}),
+ discoveryNetworks:()=>call<DiscoveryNetworkPage>('/api/v1/discovery/networks','DiscoveryNetworkPage'),
+ createDiscoveryNetwork:(csrf:string,body:{site_id:string;collector_id:string;name:string;cidr:string;probes:DiscoveryProbe[];schedule_minutes:number|null})=>call<DiscoveryNetwork>('/api/v1/discovery/networks','DiscoveryNetwork',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ patchDiscoveryNetwork:(id:string,csrf:string,body:{revision:string;name?:string;probes?:DiscoveryProbe[];schedule_minutes?:number;active?:boolean})=>call<DiscoveryNetwork>('/api/v1/discovery/networks/'+encodeURIComponent(id),'DiscoveryNetwork',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
+ startDiscovery:(id:string,csrf:string)=>call<{run_id:string;state:'queued'}>('/api/v1/discovery/networks/'+encodeURIComponent(id)+'/runs','DiscoveryRunStarted',{method:'POST',body:'{}',headers:{'X-CSRF-Token':csrf}}),
+ discoveryRuns:(id:string)=>call<{items:DiscoveryRun[]}>('/api/v1/discovery/networks/'+encodeURIComponent(id)+'/runs','DiscoveryRunPage'),
+ discoveryHosts:(id:string)=>call<{items:DiscoveryHost[]}>('/api/v1/discovery/networks/'+encodeURIComponent(id)+'/hosts','DiscoveryHostPage'),
  webhooks:()=>call<WebhookList>('/api/v1/webhooks','WebhookList'),
  createWebhook:(csrf:string,body:{url:string;event_types:WebhookEventType[]})=>call<WebhookCreated>('/api/v1/webhooks','WebhookCreated',{method:'POST',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),
  patchWebhook:(id:string,csrf:string,body:{revision:string;active?:boolean})=>call<WebhookSubscription>('/api/v1/webhooks/'+encodeURIComponent(id),'WebhookSubscription',{method:'PATCH',body:JSON.stringify(body),headers:{'X-CSRF-Token':csrf}}),

@@ -23,3 +23,6 @@
 .secret{margin:6px 0;padding:6px 8px;background:#fff;border-radius:6px;overflow-wrap:anywhere}
 .org-form .inline-check{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.org-form .inline-check input{width:16px;height:16px;min-width:0;padding:0;flex:none}
 .directory-form{display:grid;gap:10px;margin-bottom:16px;padding:16px 24px;border:1px solid var(--line,#dde3e8);border-radius:12px;background:var(--panel,#fff)}.directory-form h3{margin:0 0 4px}.directory-form label{display:grid;gap:4px;font-size:13px;color:var(--muted,#637582)}.directory-form input,.directory-form select,.directory-form textarea{font:inherit;color:inherit}
+/* C51 — обследования сети */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end}.form-grid h3{grid-column:1/-1;margin:0}.form-grid fieldset{border:0;padding:0;margin:0;display:flex;gap:12px;flex-wrap:wrap}.form-grid label.inline{display:inline-flex;align-items:center;gap:6px}
+ul.plain{list-style:none;padding:0;margin:0;display:grid;gap:4px}
