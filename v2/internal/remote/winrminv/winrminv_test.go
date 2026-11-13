@@ -247,3 +247,26 @@ func TestRegistryFallbackPayloadParses(t *testing.T) {
 		t.Fatal("boot time must be absent when unknown")
 	}
 }
+
+// Стенд R-027: OSArchitecture локализована; русская Windows не должна терять раздел ОС.
+func TestOSArchLocalized(t *testing.T) {
+	for in, want := range map[string]string{
+		"64-bit": "amd64", "32-bit": "386", "ARM 64-bit Processor": "arm64",
+		"64-разрядная": "amd64", "32-разрядная": "386", "ARM 64-разрядный процессор": "arm64",
+		" 64-Bit ": "amd64", "": "", "Itanium": "", "ARM": "",
+	} {
+		if got := osArch(in); got != want {
+			t.Errorf("osArch(%q) = %q, want %q", in, got, want)
+		}
+	}
+	raw := []byte(strings.Replace(fixture, `"arch":"64-bit"`, `"arch":"64-разрядная"`, 1))
+	secs, _, err := Parse(raw, time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, s := range secs {
+		if s.Name == "os" && (s.Status != "partial" || len(s.Records) != 1 || s.Records[0]["architecture"] != "amd64") {
+			t.Fatalf("localized OS architecture must keep the os section: %+v", s)
+		}
+	}
+}

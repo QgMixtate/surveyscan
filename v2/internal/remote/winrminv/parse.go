@@ -126,6 +126,24 @@ func sec(name string, rows []map[string]any, now time.Time, errs []string) contr
 	return contracts.Section{Name: name, CollectedAt: now, Status: "partial", Reason: "REMOTE_WINRM_PARTIAL", Count: len(rows), Records: rows}
 }
 
+// osArch нормализует Win32_OperatingSystem.OSArchitecture. Значение локализовано («64-bit», «64-разрядная»,
+// «ARM 64-разрядный процессор»), поэтому смотрим на разрядность и признак ARM, а не на точную английскую строку
+// (стенд R-027: на русской Windows раздел ОС был «недоступно»). Неизвестное значение не угадывается.
+func osArch(raw string) string {
+	v := strings.ToLower(strings.TrimSpace(raw))
+	switch {
+	case strings.Contains(v, "arm") && strings.Contains(v, "64"):
+		return "arm64"
+	case strings.Contains(v, "arm"):
+		return ""
+	case strings.HasPrefix(v, "64"):
+		return "amd64"
+	case strings.HasPrefix(v, "32"):
+		return "386"
+	}
+	return ""
+}
+
 // Parse превращает JSON сценария в секции identity/os/network/hardware/software/services (остальное — Complete12).
 func Parse(raw []byte, now time.Time) ([]contracts.Section, []contracts.Candidate, error) {
 	var p payload
@@ -156,7 +174,7 @@ func Parse(raw []byte, now time.Time) ([]contracts.Section, []contracts.Candidat
 		identity = append(identity, row)
 	}
 	if o := p.OS; o != nil {
-		arch := map[string]string{"64-bit": "amd64", "32-bit": "386", "arm 64-bit processor": "arm64"}[strings.ToLower(strings.TrimSpace(o.Arch))]
+		arch := osArch(o.Arch)
 		if name, ver := str(o.Caption, 128), str(o.Version, 128); name != "" && ver != "" && arch != "" {
 			row := map[string]any{"name": name, "version": ver, "architecture": arch}
 			if b := str(o.Build, 128); b != "" {
