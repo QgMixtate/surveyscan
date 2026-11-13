@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """C34.03 — еженедельный отчёт пилота по API центра (только чтение; ничего не меняет).
 
-  pilot_report.py --url https://127.0.0.1:<порт центра> --ca ca.pem --origin http://10.170.108.2:8090 --user admin --password-file /root/.pilot-pw [--out report.json]
+  pilot_report.py --url https://127.0.0.1:<порт центра> --ca ca.pem --user admin --password-file /root/.pilot-pw [--out report.json]
 
 Показатели: активы и свежесть, доля с ответственным (не резервная команда), конфликты, источники, синхронизация с
 каталогом, уведомления, предупреждения диагностики. Пароль — только из приватного файла (0600), в вывод не попадает.
@@ -58,7 +58,7 @@ def main():
     p.add_argument('--ca', required=True)
     p.add_argument('--user', required=True)
     p.add_argument('--password-file', required=True)
-    p.add_argument('--origin', help='адрес Web-интерфейса, как в браузере (центр сверяет Origin), например http://10.170.108.2:8090')
+    p.add_argument('--origin', help='Origin, который ждёт центр (его SURVEYSCAN_V2_PUBLIC_ORIGIN); по умолчанию — адрес --url. На стенде awm.local не задавать: центр ждёт свой адрес, показ Web подменяет Origin сам')
     p.add_argument('--out')
     a = p.parse_args()
     api = API(a.url, a.ca, a.origin)

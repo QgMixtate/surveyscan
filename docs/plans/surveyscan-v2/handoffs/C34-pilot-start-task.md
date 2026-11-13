@@ -10,7 +10,7 @@
    AD-синхронизация продолжает работать (прогон по расписанию succeeded).
 2. **Отчёт пилота «неделя 0»** (без изменений на стенде):
    пароль admin пользователь кладёт сам в `/root/.pilot-pw` (0600; в чат не присылать), затем
-   `python3 v2/scripts/pilot_report.py --url https://127.0.0.1:<порт центра> --ca <ca.pem стенда> --origin http://10.170.108.2:8090 --user admin --password-file /root/.pilot-pw --out /root/pilot-week0.json`.
+   `python3 v2/scripts/pilot_report.py --url https://127.0.0.1:<порт центра> --ca <ca.pem стенда> --user admin --password-file /root/.pilot-pw --out /root/pilot-week0.json`.
    В отчёт пользователю — вывод целиком (секретов в нём нет).
 3. **Что пользователь решает дальше** (не делать без него): какие машины стенда добавить (агент / WinRM / SSH),
    учётки операторов (`surveyscan-server create-user …` — роль operator/viewer), включать ли уведомления.
