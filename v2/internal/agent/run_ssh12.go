@@ -52,3 +52,8 @@ func runVirtual12(ctx context.Context, c Config, collect func(context.Context) (
 func RunWinRM12(ctx context.Context, c Config, target WinRMTarget, report func(string)) error {
 	return runVirtual12(ctx, c, NewWinRMCollect12(target), report)
 }
+
+// RunSNMP12 — то же для сетевого устройства по SNMPv3 (личность выдана с платформой network/snmp).
+func RunSNMP12(ctx context.Context, c Config, target SNMPTarget, report func(string)) error {
+	return runVirtual12(ctx, c, NewSNMPCollect12(target), report)
+}

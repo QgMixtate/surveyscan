@@ -69,11 +69,11 @@ type MachineTarget struct {
 
 func (Store) CreateTarget(ctx context.Context, tx pgx.Tx, tenant string, in RemoteTargetInput) (RemoteTarget, error) {
 	addr, e := netip.ParseAddr(in.Address)
-	if e != nil || !addr.Is4() || !identifier.Valid(in.Collector) || !identifier.Valid(in.Credential) || (in.Kind != "ssh" && in.Kind != "winrm") {
-		return RemoteTarget{}, domain.Invalid // SNMP-цели (сетевые устройства) — отдельным шагом
+	if e != nil || !addr.Is4() || !identifier.Valid(in.Collector) || !identifier.Valid(in.Credential) || (in.Kind != "ssh" && in.Kind != "winrm" && in.Kind != "snmp") {
+		return RemoteTarget{}, domain.Invalid
 	}
 	if in.Port == 0 {
-		in.Port = map[string]int{"ssh": 22, "winrm": 5986}[in.Kind]
+		in.Port = map[string]int{"ssh": 22, "winrm": 5986, "snmp": 161}[in.Kind]
 	}
 	if in.Interval == 0 {
 		in.Interval = 3600
@@ -91,6 +91,10 @@ func (Store) CreateTarget(ctx context.Context, tx pgx.Tx, tenant string, in Remo
 			return RemoteTarget{}, domain.Invalid
 		}
 		if _, err := contractsCA(*in.CAPEM); err != nil {
+			return RemoteTarget{}, domain.Invalid
+		}
+	case "snmp": // SNMPv3 authPriv: подлинность и шифрование — ключами учётки, отпечатков и сертификатов нет
+		if in.HostKey != nil || in.CAPEM != nil || in.ServerName != nil {
 			return RemoteTarget{}, domain.Invalid
 		}
 	}
@@ -251,7 +255,7 @@ func (s *MachineService) TargetGrant(ctx context.Context, fp, target string, req
 		}
 		return contracts.EnrollmentGrant{}, domain.Conflict
 	}
-	platform := map[string]string{"ssh": contracts.InventoryPlatformLinux12, "winrm": contracts.InventoryPlatform12}[kind]
+	platform := map[string]string{"ssh": contracts.InventoryPlatformLinux12, "winrm": contracts.InventoryPlatform12, "snmp": contracts.InventoryPlatformNetwork12}[kind]
 	grant, e := s.grantTx(ctx, tx, contracts.EnrollmentGrantRequest{TenantID: actor.Tenant, SourceID: req.Source, Kind: "agent", SiteID: actor.Site, TTL: 900, CSRHash: req.CSRHash, PublicKey: req.Public, CollectorID: &collectorID, InventoryPlatform: platform, Acquisition: kind}, platform, kind, "collector:"+actor.Source)
 	if e != nil {
 		return grant, e

@@ -13,6 +13,10 @@ const InventoryPlatform12 = "windows/amd64"
 const InventoryPolicyLinux12 = "linux-amd64-partial-baseline-v1"
 const InventoryPlatformLinux12 = "linux/amd64"
 
+// C51.03: сетевое устройство по SNMPv3 (собирает collector): identity, network, neighbors; остальное unsupported.
+const InventoryPolicyNetwork12 = "network-snmp-partial-baseline-v1"
+const InventoryPlatformNetwork12 = "network/snmp"
+
 // InventoryPolicyFor12 возвращает политику для платформы; ok=false для неподдержанной платформы.
 // Пара policy_id/platform в конфиге должна совпадать с этим соответствием.
 func InventoryPolicyFor12(platform string) (string, bool) {
@@ -21,6 +25,8 @@ func InventoryPolicyFor12(platform string) (string, bool) {
 		return InventoryPolicy12, true
 	case InventoryPlatformLinux12:
 		return InventoryPolicyLinux12, true
+	case InventoryPlatformNetwork12:
+		return InventoryPolicyNetwork12, true
 	}
 	return "", false
 }

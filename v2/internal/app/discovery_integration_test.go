@@ -293,6 +293,28 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 	if issued != 1 {
 		t.Fatal("credential issuance must be audited with the collector as actor", issued)
 	}
+	// SNMPv3-цель сетевого устройства: без отпечатка/сертификата, источник регистрируется с платформой network/snmp
+	var scred sources.CollectCredential
+	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/credentials", `{"name":"SNMP core","kind":"snmp","username":"surveyscan","secret":{"auth_protocol":"SHA256","auth_key":"auth-key-51","priv_protocol":"AES","priv_key":"priv-key-51"}}`, 201), &scred)
+	call("admin", "POST", "/api/v1/discovery/targets", fmt.Sprintf(`{"collector_id":%q,"address":"10.51.0.20","kind":"snmp","credential_id":%q,"host_key_sha256":"%s"}`, collector, scred.ID, hostKey), 422)
+	var st sources.RemoteTarget
+	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/targets", fmt.Sprintf(`{"collector_id":%q,"address":"10.51.0.20","kind":"snmp","credential_id":%q}`, collector, scred.ID), 201), &st)
+	if st.Port != 161 {
+		t.Fatal("snmp port", st.Port)
+	}
+	snmpSource := identifier.New()
+	_, snmpHash, _, _ := csrTLSMaterial(t)
+	snmpPub, _, _ := ed25519.GenerateKey(rand.Reader)
+	body, _ := json.Marshal(sources.TargetGrantRequest{Source: snmpSource, CSRHash: snmpHash, Public: base64.RawURLEncoding.EncodeToString(snmpPub)})
+	if code, raw = post("/api/v1/machine/collect-targets/"+st.ID+"/grant", body); code != 200 {
+		t.Fatalf("snmp grant %d %s", code, raw)
+	}
+	if err := f.pool.QueryRow(f.ctx, "SELECT inventory_platform,acquisition FROM sources.agents WHERE tenant_id=$1 AND source_id=$2", tenant, snmpSource).Scan(&platform, &acquisition); err != nil || platform != "network/snmp" || acquisition != "snmp" {
+		t.Fatal("snmp target agent platform/acquisition", platform, acquisition, err)
+	}
+	if code, raw = post("/api/v1/machine/collect-targets/"+st.ID+"/secret", []byte("{}")); code != 200 || !strings.Contains(string(raw), "priv-key-51") {
+		t.Fatalf("snmp secret %d", code)
+	}
 	_ = json.Unmarshal(call("admin", "PATCH", "/api/v1/discovery/targets/"+tg.ID, `{"revision":"`+tl.Items[0].Revision+`","disabled":true}`, 200), &tg)
 	if code, _ = post("/api/v1/machine/collect-targets/"+tg.ID+"/secret", []byte("{}")); code != 404 {
 		t.Fatal("disabled target must not receive the credential", code)

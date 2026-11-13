@@ -118,7 +118,7 @@ func (c *Manager) Tick(ctx, task context.Context) error {
 	defer set.mu.Unlock()
 	seen := map[string]bool{}
 	for _, t := range got.Items {
-		if !identifier.Valid(t.ID) || (t.Kind != "ssh" && t.Kind != "winrm") {
+		if !identifier.Valid(t.ID) || (t.Kind != "ssh" && t.Kind != "winrm" && t.Kind != "snmp") {
 			continue
 		}
 		seen[t.ID] = true
@@ -151,9 +151,13 @@ type issuedSecret struct {
 	Kind     string `json:"kind"`
 	Username string `json:"username"`
 	Secret   struct {
-		Password   string `json:"password"`
-		PrivateKey string `json:"private_key"`
-		Passphrase string `json:"passphrase"`
+		Password     string `json:"password"`
+		PrivateKey   string `json:"private_key"`
+		Passphrase   string `json:"passphrase"`
+		AuthProtocol string `json:"auth_protocol"`
+		AuthKey      string `json:"auth_key"`
+		PrivProtocol string `json:"priv_protocol"`
+		PrivKey      string `json:"priv_key"`
 	} `json:"secret"`
 }
 
@@ -190,6 +194,8 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 	platform := contracts.InventoryPlatformLinux12
 	if t.Kind == "winrm" {
 		platform = contracts.InventoryPlatform12
+	} else if t.Kind == "snmp" {
+		platform = contracts.InventoryPlatformNetwork12
 	}
 	state := filepath.Join(c.StateDir, "targets", t.ID)
 	if e := os.MkdirAll(state, 0o700); e != nil {
@@ -242,6 +248,18 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 					target.ServerName = *t.ServerName
 				}
 				e = agent.RunWinRM12(ctx, cfg, target, report)
+			case "snmp":
+				// протоколы известны только вместе с ключами: первая выдача учётки — до запуска цикла
+				first, err := c.secret(ctx, t.ID)
+				if err != nil {
+					e = err
+					break
+				}
+				keys := func(ctx context.Context) ([]byte, []byte, error) {
+					s, err := c.secret(ctx, t.ID)
+					return []byte(s.Secret.AuthKey), []byte(s.Secret.PrivKey), err
+				}
+				e = agent.RunSNMP12(ctx, cfg, agent.SNMPTarget{Addr: addr, User: t.Username, AuthProto: first.Secret.AuthProtocol, PrivProto: first.Secret.PrivProtocol, Keys: keys}, report)
 			}
 		}
 		if ctx.Err() != nil {

@@ -2,6 +2,7 @@ package snmpnet
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"os"
 	"strings"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gosnmp/gosnmp"
+	"github.com/santhosh-tekuri/jsonschema/v6"
 )
 
 func oc(name string, v any) gosnmp.SnmpPDU {
@@ -45,6 +47,7 @@ func TestGatherNormalizesAndKeepsTablesIndependent(t *testing.T) {
 			oc(oidLLDPRem+".7.0.1.1", []byte("Gi0/24")), oc(oidLLDPRem+".9.0.1.1", []byte("core1"))},
 	}
 	r := Gather(context.Background(), w, 1000)
+	checkSections12(t, r)
 	if r.System.Name != "sw1" || len(r.Interfaces) != 1 {
 		t.Fatal(r.System, r.Interfaces)
 	}
@@ -119,3 +122,52 @@ func TestLiveSNMPv3(t *testing.T) {
 		t.Fatal("wrong key must give ErrAuth:", err)
 	}
 }
+
+// C51.03: разделы 1.2 сетевого устройства — identity/network/neighbors заполнены, остальное unsupported (не выдумано).
+func checkSections12(t *testing.T, r Result) {
+	t.Helper()
+	secs := Sections12(r, time.Now())
+	if len(secs) != 12 {
+		t.Fatal("12 sections required", len(secs))
+	}
+	by := map[string]map[string]any{}
+	for _, s := range secs {
+		switch s.Name {
+		case "identity", "network", "neighbors":
+			if s.Status != "partial" || len(s.Records) != 1 || s.Reason != "REMOTE_SNMP_PARTIAL" {
+				t.Fatalf("%s: %+v", s.Name, s)
+			}
+			by[s.Name] = s.Records[0]
+		default:
+			if s.Status != "unsupported" || len(s.Records) != 0 {
+				t.Fatalf("%s must be unsupported: %+v", s.Name, s)
+			}
+		}
+	}
+	if by["identity"]["hostname"] != "sw1" || by["network"]["name"] != "Gi0/1" || by["network"]["mac"] != "52:54:00:12:34:56" || by["network"]["mtu"] != 1500 ||
+		by["neighbors"]["address"] != "10.0.0.9" || by["neighbors"]["mac"] != "aa:bb:cc:00:00:01" || by["neighbors"]["interface_index"] != 1 {
+		t.Fatalf("rows %+v", by)
+	}
+	raw, _ := os.ReadFile("../../../contracts/c15.schema.json")
+	compiler := jsonschema.NewCompiler()
+	compiler.AssertFormat()
+	doc, _ := jsonschema.UnmarshalJSON(strings.NewReader(string(raw)))
+	if err := compiler.AddResource("c15.json", doc); err != nil {
+		t.Fatal(err)
+	}
+	for name, row := range by {
+		schema, err := compiler.Compile("c15.json#/$defs/" + name + "Row")
+		if err != nil {
+			t.Fatal(err)
+		}
+		inst, _ := jsonschema.UnmarshalJSON(strings.NewReader(mustJSON(row)))
+		if err = schema.Validate(inst); err != nil {
+			t.Fatalf("%s row violates C15: %v", name, err)
+		}
+	}
+	if c := Candidates12(secs); len(c) != 1 || c[0].Value != "sw1" {
+		t.Fatal("candidates", c)
+	}
+}
+
+func mustJSON(v any) string { b, _ := json.Marshal(v); return string(b) }

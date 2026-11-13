@@ -12,7 +12,8 @@
         "policy_id": {
           "enum": [
             "windows-amd64-partial-baseline-v1",
-            "linux-amd64-partial-baseline-v1"
+            "linux-amd64-partial-baseline-v1",
+            "network-snmp-partial-baseline-v1"
           ]
         }
       },
@@ -40,13 +41,15 @@
         "policy_id": {
           "enum": [
             "windows-amd64-partial-baseline-v1",
-            "linux-amd64-partial-baseline-v1"
+            "linux-amd64-partial-baseline-v1",
+            "network-snmp-partial-baseline-v1"
           ]
         },
         "platform": {
           "enum": [
             "windows/amd64",
-            "linux/amd64"
+            "linux/amd64",
+            "network/snmp"
           ]
         },
         "sections": {
@@ -241,7 +244,8 @@
         "platform": {
           "enum": [
             "windows/amd64",
-            "linux/amd64"
+            "linux/amd64",
+            "network/snmp"
           ]
         },
         "applied": {

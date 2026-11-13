@@ -3,8 +3,8 @@
 package main
 
 import (
-	"github.com/QgMixtate/surveyscan/v2/internal/collecttargets"
 	"github.com/QgMixtate/surveyscan/v2/internal/collector"
+	"github.com/QgMixtate/surveyscan/v2/internal/collecttargets"
 )
 
 // wireTargets подключает цели удалённого сбора из Web (C51.03) к collector.

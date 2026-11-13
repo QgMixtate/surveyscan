@@ -114,7 +114,7 @@ func ReadConfig(path string) (Config, error) {
 	if e != nil || u.Scheme != "https" || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" || (u.Path != "" && u.Path != "/") {
 		return c, errors.New("HTTPS collector origin required")
 	}
-	if c.InventoryPlatform != "" && c.InventoryPlatform != contracts.InventoryPlatform12 && c.InventoryPlatform != contracts.InventoryPlatformLinux12 {
+	if c.InventoryPlatform != "" && c.InventoryPlatform != contracts.InventoryPlatform12 && c.InventoryPlatform != contracts.InventoryPlatformLinux12 && c.InventoryPlatform != contracts.InventoryPlatformNetwork12 {
 		return c, errors.New("unsupported inventory_platform")
 	}
 	c.CollectorURL = strings.TrimRight(c.CollectorURL, "/")
