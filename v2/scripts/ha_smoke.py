@@ -232,7 +232,8 @@ def main():
                 while time.time() < deadline and node_sql('b', "SELECT current_setting('default_transaction_read_only')") != 'on':
                     time.sleep(.3)
                 fenced_after = round(time.time() - t, 2)
-                assert node_sql('b', "SELECT current_setting('default_transaction_read_only')") == 'on', 'watchdog did not fence returning writer'
+                assert node_sql('b', "SELECT current_setting('default_transaction_read_only')") == 'on', ('watchdog did not fence returning writer', was,
+                    node_sql('b', 'SELECT pg_is_in_recovery()', check=False), (Path(tmp) / 'router.log').read_text()[-800:], subprocess.run([str(ROOT / '.dist/surveyscan-router'), 'check-writers', '-config', cfg], capture_output=True, text=True).stdout[-400:])
                 ro = node_sql('b', "INSERT INTO responsibility.subjects(subject_id) VALUES (gen_random_uuid())", check=False)
                 assert 'read-only' in ro, ro
                 return {'returned_as_primary': was == 'f', 'fenced_by_watchdog_after_s': fenced_after}

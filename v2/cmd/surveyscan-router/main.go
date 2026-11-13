@@ -61,7 +61,10 @@ func watch(ctx context.Context, cat router.Catalog, c fileConfig) {
 			if len(s.Nodes) < 2 {
 				continue
 			}
-			fenced, _, e := router.CheckWriters(ctx, cat, name, nodes(s), "router:watchdog")
+			fenced, down, e := router.CheckWriters(ctx, cat, name, nodes(s), "router:watchdog")
+			for _, n := range down {
+				fmt.Fprintf(os.Stderr, "surveyscan-router: shard %s: node %s unreachable\n", name, n)
+			}
 			for _, n := range fenced {
 				fmt.Fprintf(os.Stderr, "surveyscan-router: shard %s: fenced unexpected writer %s\n", name, n)
 			}
@@ -307,6 +310,7 @@ func run(cmd string, args []string) error {
 		}
 		srv := &http.Server{Addr: c.Listen, Handler: &router.Router{Catalog: cat, Shards: shards, Key: key, Secure: c.Secure},
 			ReadHeaderTimeout: 10 * time.Second}
+		go watch(ctx, cat, c)
 		go func() {
 			<-ctx.Done()
 			sh, cancel := context.WithTimeout(context.Background(), 10*time.Second)
