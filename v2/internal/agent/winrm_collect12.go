@@ -18,6 +18,19 @@ type WinRMTarget struct {
 	PasswordFile string `json:"password_file"`
 	CAFile       string `json:"ca_file"`
 	ServerName   string `json:"tls_server_name,omitempty"`
+	// C51.03: пароль и CA из памяти (collector получает их у центра); файлы тогда не используются. Не сериализуются.
+	Password func(context.Context) ([]byte, error) `json:"-"`
+	CAPEM    []byte                                `json:"-"`
+}
+
+type funcSecret func(context.Context) ([]byte, error)
+
+func (f funcSecret) Read(ctx context.Context, _ string) ([]byte, error) {
+	b, err := f(ctx)
+	if err != nil {
+		return nil, errors.New("winrm credential unavailable from the center")
+	}
+	return b, nil
 }
 
 func LoadWinRMTarget(path string) (WinRMTarget, error) {
@@ -50,11 +63,19 @@ func (f fileSecret) Read(_ context.Context, _ string) ([]byte, error) {
 // NewWinRMCollect12 — функция сбора для runLoop12: каждый цикл читает пароль и CA из приватных файлов.
 func NewWinRMCollect12(t WinRMTarget) func(context.Context) (Snapshot, error) {
 	return func(ctx context.Context) (Snapshot, error) {
-		ca, err := privatefile.Read(t.CAFile, 1<<20)
-		if err != nil {
-			return Snapshot{}, errors.New("winrm CA file unavailable or not private")
+		var secret interface {
+			Read(context.Context, string) ([]byte, error)
+		} = fileSecret{t.PasswordFile}
+		ca := t.CAPEM
+		if t.Password != nil {
+			secret = funcSecret(t.Password)
+		} else {
+			var err error
+			if ca, err = privatefile.Read(t.CAFile, 1<<20); err != nil {
+				return Snapshot{}, errors.New("winrm CA file unavailable or not private")
+			}
 		}
-		run, err := winrminv.Connect(ctx, fileSecret{t.PasswordFile}, winrminv.Target{Host: t.Host, Port: t.Port, User: t.User, PasswordAlias: "file", CAPEM: ca, TLSServerName: t.ServerName}, winrminv.Policy{})
+		run, err := winrminv.Connect(ctx, secret, winrminv.Target{Host: t.Host, Port: t.Port, User: t.User, PasswordAlias: "file", CAPEM: ca, TLSServerName: t.ServerName}, winrminv.Policy{})
 		if err != nil {
 			return Snapshot{}, err
 		}

@@ -63,6 +63,7 @@ type MachineTarget struct {
 	Source     *string `json:"agent_source_id"`
 	State      string  `json:"state"`
 	Site       string  `json:"site_id"`
+	Scope      string  `json:"network_scope_id"`
 	Tenant     string  `json:"tenant_id"`
 }
 
@@ -173,7 +174,8 @@ WHERE tenant_id=$1 AND target_id=$2 AND revision::text=$3`, tenant, id, revision
 }
 
 func (Store) collectorTargets(ctx context.Context, tx pgx.Tx, tenant, collector string) ([]MachineTarget, error) {
-	rows, e := tx.Query(ctx, `SELECT t.target_id::text,t.kind,host(t.address),t.port,c.username,t.host_key_sha256,t.tls_ca_pem,t.tls_server_name,t.interval_seconds,t.agent_source_id::text,t.state,s.site_id::text,t.tenant_id::text
+	rows, e := tx.Query(ctx, `SELECT t.target_id::text,t.kind,host(t.address),t.port,c.username,t.host_key_sha256,t.tls_ca_pem,t.tls_server_name,t.interval_seconds,t.agent_source_id::text,t.state,s.site_id::text,
+(SELECT n.scope_id::text FROM scope.network_scopes n WHERE n.tenant_id=s.tenant_id AND n.site_id=s.site_id ORDER BY n.scope_id LIMIT 1),t.tenant_id::text
 FROM sources.remote_targets t JOIN sources.collect_credentials c ON c.tenant_id=t.tenant_id AND c.credential_id=t.credential_id JOIN sources.sources s ON s.tenant_id=t.tenant_id AND s.source_id=t.collector_id
 WHERE t.tenant_id=$1 AND t.collector_id=$2 AND t.state<>'disabled' AND c.active ORDER BY t.target_id`, tenant, collector)
 	if e != nil {
@@ -183,7 +185,7 @@ WHERE t.tenant_id=$1 AND t.collector_id=$2 AND t.state<>'disabled' AND c.active 
 	out := []MachineTarget{}
 	for rows.Next() {
 		var t MachineTarget
-		if e = rows.Scan(&t.ID, &t.Kind, &t.Address, &t.Port, &t.Username, &t.HostKey, &t.CAPEM, &t.ServerName, &t.Interval, &t.Source, &t.State, &t.Site, &t.Tenant); e != nil {
+		if e = rows.Scan(&t.ID, &t.Kind, &t.Address, &t.Port, &t.Username, &t.HostKey, &t.CAPEM, &t.ServerName, &t.Interval, &t.Source, &t.State, &t.Site, &t.Scope, &t.Tenant); e != nil {
 			return nil, e
 		}
 		out = append(out, t)

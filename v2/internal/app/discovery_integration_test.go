@@ -238,7 +238,7 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 	target51 := func(extra string) string {
 		return fmt.Sprintf(`{"collector_id":%q,"network_id":%q,"address":"10.51.0.10","kind":"ssh","credential_id":%q%s}`, collector, n.ID, cred.ID, extra)
 	}
-	call("admin", "POST", "/api/v1/discovery/targets", target51(""), 422)                                      // без отпечатка ключа хоста
+	call("admin", "POST", "/api/v1/discovery/targets", target51(""), 422)                                                                                // без отпечатка ключа хоста
 	call("admin", "POST", "/api/v1/discovery/targets", strings.Replace(target51(`,"host_key_sha256":"`+hostKey+`"`), "10.51.0.10", "10.99.0.1", 1), 422) // вне подсети
 	call("op51", "POST", "/api/v1/discovery/targets", target51(`,"host_key_sha256":"`+hostKey+`"`), 403)
 	var tg sources.RemoteTarget

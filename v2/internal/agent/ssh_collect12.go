@@ -19,6 +19,9 @@ type SSHTarget struct {
 	PasswordFile   string `json:"password_file,omitempty"`
 	PrivateKeyFile string `json:"private_key_file,omitempty"`
 	PassphraseFile string `json:"passphrase_file,omitempty"`
+	// Secret — секрет из памяти (C51.03: collector получает учётку у центра по mTLS перед каждым сбором); файлы
+	// тогда не используются. Не сериализуется.
+	Secret func(context.Context) (sshlinux.Secret, error) `json:"-"`
 }
 
 // LoadSSHTarget читает приватный JSON цели и проверяет обязательные поля (ключ хоста обязателен).
@@ -57,6 +60,18 @@ func readSecretFile(path string) ([]byte, error) {
 // собирает цель по SSH и приводит результат к 12 секциям. Ошибки не содержат секретов.
 func NewSSHCollect12(t SSHTarget, policy sshlinux.Policy) func(context.Context) (Snapshot, error) {
 	return func(ctx context.Context) (Snapshot, error) {
+		if t.Secret != nil {
+			secret, err := t.Secret(ctx)
+			if err != nil {
+				return Snapshot{}, errors.New("ssh credential unavailable from the center")
+			}
+			sections, err := sshlinux.Collect(ctx, sshlinux.Target{Addr: t.Addr, User: t.User, HostKeySHA256: t.HostKeySHA256}, secret, policy)
+			if err != nil {
+				return Snapshot{}, err
+			}
+			full := sshlinux.Complete12(sections)
+			return Snapshot{Candidates: sshlinux.Candidates(full), Sections: full}, nil
+		}
 		pw, err := readSecretFile(t.PasswordFile)
 		if err != nil {
 			return Snapshot{}, err

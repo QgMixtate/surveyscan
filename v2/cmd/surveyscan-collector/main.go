@@ -41,6 +41,7 @@ func run(args []string) error {
 		fmt.Println("collector_certificate_renewed")
 		return nil
 	}
+	wireTargets(relay)
 	fmt.Println("collector HTTPS relay started; pending data retained until verified center result")
 	return relay.Run(ctx)
 }

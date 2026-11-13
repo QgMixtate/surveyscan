@@ -16,6 +16,7 @@ build:
 	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscanctl ./cmd/surveyscanctl
 	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscan-portable ./cmd/surveyscan-portable
 	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -ldflags '$(BUILD_FLAGS)' -o .dist/surveyscan-router ./cmd/surveyscan-router
+	CGO_ENABLED=0 $(GO) build -mod=readonly -trimpath -p 2 -o .dist/testsshd ./scripts/testsshd # только для смоков C51.03
 	cp contracts/*.json .dist/contracts/
 	chmod 755 .dist .dist/contracts .dist/surveyscan-* .dist/surveyscanctl
 	chmod 644 .dist/contracts/*.json

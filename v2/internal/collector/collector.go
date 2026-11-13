@@ -64,13 +64,15 @@ type Collector struct {
 	renewMu     sync.Mutex
 	Config      Config
 	Claims      pki.Claims
-	TLS         *tls.Config
-	client      *http.Client
-	wire        *wire.Validator
-	protocol    *wire.InventoryDecoder
-	mu          sync.Mutex
-	pump        sync.Mutex
-	retries     map[string]*retry.Backoff
+	// TargetSync — C51.03: синхронизация целей удалённого сбора (задаёт cmd/surveyscan-collector).
+	TargetSync func(run, task context.Context) error
+	TLS        *tls.Config
+	client     *http.Client
+	wire       *wire.Validator
+	protocol   *wire.InventoryDecoder
+	mu         sync.Mutex
+	pump       sync.Mutex
+	retries    map[string]*retry.Backoff
 }
 
 func Load(path string) (*Collector, error) {
@@ -674,7 +676,7 @@ func (c *Collector) Run(ctx context.Context) error {
 	go func() { finished <- server.ListenAndServeTLS("", "") }()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	renewalAt, profileAt, heartbeatAt, discoveryAt := time.Time{}, time.Time{}, time.Time{}, time.Time{}
+	renewalAt, profileAt, heartbeatAt, discoveryAt, targetsAt := time.Time{}, time.Time{}, time.Time{}, time.Time{}, time.Time{}
 	var discoveryBusy atomic.Bool
 	for {
 		select {
@@ -697,6 +699,14 @@ func (c *Collector) Run(ctx context.Context) error {
 						telemetry.Log(os.Stderr, "collector", "profile_unavailable_cached_or_local")
 					}
 					profileAt = time.Now().Add(20 * time.Second)
+				}
+				if !time.Now().Before(targetsAt) && c.signing != nil { // C51.03: цели сбора из Web
+					task, cancel := context.WithTimeout(ctx, 10*time.Second)
+					if err := c.syncTargets(ctx, task); err != nil && ctx.Err() == nil { // C51.03
+						telemetry.Log(os.Stderr, "collector", "collect_targets_unavailable")
+					}
+					cancel()
+					targetsAt = time.Now().Add(time.Minute)
 				}
 				if !time.Now().Before(discoveryAt) && c.signing != nil { // C51.02: задания обследования сети из Web
 					go c.discoveryLoop(ctx, &discoveryBusy)

@@ -152,6 +152,8 @@ jobs:
         run: .contract-tools/bin/python scripts/dr_drill.py
       - name: Network discovery (C51) - subnet from Web API, real collector claims the job, TCP/ARP/ICMP probes, signed result
         run: .contract-tools/bin/python scripts/discovery_smoke.py
+      - name: Collect target from Web (C51.03) - credential in the secret store, collector enrolls the target agent, SSH collection, no files on the host
+        run: .contract-tools/bin/python scripts/collect_target_smoke.py
       - name: Human CLI login, two tenants, pagination and remote logout
         run: .contract-tools/bin/python scripts/cli_smoke.py
       - name: Central profiles, signed source diagnostics and tenant policy
