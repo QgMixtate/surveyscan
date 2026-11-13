@@ -42,6 +42,9 @@ type SignedDiscoveryResult struct {
 	Signature string          `json:"signature"`
 }
 
+// Strict — строгий разбор JSON машинного канала C51 (неизвестные поля — отказ).
+func Strict(raw []byte, into any) error { return strict(raw, into) }
+
 func strict(raw []byte, into any) error {
 	d := json.NewDecoder(bytes.NewReader(raw))
 	d.DisallowUnknownFields()

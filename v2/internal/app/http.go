@@ -46,6 +46,10 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 			mux.HandleFunc("POST /api/v1/machine/inventory-capabilities", registry[0].Machine.inventoryCapabilities)
 			mux.HandleFunc("POST /api/v1/machine/discovery-jobs", registry[0].Machine.discoveryMachine)
 			mux.HandleFunc("POST /api/v1/machine/discovery-results", registry[0].Machine.discoveryMachine)
+			mux.HandleFunc("POST /api/v1/machine/collect-targets", registry[0].collectMachine)
+			for _, op := range []string{"grant", "secret", "report"} {
+				mux.HandleFunc("POST /api/v1/machine/collect-targets/{target_id}/"+op, registry[0].collectMachine)
+			}
 			mux.Handle("GET /api/v1/diagnostics", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.diagnostics)))
 			mux.Handle("GET /api/v1/metrics", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.diagnostics)))
 		}
@@ -61,6 +65,9 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 				permission = "assets:read"
 			}
 			mux.Handle(route, auth.Wrap(permission, false, handler))
+		}
+		for route, d := range registry[0].targetHandlers() {
+			mux.Handle(route, auth.Wrap(d.permission, false, d.handler))
 		}
 		for route, d := range registry[0].collectHandlers() {
 			mux.Handle(route, auth.Wrap(d.permission, false, d.handler))

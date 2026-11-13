@@ -95,6 +95,19 @@ func (s *MachineService) Grant(ctx context.Context, actor access.Identity, req c
 	if _, e = s.Auth.Authorize(ctx, tx, actor.CredentialID, actor.TenantID, "sources:admin"); e != nil {
 		return contracts.EnrollmentGrant{}, e
 	}
+	result, e := s.grantTx(ctx, tx, req, platform, acquisition, actor.UserID)
+	if e != nil {
+		return result, e
+	}
+	return result, tx.Commit(ctx)
+}
+
+// grantTx — общая часть выдачи grant (человек из Web или центр для цели сбора C51.03) в открытой транзакции.
+func (s *MachineService) grantTx(ctx context.Context, tx pgx.Tx, req contracts.EnrollmentGrantRequest, platform, acquisition, actorRef string) (contracts.EnrollmentGrant, error) {
+	public, e := base64.RawURLEncoding.Strict().DecodeString(req.PublicKey)
+	if e != nil || len(public) != 32 {
+		return contracts.EnrollmentGrant{}, domain.Invalid
+	}
 	rows, e := tx.Query(ctx, "SELECT scope_id::text FROM scope.network_scopes WHERE tenant_id=$1 AND site_id=$2 ORDER BY scope_id LIMIT 2 FOR SHARE", req.TenantID, req.SiteID)
 	if e != nil {
 		return contracts.EnrollmentGrant{}, e
@@ -158,10 +171,10 @@ func (s *MachineService) Grant(ctx context.Context, actor access.Identity, req c
 		return result, e
 	}
 	result.Expires = result.Expires.UTC()
-	if e = s.Audit.Record(ctx, tx, req.TenantID, actor.UserID, "source.enrollment_granted", "source", req.SourceID); e != nil {
+	if e = s.Audit.Record(ctx, tx, req.TenantID, actorRef, "source.enrollment_granted", "source", req.SourceID); e != nil {
 		return result, e
 	}
-	return result, tx.Commit(ctx)
+	return result, nil
 }
 func (s *MachineService) Enroll(ctx context.Context, token string, req contracts.EnrollmentRequest) (contracts.EnrollmentResult, error) {
 	raw, _ := json.Marshal(req)

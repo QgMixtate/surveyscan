@@ -4,8 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
+	"mime"
 	"net/http"
 	"strings"
+	"time"
+
+	"github.com/QgMixtate/surveyscan/v2/internal/modules/access"
+	"github.com/QgMixtate/surveyscan/v2/internal/platform/pki"
 
 	accessport "github.com/QgMixtate/surveyscan/v2/internal/modules/access/port"
 	"github.com/QgMixtate/surveyscan/v2/internal/modules/sources"
@@ -136,5 +142,149 @@ func (r *Registry) collectHandlers() map[string]route51 {
 				return c, e
 			})
 		})},
+	}
+}
+
+func (r *Registry) targetHandlers() map[string]route51 {
+	return map[string]route51{
+		"GET /api/v1/discovery/targets": {"sources:read", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			if _, ok := queryOnly(w, req); !ok {
+				return
+			}
+			r.discoveryDo(w, req, http.StatusOK, "sources:read", func(ctx context.Context, tx pgx.Tx, id accessport.Identity) (any, error) {
+				items, e := src51.Targets(ctx, tx, id.TenantID)
+				return map[string]any{"items": items}, e
+			})
+		})},
+		"POST /api/v1/discovery/targets": {"sources:admin", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			var body sources.RemoteTargetInput
+			if !readOperationBody(w, req, &body) {
+				return
+			}
+			r.discoveryDo(w, req, http.StatusCreated, "sources:admin", func(ctx context.Context, tx pgx.Tx, id accessport.Identity) (any, error) {
+				t, e := src51.CreateTarget(ctx, tx, id.TenantID, body)
+				if e == nil {
+					e = r.Audit.Record(ctx, tx, id.TenantID, id.UserID, "discovery.target_created", "remote_target", t.ID)
+				}
+				return t, e
+			})
+		})},
+		"PATCH /api/v1/discovery/targets/{target_id}": {"sources:admin", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			var body struct {
+				Revision string `json:"revision"`
+				Disabled bool   `json:"disabled"`
+			}
+			if !readOperationBody(w, req, &body) {
+				return
+			}
+			r.discoveryDo(w, req, http.StatusOK, "sources:admin", func(ctx context.Context, tx pgx.Tx, id accessport.Identity) (any, error) {
+				t, e := src51.SetTargetState(ctx, tx, id.TenantID, req.PathValue("target_id"), body.Revision, body.Disabled)
+				if e == nil {
+					e = r.Audit.Record(ctx, tx, id.TenantID, id.UserID, "discovery.target_changed", "remote_target", t.ID)
+				}
+				return t, e
+			})
+		})},
+	}
+}
+
+// collectMachine — машинный канал целей сбора (collector по mTLS, контракт c51-discovery).
+func (r *Registry) collectMachine(w http.ResponseWriter, req *http.Request) {
+	m := r.Machine
+	ctx, cancel := context.WithTimeout(req.Context(), 20*time.Second)
+	defer cancel()
+	if req.TLS == nil || len(req.TLS.VerifiedChains) == 0 || len(req.TLS.PeerCertificates) == 0 {
+		access.APIError(w, 401, "AUTHENTICATION_REQUIRED")
+		return
+	}
+	if kind, _, e := mime.ParseMediaType(req.Header.Get("Content-Type")); e != nil || kind != "application/json" || req.URL.RawQuery != "" {
+		access.APIError(w, 400, "INVALID_JSON")
+		return
+	}
+	raw, e := io.ReadAll(http.MaxBytesReader(w, req.Body, 64<<10))
+	if e != nil {
+		access.APIError(w, 413, "PAYLOAD_TOO_LARGE")
+		return
+	}
+	if m == nil || m.Sources == nil || m.Sources.Pool == nil {
+		access.APIError(w, 503, "TEMPORARILY_UNAVAILABLE")
+		return
+	}
+	fp := pki.Fingerprint(req.TLS.PeerCertificates[0])
+	target := req.PathValue("target_id")
+	switch {
+	case req.URL.Path == "/api/v1/machine/collect-targets":
+		items, e := m.Sources.CollectTargets(ctx, fp)
+		if e != nil {
+			m.fail(w, e)
+			return
+		}
+		registryJSON(w, map[string]any{"items": items})
+	case strings.HasSuffix(req.URL.Path, "/grant"):
+		var body sources.TargetGrantRequest
+		if sources.Strict(raw, &body) != nil {
+			access.APIError(w, 400, "INVALID_JSON")
+			return
+		}
+		grant, e := m.Sources.TargetGrant(ctx, fp, target, body)
+		if e != nil {
+			m.fail(w, e)
+			return
+		}
+		registryJSON(w, grant)
+	case strings.HasSuffix(req.URL.Path, "/secret"):
+		if string(raw) != "{}" {
+			access.APIError(w, 400, "INVALID_JSON")
+			return
+		}
+		tenant, source, kind, username, credential, e := m.Sources.TargetForSecret(ctx, fp, target)
+		if e != nil {
+			m.fail(w, e)
+			return
+		}
+		if r.Secrets == nil {
+			access.APIError(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
+		stored, ok, e := r.Secrets.Get(ctx, tenant, sources.CredentialSecretKey(credential))
+		if e != nil || !ok {
+			access.APIError(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
+		var secret CollectSecret
+		if json.Unmarshal(stored, &secret) != nil {
+			access.APIError(w, 503, "TEMPORARILY_UNAVAILABLE")
+			return
+		}
+		tx, e := r.Pool.Begin(ctx)
+		if e == nil {
+			e = r.Audit.Record(ctx, tx, tenant, "collector:"+source, "discovery.credential_issued", "remote_target", target)
+			if e == nil {
+				e = tx.Commit(ctx)
+			}
+			tx.Rollback(ctx)
+		}
+		if e != nil {
+			m.fail(w, e)
+			return
+		}
+		registryJSON(w, map[string]any{"kind": kind, "username": username, "secret": secret})
+	case strings.HasSuffix(req.URL.Path, "/report"):
+		var body struct {
+			OK      bool   `json:"ok"`
+			Problem string `json:"problem"`
+		}
+		if sources.Strict(raw, &body) != nil {
+			access.APIError(w, 400, "INVALID_JSON")
+			return
+		}
+		if e = m.Sources.TargetReport(ctx, fp, target, body.OK, body.Problem); e != nil {
+			m.fail(w, e)
+			return
+		}
+		w.Header().Set("Cache-Control", "no-store")
+		w.WriteHeader(http.StatusNoContent)
+	default:
+		access.APIError(w, 404, "NOT_FOUND")
 	}
 }

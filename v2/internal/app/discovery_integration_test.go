@@ -230,6 +230,73 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 	if err := f.pool.QueryRow(f.ctx, "SELECT count(*) FROM audit.audit_events WHERE tenant_id=$1 AND action LIKE 'discovery.%'", tenant).Scan(&audits); err != nil || audits != 3 {
 		t.Fatal("audit of network creation and runs", audits, err)
 	}
+	// C51.03 шаг B: цель сбора из найденного узла — учётка, отпечаток ключа хоста, регистрация агента цели через grant
+	f.registry.Secrets = app.FileSecrets{Dir: t.TempDir()}
+	var cred sources.CollectCredential
+	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/credentials", `{"name":"Linux RO","kind":"ssh","username":"scanprobe","secret":{"password":"c51-target-secret"}}`, 201), &cred)
+	hostKey := "SHA256:" + strings.Repeat("A", 43)
+	target51 := func(extra string) string {
+		return fmt.Sprintf(`{"collector_id":%q,"network_id":%q,"address":"10.51.0.10","kind":"ssh","credential_id":%q%s}`, collector, n.ID, cred.ID, extra)
+	}
+	call("admin", "POST", "/api/v1/discovery/targets", target51(""), 422)                                      // без отпечатка ключа хоста
+	call("admin", "POST", "/api/v1/discovery/targets", strings.Replace(target51(`,"host_key_sha256":"`+hostKey+`"`), "10.51.0.10", "10.99.0.1", 1), 422) // вне подсети
+	call("op51", "POST", "/api/v1/discovery/targets", target51(`,"host_key_sha256":"`+hostKey+`"`), 403)
+	var tg sources.RemoteTarget
+	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/targets", target51(`,"host_key_sha256":"`+hostKey+`"`), 201), &tg)
+	if tg.State != "pending" || tg.Port != 22 || tg.Source != nil {
+		t.Fatalf("target %+v", tg)
+	}
+	code, raw = post("/api/v1/machine/collect-targets", []byte("{}"))
+	if code != 200 || !strings.Contains(string(raw), tg.ID) || !strings.Contains(string(raw), "scanprobe") || strings.Contains(string(raw), "c51-target-secret") {
+		t.Fatalf("collector targets %d %s", code, raw)
+	}
+	// collector готовит личность агента цели и получает grant; регистрация — обычным путём агента
+	agentCSR, agentHash, _, _ := csrTLSMaterial(t)
+	agentPub, _, _ := ed25519.GenerateKey(rand.Reader)
+	agentSource := identifier.New()
+	grantBody, _ := json.Marshal(sources.TargetGrantRequest{Source: agentSource, CSRHash: agentHash, Public: base64.RawURLEncoding.EncodeToString(agentPub)})
+	code, raw = post("/api/v1/machine/collect-targets/"+tg.ID+"/grant", grantBody)
+	var tgrant contracts.EnrollmentGrant
+	if code != 200 || json.Unmarshal(raw, &tgrant) != nil || tgrant.SourceID != agentSource {
+		t.Fatalf("target grant %d %s", code, raw)
+	}
+	if code, _ = post("/api/v1/machine/collect-targets/"+tg.ID+"/grant", grantBody); code < 400 {
+		t.Fatal("second grant for the same target accepted")
+	}
+	if _, err := machine.Enroll(f.ctx, tgrant.Token, contracts.EnrollmentRequest{GrantID: tgrant.ID, SourceID: agentSource, CSR: agentCSR, PublicKey: base64.RawURLEncoding.EncodeToString(agentPub)}); err != nil {
+		t.Fatal("agent enrollment with the target grant", err)
+	}
+	if code, _ = post("/api/v1/machine/collect-targets/"+tg.ID+"/report", []byte(`{"ok":true,"problem":""}`)); code != 204 {
+		t.Fatal("report", code)
+	}
+	var tl struct {
+		Items []sources.RemoteTarget `json:"items"`
+	}
+	_ = json.Unmarshal(call("view51", "GET", "/api/v1/discovery/targets", "", 200), &tl)
+	if len(tl.Items) != 1 || tl.Items[0].State != "active" || tl.Items[0].Source == nil || *tl.Items[0].Source != agentSource || tl.Items[0].LastCollected == nil {
+		t.Fatalf("target after enrollment %+v", tl.Items)
+	}
+	var platform, acquisition string
+	if err := f.pool.QueryRow(f.ctx, "SELECT inventory_platform,acquisition FROM sources.agents WHERE tenant_id=$1 AND source_id=$2", tenant, agentSource).Scan(&platform, &acquisition); err != nil || platform != "linux/amd64" || acquisition != "ssh" {
+		t.Fatal("target agent platform/acquisition", platform, acquisition, err)
+	}
+	// учётка — только своему collector, по mTLS, с аудитом выдачи
+	code, raw = post("/api/v1/machine/collect-targets/"+tg.ID+"/secret", []byte("{}"))
+	if code != 200 || !strings.Contains(string(raw), "c51-target-secret") || !strings.Contains(string(raw), `"username":"scanprobe"`) {
+		t.Fatalf("secret %d", code)
+	}
+	if res, err := anon.Post(ms.URL+"/api/v1/machine/collect-targets/"+tg.ID+"/secret", "application/json", strings.NewReader("{}")); err != nil || res.StatusCode != 401 {
+		t.Fatal("secret without client certificate", err)
+	}
+	var issued int
+	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM audit.audit_events WHERE tenant_id=$1 AND action='discovery.credential_issued' AND actor_ref=$2", tenant, "collector:"+collector).Scan(&issued)
+	if issued != 1 {
+		t.Fatal("credential issuance must be audited with the collector as actor", issued)
+	}
+	_ = json.Unmarshal(call("admin", "PATCH", "/api/v1/discovery/targets/"+tg.ID, `{"revision":"`+tl.Items[0].Revision+`","disabled":true}`, 200), &tg)
+	if code, _ = post("/api/v1/machine/collect-targets/"+tg.ID+"/secret", []byte("{}")); code != 404 {
+		t.Fatal("disabled target must not receive the credential", code)
+	}
 	// расписание: подсеть с периодом 60 мин и последним запуском только что — не ставится
 	tx, _ := f.pool.Begin(f.ctx)
 	k, err := sources.Store{}.DiscoveryDue(f.ctx, tx, tenant)
