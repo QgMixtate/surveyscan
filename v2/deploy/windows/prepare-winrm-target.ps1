@@ -54,9 +54,11 @@ if ($listener) {
 if (Get-NetFirewallRule -Name 'SurveyScan-WinRM-HTTPS' -ErrorAction SilentlyContinue) { Set-NetFirewallRule -Name 'SurveyScan-WinRM-HTTPS' -RemoteAddress $Collector; Write-Host '[ok] firewall rule updated' }
 else { New-NetFirewallRule -Name 'SurveyScan-WinRM-HTTPS' -DisplayName 'SurveyScan WinRM HTTPS (collector only)' -Direction Inbound -Protocol TCP -LocalPort 5986 -RemoteAddress $Collector -Action Allow | Out-Null; Write-Host "[+] firewall: 5986 from $Collector" }
 
-# 6. Public certificate for the stand (no private key)
-$out = "C:\surveyscan-winrm-$($env:COMPUTERNAME).cer"
-Export-Certificate -Cert "Cert:\LocalMachine\My\$thumb" -FilePath $out -Type CERT | Out-Null
+# 6. Public certificate for the stand/Web form, PEM text (no private key)
+$out = "C:\surveyscan-winrm-$($env:COMPUTERNAME).pem"
+$der = (Get-Item "Cert:\LocalMachine\My\$thumb").RawData
+$pem = "-----BEGIN CERTIFICATE-----`r`n" + [Convert]::ToBase64String($der, 'InsertLineBreaks') + "`r`n-----END CERTIFICATE-----`r`n"
+[System.IO.File]::WriteAllText($out, $pem)
 Write-Host ''
 Write-Host "DONE. Host: $fqdn"
 Write-Host "Certificate thumbprint (compare with the stand): $thumb"

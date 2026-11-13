@@ -703,6 +703,152 @@
     "secrets_available"
    ],
    "additionalProperties": false
+  },
+  "RemoteTarget": {
+   "type": "object",
+   "properties": {
+    "target_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "collector_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "network_id": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "uuid"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "address": {
+     "type": "string",
+     "format": "ipv4"
+    },
+    "kind": {
+     "enum": [
+      "ssh",
+      "winrm",
+      "snmp"
+     ]
+    },
+    "port": {
+     "type": "integer",
+     "minimum": 1,
+     "maximum": 65535
+    },
+    "credential_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "host_key_sha256": {
+     "oneOf": [
+      {
+       "type": "string",
+       "pattern": "^SHA256:[A-Za-z0-9+/]{43}$"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "tls_server_name": {
+     "oneOf": [
+      {
+       "type": "string"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "interval_seconds": {
+     "type": "integer",
+     "minimum": 300,
+     "maximum": 86400
+    },
+    "agent_source_id": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "uuid"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "state": {
+     "enum": [
+      "pending",
+      "active",
+      "disabled"
+     ]
+    },
+    "last_collected_at": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "last_error": {
+     "oneOf": [
+      {
+       "type": "string",
+       "maxLength": 128
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "revision": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "target_id",
+    "collector_id",
+    "network_id",
+    "address",
+    "kind",
+    "port",
+    "credential_id",
+    "host_key_sha256",
+    "tls_server_name",
+    "interval_seconds",
+    "agent_source_id",
+    "state",
+    "last_collected_at",
+    "last_error",
+    "revision"
+   ],
+   "additionalProperties": false
+  },
+  "RemoteTargetPage": {
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/RemoteTarget"
+     }
+    }
+   },
+   "required": [
+    "items"
+   ],
+   "additionalProperties": false
   }
  }
 }

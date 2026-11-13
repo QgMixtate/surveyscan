@@ -21,11 +21,20 @@ try{
 
  // C51.03: «Обследования сети» — подсеть из формы, запуск оператором-администратором, результат от настоящего collector
  await page.getByRole('button',{name:/Обследования сети/}).click();await expect(page.getByRole('heading',{name:'Обследования сети.'})).toBeVisible();
- await page.getByLabel('Название').fill('Loopback');await page.getByLabel('Подсеть (CIDR)').fill('10.0.0.0/16');await page.getByRole('button',{name:'Добавить подсеть'}).click();await expect(page.getByRole('alert')).toBeVisible();
+ await page.locator('form').filter({hasText:'Новая подсеть'}).getByLabel('Название').fill('Loopback');await page.getByLabel('Подсеть (CIDR)').fill('10.0.0.0/16');await page.getByRole('button',{name:'Добавить подсеть'}).click();await expect(page.getByRole('alert')).toBeVisible();
  await page.getByLabel('Подсеть (CIDR)').fill('127.0.0.0/30');await page.getByRole('button',{name:'Добавить подсеть'}).click();await expect(page.getByRole('button',{name:'Loopback'})).toBeVisible();
  await page.getByRole('button',{name:'Обследовать'}).click();await expect(page.getByText(/завершено/)).toBeVisible({timeout:150000});
  await page.getByRole('button',{name:'Loopback'}).click();await expect(page.getByRole('cell',{name:'127.0.0.1',exact:true})).toBeVisible();
  await page.screenshot({path:'../.local/c51-discovery-web.png',fullPage:true});checks.push('C51 discovery: /16 refused with a visible error, subnet created from the form, run by button, real collector result shown (hosts table)');
+ // C51.03: учётки сбора (секрет не возвращается) и «Собирать» у найденного узла → цель сбора
+ const credForm=page.locator('section').filter({hasText:'Учётки сбора'});await credForm.getByLabel('Название').fill('Linux RO');await credForm.getByLabel('Логин').fill('scanprobe');await credForm.getByLabel('Пароль').fill('web-smoke-secret-51');
+ const credReply=page.waitForResponse(r=>r.url().endsWith('/api/v1/discovery/credentials')&&r.request().method()==='POST');await page.getByRole('button',{name:'Сохранить учётку'}).click();
+ const credBody=await (await credReply).text();if(credBody.includes('web-smoke-secret-51'))throw new Error('collect credential secret returned to the browser');
+ await expect(page.getByRole('cell',{name:'Linux RO'})).toBeVisible();
+ await page.getByRole('row',{name:/127\.0\.0\.1/}).getByRole('button',{name:'Собирать'}).click();await page.getByLabel('Отпечаток ключа хоста').fill('SHA256:'+'A'.repeat(43));
+ await page.getByRole('button',{name:'Создать цель сбора'}).click();await expect(page.getByRole('heading',{name:'Цели сбора'})).toBeVisible();await expect(page.getByRole('cell',{name:'127.0.0.1:22'})).toBeVisible();
+ if((await page.content()).includes('web-smoke-secret-51'))throw new Error('secret visible in the page');
+ await page.screenshot({path:'../.local/c51-collect-web.png',fullPage:true});checks.push('C51.03 collect credential saved from the form without the secret coming back, collect target created from a discovered host');
  const storage=await page.evaluate(()=>({local:localStorage.length,session:sessionStorage.length}));if(storage.local||storage.session)throw new Error('credentials in browser storage');checks.push('no tokens or credentials in web storage');
  await page.getByRole('button',{name:/Реестр активов/}).click();await page.locator('.asset-link').first().click();await expect(page.getByRole('dialog')).toBeVisible();
  const revoked=await context.request.delete(config.origin+'/api/v1/auth/session',{headers:{Origin:config.origin,'X-CSRF-Token':authSession.csrf_token}});if(!revoked.ok())throw new Error('session revocation failed');
