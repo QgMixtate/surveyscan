@@ -632,6 +632,77 @@
     "dropped_out_of_scope"
    ],
    "additionalProperties": false
+  },
+  "CollectCredential": {
+   "type": "object",
+   "properties": {
+    "credential_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "name": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 128
+    },
+    "kind": {
+     "enum": [
+      "ssh",
+      "winrm",
+      "snmp"
+     ]
+    },
+    "username": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 256
+    },
+    "active": {
+     "type": "boolean"
+    },
+    "revision": {
+     "type": "string"
+    },
+    "secret_changed_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "targets": {
+     "type": "integer",
+     "minimum": 0
+    }
+   },
+   "required": [
+    "credential_id",
+    "name",
+    "kind",
+    "username",
+    "active",
+    "revision",
+    "secret_changed_at",
+    "targets"
+   ],
+   "additionalProperties": false,
+   "description": "Учётка сбора без секрета: секрет хранится только в хранилище секретов центра и не возвращается"
+  },
+  "CollectCredentialPage": {
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/CollectCredential"
+     }
+    },
+    "secrets_available": {
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "items",
+    "secrets_available"
+   ],
+   "additionalProperties": false
   }
  }
 }

@@ -79,15 +79,20 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 	}
 	human := httptest.NewTLSServer(handler)
 	t.Cleanup(human.Close)
+	sessions51 := map[string]c31Client{}
 	call := func(user, method, path, body string, want int) []byte {
 		t.Helper()
-		b := newBrowser(t, human)
-		s := b.login(t, user)
-		csrf, origin := s.CSRFToken, "https://ui.example"
+		b, ok := sessions51[user]
+		if !ok {
+			b.b = newBrowser(t, human)
+			b.csrf = b.b.login(t, user).CSRFToken
+			sessions51[user] = b
+		}
+		csrf, origin := b.csrf, "https://ui.example"
 		if method == "GET" {
 			csrf, origin = "", ""
 		}
-		code, raw, _ := b.request(t, method, path, body, csrf, origin, nil)
+		code, raw, _ := b.b.request(t, method, path, body, csrf, origin, nil)
 		if code != want {
 			t.Fatalf("%s %s %s: want %d, got %d %s", user, method, path, want, code, raw)
 		}
@@ -231,5 +236,85 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 	tx.Rollback(f.ctx)
 	if err != nil || k != 0 {
 		t.Fatal("schedule must respect the period", k, err)
+	}
+}
+
+// C51.03 (A): учётки сбора — вводит только администратор, секрет уходит в хранилище секретов и нигде не
+// возвращается (ни в ответе, ни в списке, ни в аудите); без хранилища секретов учётка не сохраняется.
+func TestC51CollectCredentialsSecretNeverReturned(t *testing.T) {
+	f := registrySetup(t)
+	if err := f.users.Provision(f.ctx, false, tenant, "", "op51c", password, "operator"); err != nil {
+		t.Fatal(err)
+	}
+	auth, err := access.NewHTTP(f.users, "https://ui.example", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	handler, err := app.NewHTTP(auth, health.Handler(func(context.Context) error { return nil }), f.registry)
+	if err != nil {
+		t.Fatal(err)
+	}
+	srv := httptest.NewTLSServer(handler)
+	t.Cleanup(srv.Close)
+	sessions51 := map[string]c31Client{}
+	call := func(user, method, path, body string, want int) []byte {
+		t.Helper()
+		b, ok := sessions51[user]
+		if !ok {
+			b.b = newBrowser(t, srv)
+			b.csrf = b.b.login(t, user).CSRFToken
+			sessions51[user] = b
+		}
+		csrf, origin := b.csrf, "https://ui.example"
+		if method == "GET" {
+			csrf, origin = "", ""
+		}
+		code, raw, _ := b.b.request(t, method, path, body, csrf, origin, nil)
+		if code != want {
+			t.Fatalf("%s %s %s: want %d, got %d %s", user, method, path, want, code, raw)
+		}
+		return raw
+	}
+	const secret = "C51-very-secret-pass"
+	ssh := `{"name":"Linux только чтение","kind":"ssh","username":"scanprobe","secret":{"password":"` + secret + `"}}`
+	call("admin", "POST", "/api/v1/discovery/credentials", ssh, 409) // хранилища секретов нет — не сохраняем
+	store := t.TempDir()
+	f.registry.Secrets = app.FileSecrets{Dir: store}
+	call("op51c", "POST", "/api/v1/discovery/credentials", ssh, 403)
+	call("op51c", "GET", "/api/v1/discovery/credentials", "", 403)
+	for _, bad := range []string{
+		`{"name":"x","kind":"ssh","username":"u","secret":{}}`,
+		`{"name":"x","kind":"ssh","username":"u","secret":{"password":"a","private_key":"-----BEGIN OPENSSH PRIVATE KEY-----"}}`,
+		`{"name":"x","kind":"winrm","username":"u","secret":{"private_key":"k"}}`,
+		`{"name":"x","kind":"snmp","username":"u","secret":{"auth_protocol":"MD5","auth_key":"12345678","priv_protocol":"AES","priv_key":"12345678"}}`,
+		`{"name":"x","kind":"telnet","username":"u","secret":{"password":"a"}}`,
+	} {
+		call("admin", "POST", "/api/v1/discovery/credentials", bad, 422)
+	}
+	created := call("admin", "POST", "/api/v1/discovery/credentials", ssh, 201)
+	var c sources.CollectCredential
+	_ = json.Unmarshal(created, &c)
+	call("admin", "POST", "/api/v1/discovery/credentials", ssh, 409) // то же название
+	call("admin", "POST", "/api/v1/discovery/credentials", `{"name":"SNMP ядро","kind":"snmp","username":"surveyscan","secret":{"auth_protocol":"SHA256","auth_key":"auth-key-123","priv_protocol":"AES","priv_key":"priv-key-123"}}`, 201)
+	list := call("admin", "GET", "/api/v1/discovery/credentials", "", 200)
+	changed := call("admin", "PATCH", "/api/v1/discovery/credentials/"+c.ID, `{"revision":"1","secret":{"password":"`+secret+`-2"}}`, 200)
+	call("admin", "PATCH", "/api/v1/discovery/credentials/"+c.ID, `{"revision":"1","name":"другое"}`, 412)
+	for _, raw := range [][]byte{created, list, changed} {
+		if strings.Contains(string(raw), secret) || strings.Contains(string(raw), "password") || strings.Contains(string(raw), "priv-key") {
+			t.Fatalf("secret leaked into the API: %s", raw)
+		}
+	}
+	stored, ok, err := f.registry.Secrets.Get(f.ctx, tenant, sources.CredentialSecretKey(c.ID))
+	if err != nil || !ok || !strings.Contains(string(stored), secret+"-2") {
+		t.Fatal("secret must be stored (and rotated) in the secret store", ok, err)
+	}
+	var leaked int
+	if err := f.pool.QueryRow(f.ctx, "SELECT count(*) FROM audit.audit_events WHERE tenant_id=$1 AND (action LIKE 'discovery.credential%') AND row_to_json(audit_events)::text LIKE '%'||$2||'%'", tenant, secret).Scan(&leaked); err != nil || leaked != 0 {
+		t.Fatal("secret in audit", leaked, err)
+	}
+	var audits int
+	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM audit.audit_events WHERE tenant_id=$1 AND action IN ('discovery.credential_created','discovery.credential_secret_changed')", tenant).Scan(&audits)
+	if audits != 3 {
+		t.Fatal("credential creation and secret change audited", audits)
 	}
 }

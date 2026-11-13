@@ -62,6 +62,9 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 			}
 			mux.Handle(route, auth.Wrap(permission, false, handler))
 		}
+		for route, d := range registry[0].collectHandlers() {
+			mux.Handle(route, auth.Wrap(d.permission, false, d.handler))
+		}
 		for route, d := range registry[0].discoveryHandlers() {
 			mux.Handle(route, auth.Wrap(d.permission, false, d.handler))
 		}
