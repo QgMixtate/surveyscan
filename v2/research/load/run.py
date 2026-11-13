@@ -122,11 +122,24 @@ def scenario(**s):
         env = s['server_environment']
         api2 = freeport()
         alog = (Path(s['directory']) / 'api2.log').open('ab')
-        p2 = subprocess.Popen([str(ROOT / '.dist/surveyscan-server'), 'serve'], cwd=ROOT, stdout=alog, stderr=alog, env=dict(env, SURVEYSCAN_V2_ROLE='api', SURVEYSCAN_V2_LISTEN=f'127.0.0.1:{api2}'))
+        env2 = dict(env, SURVEYSCAN_V2_ROLE='api', SURVEYSCAN_V2_LISTEN=f'127.0.0.1:{api2}')
+        env2.pop('SURVEYSCAN_V2_MACHINE_CONFIG', None)  # машинный mTLS-слушатель — только у первого api (порт один)
+        p2 = subprocess.Popen([str(ROOT / '.dist/surveyscan-server'), 'serve'], cwd=ROOT, stdout=alog, stderr=alog, env=env2)
         atexit.register(p2.terminate)
+        for _ in range(150):
+            try:
+                c = http.client.HTTPConnection('127.0.0.1', api2, timeout=2); c.request('GET', '/health/ready')
+                if c.getresponse().status == 200:
+                    break
+            except OSError:
+                pass
+            time.sleep(.2)
+        else:
+            raise SystemExit('second api did not start')
         catalog = 'ssv2c40cat_' + secrets.token_hex(6)
         sql('CREATE DATABASE ' + catalog)
-        atexit.register(lambda: sql(f'DROP DATABASE IF EXISTS {catalog} WITH (FORCE)'))
+        from dev import compose
+        atexit.register(lambda: compose('exec', '-T', 'db', 'psql', '-U', 'surveyscan_v2', '-d', 'surveyscan_v2', '-Atc', f'DROP DATABASE IF EXISTS {catalog} WITH (FORCE)', capture=True))
         key = work / 'route.key'; key.write_text(secrets.token_urlsafe(48)); os.chmod(key, 0o600)
         listen = s['origin'].removeprefix('http://')
         rcfg = {'listen': listen, 'secure': False, 'route_key_file': str(key),
