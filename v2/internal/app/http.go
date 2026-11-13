@@ -44,6 +44,8 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 			mux.HandleFunc("POST /api/v1/machine/inventory-profile", registry[0].Machine.inventoryProfile12)
 			mux.Handle("GET /api/v1/sources/{source_id}/inventory-profile", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.humanInventoryProfile12)))
 			mux.HandleFunc("POST /api/v1/machine/inventory-capabilities", registry[0].Machine.inventoryCapabilities)
+			mux.HandleFunc("POST /api/v1/machine/discovery-jobs", registry[0].Machine.discoveryMachine)
+			mux.HandleFunc("POST /api/v1/machine/discovery-results", registry[0].Machine.discoveryMachine)
 			mux.Handle("GET /api/v1/diagnostics", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.diagnostics)))
 			mux.Handle("GET /api/v1/metrics", auth.Wrap("sources:read", false, http.HandlerFunc(registry[0].Machine.diagnostics)))
 		}
@@ -59,6 +61,9 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 				permission = "assets:read"
 			}
 			mux.Handle(route, auth.Wrap(permission, false, handler))
+		}
+		for route, d := range registry[0].discoveryHandlers() {
+			mux.Handle(route, auth.Wrap(d.permission, false, d.handler))
 		}
 		for route, handler := range registry[0].directorySettingsHandlers() {
 			mux.Handle(route, auth.Wrap("sources:admin", false, handler))

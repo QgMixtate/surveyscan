@@ -136,7 +136,7 @@ func TestMigrationRepeatPersistenceAndDrift(t *testing.T) {
 	if e = migrate.Check(ctx, other, ms); e != nil {
 		t.Fatal(e)
 	}
-	if e = c.QueryRow(ctx, "SELECT count(*) FROM information_schema.tables WHERE table_schema IN ('access','responsibility','scope','sources','assets','inventory','cmdb','imports','audit','messaging') AND table_type='BASE TABLE'").Scan(&count); e != nil || count != 59 { // 59: +messaging.work_leases (0046, C35/C36); +responsibility.directory_settings (0045, C31.05); +messaging.webhook_subscriptions/webhook_deliveries (0044, C31.03); +responsibility.directory_sync_runs (0043, C31); +responsibility.team_members (0042, C27); +inventory.record_section_source_state12 (0037, R-027), +assets.asset_operations (0038, C25.03), +cmdb.services/relations/changes (0041, C26)
+	if e = c.QueryRow(ctx, "SELECT count(*) FROM information_schema.tables WHERE table_schema IN ('access','responsibility','scope','sources','assets','inventory','cmdb','imports','audit','messaging') AND table_type='BASE TABLE'").Scan(&count); e != nil || count != 62 { // 62: +sources.discovery_networks/discovery_runs/discovery_hosts (0048, C51); 59: +messaging.work_leases (0046, C35/C36); +responsibility.directory_settings (0045, C31.05); +messaging.webhook_subscriptions/webhook_deliveries (0044, C31.03); +responsibility.directory_sync_runs (0043, C31); +responsibility.team_members (0042, C27); +inventory.record_section_source_state12 (0037, R-027), +assets.asset_operations (0038, C25.03), +cmdb.services/relations/changes (0041, C26)
 		t.Fatal(count, e)
 	}
 	exec(t, ctx, c, "UPDATE platform.schema_migrations SET sha256=repeat('0',64) WHERE id=(SELECT min(id) FROM platform.schema_migrations)")

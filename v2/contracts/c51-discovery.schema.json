@@ -1,0 +1,637 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "$id": "urn:surveyscan:c51:discovery:1:0",
+ "title": "Обследования сети (C51, ADR D13-discovery-policy): Web API и машинный канал collector (отдельно от C03)",
+ "$defs": {
+  "DiscoveryRun": {
+   "type": "object",
+   "properties": {
+    "run_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "network_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "trigger": {
+     "enum": [
+      "manual",
+      "schedule"
+     ]
+    },
+    "requested_by": {
+     "type": "string"
+    },
+    "requested_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "state": {
+     "enum": [
+      "queued",
+      "running",
+      "done",
+      "failed"
+     ]
+    },
+    "finished_at": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "addresses": {
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "found": {
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "new_hosts": {
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "missing": {
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 0
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "errors": {
+     "type": "array",
+     "items": {
+      "type": "string",
+      "maxLength": 64
+     }
+    }
+   },
+   "required": [
+    "run_id",
+    "network_id",
+    "trigger",
+    "requested_by",
+    "requested_at",
+    "state",
+    "finished_at",
+    "addresses",
+    "found",
+    "new_hosts",
+    "missing",
+    "errors"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryNetwork": {
+   "type": "object",
+   "properties": {
+    "network_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "site_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "collector_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "name": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 128
+    },
+    "cidr": {
+     "type": "string",
+     "pattern": "^([0-9]{1,3}\\.){3}[0-9]{1,3}/(2[2-9]|3[0-2])$"
+    },
+    "probes": {
+     "type": "array",
+     "minItems": 1,
+     "maxItems": 3,
+     "uniqueItems": true,
+     "items": {
+      "enum": [
+       "tcp",
+       "arp",
+       "icmp"
+      ]
+     }
+    },
+    "schedule_minutes": {
+     "oneOf": [
+      {
+       "type": "integer",
+       "minimum": 60,
+       "maximum": 10080
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "active": {
+     "type": "boolean"
+    },
+    "revision": {
+     "type": "string"
+    },
+    "last_run": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/DiscoveryRun"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "present_hosts": {
+     "type": "integer",
+     "minimum": 0
+    },
+    "missing_hosts": {
+     "type": "integer",
+     "minimum": 0
+    }
+   },
+   "required": [
+    "network_id",
+    "site_id",
+    "collector_id",
+    "name",
+    "cidr",
+    "probes",
+    "schedule_minutes",
+    "active",
+    "revision",
+    "last_run",
+    "present_hosts",
+    "missing_hosts"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryHost": {
+   "type": "object",
+   "properties": {
+    "ip": {
+     "type": "string",
+     "format": "ipv4"
+    },
+    "mac": {
+     "oneOf": [
+      {
+       "type": "string",
+       "pattern": "^[0-9a-f]{2}(:[0-9a-f]{2}){5}$"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "ports": {
+     "type": "array",
+     "items": {
+      "type": "integer"
+     }
+    },
+    "icmp": {
+     "type": "boolean"
+    },
+    "first_seen": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "last_seen": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "state": {
+     "enum": [
+      "present",
+      "missing"
+     ]
+    }
+   },
+   "required": [
+    "ip",
+    "mac",
+    "ports",
+    "icmp",
+    "first_seen",
+    "last_seen",
+    "state"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryLimits": {
+   "type": "object",
+   "properties": {
+    "max_prefix": {
+     "const": 22
+    },
+    "rate_per_second": {
+     "const": 50
+    },
+    "min_schedule_minutes": {
+     "const": 60
+    },
+    "tcp_ports": {
+     "type": "array",
+     "items": {
+      "type": "integer"
+     }
+    }
+   },
+   "required": [
+    "max_prefix",
+    "rate_per_second",
+    "min_schedule_minutes",
+    "tcp_ports"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryNetworkPage": {
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/DiscoveryNetwork"
+     }
+    },
+    "limits": {
+     "$ref": "#/$defs/DiscoveryLimits"
+    }
+   },
+   "required": [
+    "items",
+    "limits"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryRunPage": {
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/DiscoveryRun"
+     }
+    }
+   },
+   "required": [
+    "items"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryHostPage": {
+   "type": "object",
+   "properties": {
+    "items": {
+     "type": "array",
+     "items": {
+      "$ref": "#/$defs/DiscoveryHost"
+     }
+    }
+   },
+   "required": [
+    "items"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryRunStarted": {
+   "type": "object",
+   "properties": {
+    "run_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "state": {
+     "const": "queued"
+    }
+   },
+   "required": [
+    "run_id",
+    "state"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryNetworkInput": {
+   "type": "object",
+   "properties": {
+    "site_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "collector_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "name": {
+     "type": "string"
+    },
+    "cidr": {
+     "type": "string"
+    },
+    "probes": {
+     "type": "array",
+     "minItems": 1,
+     "maxItems": 3,
+     "uniqueItems": true,
+     "items": {
+      "enum": [
+       "tcp",
+       "arp",
+       "icmp"
+      ]
+     }
+    },
+    "schedule_minutes": {
+     "oneOf": [
+      {
+       "type": "integer"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "site_id",
+    "collector_id",
+    "name",
+    "cidr",
+    "probes"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryJob": {
+   "type": "object",
+   "properties": {
+    "run_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "network_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "cidr": {
+     "type": "string"
+    },
+    "probes": {
+     "type": "array",
+     "minItems": 1,
+     "maxItems": 3,
+     "uniqueItems": true,
+     "items": {
+      "enum": [
+       "tcp",
+       "arp",
+       "icmp"
+      ]
+     }
+    },
+    "ports": {
+     "type": "array",
+     "items": {
+      "type": "integer"
+     }
+    },
+    "rate_per_second": {
+     "type": "integer",
+     "minimum": 1
+    },
+    "timeout_ms": {
+     "type": "integer",
+     "minimum": 1
+    }
+   },
+   "required": [
+    "run_id",
+    "network_id",
+    "cidr",
+    "probes",
+    "ports",
+    "rate_per_second",
+    "timeout_ms"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryJobResponse": {
+   "type": "object",
+   "properties": {
+    "job": {
+     "oneOf": [
+      {
+       "$ref": "#/$defs/DiscoveryJob"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    }
+   },
+   "required": [
+    "job"
+   ],
+   "additionalProperties": false
+  },
+  "FoundHost": {
+   "type": "object",
+   "properties": {
+    "ip": {
+     "type": "string"
+    },
+    "mac": {
+     "type": "string"
+    },
+    "ports": {
+     "type": "array",
+     "maxItems": 16,
+     "items": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 65535
+     }
+    },
+    "icmp": {
+     "type": "boolean"
+    }
+   },
+   "required": [
+    "ip",
+    "ports",
+    "icmp"
+   ],
+   "additionalProperties": false
+  },
+  "DiscoveryResult": {
+   "type": "object",
+   "properties": {
+    "major": {
+     "const": 1
+    },
+    "result_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "tenant_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "source_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "generation_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "run_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "started_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "finished_at": {
+     "type": "string",
+     "format": "date-time"
+    },
+    "addresses": {
+     "type": "integer",
+     "minimum": 0,
+     "maximum": 1024
+    },
+    "hosts": {
+     "type": [
+      "array",
+      "null"
+     ],
+     "maxItems": 1024,
+     "items": {
+      "$ref": "#/$defs/FoundHost"
+     }
+    },
+    "errors": {
+     "type": [
+      "array",
+      "null"
+     ],
+     "maxItems": 32,
+     "items": {
+      "type": "string",
+      "maxLength": 64
+     }
+    }
+   },
+   "required": [
+    "major",
+    "result_id",
+    "tenant_id",
+    "source_id",
+    "generation_id",
+    "run_id",
+    "started_at",
+    "finished_at",
+    "addresses",
+    "hosts",
+    "errors"
+   ],
+   "additionalProperties": false
+  },
+  "SignedDiscoveryResult": {
+   "type": "object",
+   "properties": {
+    "payload": {
+     "$ref": "#/$defs/DiscoveryResult"
+    },
+    "payload_sha256": {
+     "type": "string",
+     "pattern": "^[0-9a-f]{64}$"
+    },
+    "key_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "signature": {
+     "type": "string"
+    }
+   },
+   "required": [
+    "payload",
+    "payload_sha256",
+    "key_id",
+    "signature"
+   ],
+   "additionalProperties": false,
+   "description": "Подпись Ed25519 ключом подписи collector над 'SURVEYSCAN-DISCOVERY-V1\\n' + RFC 8785 JSON payload"
+  },
+  "DiscoveryOutcome": {
+   "type": "object",
+   "properties": {
+    "run_id": {
+     "type": "string",
+     "format": "uuid"
+    },
+    "found": {
+     "type": "integer"
+    },
+    "new_hosts": {
+     "type": "integer"
+    },
+    "missing": {
+     "type": "integer"
+    },
+    "dropped_out_of_scope": {
+     "type": "integer"
+    }
+   },
+   "required": [
+    "run_id",
+    "found",
+    "new_hosts",
+    "missing",
+    "dropped_out_of_scope"
+   ],
+   "additionalProperties": false
+  }
+ }
+}
