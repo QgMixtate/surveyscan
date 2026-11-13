@@ -39,7 +39,8 @@ type dbConfig struct {
 }
 
 type shardConfig struct {
-	Backend string `json:"backend"`
+	Backend  string   `json:"backend"`
+	Backends []string `json:"backends,omitempty"` // C40: дополнительные api-процессы ячейки
 	dbConfig
 	Nodes map[string]dbConfig `json:"nodes,omitempty"` // C38: узлы PostgreSQL ячейки (писатель и реплика)
 }
@@ -300,15 +301,22 @@ func run(cmd string, args []string) error {
 		if e != nil {
 			return e
 		}
-		shards := map[string]*url.URL{}
+		shards, more := map[string]*url.URL{}, map[string][]*url.URL{}
 		for name, s := range c.Shards {
 			u, e := url.Parse(s.Backend)
 			if e != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Host == "" {
 				return fmt.Errorf("shard %s: invalid backend", name)
 			}
 			shards[name] = u
+			for _, raw := range s.Backends {
+				b, e := url.Parse(raw)
+				if e != nil || (b.Scheme != "http" && b.Scheme != "https") || b.Host == "" {
+					return fmt.Errorf("shard %s: invalid backend", name)
+				}
+				more[name] = append(more[name], b)
+			}
 		}
-		srv := &http.Server{Addr: c.Listen, Handler: &router.Router{Catalog: cat, Shards: shards, Key: key, Secure: c.Secure},
+		srv := &http.Server{Addr: c.Listen, Handler: &router.Router{Catalog: cat, Shards: shards, More: more, Key: key, Secure: c.Secure},
 			ReadHeaderTimeout: 10 * time.Second}
 		go watch(ctx, cat, c)
 		go func() {

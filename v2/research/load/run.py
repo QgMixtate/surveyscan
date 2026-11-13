@@ -22,7 +22,8 @@ def log(*a):
     print(time.strftime('%H:%M:%S'), *a, flush=True)
 
 
-SPLIT = os.environ.get('SURVEYSCAN_LOAD_SPLIT') == '1'  # C35.04: центр обвязки — api, фоновая работа — отдельный worker
+DIST = os.environ.get('SURVEYSCAN_LOAD_DIST') == '1'  # C40.01: маршрутизатор C37 → 2 api → worker (C35)
+SPLIT = os.environ.get('SURVEYSCAN_LOAD_SPLIT') == '1' or DIST  # C35.04: центр обвязки — api, фоновая работа — отдельный worker
 if SPLIT:
     os.environ['SURVEYSCAN_V2_ROLE'] = 'api'
 
@@ -115,7 +116,40 @@ def scenario(**s):
 
     # 3. нагрузка + фоновый импорт + съём ресурсов
     hostname = sql(f"SELECT value #>> '{{}}' FROM inventory.record_facts12 WHERE section_name='identity' AND field_name='hostname' LIMIT 1")
-    cfg = {'base_url': f"https://127.0.0.1:{s['center_port']}", 'ca_file': s['ca_file'], 'origin': s['origin'], 'users': users, 'assets': assets, 'subjects': subjects,
+    base = f"https://127.0.0.1:{s['center_port']}"
+    if DIST:
+        import atexit, secrets
+        env = s['server_environment']
+        api2 = freeport()
+        alog = (Path(s['directory']) / 'api2.log').open('ab')
+        p2 = subprocess.Popen([str(ROOT / '.dist/surveyscan-server'), 'serve'], cwd=ROOT, stdout=alog, stderr=alog, env=dict(env, SURVEYSCAN_V2_ROLE='api', SURVEYSCAN_V2_LISTEN=f'127.0.0.1:{api2}'))
+        atexit.register(p2.terminate)
+        catalog = 'ssv2c40cat_' + secrets.token_hex(6)
+        sql('CREATE DATABASE ' + catalog)
+        atexit.register(lambda: sql(f'DROP DATABASE IF EXISTS {catalog} WITH (FORCE)'))
+        key = work / 'route.key'; key.write_text(secrets.token_urlsafe(48)); os.chmod(key, 0o600)
+        listen = s['origin'].removeprefix('http://')
+        rcfg = {'listen': listen, 'secure': False, 'route_key_file': str(key),
+                'catalog': {'database_url': re.sub(r'/[^/?]+\?', f'/{catalog}?', env['SURVEYSCAN_V2_DATABASE_URL'], count=1), 'password_file': env['SURVEYSCAN_V2_DATABASE_PASSWORD_FILE']},
+                'shards': {'cell-1': {'backend': 'http://' + env['SURVEYSCAN_V2_LISTEN'], 'backends': [f'http://127.0.0.1:{api2}'],
+                                      'database_url': env['SURVEYSCAN_V2_DATABASE_URL'], 'password_file': env['SURVEYSCAN_V2_DATABASE_PASSWORD_FILE']}}}
+        (work / 'router.json').write_text(json.dumps(rcfg)); os.chmod(work / 'router.json', 0o600)
+        rt = lambda *a: subprocess.run([str(ROOT / '.dist/surveyscan-router'), a[0], '-config', str(work / 'router.json'), *a[1:]], check=True, capture_output=True, text=True)
+        for a in (('init-catalog',), ('add-shard', '-id', 'cell-1', '-region', 'ru-1'), ('place', '-tenant', tenant, '-shard', 'cell-1', '-home', 'ru-1'), ('sync-logins',)):
+            rt(*a)
+        rlog = (Path(s['directory']) / 'router.log').open('ab')
+        pr = subprocess.Popen([str(ROOT / '.dist/surveyscan-router'), 'serve', '-config', str(work / 'router.json')], cwd=ROOT, stdout=rlog, stderr=rlog)
+        atexit.register(pr.terminate)
+        for _ in range(100):
+            try:
+                if http.client.HTTPConnection(listen.split(':')[0], int(listen.split(':')[1]), timeout=2).request('GET', '/router/health') is None:
+                    break
+            except OSError:
+                time.sleep(.2)
+        time.sleep(2)
+        base = s['origin']
+        log('distributed: router', listen, '→ api', env['SURVEYSCAN_V2_LISTEN'], '+ api', api2, '+ worker')
+    cfg = {'base_url': base, 'ca_file': s['ca_file'], 'origin': s['origin'], 'users': users, 'assets': assets, 'subjects': subjects,
            'searches': ['openssl', 'python3', 'systemd', 'bigpkg', hostname, 'Сервис 07', 'назначения', 'libssl3', 'curl', 'ubuntu'],
            'virtual_users': 100, 'warmup_seconds': WARMUP, 'duration_seconds': DURATION, 'think_min_seconds': 2, 'think_max_seconds': 6, 'seed': 20261112,
            'mix': {'list': 25, 'card': 20, 'search': 15, 'software': 10, 'section12': 5, 'worklist': 5, 'topology': 5, 'edit': 10, 'assign': 5}}

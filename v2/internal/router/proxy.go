@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 )
 
@@ -22,14 +23,15 @@ import (
 // (tenant.epoch.подпись); шард всегда берётся из каталога. Любая неопределённость — отказ, маршрута по умолчанию нет.
 type Router struct {
 	Catalog   Catalog
-	Shards    map[string]*url.URL // shard_id → адрес HTTP-слушателя ячейки (loopback/внутренняя сеть)
-	Key       []byte              // ключ подписи cookie маршрута (≥ 32 байт)
-	Secure    bool                // атрибут Secure у cookie (за TLS-edge — true)
-	TTL       time.Duration       // кэш размещений
-	Transport http.RoundTripper   // транспорт к ячейкам (nil — стандартный)
+	Shards    map[string]*url.URL   // shard_id → адрес HTTP-слушателя ячейки (loopback/внутренняя сеть)
+	More      map[string][]*url.URL // C40: дополнительные api-процессы ячейки (C35) — запросы по кругу
+	Key       []byte                // ключ подписи cookie маршрута (≥ 32 байт)
+	Secure    bool                  // атрибут Secure у cookie (за TLS-edge — true)
+	TTL       time.Duration         // кэш размещений
+	Transport http.RoundTripper     // транспорт к ячейкам (nil — стандартный)
 	mu        sync.Mutex
 	cache     map[string]cachedPlacement
-	proxies   map[string]*httputil.ReverseProxy
+	proxies   map[string]http.Handler
 	initOnce  sync.Once
 }
 
@@ -43,12 +45,20 @@ const routeCookie = "ss_route"
 func (r *Router) init() {
 	r.initOnce.Do(func() {
 		r.cache = map[string]cachedPlacement{}
-		r.proxies = map[string]*httputil.ReverseProxy{}
+		r.proxies = map[string]http.Handler{}
 		for id, u := range r.Shards {
-			p := httputil.NewSingleHostReverseProxy(u)
-			p.Transport = r.Transport
-			p.ErrorHandler = func(w http.ResponseWriter, _ *http.Request, _ error) { fail(w, 502, "SHARD_UNAVAILABLE") }
-			r.proxies[id] = p
+			var list roundRobin
+			for _, b := range append([]*url.URL{u}, r.More[id]...) {
+				p := httputil.NewSingleHostReverseProxy(b)
+				p.Transport = r.Transport
+				p.ErrorHandler = func(w http.ResponseWriter, _ *http.Request, _ error) { fail(w, 502, "SHARD_UNAVAILABLE") }
+				list.backends = append(list.backends, p)
+			}
+			if len(list.backends) == 1 {
+				r.proxies[id] = list.backends[0]
+			} else {
+				r.proxies[id] = &list
+			}
 		}
 		if r.TTL == 0 {
 			r.TTL = 2 * time.Second
@@ -106,7 +116,17 @@ func (r *Router) placement(ctx context.Context, tenant string) (Placement, error
 	return p, nil
 }
 
-func (r *Router) route(w http.ResponseWriter, p Placement) *httputil.ReverseProxy {
+// roundRobin раздаёт запросы api-процессам ячейки по кругу (процессы без состояния сессий, C35).
+type roundRobin struct {
+	backends []http.Handler
+	next     atomic.Uint64
+}
+
+func (b *roundRobin) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	b.backends[int(b.next.Add(1)%uint64(len(b.backends)))].ServeHTTP(w, req)
+}
+
+func (r *Router) route(w http.ResponseWriter, p Placement) http.Handler {
 	switch p.State {
 	case "active":
 	case "failover":
