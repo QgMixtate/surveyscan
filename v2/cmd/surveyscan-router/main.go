@@ -2,7 +2,7 @@
 //
 //	surveyscan-router <команда> -config router.json [флаги]
 //	  serve | init-catalog | add-shard -id ID -region R | place -tenant T -shard ID -home R [-dr R] [-residency X]
-//	  sync-logins | summary | move-tenant -tenant T -to ID [-dry-run]
+//	  sync-logins | summary | move-tenant | set-writer -shard ID -node N | failover -shard ID -to N [-old-unreachable] | check-writers -tenant T -to ID [-dry-run]
 //
 // Конфигурация (приватный файл, пароли — только в отдельных файлах):
 //
@@ -41,6 +41,40 @@ type dbConfig struct {
 type shardConfig struct {
 	Backend string `json:"backend"`
 	dbConfig
+	Nodes map[string]dbConfig `json:"nodes,omitempty"` // C38: узлы PostgreSQL ячейки (писатель и реплика)
+}
+
+func nodes(s shardConfig) router.Nodes {
+	out := router.Nodes{}
+	for name, d := range s.Nodes {
+		out[name] = func(ctx context.Context) (*pgx.Conn, error) { return conn(ctx, d) }
+	}
+	return out
+}
+
+// watch — сторож писателей (C38.02): раз в 10 с ограждает узлы, принимающие запись не по каталогу.
+func watch(ctx context.Context, cat router.Catalog, c fileConfig) {
+	t := time.NewTicker(10 * time.Second)
+	defer t.Stop()
+	for {
+		for name, s := range c.Shards {
+			if len(s.Nodes) < 2 {
+				continue
+			}
+			fenced, _, e := router.CheckWriters(ctx, cat, name, nodes(s), "router:watchdog")
+			for _, n := range fenced {
+				fmt.Fprintf(os.Stderr, "surveyscan-router: shard %s: fenced unexpected writer %s\n", name, n)
+			}
+			if e != nil {
+				fmt.Fprintf(os.Stderr, "surveyscan-router: shard %s: writer check failed\n", name)
+			}
+		}
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+		}
+	}
 }
 
 type fileConfig struct {
@@ -117,7 +151,7 @@ func actor() string {
 
 func main() {
 	if len(os.Args) < 2 {
-		fmt.Fprintln(os.Stderr, "usage: surveyscan-router serve|init-catalog|add-shard|place|sync-logins|summary|move-tenant -config FILE")
+		fmt.Fprintln(os.Stderr, "usage: surveyscan-router serve|init-catalog|add-shard|place|sync-logins|summary|move-tenant|set-writer|failover|check-writers -config FILE")
 		os.Exit(2)
 	}
 	if e := run(os.Args[1], os.Args[2:]); e != nil {
@@ -138,6 +172,9 @@ func run(cmd string, args []string) error {
 	residency := fs.String("residency", "", "data residency label")
 	to := fs.String("to", "", "target shard")
 	dry := fs.Bool("dry-run", false, "copy, verify and remove the copy without fencing")
+	node := fs.String("node", "", "PostgreSQL node of the shard")
+	unreachable := fs.Bool("old-unreachable", false, "operator confirms the old writer is powered off or isolated")
+	catchUp := fs.Duration("catch-up", 30*time.Second, "max wait for the replica to replay the old writer's WAL")
 	if e := fs.Parse(args); e != nil {
 		return e
 	}
@@ -196,6 +233,29 @@ func run(cmd string, args []string) error {
 			return e
 		}
 		return out.Encode(map[string]int{"logins": n, "conflicts": conflicts})
+	case "set-writer":
+		if _, ok := c.Shards[*shard].Nodes[*node]; !ok {
+			return errors.New("node is not in router config")
+		}
+		return cat.SetWriter(ctx, *shard, *node, actor())
+	case "failover":
+		s, ok := c.Shards[*shard]
+		if !ok {
+			return errors.New("shard is not in router config")
+		}
+		rep, e := router.Failover(ctx, cat, *shard, nodes(s), *to, *unreachable, *catchUp, actor())
+		_ = out.Encode(rep)
+		return e
+	case "check-writers":
+		res := map[string]any{}
+		for name, s := range c.Shards {
+			if len(s.Nodes) < 2 {
+				continue
+			}
+			fenced, down, e := router.CheckWriters(ctx, cat, name, nodes(s), actor())
+			res[name] = map[string]any{"fenced": fenced, "unreachable": down, "ok": e == nil}
+		}
+		return out.Encode(res)
 	case "summary":
 		names := make([]string, 0, len(c.Shards))
 		for name := range c.Shards {

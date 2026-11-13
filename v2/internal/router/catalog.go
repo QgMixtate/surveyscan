@@ -41,7 +41,11 @@ CREATE TABLE IF NOT EXISTS catalog.events (
  action text NOT NULL,
  tenant_id uuid,
  detail jsonb NOT NULL DEFAULT '{}'::jsonb
-);`
+);
+ALTER TABLE catalog.shards ADD COLUMN IF NOT EXISTS writer_node text CHECK (writer_node ~ '^[a-z0-9][a-z0-9-]{0,62}$');
+ALTER TABLE catalog.shards ADD COLUMN IF NOT EXISTS writer_epoch bigint NOT NULL DEFAULT 1 CHECK (writer_epoch >= 1);
+ALTER TABLE catalog.shards DROP CONSTRAINT IF EXISTS shards_state_check;
+ALTER TABLE catalog.shards ADD CONSTRAINT shards_state_check CHECK (state IN ('active','draining','failover'));`
 
 var (
 	ErrUnknown   = errors.New("tenant or login is not in the catalog")
@@ -99,9 +103,10 @@ func (c Catalog) Place(ctx context.Context, tenant, shard, home string, dr, resi
 	return tx.Commit(ctx)
 }
 
+// Placement — размещение организации; на время переключения писателя ячейки состояние — failover (C38).
 func (c Catalog) Placement(ctx context.Context, tenant string) (Placement, error) {
 	p := Placement{Tenant: tenant}
-	e := c.Pool.QueryRow(ctx, "SELECT shard_id,epoch,state FROM catalog.tenants WHERE tenant_id=$1", tenant).Scan(&p.Shard, &p.Epoch, &p.State)
+	e := c.Pool.QueryRow(ctx, "SELECT t.shard_id,t.epoch,CASE WHEN s.state='failover' THEN 'failover' ELSE t.state END FROM catalog.tenants t JOIN catalog.shards s USING (shard_id) WHERE t.tenant_id=$1", tenant).Scan(&p.Shard, &p.Epoch, &p.State)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return p, ErrUnknown
 	}

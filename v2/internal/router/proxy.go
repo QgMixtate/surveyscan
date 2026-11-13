@@ -107,7 +107,12 @@ func (r *Router) placement(ctx context.Context, tenant string) (Placement, error
 }
 
 func (r *Router) route(w http.ResponseWriter, p Placement) *httputil.ReverseProxy {
-	if p.State != "active" {
+	switch p.State {
+	case "active":
+	case "failover":
+		fail(w, 503, "SHARD_FAILOVER")
+		return nil
+	default:
 		fail(w, 503, "TENANT_MIGRATING")
 		return nil
 	}
