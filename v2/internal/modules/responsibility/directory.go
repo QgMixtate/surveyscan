@@ -120,7 +120,7 @@ func (s Store) upsert(ctx context.Context, tx pgx.Tx, tenant, kind, guid, name, 
 			return "", e
 		}
 		id := identifier.New()
-		if _, e = tx.Exec(ctx, "INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact,user_id,origin,external_id,synced_at) VALUES($1,$2,$3,$4,$5,$6,'ldap',$7,now())", tenant, id, kind, name, contact, user, guid); e != nil {
+		if _, e = tx.Exec(ctx, "INSERT INTO responsibility.subjects(tenant_id,subject_id,kind,name,contact,user_id,origin,external_id,synced_at,directory_login) VALUES($1,$2,$3,$4,$5,$6,'ldap',$7,now(),NULLIF($8,''))", tenant, id, kind, name, contact, user, guid, cut(login, 256)); e != nil {
 			return "", e
 		}
 		c.Created++
@@ -158,7 +158,7 @@ func (s Store) upsert(ctx context.Context, tx pgx.Tx, tenant, kind, guid, name, 
 	}
 	changed := cur.name != name || cur.contact != contact || !cur.active || user != nil
 	if _, e = tx.Exec(ctx, `UPDATE responsibility.subjects SET name=$3,contact=$4,active=true,user_id=COALESCE(user_id,$5::uuid),synced_at=now(),
-revision=revision+CASE WHEN $6 THEN 1 ELSE 0 END WHERE tenant_id=$1 AND subject_id=$2`, tenant, cur.id, name, contact, user, changed); e != nil {
+directory_login=NULLIF($7,''),revision=revision+CASE WHEN $6 THEN 1 ELSE 0 END WHERE tenant_id=$1 AND subject_id=$2`, tenant, cur.id, name, contact, user, changed, cut(login, 256)); e != nil {
 		return "", e
 	}
 	switch {

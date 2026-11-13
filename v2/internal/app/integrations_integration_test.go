@@ -217,7 +217,7 @@ func TestC31DirectorySync(t *testing.T) {
 	}
 	s := subjects()
 	ivanov, petrova, admins, nested := s["Иван Иванов"], s["Мария Петрова"], s["Linux Admins"], s["Nested"]
-	if ivanov.Origin != "ldap" || ivanov.Username == nil || *ivanov.Username != "ivanov" || ivanov.SyncedAt == nil || ivanov.Contact != "ivanov@example.test" ||
+	if ivanov.Origin != "ldap" || ivanov.DirectoryLogin == nil || *ivanov.DirectoryLogin != "ivanov" || ivanov.Username == nil || *ivanov.Username != "ivanov" || ivanov.SyncedAt == nil || ivanov.Contact != "ivanov@example.test" ||
 		admins.Kind != "team" || admins.Members != 2 || nested.Members != 0 || petrova.Username != nil {
 		t.Fatalf("directory subjects: %+v", s)
 	}

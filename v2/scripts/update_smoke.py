@@ -49,7 +49,7 @@ def main():
                     with tarfile.open(fileobj=io.BytesIO(archive)) as tar:
                         tar.extractall(source, filter='data')
                     source = source / 'v2'
-                    (source / 'internal/platform/messaging/schema/0047_c13_update_acceptance.sql').write_text(
+                    (source / 'internal/platform/messaging/schema/0048_c13_update_acceptance.sql').write_text(
                         'CREATE TABLE messaging.c13_update_acceptance (row_id bigint PRIMARY KEY);\n')
                 distribution = work / ('dist-' + version)
                 distribution.mkdir()
@@ -248,7 +248,7 @@ def main():
                 result = updater.apply(root, public, controller)
                 assert controller.applied_migrations == 1 and result['phase'] == 'recovery_required'
                 assert updater.active(base) == versions[3] and (base / 'update.fence').exists()
-                assert s['sql']('SELECT count(*) FROM platform.schema_migrations') == '48'
+                assert s['sql']('SELECT count(*) FROM platform.schema_migrations') == '49'
                 assert not controller.check_schema(base / 'releases' / versions[2] / 'bin/surveyscan-server')
                 controller.fail_version = None
                 result = updater.apply(root, public, controller, recover=True)

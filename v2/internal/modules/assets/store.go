@@ -194,6 +194,20 @@ AND (i.source_record_key=$6 OR NOT EXISTS(SELECT 1 FROM moved WHERE k=$6 OR k=i.
 			}
 			auto = !contradiction
 		}
+		// Замечание пилота №7 (C34): ВМ, развёрнутые из одного образа, несут одинаковый machine-id — сильный ID совпал, а
+		// имя хоста у актива другое. Это признак клона, а не того же устройства: не сводим молча, запись — в очередь
+		// разбора (оператор разделяет или подтверждает). Сравнение — в пределах одного пространства имён.
+		for _, c := range normalized {
+			if !auto || c.Kind != "hostname" {
+				continue
+			}
+			var renamed bool
+			e = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM assets.asset_identifiers WHERE tenant_id=$1 AND asset_uid=$2 AND kind='hostname' AND namespace=$3 AND normalized_value<>$4 AND valid_to IS NULL)", o.TenantID, candidate, c.Namespace, c.Value).Scan(&renamed)
+			if e != nil {
+				return result, e
+			}
+			auto = !renamed
+		}
 		if auto {
 			uid = &candidate
 			conflict = scopeConflict

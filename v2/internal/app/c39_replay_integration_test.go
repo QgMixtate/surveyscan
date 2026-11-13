@@ -113,3 +113,55 @@ func TestC39ReplayAfterRestoreRespectsLedgerAliasesAndTombstones(t *testing.T) {
 		t.Fatal("no asset may be created by post-restore traffic")
 	}
 }
+
+// Замечание пилота №7 (C34): ВМ из одного образа — тот же machine-id, другое имя хоста. Автосведение не склеивает их,
+// запись уходит в очередь разбора; второй источник того же хоста (то же имя) сводится автоматически, как раньше.
+func TestPilotCloneSameMachineIDDifferentHostnameGoesToReview(t *testing.T) {
+	f := registrySetup(t)
+	if _, err := f.registry.ConfigureInventoryProtocol12(true); err != nil {
+		t.Fatal(err)
+	}
+	machine := &sources.MachineService{Pool: f.pool, Audit: audit.Store{}}
+	type src struct {
+		id, generation string
+		key            ed25519.PrivateKey
+	}
+	newSource := func() src {
+		pub, key, _ := ed25519.GenerateKey(rand.Reader)
+		s := src{identifier.New(), identifier.New(), key}
+		if _, err := machine.RegisterPortable(f.ctx, "console", sources.PortableRegistration{Tenant: tenant, Site: siteID, Scope: scopeID, Source: s.id, Generation: s.generation, PublicKey: pub}); err != nil {
+			t.Fatal(err)
+		}
+		return s
+	}
+	mid := contracts.Candidate{Kind: "machine_uuid", Namespace: "linux-machine-id", Value: "4c4c4544-0000-1000-8000-" + identifier.New()[24:]}
+	send := func(s src, host string) (string, string, string) {
+		o := testObservation12(t, f, "1")
+		o.Origin = contracts.Origin{SourceID: s.id, SourceKind: "portable", GenerationID: s.generation}
+		o.Record = contracts.SourceRecord{Namespace: "host", LocalID: "host:" + host}
+		o.Clock = "estimated"
+		o.Candidates = []contracts.Candidate{mid, {Kind: "hostname", Namespace: "dns", Value: host}}
+		raw, _ := json.Marshal(o)
+		report, err := f.registry.ImportPortable(f.ctx, machine, tenant, s.id, portablePackage(t, s.key, s.id, raw))
+		if err != nil || len(report.Records) != 1 {
+			t.Fatal(err, report)
+		}
+		r := report.Records[0]
+		return r.Disposition, r.AssetID, r.Reason
+	}
+	d, original, _ := send(newSource(), "mvp.awm.local")
+	if d != "applied" || original == "" {
+		t.Fatal("original", d)
+	}
+	d, asset, reason := send(newSource(), "simple2fa.awm.local")
+	if asset == original {
+		t.Fatalf("clone with another hostname was merged into the original (%s, %s)", d, reason)
+	}
+	var open int
+	if err := f.pool.QueryRow(f.ctx, "SELECT count(*) FROM assets.reconciliation_conflicts WHERE tenant_id=$1 AND state='open' AND $2::uuid=ANY(candidate_asset_uids)", tenant, original).Scan(&open); err != nil || open != 1 {
+		t.Fatal("clone must be queued for review with the original as candidate", open, err)
+	}
+	if d, asset, _ := send(newSource(), "mvp.awm.local"); d != "applied" || asset != original {
+		t.Fatalf("second source of the same host must still auto-match: %s %s", d, asset)
+	}
+}

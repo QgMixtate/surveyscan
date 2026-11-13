@@ -68,6 +68,12 @@
        "type": "null"
       }
      ]
+    },
+    "directory_login": {
+     "type": "string",
+     "minLength": 1,
+     "maxLength": 256,
+     "description": "Замечание пилота №8: логин в каталоге (sAMAccountName) у субъекта из AD; нет у локальных и команд без логина"
     }
    },
    "required": [

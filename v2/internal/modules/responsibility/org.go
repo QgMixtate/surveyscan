@@ -30,6 +30,8 @@ type SubjectInfo struct {
 	// C31.02: local — ведётся в SurveyScan; ldap — из каталога (только чтение), synced_at — последняя синхронизация
 	Origin   string     `json:"origin"`
 	SyncedAt *time.Time `json:"synced_at"`
+	// Логин в каталоге (sAMAccountName) — у субъектов из AD; заполняется синхронизацией
+	DirectoryLogin *string `json:"directory_login,omitempty"`
 }
 
 type SubjectInput struct {
@@ -109,8 +111,8 @@ func (Store) SubjectByID(ctx context.Context, tx pgx.Tx, tenant, id string) (Sub
 	}
 	e := tx.QueryRow(ctx, `SELECT s.subject_id::text,s.kind,s.name,s.contact,s.active,u.username,s.revision::text,
 EXISTS(SELECT 1 FROM scope.sites x WHERE x.tenant_id=s.tenant_id AND x.fallback_subject_id=s.subject_id),
-(SELECT count(*) FROM responsibility.team_members m WHERE m.tenant_id=s.tenant_id AND m.team_id=s.subject_id AND m.valid_to IS NULL)::int,s.origin,s.synced_at
-FROM responsibility.subjects s LEFT JOIN access.users u ON u.tenant_id=s.tenant_id AND u.user_id=s.user_id WHERE s.tenant_id=$1 AND s.subject_id=$2`, tenant, id).Scan(&out.ID, &out.Kind, &out.Name, &out.Contact, &out.Active, &out.Username, &out.Revision, &out.Fallback, &out.Members, &out.Origin, &out.SyncedAt)
+(SELECT count(*) FROM responsibility.team_members m WHERE m.tenant_id=s.tenant_id AND m.team_id=s.subject_id AND m.valid_to IS NULL)::int,s.origin,s.synced_at,s.directory_login
+FROM responsibility.subjects s LEFT JOIN access.users u ON u.tenant_id=s.tenant_id AND u.user_id=s.user_id WHERE s.tenant_id=$1 AND s.subject_id=$2`, tenant, id).Scan(&out.ID, &out.Kind, &out.Name, &out.Contact, &out.Active, &out.Username, &out.Revision, &out.Fallback, &out.Members, &out.Origin, &out.SyncedAt, &out.DirectoryLogin)
 	if errors.Is(e, pgx.ErrNoRows) {
 		e = domain.NotFound
 	}
@@ -120,7 +122,7 @@ FROM responsibility.subjects s LEFT JOIN access.users u ON u.tenant_id=s.tenant_
 func (Store) Subjects(ctx context.Context, tx pgx.Tx, tenant, kind, after string, inactive bool, limit int) ([]SubjectInfo, error) {
 	rows, e := tx.Query(ctx, `SELECT s.subject_id::text,s.kind,s.name,s.contact,s.active,u.username,s.revision::text,
 EXISTS(SELECT 1 FROM scope.sites x WHERE x.tenant_id=s.tenant_id AND x.fallback_subject_id=s.subject_id),
-(SELECT count(*) FROM responsibility.team_members m WHERE m.tenant_id=s.tenant_id AND m.team_id=s.subject_id AND m.valid_to IS NULL)::int,s.origin,s.synced_at
+(SELECT count(*) FROM responsibility.team_members m WHERE m.tenant_id=s.tenant_id AND m.team_id=s.subject_id AND m.valid_to IS NULL)::int,s.origin,s.synced_at,s.directory_login
 FROM responsibility.subjects s LEFT JOIN access.users u ON u.tenant_id=s.tenant_id AND u.user_id=s.user_id
 WHERE s.tenant_id=$1 AND ($2='' OR s.kind=$2) AND ($3 OR s.active) AND ($4='' OR s.subject_id>NULLIF($4,'')::uuid) ORDER BY s.subject_id LIMIT $5`, tenant, kind, inactive, after, limit)
 	if e != nil {
@@ -130,7 +132,7 @@ WHERE s.tenant_id=$1 AND ($2='' OR s.kind=$2) AND ($3 OR s.active) AND ($4='' OR
 	out := []SubjectInfo{}
 	for rows.Next() {
 		var s SubjectInfo
-		if e = rows.Scan(&s.ID, &s.Kind, &s.Name, &s.Contact, &s.Active, &s.Username, &s.Revision, &s.Fallback, &s.Members, &s.Origin, &s.SyncedAt); e != nil {
+		if e = rows.Scan(&s.ID, &s.Kind, &s.Name, &s.Contact, &s.Active, &s.Username, &s.Revision, &s.Fallback, &s.Members, &s.Origin, &s.SyncedAt, &s.DirectoryLogin); e != nil {
 			return nil, e
 		}
 		out = append(out, s)

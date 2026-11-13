@@ -212,6 +212,7 @@ def main():
     p.add_argument('--selftest', action='store_true')
     p.add_argument('--persistent', action='store_true', help='постоянный стенд: БД, CA, ключи OpenBao и регистрации агентов сохраняются между перезапусками (обновление центра без переподключения агентов)')
     p.add_argument('--state', default=str(ROOT / '.local/vm-center-state'), help='каталог постоянного стенда (секреты, 0700; не публиковать)')
+    p.add_argument('--backup-marker', default=None, help='файл метки резервной копии (запоминается в постоянном стенде)')
     args = p.parse_args()
     if args.selftest:
         args.platform = 'linux/amd64'
@@ -327,6 +328,15 @@ def persistent(args):
     else:
         print('PERSISTENT стенд найден, агентов переподключать не нужно:', state, flush=True)
     settings = json.loads(settings_file.read_text())
+    # Метка резервной копии (задание №8, замечание пилота №9): путь запоминается в vm.json и подставляется при каждом
+    # запуске — ручной перезапуск центра больше не теряет SURVEYSCAN_V2_BACKUP_MARKER.
+    marker = args.backup_marker or os.environ.get('SURVEYSCAN_V2_BACKUP_MARKER') or settings.get('backup_marker')
+    if marker and settings.get('backup_marker') != marker:
+        settings['backup_marker'] = marker
+        settings_file.write_text(json.dumps(settings))
+    if marker:
+        os.environ['SURVEYSCAN_V2_BACKUP_MARKER'] = marker
+        print('метка резервной копии:', marker, flush=True)
     ensure_integrations(settings['config'])
     fresh_token(settings['config'])
     renew_server_certificate(settings)
