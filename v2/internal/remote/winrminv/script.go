@@ -17,6 +17,12 @@ try {
   $cpu  = Safe 'cpu'  { @(Get-CimInstance Win32_Processor) }
   $nics = Safe 'nics' { @(Get-CimInstance Win32_NetworkAdapterConfiguration -Filter 'IPEnabled=true') }
   $svcs = Safe 'svcs' { @(Get-CimInstance Win32_Service) }
+  # Pilot #10 (C34): for a read-only account over a network logon some WMI providers refuse (Win32_Processor 0x80041003,
+  # Win32_Service 0x80041004). The same facts are read from the registry, readable by a standard user. The original
+  # error stays in errors (section is partial); service state and boot time are unknown from the registry.
+  if (-not $os) { $os = Safe 'osreg' { $cv = Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion'; [pscustomobject]@{ Caption = $cv.ProductName; Version = ('' + $cv.CurrentMajorVersionNumber + '.' + $cv.CurrentMinorVersionNumber + '.' + $cv.CurrentBuild); BuildNumber = $cv.CurrentBuild; OSArchitecture = $(if ([Environment]::Is64BitOperatingSystem) { '64-bit' } else { '32-bit' }); LastBootUpTime = $null; TotalVisibleMemorySize = $null } } }
+  if (-not $cpu) { $cpu = Safe 'cpureg' { $k = @(Get-ChildItem -Path 'HKLM:\HARDWARE\DESCRIPTION\System\CentralProcessor'); if ($k.Count -gt 0) { @([pscustomobject]@{ NumberOfLogicalProcessors = $k.Count; Name = ([string](Get-ItemProperty -Path $k[0].PSPath).ProcessorNameString).Trim() }) } } }
+  if (-not $svcs) { $svcs = Safe 'svcsreg' { @(Get-ChildItem -Path 'HKLM:\SYSTEM\CurrentControlSet\Services' | ForEach-Object { $p = Get-ItemProperty -Path $_.PSPath -ErrorAction SilentlyContinue; if ($p -and ([int]$p.Type -band 0x30) -and $p.ImagePath) { [pscustomobject]@{ Name = $_.PSChildName; DisplayName = $p.DisplayName; State = $null; StartMode = $(if ($null -ne $p.Start -and [int]$p.Start -le 4) { @('Boot','System','Auto','Manual','Disabled')[[int]$p.Start] } else { $null }); StartName = $p.ObjectName; PathName = $p.ImagePath } } }) } }
   $guid = Safe 'guid' { (Get-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Cryptography' -Name MachineGuid).MachineGuid }
   $sw = New-Object System.Collections.ArrayList
   foreach ($v in @(@('64','HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall'), @('32','HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall'))) {
@@ -27,7 +33,7 @@ try {
   if ($cs)   { $r.domain = $cs.Domain }
   if ($prod) { $r.uuid = $prod.UUID }
   if ($guid) { $r.machine_guid = [string]$guid }
-  if ($os)   { $r.os = [pscustomobject]@{ caption = $os.Caption; version = $os.Version; build = $os.BuildNumber; arch = $os.OSArchitecture; boot = $os.LastBootUpTime.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ'); memory_kb = $os.TotalVisibleMemorySize } }
+  if ($os)   { $r.os = [pscustomobject]@{ caption = $os.Caption; version = $os.Version; build = $os.BuildNumber; arch = $os.OSArchitecture; boot = $(if ($os.LastBootUpTime) { $os.LastBootUpTime.ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ') } else { $null }); memory_kb = $os.TotalVisibleMemorySize } }
   if ($bios) { $r.bios = [pscustomobject]@{ vendor = $bios.Manufacturer; version = $bios.SMBIOSBIOSVersion; serial = $bios.SerialNumber } }
   if ($cpu)  { $r.cpu_logical = ($cpu | Measure-Object -Property NumberOfLogicalProcessors -Sum).Sum; $r.cpu_name = $cpu[0].Name }
   $r.nics = @($nics | Where-Object { $_ } | ForEach-Object { [pscustomobject]@{ index = $_.InterfaceIndex; name = $_.Description; mac = $_.MACAddress; ips = @($_.IPAddress); masks = @($_.IPSubnet); dns = @($_.DNSServerSearchOrder); gateways = @($_.DefaultIPGateway); dhcp = [bool]$_.DHCPEnabled; mtu = $_.MTU } })

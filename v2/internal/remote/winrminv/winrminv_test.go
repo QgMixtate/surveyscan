@@ -217,3 +217,33 @@ func TestLongPollTimeoutsAreConsistent(t *testing.T) {
 		t.Fatal("parameters must carry the operation timeout and NTLM transport")
 	}
 }
+
+// Пилот №10: при отказе провайдеров WMI сценарий берёт ОС, процессор и службы из реестра — без времени загрузки,
+// памяти и состояния служб. Такой вывод разбирается: разделы заполнены и помечены partial, ошибка источника видна.
+func TestRegistryFallbackPayloadParses(t *testing.T) {
+	raw := `{"hostname":"WIN-AR","errors":["os:PermissionDenied","cpu:PermissionDenied","svcs:NotSpecified"],
+"os":{"caption":"Windows 10 Pro","version":"10.0.19045","build":"19045","arch":"64-bit","boot":null,"memory_kb":null},
+"cpu_logical":4,"cpu_name":"Intel(R) Core(TM) i5",
+"services":[{"name":"WinRM","display":"Windows Remote Management","state":null,"mode":"Auto","account":"NT AUTHORITY\\NetworkService","path":"C:\\Windows\\System32\\svchost.exe -k NetworkService"}],
+"nics":[],"software":[]}`
+	secs, _, err := Parse([]byte(raw), time.Now())
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := map[string]contracts.Section{}
+	for _, s := range secs {
+		got[s.Name] = s
+	}
+	for _, n := range []string{"os", "hardware", "services"} {
+		if got[n].Status != "partial" || len(got[n].Records) == 0 {
+			t.Fatalf("%s: %+v", n, got[n])
+		}
+	}
+	svc := got["services"].Records[0]
+	if svc["state"] != "unknown" || svc["start_mode"] != "auto" {
+		t.Fatalf("service from registry: %v", svc)
+	}
+	if _, ok := got["os"].Records[0]["boot_time"]; ok {
+		t.Fatal("boot time must be absent when unknown")
+	}
+}
