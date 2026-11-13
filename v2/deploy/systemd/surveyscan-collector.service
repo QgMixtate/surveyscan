@@ -19,6 +19,9 @@ RestartSec=10s
 TimeoutStopSec=30s
 UMask=0077
 NoNewPrivileges=yes
+# C51/D-13: ICMP-пробы обследования сети — только сырые сокеты ICMP; других привилегий у службы нет
+AmbientCapabilities=CAP_NET_RAW
+CapabilityBoundingSet=CAP_NET_RAW
 ProtectSystem=strict
 ProtectHome=yes
 PrivateTmp=yes

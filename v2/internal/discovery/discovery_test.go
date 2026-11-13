@@ -103,3 +103,17 @@ func TestParsers(t *testing.T) {
 		t.Fatal(d)
 	}
 }
+
+func TestProbeICMPLoopbackAndScope(t *testing.T) {
+	scope := Scope{Include: []netip.Prefix{netip.MustParsePrefix("127.0.0.0/30")}}
+	if _, err := ProbeICMP(context.Background(), scope, []netip.Addr{netip.MustParseAddr("10.0.0.1")}, time.Millisecond, 10*time.Millisecond); err != ErrOutOfScope {
+		t.Fatal("address outside scope must be refused", err)
+	}
+	got, err := ProbeICMP(context.Background(), scope, []netip.Addr{netip.MustParseAddr("127.0.0.1")}, 10*time.Millisecond, 500*time.Millisecond)
+	if err == ErrICMPNotPermitted {
+		t.Skip("no ICMP permission in this environment (reported explicitly, as required)")
+	}
+	if err != nil || len(got) != 1 || got[0].IP != netip.MustParseAddr("127.0.0.1") || got[0].Source != "icmp" {
+		t.Fatalf("loopback echo: %v %+v", err, got)
+	}
+}

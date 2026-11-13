@@ -674,7 +674,8 @@ func (c *Collector) Run(ctx context.Context) error {
 	go func() { finished <- server.ListenAndServeTLS("", "") }()
 	ticker := time.NewTicker(time.Second)
 	defer ticker.Stop()
-	renewalAt, profileAt, heartbeatAt := time.Time{}, time.Time{}, time.Time{}
+	renewalAt, profileAt, heartbeatAt, discoveryAt := time.Time{}, time.Time{}, time.Time{}, time.Time{}
+	var discoveryBusy atomic.Bool
 	for {
 		select {
 		case <-ctx.Done():
@@ -696,6 +697,10 @@ func (c *Collector) Run(ctx context.Context) error {
 						telemetry.Log(os.Stderr, "collector", "profile_unavailable_cached_or_local")
 					}
 					profileAt = time.Now().Add(20 * time.Second)
+				}
+				if !time.Now().Before(discoveryAt) && c.signing != nil { // C51.02: задания обследования сети из Web
+					go c.discoveryLoop(ctx, &discoveryBusy)
+					discoveryAt = time.Now().Add(30 * time.Second)
 				}
 				if !time.Now().Before(heartbeatAt) {
 					task, cancel := context.WithTimeout(ctx, 3*time.Second)
