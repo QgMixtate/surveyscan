@@ -123,7 +123,10 @@ def scenario(**s):
         api2 = freeport()
         alog = (Path(s['directory']) / 'api2.log').open('ab')
         env2 = dict(env, SURVEYSCAN_V2_ROLE='api', SURVEYSCAN_V2_LISTEN=f'127.0.0.1:{api2}')
-        env2.pop('SURVEYSCAN_V2_MACHINE_CONFIG', None)  # машинный mTLS-слушатель — только у первого api (порт один)
+        machine = json.loads(Path(env['SURVEYSCAN_V2_MACHINE_CONFIG']).read_text())  # та же конфигурация (поиск, 1.2), свой порт mTLS (как split_smoke)
+        machine['listen'] = f'127.0.0.1:{freeport()}'
+        (work / 'machine-api2.json').write_text(json.dumps(machine)); os.chmod(work / 'machine-api2.json', 0o600)
+        env2['SURVEYSCAN_V2_MACHINE_CONFIG'] = str(work / 'machine-api2.json')
         p2 = subprocess.Popen([str(ROOT / '.dist/surveyscan-server'), 'serve'], cwd=ROOT, stdout=alog, stderr=alog, env=env2)
         atexit.register(p2.terminate)
         for _ in range(150):
