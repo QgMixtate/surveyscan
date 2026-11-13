@@ -3,7 +3,7 @@
   "architecture": "0.5 draft; published in feature branch",
   "date": "2026-11-03 Europe/Moscow",
   "baseline_commit": "73ced7efbacdd6a60466e16d5e77e61587842e9c",
-  "status": "C01-C14 done bounded E1; C15.01 design done; C15.02 in_progress in separate Windows branch;E3 (C25–C30) accepted 2026-11-12; 81/200 done; C32 not_required (4) → closed 85/200",
+  "status": "C01-C14 done bounded E1; C15.01 design done; C15.02 in_progress in separate Windows branch;E3 (C25–C30) accepted 2026-11-12; 81/200 done; C32 not_required (4) → closed 85/200; C51 добавлен решением пользователя 2026-11-13 (D-13): 204 подзадачи",
   "roles": {
     "АРХ": "Архитектор",
     "ПМ": "Владелец продукта / руководитель проекта",
@@ -3791,6 +3791,74 @@
       ],
       "status": "planned",
       "code_authorization": "Планирование не разрешает реализацию автоматически; отдельный запрос на выполнение пакета задаёт scope."
+    },
+    {
+      "id": "C51",
+      "epoch": "E2",
+      "title": "Обследования сети в Web",
+      "depends_on": [
+        "C19",
+        "C20",
+        "C21",
+        "C22",
+        "C31"
+      ],
+      "spec_sections": "20, DISC-01…, D-13",
+      "tasks": [
+        {
+          "id": "C51.01",
+          "name": "Модель и API обследований",
+          "owner": "Архитектор",
+          "depends_on": [
+            "C22",
+            "C31"
+          ],
+          "output": "Подсети/обследования/результаты, OpenAPI, права и аудит по D-13",
+          "verification": "Scope и ограничения D-13 проверяются на сервере",
+          "estimation_basis": "1 площадка, 1 сборщик, 2 подсети",
+          "status": "planned",
+          "work_group": "Подготовка и проектирование"
+        },
+        {
+          "id": "C51.02",
+          "name": "Встроить пробы в collector",
+          "owner": "Backend Go-разработчик",
+          "depends_on": [
+            "C51.01"
+          ],
+          "output": "Задания обследования в collector: TCP/ARP/ICMP с лимитами, подписанные наблюдения",
+          "verification": "Вне подсети — отброшено; ICMP без CAP_NET_RAW — явная ошибка",
+          "estimation_basis": "Тестовая сеть 20 узлов",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C51.03",
+          "name": "Web «Обследования сети» и сбор из найденного",
+          "owner": "Frontend / Backend",
+          "depends_on": [
+            "C51.02"
+          ],
+          "output": "Раздел Web, результаты, сбор SSH/WinRM/SNMPv3 с учётками из OpenBao",
+          "verification": "Учётки не видны в API/журналах; без файлов на ВМ",
+          "estimation_basis": "Linux, Windows и сетевое устройство",
+          "status": "planned",
+          "work_group": "Реализация"
+        },
+        {
+          "id": "C51.04",
+          "name": "Проверить на стенде",
+          "owner": "Инженер проверки",
+          "depends_on": [
+            "C51.03"
+          ],
+          "output": "Обследование подсети стенда из Web, сбор, presence",
+          "verification": "Нет ложных склеек; нагрузка в пределах D-13",
+          "estimation_basis": "Подсеть стенда по разрешению пользователя",
+          "status": "planned",
+          "work_group": "Проверка и передача"
+        }
+      ]
     }
   ],
   "progress": {

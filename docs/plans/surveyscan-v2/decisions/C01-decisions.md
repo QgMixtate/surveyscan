@@ -71,7 +71,7 @@
 | D-08 production retention/SLO | proposed | Defaults стенда сейчас, реальные budgets C10/C14; расширение C30/C38 |
 | D-10 Tantivy/Bluge | proposed, отложено | PoC C28; E1 exact/filter PG search |
 | D-12 geo/residency/RPO/RTO | proposed, отложено | ADR/ресурсы C37–C39; до этого geo SLA не заявляется |
-| D-13 multi-source presence | proposed, отложено | C20/C21; E1 health/freshness без массового missing |
+| D-13 multi-source presence | **принято пользователем 2026-11-13** — decisions/D13-discovery-policy.md | C20/C21; E1 health/freshness без массового missing |
 | D-15 процессы ЖЦ/склада/ITSM | proposed, отложено | C41 и C46 до реализации соответствующей волны |
 | D-18 100 active workload | proposed, отложено | C30; E1 ресурсные тесты не доказывают 100 пользователей |
 
