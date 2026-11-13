@@ -72,6 +72,7 @@ def main():
 
     def replica(node, source):
         script = ('set -e; mkdir -p /var/lib/postgresql/standby; chown postgres /var/lib/postgresql/standby; '
+                  '[ -f /var/lib/postgresql/standby/PG_VERSION ] || '
                   f'gosu postgres pg_basebackup -h {names[source]} -U postgres -D /var/lib/postgresql/standby -R -X stream; '
                   'chmod 700 /var/lib/postgresql/standby; exec gosu postgres postgres -D /var/lib/postgresql/standby')
         docker('run', '-d', '--name', names[node], '--network', net, '-e', 'PGPASSWORD=' + pg_password,
