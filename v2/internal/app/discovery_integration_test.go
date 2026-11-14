@@ -321,6 +321,44 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 	if tofu.HostKey != nil || tofu.LastError != nil {
 		t.Fatalf("reset host key %+v", tofu)
 	}
+	// WinRM-цель без PEM: collector запоминает сертификат сервера при первом подключении; смена — 409 cert_changed;
+	// сброс из Web. PEM без имени ПК — отказ (имя нужно для проверки сертификата по CA).
+	var wcred sources.CollectCredential
+	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/credentials", `{"name":"Windows RO","kind":"winrm","username":"AWM\\scan","secret":{"password":"winrm-secret-51"}}`, 201), &wcred)
+	call("admin", "POST", "/api/v1/discovery/targets", fmt.Sprintf(`{"collector_id":%q,"address":"10.51.0.31","kind":"winrm","credential_id":%q,"tls_ca_pem":"-----BEGIN CERTIFICATE-----"}`, collector, wcred.ID), 422)
+	var wt sources.RemoteTarget
+	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/targets", fmt.Sprintf(`{"collector_id":%q,"address":"10.51.0.31","kind":"winrm","credential_id":%q}`, collector, wcred.ID), 201), &wt)
+	if wt.Port != 5986 || wt.CertSHA256 != nil || wt.CertOrigin != nil || wt.ServerName != nil {
+		t.Fatalf("winrm target without PEM %+v", wt)
+	}
+	firstCert, otherCert := strings.Repeat("a", 64), strings.Repeat("b", 64)
+	if code, _ = post("/api/v1/machine/collect-targets/"+wt.ID+"/tlscert", []byte(`{"tls_cert_sha256":"`+firstCert+`"}`)); code != 204 {
+		t.Fatal("certificate pin on first use", code)
+	}
+	if code, _ = post("/api/v1/machine/collect-targets/"+wt.ID+"/tlscert", []byte(`{"tls_cert_sha256":"`+otherCert+`"}`)); code != 409 {
+		t.Fatal("changed certificate must be refused", code)
+	}
+	if code, _ = post("/api/v1/machine/collect-targets/"+tofu.ID+"/tlscert", []byte(`{"tls_cert_sha256":"`+firstCert+`"}`)); code != 404 {
+		t.Fatal("certificate pin is only for winrm targets without PEM", code)
+	}
+	_ = json.Unmarshal(call("view51", "GET", "/api/v1/discovery/targets", "", 200), &tl)
+	for _, x := range tl.Items {
+		if x.ID == wt.ID {
+			wt = x
+		}
+	}
+	if wt.CertSHA256 == nil || *wt.CertSHA256 != firstCert || wt.CertOrigin == nil || *wt.CertOrigin != "first_use" || wt.LastError == nil || *wt.LastError != "cert_changed" {
+		t.Fatalf("pinned winrm target %+v", wt)
+	}
+	_ = json.Unmarshal(call("admin", "PATCH", "/api/v1/discovery/targets/"+wt.ID, `{"revision":"`+wt.Revision+`","disabled":false,"reset_tls_cert":true}`, 200), &wt)
+	if wt.CertSHA256 != nil || wt.CertOrigin != nil || wt.LastError != nil {
+		t.Fatalf("reset certificate %+v", wt)
+	}
+	var pinAudit int
+	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM audit.audit_events WHERE tenant_id=$1 AND action IN ('discovery.target_tls_cert_pinned','discovery.target_tls_cert_reset')", tenant).Scan(&pinAudit)
+	if pinAudit != 2 {
+		t.Fatal("certificate pin and reset must be audited", pinAudit)
+	}
 	// SNMPv3-цель сетевого устройства: без отпечатка/сертификата, источник регистрируется с платформой network/snmp
 	var scred sources.CollectCredential
 	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/credentials", `{"name":"SNMP core","kind":"snmp","username":"surveyscan","secret":{"auth_protocol":"SHA256","auth_key":"auth-key-51","priv_protocol":"AES","priv_key":"priv-key-51"}}`, 201), &scred)

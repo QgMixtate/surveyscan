@@ -8,7 +8,7 @@ const expired=(e:unknown,onExpired:()=>void)=>{if(e instanceof ApiError&&e.statu
 const runState:{[k in DiscoveryRun['state']]:[string,string]}={queued:['в очереди','state-pending'],running:['идёт','state-pending'],done:['завершено','state-ok'],failed:['ошибка','state-unavailable']};
 const probeName:{[k in DiscoveryProbe]:string}={tcp:'TCP-порты',arp:'ARP',icmp:'пинг'};
 const kindName:{[k in CollectKind]:string}={ssh:'SSH · Linux',winrm:'WinRM · Windows',snmp:'SNMPv3 · сетевое устройство'};
-const errName=(e:string)=>e==='icmp:not_permitted'?'у сборщика нет права на ICMP (CAP_NET_RAW)':e==='collector:timeout'?'сборщик не сдал результат за 2 ч':e==='job:invalid'?'задание вне правил D-13':e==='host_key_changed'?'ключ хоста сменился — проверьте узел и сбросьте ключ':e;
+const errName=(e:string)=>e==='icmp:not_permitted'?'у сборщика нет права на ICMP (CAP_NET_RAW)':e==='collector:timeout'?'сборщик не сдал результат за 2 ч':e==='job:invalid'?'задание вне правил D-13':e==='host_key_changed'?'ключ хоста сменился — проверьте узел и сбросьте ключ':e==='cert_changed'?'сертификат WinRM сменился — проверьте узел и сбросьте сертификат':e;
 const schedName=(m:number|null)=>!m?'вручную':m%1440===0?(m===1440?'раз в сутки':m===10080?'раз в неделю':'раз в '+m/1440+' сут.'):m%60===0?(m===60?'раз в час':'раз в '+m/60+' ч'):'раз в '+m+' мин';
 
 type Tab='networks'|'credentials'|'targets';
@@ -137,15 +137,15 @@ function CollectForm({host,network,busy,onCreate,onExpired}:{host:DiscoveryHost;
  useEffect(()=>{api.collectCredentials().then(p=>setCreds(p.items.filter(c=>c.active))).catch(e=>expired(e,onExpired))},[]);
  const usable=creds.filter(c=>c.kind===kind);
  useEffect(()=>{setCred(usable[0]?.credential_id??'')},[kind,creds.length]);
- return <form className="form-stack" onSubmit={e=>{e.preventDefault();onCreate({collector_id:network.collector_id,network_id:network.network_id,address:host.ip,kind,credential_id:cred,interval_seconds:Number(interval),...(kind==='ssh'?(hostKey.trim()?{host_key_sha256:hostKey.trim()}:{}):kind==='winrm'?{tls_ca_pem:ca,tls_server_name:serverName.trim()}:{})})}}>
+ return <form className="form-stack" onSubmit={e=>{e.preventDefault();onCreate({collector_id:network.collector_id,network_id:network.network_id,address:host.ip,kind,credential_id:cred,interval_seconds:Number(interval),...(kind==='ssh'?(hostKey.trim()?{host_key_sha256:hostKey.trim()}:{}):kind==='winrm'?{...(ca.trim()?{tls_ca_pem:ca}:{}),...(serverName.trim()?{tls_server_name:serverName.trim()}:{})}:{})})}}>
   <p className="muted">Открытые порты: {host.ports.length?host.ports.join(', '):'нет данных'}.</p>
   <Field label="Способ"><select value={kind} onChange={e=>setKind(e.target.value as CollectKind)}>{(['ssh','winrm','snmp'] as CollectKind[]).map(k=><option key={k} value={k}>{kindName[k]}</option>)}</select></Field>
   <Field label="Учётка" hint={usable.length===0?'Нет учёток этого способа — добавьте на вкладке «Учётки сбора».':undefined}><select value={cred} onChange={e=>setCred(e.target.value)} required>{usable.length===0?<option value="">—</option>:null}{usable.map(c=><option key={c.credential_id} value={c.credential_id}>{c.name} ({c.username})</option>)}</select></Field>
   {kind==='ssh'?<Field label="Отпечаток ключа хоста (необязательно)" hint="Если пусто — ключ запомнится при первом подключении. Если ключ потом сменится, сбор остановится до проверки.">
    <input className="mono" value={hostKey} onChange={e=>setHostKey(e.target.value)} placeholder="SHA256:…" pattern="SHA256:[A-Za-z0-9+/]{43}"/></Field>:null}
   {kind==='winrm'?<>
-   <Field label="Сертификат WinRM" hint="Содержимое файла C:\surveyscan-winrm-<ИМЯ>.pem со скрипта подготовки"><textarea className="mono" value={ca} onChange={e=>setCa(e.target.value)} rows={5} required placeholder="-----BEGIN CERTIFICATE-----"/></Field>
-   <Field label="Имя в сертификате"><input value={serverName} onChange={e=>setServerName(e.target.value)} placeholder="win-ar.awm.local" required/></Field></>:null}
+   <Field label="Сертификат WinRM (необязательно)" hint="Если пусто — сертификат сервера запомнится при первом подключении; если он потом сменится, сбор остановится до проверки. Можно вставить PEM (C:\surveyscan-winrm-<ИМЯ>.pem) — тогда сертификат проверяется по нему вместе с именем ПК."><textarea className="mono" value={ca} onChange={e=>setCa(e.target.value)} rows={4} placeholder="-----BEGIN CERTIFICATE-----"/></Field>
+   <Field label={ca.trim()?'Имя ПК в сертификате':'Имя ПК (необязательно)'} hint={ca.trim()?'Обязательно вместе с PEM: имя проверяется в сертификате.':undefined}><input value={serverName} onChange={e=>setServerName(e.target.value)} placeholder="win-ar.awm.local" required={!!ca.trim()}/></Field></>:null}
   {kind==='snmp'?<p className="panel-note">SNMPv3 authPriv: подлинность и шифрование обеспечивают ключи учётки. Передаются имя устройства, интерфейсы с адресами и таблица ARP.</p>:null}
   <Field label="Как часто собирать"><select value={interval} onChange={e=>setInterval_(e.target.value)}><option value="3600">раз в час</option><option value="21600">раз в 6 часов</option><option value="86400">раз в сутки</option></select></Field>
   <button className="button primary" disabled={busy||!cred}>Создать цель сбора <span>→</span></button>
@@ -157,17 +157,18 @@ function TargetsTab({csrf,isAdmin,version,onExpired}:{csrf:string;isAdmin:boolea
  const load=()=>{api.remoteTargets().then(p=>{setItems(p.items);setLoaded(true)}).catch(e=>{setError(e);expired(e,onExpired)})};
  useEffect(load,[version]);
  useEffect(()=>{if(!items.some(t=>t.state==='pending'||(t.state==='active'&&!t.last_collected_at)))return;const t=setInterval(load,5000);return ()=>clearInterval(t)},[items]);
- const act=(t:RemoteTarget,body:{disabled:boolean;reset_host_key?:boolean})=>void api.patchRemoteTarget(t.target_id,csrf,{revision:t.revision,...body}).then(load).catch(e=>{setError(e);expired(e,onExpired)});
+ const act=(t:RemoteTarget,body:{disabled:boolean;reset_host_key?:boolean;reset_tls_cert?:boolean})=>void api.patchRemoteTarget(t.target_id,csrf,{revision:t.revision,...body}).then(load).catch(e=>{setError(e);expired(e,onExpired)});
  const state=(t:RemoteTarget):[string,string]=>t.state==='disabled'?['отключена','']:t.last_error?['ошибка','state-unavailable']:t.state==='pending'?['регистрируется','state-pending']:t.last_collected_at?['собирается','state-ok']:['ждёт первого сбора','state-pending'];
  return <div className="stack">{error?<div className="error" role="alert">{errorMessage(error)}</div>:null}
   <div className="table-panel"><div className="table-toolbar"><h2>Цели сбора <span>{items.length}</span></h2></div>
    {loaded&&items.length===0?<div className="empty"><span>◎</span><h3>Целей пока нет</h3><p>Откройте подсеть на вкладке «Подсети» и нажмите «Собирать…» у найденного узла.</p></div>:
-   <div className="table-scroll"><table><thead><tr><th>Узел</th><th>Способ</th><th>Состояние</th><th>Последний сбор</th><th>Ключ хоста</th>{isAdmin?<th/>:null}</tr></thead><tbody>{items.map(t=>{const [label,cls]=state(t);return <tr key={t.target_id} className={t.state==='disabled'?'muted':''}>
+   <div className="table-scroll"><table><thead><tr><th>Узел</th><th>Способ</th><th>Состояние</th><th>Последний сбор</th><th>Ключ / сертификат</th>{isAdmin?<th/>:null}</tr></thead><tbody>{items.map(t=>{const [label,cls]=state(t);return <tr key={t.target_id} className={t.state==='disabled'?'muted':''}>
     <td className="mono">{t.address}:{t.port}</td><td>{kindName[t.kind]}</td>
     <td><span className={'badge '+cls}><i/>{label}</span>{t.last_error?<small className="error-text">{errName(t.last_error)}</small>:null}</td>
     <td className="time">{time(t.last_collected_at)}</td>
-    <td>{t.kind!=='ssh'?'—':t.host_key_sha256?<><span className="mono" title={t.host_key_sha256}>{t.host_key_sha256.slice(0,18)}…</span><small>{t.host_key_origin==='first_use'?'запомнен при первом подключении':'введён вручную'}</small></>:<small>запомнится при первом подключении</small>}</td>
+    <td>{t.kind==='winrm'?(t.tls_cert_origin==='admin'?<small>сертификат задан администратором{t.tls_server_name?' · '+t.tls_server_name:''}</small>:t.tls_cert_sha256?<><span className="mono" title={'SHA-256 '+t.tls_cert_sha256}>{t.tls_cert_sha256.slice(0,16)}…</span><small>сертификат запомнен при первом подключении</small></>:<small>сертификат запомнится при первом подключении</small>):t.kind!=='ssh'?'—':t.host_key_sha256?<><span className="mono" title={t.host_key_sha256}>{t.host_key_sha256.slice(0,18)}…</span><small>{t.host_key_origin==='first_use'?'запомнен при первом подключении':'введён вручную'}</small></>:<small>запомнится при первом подключении</small>}</td>
     {isAdmin?<td className="actions">{t.kind==='ssh'&&t.host_key_sha256?<button className="text-link" onClick={()=>{if(confirm('Сбросить запомненный ключ хоста '+t.address+'? Делайте это, только если ключ сменился законно (например, после переустановки ОС).'))act(t,{disabled:t.state==='disabled',reset_host_key:true})}}>Сбросить ключ</button>:null}
+     {t.kind==='winrm'&&t.tls_cert_origin==='first_use'?<button className="text-link" onClick={()=>{if(confirm('Сбросить запомненный сертификат WinRM '+t.address+'? Делайте это, только если сертификат сменился законно (перевыпуск, переустановка ОС).'))act(t,{disabled:t.state==='disabled',reset_tls_cert:true})}}>Сбросить сертификат</button>:null}
      <button className="text-link" onClick={()=>act(t,{disabled:t.state!=='disabled'})}>{t.state==='disabled'?'Включить':'Отключить'}</button></td>:null}
    </tr>})}</tbody></table></div>}
   </div>

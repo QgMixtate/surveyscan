@@ -19,6 +19,7 @@ import (
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/identifier"
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/telemetry"
 	"github.com/QgMixtate/surveyscan/v2/internal/remote/sshlinux"
+	"github.com/QgMixtate/surveyscan/v2/internal/remote/winrminv"
 )
 
 // Package collecttargets — C51.03 шаг C: цели удалённого сбора, заведённые в Web. Для каждой цели collector держит отдельную личность агента
@@ -34,6 +35,7 @@ type machineTarget struct {
 	HostKey    *string `json:"host_key_sha256"`
 	CAPEM      *string `json:"tls_ca_pem"`
 	ServerName *string `json:"tls_server_name"`
+	CertSHA256 *string `json:"tls_cert_sha256"`
 	Interval   int     `json:"interval_seconds"`
 	Source     *string `json:"agent_source_id"`
 	State      string  `json:"state"`
@@ -49,7 +51,7 @@ func (t machineTarget) key() string {
 		}
 		return *p
 	}
-	return strings.Join([]string{t.Kind, t.Address, strconv.Itoa(t.Port), t.Username, s(t.HostKey), s(t.CAPEM), s(t.ServerName)}, "\x00")
+	return strings.Join([]string{t.Kind, t.Address, strconv.Itoa(t.Port), t.Username, s(t.HostKey), s(t.CAPEM), s(t.ServerName), s(t.CertSHA256)}, "\x00")
 }
 
 // Manager — цели одного collector. Post — запрос к центру по mTLS collector; Listen — слушатель collector для
@@ -204,6 +206,7 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 	}
 	cfg := agent.Config{Tenant: t.Tenant, Site: t.Site, Scope: t.Scope, CollectorURL: c.selfURL(), CollectorSource: c.CollectorSource, CA: c.CA,
 		State: state, InventorySeconds: max(t.Interval, 300), HeartbeatSeconds: 300, Jitter: 10, Limit: 16 << 20, InventoryPlatform: platform}
+	pinned := "" // отпечаток сертификата WinRM, с которым запущен сбор (цель без PEM)
 	report := func(s string) {
 		if !strings.HasPrefix(s, "detail:") {
 			telemetry.Log(os.Stderr, "collector", "target_"+t.ID[:8]+"_"+s) // состояние цикла цели (без секретов)
@@ -212,6 +215,13 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 		case s == "inventory_queued":
 			c.report(ctx, t.ID, true, "")
 		case s == "inventory_failed" || s == "inventory_collection_deadline":
+			// закреплённый сертификат WinRM сменился во время работы: показать причину, а не общий отказ
+			if pinned != "" {
+				if fp, err := winrminv.FetchCert(t.Address, t.Port, "", 15*time.Second); err == nil && fp != pinned {
+					c.report(ctx, t.ID, false, "cert_changed")
+					return
+				}
+			}
 			c.report(ctx, t.ID, false, s)
 		}
 	}
@@ -241,7 +251,9 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 					if err == nil {
 						var code int
 						code, _, err = c.targetPost(task, "/api/v1/machine/collect-targets/"+t.ID+"/hostkey", map[string]string{"host_key_sha256": fp})
-						if err == nil && code != 204 {
+						if err == nil && code == 409 {
+							err = errHostKeyChanged
+						} else if err == nil && code != 204 {
 							err = errors.New("host key not accepted")
 						}
 					}
@@ -265,6 +277,28 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 				if t.ServerName != nil {
 					target.ServerName = *t.ServerName
 				}
+				if t.CAPEM == nil {
+					// PEM не задан: сертификат сервера закрепляется в центре при первом подключении и сверяется при
+					// каждом запуске цели; другой сертификат — Conflict, сбор остановлен до сброса в Web
+					task, cancel := context.WithTimeout(ctx, 20*time.Second)
+					fp, err := winrminv.FetchCert(t.Address, t.Port, target.ServerName, 15*time.Second)
+					if err == nil {
+						var code int
+						code, _, err = c.targetPost(task, "/api/v1/machine/collect-targets/"+t.ID+"/tlscert", map[string]string{"tls_cert_sha256": fp})
+						if err == nil && code == 409 {
+							err = errCertChanged
+						} else if err == nil && code != 204 {
+							err = errors.New("certificate not accepted")
+						}
+					}
+					cancel()
+					if err != nil {
+						e = err
+						break
+					}
+					target.CertSHA256 = fp
+					pinned = fp
+				}
 				e = agent.RunWinRM12(ctx, cfg, target, report)
 			case "snmp":
 				// протоколы известны только вместе с ключами: первая выдача учётки — до запуска цикла
@@ -284,7 +318,11 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 			return
 		}
 		if e != nil {
-			c.report(ctx, t.ID, false, "collector:"+shortError(e))
+			problem := "collector:" + shortError(e)
+			if errors.Is(e, errHostKeyChanged) || errors.Is(e, errCertChanged) {
+				problem = e.Error() // код показывается в Web как есть: ключ/сертификат сменился, нужен сброс
+			}
+			c.report(ctx, t.ID, false, problem)
 			telemetry.Log(os.Stderr, "collector", "target_run_failed")
 		}
 		select {
@@ -294,6 +332,11 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 		}
 	}
 }
+
+var (
+	errHostKeyChanged = errors.New("host_key_changed")
+	errCertChanged    = errors.New("cert_changed")
+)
 
 func shortError(e error) string {
 	var st *agent.StageError

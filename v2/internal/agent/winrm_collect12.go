@@ -21,6 +21,8 @@ type WinRMTarget struct {
 	// C51.03: пароль и CA из памяти (collector получает их у центра); файлы тогда не используются. Не сериализуются.
 	Password func(context.Context) ([]byte, error) `json:"-"`
 	CAPEM    []byte                                `json:"-"`
+	// закреплённый отпечаток сертификата сервера (hex SHA-256), если CA не задан — запомнен при первом подключении
+	CertSHA256 string `json:"-"`
 }
 
 type funcSecret func(context.Context) ([]byte, error)
@@ -75,7 +77,7 @@ func NewWinRMCollect12(t WinRMTarget) func(context.Context) (Snapshot, error) {
 				return Snapshot{}, errors.New("winrm CA file unavailable or not private")
 			}
 		}
-		run, err := winrminv.Connect(ctx, secret, winrminv.Target{Host: t.Host, Port: t.Port, User: t.User, PasswordAlias: "file", CAPEM: ca, TLSServerName: t.ServerName}, winrminv.Policy{})
+		run, err := winrminv.Connect(ctx, secret, winrminv.Target{Host: t.Host, Port: t.Port, User: t.User, PasswordAlias: "file", CAPEM: ca, TLSServerName: t.ServerName, CertSHA256: t.CertSHA256}, winrminv.Policy{})
 		if err != nil {
 			return Snapshot{}, err
 		}

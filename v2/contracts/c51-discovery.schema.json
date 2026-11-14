@@ -828,6 +828,32 @@
       }
      ],
      "description": "admin — отпечаток введён в Web; first_use — запомнен collector при первом подключении"
+    },
+    "tls_cert_sha256": {
+     "oneOf": [
+      {
+       "type": "string",
+       "pattern": "^[0-9a-f]{64}$"
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "description": "WinRM: отпечаток SHA-256 (hex) сертификата сервера, запомненный collector при первом подключении"
+    },
+    "tls_cert_origin": {
+     "oneOf": [
+      {
+       "enum": [
+        "admin",
+        "first_use"
+       ]
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "description": "WinRM: admin — доверие по PEM администратора (с проверкой имени); first_use — сертификат запомнен при первом подключении; null — запомнится при первом подключении (или не WinRM)"
     }
    },
    "required": [
@@ -846,7 +872,9 @@
     "last_collected_at",
     "last_error",
     "revision",
-    "host_key_origin"
+    "host_key_origin",
+    "tls_cert_sha256",
+    "tls_cert_origin"
    ],
    "additionalProperties": false
   },

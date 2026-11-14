@@ -116,7 +116,7 @@ func TestC15PlatformMigrationPreservesExistingCatalogAndData(t *testing.T) {
 			old = append(old, m)
 		}
 	}
-	if len(old) != 35 || len(current) != 53 {
+	if len(old) != 35 || len(current) != 54 {
 		t.Fatal("unexpected catalogs")
 	}
 	apply(t, ctx, c, old)
@@ -125,7 +125,7 @@ func TestC15PlatformMigrationPreservesExistingCatalogAndData(t *testing.T) {
 	if err := c.QueryRow(ctx, snapshot).Scan(&before); err != nil {
 		t.Fatal(err)
 	}
-	if n, err := migrate.Apply(ctx, c, current); err != nil || n != 18 {
+	if n, err := migrate.Apply(ctx, c, current); err != nil || n != 19 {
 		t.Fatal("not twelve appends", n, err)
 	}
 	if err := c.QueryRow(ctx, snapshot).Scan(&after); err != nil || before != after {

@@ -56,8 +56,8 @@ type SecretReader interface {
 	Read(ctx context.Context, alias string) ([]byte, error)
 }
 
-// Target — цель WinRM. Только HTTPS (5986) и проверка сертификата по переданному CA (PEM); HTTP/Basic и
-// отключение проверки не поддерживаются. Аутентификация NTLM; пароль берётся по алиасу.
+// Target — цель WinRM. Только HTTPS (5986) с проверкой сервера: по CA (PEM, с проверкой имени) или по закреплённому
+// отпечатку сертификата (CertSHA256, hex); HTTP/Basic и отключение проверки не поддерживаются. Аутентификация NTLM.
 type Target struct {
 	Host          string
 	Port          int // 5986 по умолчанию
@@ -65,6 +65,7 @@ type Target struct {
 	PasswordAlias string
 	CAPEM         []byte
 	TLSServerName string // имя в сертификате цели, если отличается от Host
+	CertSHA256    string // закреплённый отпечаток сертификата сервера (если CAPEM не задан)
 }
 
 type Policy struct {
@@ -150,8 +151,12 @@ func EncodedLength(script string) int {
 
 // Connect создаёт клиента NTLM поверх HTTPS с проверкой сертификата.
 func Connect(ctx context.Context, r SecretReader, t Target, p Policy) (Runner, error) {
-	if t.Host == "" || t.User == "" || t.PasswordAlias == "" || len(t.CAPEM) == 0 {
+	if t.Host == "" || t.User == "" || t.PasswordAlias == "" {
 		return nil, ErrPolicy
+	}
+	cfg, err := tlsConfig(t)
+	if err != nil {
+		return nil, err
 	}
 	if t.Port == 0 {
 		t.Port = 5986
@@ -168,11 +173,11 @@ func Connect(ctx context.Context, r SecretReader, t Target, p Policy) (Runner, e
 			pw[i] = 0
 		}
 	}()
-	ep := winrm.NewEndpoint(t.Host, t.Port, true, false, t.CAPEM, nil, nil, HTTPResponseTimeout)
-	if t.TLSServerName != "" {
-		ep.TLSServerName = t.TLSServerName
-	}
+	// TLS устанавливаем сами (tlsDial): клиенту WinRM отдаётся уже проверенное соединение, поверх него — HTTP+NTLM
+	ep := winrm.NewEndpoint(t.Host, t.Port, false, false, nil, nil, nil, HTTPResponseTimeout)
 	params := NewParameters()
+	dial := tlsDial(cfg, p.ConnectTimeout)
+	params.TransportDecorator = func() winrm.Transporter { return winrm.NewClientNTLMWithDial(dial) }
 	client, err := winrm.NewClientWithParameters(ep, t.User, string(pw), params)
 	if err != nil {
 		return nil, errors.New("winrm: client setup failed")

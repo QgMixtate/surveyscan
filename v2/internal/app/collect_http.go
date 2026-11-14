@@ -174,16 +174,20 @@ func (r *Registry) targetHandlers() map[string]route51 {
 				Revision     string `json:"revision"`
 				Disabled     bool   `json:"disabled"`
 				ResetHostKey bool   `json:"reset_host_key,omitempty"`
+				ResetTLSCert bool   `json:"reset_tls_cert,omitempty"` // WinRM: забыть сертификат, запомненный при первом подключении
 			}
 			if !readOperationBody(w, req, &body) {
 				return
 			}
 			r.discoveryDo(w, req, http.StatusOK, "sources:admin", func(ctx context.Context, tx pgx.Tx, id accessport.Identity) (any, error) {
-				t, e := src51.SetTargetState(ctx, tx, id.TenantID, req.PathValue("target_id"), body.Revision, body.Disabled, body.ResetHostKey)
+				t, e := src51.SetTargetState(ctx, tx, id.TenantID, req.PathValue("target_id"), body.Revision, body.Disabled, body.ResetHostKey || body.ResetTLSCert)
 				if e == nil {
 					action := "discovery.target_changed"
 					if body.ResetHostKey {
 						action = "discovery.target_host_key_reset"
+					}
+					if body.ResetTLSCert {
+						action = "discovery.target_tls_cert_reset"
 					}
 					e = r.Audit.Record(ctx, tx, id.TenantID, id.UserID, action, "remote_target", t.ID)
 				}
@@ -274,15 +278,21 @@ func (r *Registry) collectMachine(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		registryJSON(w, map[string]any{"kind": kind, "username": username, "secret": secret})
-	case strings.HasSuffix(req.URL.Path, "/hostkey"):
+	case strings.HasSuffix(req.URL.Path, "/hostkey"), strings.HasSuffix(req.URL.Path, "/tlscert"):
 		var body struct {
-			HostKey string `json:"host_key_sha256"`
+			HostKey string `json:"host_key_sha256,omitempty"`
+			Cert    string `json:"tls_cert_sha256,omitempty"`
 		}
 		if sources.Strict(raw, &body) != nil {
 			access.APIError(w, 400, "INVALID_JSON")
 			return
 		}
-		pinned, tenant, source, e := m.Sources.PinHostKey(ctx, fp, target, body.HostKey)
+		pin, action := m.Sources.PinHostKey, "discovery.target_host_key_pinned"
+		value := body.HostKey
+		if strings.HasSuffix(req.URL.Path, "/tlscert") {
+			pin, action, value = m.Sources.PinCert, "discovery.target_tls_cert_pinned", body.Cert
+		}
+		pinned, tenant, source, e := pin(ctx, fp, target, value)
 		if e != nil {
 			m.fail(w, e)
 			return
@@ -290,7 +300,7 @@ func (r *Registry) collectMachine(w http.ResponseWriter, req *http.Request) {
 		if pinned {
 			tx, e := r.Pool.Begin(ctx)
 			if e == nil {
-				if e = r.Audit.Record(ctx, tx, tenant, "collector:"+source, "discovery.target_host_key_pinned", "remote_target", target); e == nil {
+				if e = r.Audit.Record(ctx, tx, tenant, "collector:"+source, action, "remote_target", target); e == nil {
 					e = tx.Commit(ctx)
 				}
 				tx.Rollback(ctx)
