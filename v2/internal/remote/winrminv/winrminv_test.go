@@ -166,10 +166,13 @@ func TestScriptFitsWinRMCommandLimit(t *testing.T) {
 
 func TestClassifyNeverEchoesTargetText(t *testing.T) {
 	cases := map[string]error{
-		"http response error: 401 - invalid content type":     ErrAuth,
-		"x509: certificate signed by unknown authority":       ErrTLS,
-		"dial tcp 10.0.0.1:5986: connect: connection refused": ErrNet,
-		"something TOPSECRET else":                            ErrRun,
+		"http response error: 401 - invalid content type":                    ErrAuth,
+		"x509: certificate signed by unknown authority":                      ErrTLS,
+		"dial tcp 10.0.0.1:5986: connect: connection refused":                ErrNet,
+		"something TOPSECRET else":                                           ErrRun,
+		"http error 500: <f:Message>Access is denied. TOPSECRET</f:Message>": ErrAccess,
+		"dial tcp 10.0.0.1:5986: connect: no route to host":                  ErrNet,
+		"dial tcp: lookup pc.awm.local: no such host":                        ErrNet,
 	}
 	for in, want := range cases {
 		got := classify(errors.New(in))

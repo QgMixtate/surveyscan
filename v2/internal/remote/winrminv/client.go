@@ -25,6 +25,7 @@ var (
 	ErrAuth   = errors.New("winrm: authentication rejected by the target (HTTP 401)")
 	ErrTLS    = errors.New("winrm: TLS verification of the target certificate failed")
 	ErrNet    = errors.New("winrm: target unreachable")
+	ErrAccess = errors.New("winrm: access denied for the collection account")
 	ErrExit   = errors.New("winrm: remote PowerShell exited with a non-zero code")
 )
 
@@ -47,11 +48,14 @@ func classify(err error) error {
 func classifyKind(err error) error {
 	text := strings.ToLower(err.Error())
 	switch {
+	case strings.Contains(text, "access is denied") || strings.Contains(text, "accessdenied") || strings.Contains(text, "0x80070005"):
+		return ErrAccess // вход прошёл, но учётке не хватает прав (группа удалённого управления, WMI)
 	case strings.Contains(text, "401") || strings.Contains(text, "unauthorized") || strings.Contains(text, "ntlm"):
 		return ErrAuth
 	case strings.Contains(text, "x509") || strings.Contains(text, "certificate") || strings.Contains(text, "tls"):
 		return ErrTLS
-	case strings.Contains(text, "refused") || strings.Contains(text, "timeout") || strings.Contains(text, "no route") || strings.Contains(text, "deadline"):
+	case strings.Contains(text, "refused") || strings.Contains(text, "timeout") || strings.Contains(text, "no route") || strings.Contains(text, "deadline") ||
+		strings.Contains(text, "unreachable") || strings.Contains(text, "no such host") || strings.Contains(text, "connection reset"):
 		return ErrNet
 	}
 	return ErrRun

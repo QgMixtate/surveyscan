@@ -104,9 +104,25 @@ func (t WinRMTarget) problem(err error) {
 	if t.Problem == nil {
 		return
 	}
-	code := ""
-	if err != nil {
-		code = winrmkrb.Code(err)
+	t.Problem(WinRMProblem(err))
+}
+
+// WinRMProblem — фиксированный код отказа WinRM-цели для Web (без текста цели): host_unreachable, auth_failed,
+// access_denied, tls_failed или код Kerberos (kerberos_login:…, kerberos_ticket:…, kerberos_refused …).
+func WinRMProblem(err error) string {
+	switch {
+	case err == nil:
+		return ""
+	case winrmkrb.Code(err) != "":
+		return winrmkrb.Code(err)
+	case errors.Is(err, winrminv.ErrNet):
+		return "host_unreachable"
+	case errors.Is(err, winrminv.ErrAuth):
+		return "auth_failed"
+	case errors.Is(err, winrminv.ErrAccess):
+		return "access_denied"
+	case errors.Is(err, winrminv.ErrTLS):
+		return "tls_failed"
 	}
-	t.Problem(code)
+	return ""
 }

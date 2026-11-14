@@ -239,7 +239,7 @@ func (k *Transport) dial(ctx context.Context, fresh bool) (*conn, error) {
 	}
 	nc, err := (&net.Dialer{Timeout: k.t.Timeout, KeepAlive: 30 * time.Second}).DialContext(ctx, "tcp", k.t.Addr)
 	if err != nil {
-		return nil, coded("network", "winrm kerberos: cannot connect to the PC on port "+portOf(k.t.Addr))
+		return nil, coded("host_unreachable", "winrm kerberos: cannot connect to the PC on port "+portOf(k.t.Addr))
 	}
 	c := &conn{c: nc, br: bufio.NewReader(nc)}
 	resp, _, err := k.roundTrip(ctx, c, nil, "Negotiate "+base64.StdEncoding.EncodeToString(gssFrame([]byte{0x01, 0x00}, raw)), "")

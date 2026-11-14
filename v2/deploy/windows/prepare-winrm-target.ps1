@@ -7,10 +7,13 @@
 #           firewall for the collector only, PUBLIC certificate file for the stand/Web form.
 #  -Gpo:    groups, service, HTTP listener and firewall come from the GPO (see deploy/OPERATIONS.md, section 11);
 #           the script only grants WMI rights and creates the HTTPS listener if a domain CA certificate is present.
+#  -Kerberos: also prepare WinRM over HTTP 5985 with Kerberos (collection by PC name): HTTP listener, firewall 5985
+#           only from the collector, Kerberos on, Basic and unencrypted traffic off (messages are Kerberos-encrypted).
 param(
   [string]$Account = 'AWM\scanwinrm',   # collection account or domain group (not an admin)
   [string]$Collector = '10.170.108.2',   # only this address may connect to port 5986
-  [switch]$Gpo
+  [switch]$Gpo,
+  [switch]$Kerberos
 )
 $ErrorActionPreference = 'Stop'
 $sid = (New-Object System.Security.Principal.NTAccount($Account)).Translate([System.Security.Principal.SecurityIdentifier]).Value
@@ -67,6 +70,20 @@ if ($listener) {
   New-Item -Path WSMan:\localhost\Listener -Transport HTTPS -Address * -CertificateThumbPrint $cert.Thumbprint -Force | Out-Null
   $thumb = $cert.Thumbprint
   Write-Host "[+] HTTPS listener on 5986 for $fqdn (self-signed)"
+}
+
+# 4a. Kerberos over HTTP 5985 (-Kerberos): listener, service auth settings; firewall below (not in GPO mode)
+if ($Kerberos) {
+  if (Get-ChildItem WSMan:\localhost\Listener | Where-Object { $_.Keys -contains 'Transport=HTTP' }) { Write-Host '[ok] HTTP listener exists' }
+  else { New-Item -Path WSMan:\localhost\Listener -Transport HTTP -Address * -Force | Out-Null; Write-Host '[+] HTTP listener on 5985' }
+  if ((Get-Item WSMan:\localhost\Service\Auth\Kerberos).Value -ne 'true') { Set-Item WSMan:\localhost\Service\Auth\Kerberos -Value $true; Write-Host '[+] WinRM Kerberos authentication on' } else { Write-Host '[ok] WinRM Kerberos authentication on' }
+  if ((Get-Item WSMan:\localhost\Service\AllowUnencrypted).Value -ne 'false') { Set-Item WSMan:\localhost\Service\AllowUnencrypted -Value $false; Write-Host '[+] WinRM unencrypted traffic off' } else { Write-Host '[ok] WinRM unencrypted traffic off' }
+  if ((Get-Item WSMan:\localhost\Service\Auth\Basic).Value -ne 'false') { Set-Item WSMan:\localhost\Service\Auth\Basic -Value $false; Write-Host '[+] WinRM Basic authentication off' } else { Write-Host '[ok] WinRM Basic authentication off' }
+  if (-not $Gpo) {
+    if (Get-NetFirewallRule -Name 'SurveyScan-WinRM-HTTP' -ErrorAction SilentlyContinue) { Set-NetFirewallRule -Name 'SurveyScan-WinRM-HTTP' -RemoteAddress $Collector; Write-Host '[ok] firewall 5985 rule updated' }
+    else { New-NetFirewallRule -Name 'SurveyScan-WinRM-HTTP' -DisplayName 'SurveyScan WinRM HTTP Kerberos (collector only)' -Direction Inbound -Protocol TCP -LocalPort 5985 -RemoteAddress $Collector -Action Allow | Out-Null; Write-Host "[+] firewall: 5985 from $Collector" }
+  }
+  Write-Host "Kerberos: collect by name $fqdn (SPN HTTP/$fqdn or HOST/$fqdn must exist: setspn -L $env:COMPUTERNAME)"
 }
 
 if ($Gpo) { Write-Host "DONE (GPO mode). Host: $fqdn"; exit 0 }
