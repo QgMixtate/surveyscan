@@ -6,7 +6,9 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"net"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 	"unicode/utf16"
@@ -14,6 +16,7 @@ import (
 	"github.com/masterzen/winrm"
 
 	"github.com/QgMixtate/surveyscan/v2/contracts"
+	"github.com/QgMixtate/surveyscan/v2/internal/remote/winrmkrb"
 )
 
 var (
@@ -66,6 +69,9 @@ type Target struct {
 	CAPEM         []byte
 	TLSServerName string // имя в сертификате цели, если отличается от Host
 	CertSHA256    string // закреплённый отпечаток сертификата сервера (если CAPEM не задан)
+	// Kerberos: HTTP (5985) с Kerberos и шифрованием сообщений; TLSServerName — полное имя ПК (SPN HTTP/<имя>),
+	// Host — адрес для соединения. Сертификаты не используются; NTLM не применяется.
+	Kerberos bool
 }
 
 type Policy struct {
@@ -154,6 +160,9 @@ func Connect(ctx context.Context, r SecretReader, t Target, p Policy) (Runner, e
 	if t.Host == "" || t.User == "" || t.PasswordAlias == "" {
 		return nil, ErrPolicy
 	}
+	if t.Kerberos {
+		return connectKerberos(r, t)
+	}
 	cfg, err := tlsConfig(t)
 	if err != nil {
 		return nil, err
@@ -239,4 +248,23 @@ func Complete12(sections []contracts.Section) []contracts.Section {
 		out = append(out, contracts.Section{Name: n, CollectedAt: now, Status: status, Reason: reason, Records: []map[string]any{}})
 	}
 	return out
+}
+
+func connectKerberos(r SecretReader, t Target) (Runner, error) {
+	if t.Port == 0 {
+		t.Port = 5985
+	}
+	tr, err := winrmkrb.New(winrmkrb.Target{Host: t.TLSServerName, Addr: net.JoinHostPort(t.Host, strconv.Itoa(t.Port)), User: t.User,
+		Password: func(ctx context.Context) ([]byte, error) { return r.Read(ctx, t.PasswordAlias) }})
+	if err != nil {
+		return nil, err
+	}
+	ep := winrm.NewEndpoint(t.TLSServerName, t.Port, false, false, nil, nil, nil, HTTPResponseTimeout)
+	params := NewParameters()
+	params.TransportDecorator = func() winrm.Transporter { return tr }
+	client, err := winrm.NewClientWithParameters(ep, t.User, "", params)
+	if err != nil {
+		return nil, errors.New("winrm: client setup failed")
+	}
+	return winrmRunner{client}, nil
 }

@@ -18,6 +18,8 @@ type WinRMTarget struct {
 	PasswordFile string `json:"password_file"`
 	CAFile       string `json:"ca_file"`
 	ServerName   string `json:"tls_server_name,omitempty"`
+	// Kerberos: HTTP 5985 с Kerberos и шифрованием сообщений; ServerName — полное имя ПК (SPN), CA не нужен
+	Kerberos bool `json:"kerberos,omitempty"`
 	// C51.03: пароль и CA из памяти (collector получает их у центра); файлы тогда не используются. Не сериализуются.
 	Password func(context.Context) ([]byte, error) `json:"-"`
 	CAPEM    []byte                                `json:"-"`
@@ -46,8 +48,8 @@ func LoadWinRMTarget(path string) (WinRMTarget, error) {
 	if err = dec.Decode(&t); err != nil {
 		return t, errors.New("winrm target config invalid")
 	}
-	if t.Host == "" || t.User == "" || t.PasswordFile == "" || t.CAFile == "" {
-		return t, errors.New("winrm target requires host, user, password_file and ca_file")
+	if t.Host == "" || t.User == "" || t.PasswordFile == "" || (t.CAFile == "" && !t.Kerberos) || (t.Kerberos && t.ServerName == "") {
+		return t, errors.New("winrm target requires host, user, password_file and ca_file (kerberos: tls_server_name = PC name instead of ca_file)")
 	}
 	return t, nil
 }
@@ -71,13 +73,13 @@ func NewWinRMCollect12(t WinRMTarget) func(context.Context) (Snapshot, error) {
 		ca := t.CAPEM
 		if t.Password != nil {
 			secret = funcSecret(t.Password)
-		} else {
+		} else if !t.Kerberos {
 			var err error
 			if ca, err = privatefile.Read(t.CAFile, 1<<20); err != nil {
 				return Snapshot{}, errors.New("winrm CA file unavailable or not private")
 			}
 		}
-		run, err := winrminv.Connect(ctx, secret, winrminv.Target{Host: t.Host, Port: t.Port, User: t.User, PasswordAlias: "file", CAPEM: ca, TLSServerName: t.ServerName, CertSHA256: t.CertSHA256}, winrminv.Policy{})
+		run, err := winrminv.Connect(ctx, secret, winrminv.Target{Host: t.Host, Port: t.Port, User: t.User, PasswordAlias: "file", CAPEM: ca, TLSServerName: t.ServerName, CertSHA256: t.CertSHA256, Kerberos: t.Kerberos}, winrminv.Policy{})
 		if err != nil {
 			return Snapshot{}, err
 		}

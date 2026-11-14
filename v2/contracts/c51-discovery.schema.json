@@ -841,6 +841,20 @@
      ],
      "description": "WinRM: отпечаток SHA-256 (hex) сертификата сервера, запомненный collector при первом подключении"
     },
+    "winrm_transport": {
+     "oneOf": [
+      {
+       "enum": [
+        "https",
+        "http_kerberos"
+       ]
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "description": "WinRM: https — 5986 с проверкой сертификата; http_kerberos — 5985, Kerberos по полному имени ПК (tls_server_name) с шифрованием сообщений, NTLM не используется; null — не WinRM"
+    },
     "tls_cert_origin": {
      "oneOf": [
       {
@@ -875,7 +889,8 @@
     "revision",
     "host_key_origin",
     "tls_cert_sha256",
-    "tls_cert_origin"
+    "tls_cert_origin",
+    "winrm_transport"
    ],
    "additionalProperties": false
   },

@@ -405,6 +405,23 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 		t.Fatal("domain CA target must not be pinned", code)
 	}
 	call("admin", "PUT", "/api/v1/discovery/winrm-ca", `{"revision":"1","ca_pem":null}`, 409)
+	// WinRM HTTP 5985 + Kerberos: только по полному имени ПК, без сертификатов; запоминание сертификата не применяется
+	kerberosTarget := fmt.Sprintf(`{"collector_id":%q,"address":"10.51.0.33","kind":"winrm","credential_id":%q,"winrm_transport":"http_kerberos"%%s}`, collector, wcred.ID)
+	for _, bad := range []string{"", `,"tls_server_name":"10.51.0.33"`, `,"tls_server_name":"win-33"`, `,"tls_server_name":"win-33.awm.local","tls_ca_pem":"x"`, `,"tls_server_name":"win-33.awm.local","tls_trust":"domain_ca"`} {
+		call("admin", "POST", "/api/v1/discovery/targets", fmt.Sprintf(kerberosTarget, bad), 422)
+	}
+	call("admin", "POST", "/api/v1/discovery/targets", fmt.Sprintf(`{"collector_id":%q,"address":"10.51.0.34","kind":"winrm","credential_id":%q,"winrm_transport":"http_ntlm","tls_server_name":"win-34.awm.local"}`, collector, wcred.ID), 422)
+	var kt sources.RemoteTarget
+	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/targets", fmt.Sprintf(kerberosTarget, `,"tls_server_name":"win-33.awm.local"`), 201), &kt)
+	if kt.Port != 5985 || kt.Transport == nil || *kt.Transport != "http_kerberos" || kt.CertOrigin != nil || kt.ServerName == nil || *kt.ServerName != "win-33.awm.local" {
+		t.Fatalf("kerberos target %+v", kt)
+	}
+	if wt.Transport == nil || *wt.Transport != "https" {
+		t.Fatalf("https is the default winrm transport %+v", wt)
+	}
+	if code, _ = post("/api/v1/machine/collect-targets/"+kt.ID+"/tlscert", []byte(`{"tls_cert_sha256":"`+firstCert+`"}`)); code != 404 {
+		t.Fatal("kerberos target has no certificate to pin", code)
+	}
 	var pinAudit int
 	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM audit.audit_events WHERE tenant_id=$1 AND action IN ('discovery.target_tls_cert_pinned','discovery.target_tls_cert_reset')", tenant).Scan(&pinAudit)
 	if pinAudit != 2 {
