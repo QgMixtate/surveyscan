@@ -25,6 +25,18 @@ try{
  await page.getByRole('button',{name:/Схема сети/}).click();await expect(page.locator('.topo-node').first()).toBeVisible();await shot('05-topology');
  await page.locator('.topo-node.router').first().click();await shot('06-topology-router');
  await page.getByLabel('Найти на схеме').fill('10.20.0.107');await page.locator('.topo-node',{hasText:'demo-ws-007'}).click();await shot('07-topology-conflict');
+ // C22.04: редактирование схемы — своё устройство, кабель, зона, авто-раскладка, сохранение в центре
+ await page.getByLabel('Найти на схеме').fill('');await page.getByRole('button',{name:'✎ Редактировать'}).click();
+ await page.getByLabel('Добавить устройство').selectOption('switch');await page.locator('.topo-side').getByLabel('Название').fill('Коммутатор ядра');
+ await page.getByLabel('Добавить устройство').selectOption('firewall');await page.locator('.topo-side').getByLabel('Название').fill('Межсетевой экран');
+ await page.getByRole('button',{name:'⟷ Связь'}).click();
+ await page.locator('.topo-node',{hasText:'Коммутатор ядра'}).dispatchEvent('click');await page.locator('.topo-node',{hasText:'demo-core-router'}).dispatchEvent('click');
+ await page.getByLabel('Тип новой связи').selectOption('fiber');await page.locator('.topo-node',{hasText:'Межсетевой экран'}).dispatchEvent('click');await page.locator('.topo-node',{hasText:'demo-core-router'}).dispatchEvent('click');
+ await page.locator('.topo-side').getByLabel(/Порт у «Межсетевой/).fill('port1');await page.locator('.topo-side').getByLabel('Подпись').fill('WAN 1G');
+ await page.getByRole('button',{name:'⟷ Связь'}).click();await page.getByRole('button',{name:'✦ Разложить'}).click();await page.waitForTimeout(3500);
+ await page.getByRole('button',{name:'▢ Зона'}).click();await page.locator('.topo-side').getByLabel('Название').fill('Серверная');await page.locator('.topo-side').getByLabel('Цвет').selectOption('blue');
+ await page.getByRole('button',{name:'Сохранить схему'}).click();await expect(page.getByText('Схема сохранена')).toBeVisible();await shot('07b-topology-edit');
+ await page.getByRole('button',{name:'✓ Готово'}).click();await page.getByRole('button',{name:'⤢ Вся схема'}).click();await shot('07c-topology-view');
  // разбор конфликтов: демо-хост DEMO-WS-001. совпал по имени с demo-ws-001 только слабым признаком
  await page.getByRole('button',{name:/Разбор конфликтов/}).click();await expect(page.locator('.conflict').first()).toBeVisible();await shot('08-reconcile');
  // C26: сервис, его связь с активом и поиск ПО по реестру

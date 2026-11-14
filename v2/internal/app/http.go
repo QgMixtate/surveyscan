@@ -98,6 +98,13 @@ func NewHTTP(auth *access.HTTP, health http.Handler, registry ...*Registry) (htt
 		mux.Handle("POST /api/v1/assets/merge", auth.Wrap("assets:write", false, registry[0].mergeHandler()))
 		mux.Handle("POST /api/v1/assets/{asset_uid}/split", auth.Wrap("assets:write", false, registry[0].splitHandler()))
 		mux.Handle("GET /api/v1/topology", auth.Wrap("assets:read", false, registry[0].topologyHandler()))
+		for route, handler := range registry[0].networkMapHandlers() {
+			permission := "assets:write"
+			if route[:4] == "GET " {
+				permission = "assets:read"
+			}
+			mux.Handle(route, auth.Wrap(permission, false, handler))
+		}
 		mux.Handle("POST /api/v1/sources/{source_id}/portable-import", auth.Wrap("sources:admin", false, registry[0].portableImportHandler()))
 		if registry[0].Machine != nil {
 			for operation, handler := range registry[0].Machine.human() {

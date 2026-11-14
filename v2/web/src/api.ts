@@ -11,7 +11,12 @@ export type SourceProfile={tenant_id:string;source_id:string;source_state:string
 export type Session=components['schemas']['Session'];
 export type FactEvidence12={observation_id:string;origin:{source_id:string;source_kind:'agent'|'collector'|'portable';generation_id:string};source_sequence:string;collected_at:string;clock_quality:string};
 export type RecordPage12={section:string;projection_revision:string;section_state:{status:string;clock_uncertain:boolean;last_attempt:FactEvidence12;sources?:{source_id:string;status:string;collected_at:string}[]}|null;items:{record_key:string;field:string;value:unknown;evidence:FactEvidence12}[];next_cursor:string|null};
-export type TopologyNode={id:string;kind:'host'|'subnet'|'gateway';label:string;detail?:string;asset_uid?:string;router?:boolean};
+export type TopologyNode={id:string;kind:'host'|'subnet'|'gateway';label:string;detail?:string;asset_uid?:string;router?:boolean;device?:'server'|'workstation'|'virtual_machine'|'hypervisor'|'router'|'switch'|'unknown'};
+export type DeviceType='server'|'workstation'|'virtual_machine'|'hypervisor'|'switch'|'router'|'firewall'|'access_point'|'printer'|'storage'|'cloud'|'other';
+export type MapPoint={x:number;y:number};
+export type LinkKind='copper'|'fiber'|'wireless'|'trunk'|'vpn'|'virtual'|'logical';
+export type MapDocument={positions:Record<string,MapPoint>;devices:{id:string;type:DeviceType;label:string;note?:string;address?:string;at:MapPoint}[];links:{id:string;a:string;b:string;kind:LinkKind;port_a?:string;port_b?:string;label?:string}[];groups:{id:string;label:string;color:'green'|'blue'|'amber'|'red'|'gray'|'violet';at:MapPoint;width:number;height:number}[];notes:{id:string;text:string;at:MapPoint}[];overrides:Record<string,{type?:DeviceType;label?:string;hidden?:boolean}>};
+export type NetworkMap={revision:string;updated_at:string|null;updated_by:string|null;document:MapDocument};
 export type TopologyLink={a:string;b:string;role?:'gateway';layer:'L2'|'L3';confidence:'confirmed'|'probable'|'weak';evidence:{source:string;detail:string;origin?:string}[];conflicts?:string[]};
 export type Conflict={conflict_id:string;reason_code:string;state:'open'|'resolved'|'dismissed';revision:string;source_record_key:string;source_id:string;namespace:string;source_local_id:string;resolution_state:string;asset_uid:string|null;candidate_asset_uids:string[];pending_observations:number;observed_hostname?:string};
 export type ConflictPage={tenant_id:string;state:string;items:Conflict[];next_cursor:string|null};
@@ -142,6 +147,8 @@ export const api={
  worklist:(scope:string,cursor:string|null=null)=>call<WorklistPage>('/api/v1/worklist?limit=100&scope='+encodeURIComponent(scope)+(cursor?'&cursor='+encodeURIComponent(cursor):''),'WorklistPage'),
  search:(q:string,filters:{os?:string;class?:string},cursor:string|null)=>call<SearchPage>('/api/v1/search?limit=20&q='+encodeURIComponent(q)+(filters.os?'&os='+encodeURIComponent(filters.os):'')+(filters.class?'&class='+encodeURIComponent(filters.class):'')+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SearchPage'),
  topology:()=>call<Topology>('/api/v1/topology','Topology'),
+ networkMap:()=>call<NetworkMap>('/api/v1/topology/map','NetworkMap'),
+ saveNetworkMap:(csrf:string,revision:string,document:MapDocument)=>call<NetworkMap>('/api/v1/topology/map','NetworkMap',{method:'PUT',body:JSON.stringify({revision,document}),headers:{'X-CSRF-Token':csrf}}),
  sources:(cursor:string|null=null)=>call<SourcePage>('/api/v1/sources?limit=50'+(cursor?'&cursor='+encodeURIComponent(cursor):''),'SourcePage')
 };
 export async function checkCompatibility(){

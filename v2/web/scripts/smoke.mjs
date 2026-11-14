@@ -39,6 +39,13 @@ try{
  await drawer.getByRole('button',{name:/Создать цель сбора/}).click();await expect(page.getByRole('cell',{name:'127.0.0.1:22'})).toBeVisible();await expect(page.getByRole('tab',{name:'Цели сбора'})).toHaveAttribute('aria-selected','true');await expect(page.getByRole('tab',{name:'Подсети'})).toHaveAttribute('aria-selected','false');await page.mouse.move(0,0);await page.waitForTimeout(300);
  if((await page.content()).includes('web-smoke-secret-51'))throw new Error('secret visible in the page');
  await page.screenshot({path:'../.local/c51-collect-web.png',fullPage:true});checks.push('C51.03 credential saved from the drawer without the secret coming back; collect target created from a discovered host without a host key fingerprint');
+ // C22.04: редактируемая схема — своё устройство сохраняется в центре и видно после перезагрузки
+ await page.getByRole('button',{name:/Схема сети/}).click();await page.getByRole('button',{name:'✎ Редактировать'}).click();
+ await page.getByLabel('Добавить устройство').selectOption('switch');await page.locator('.topo-side').getByLabel('Название').fill('Коммутатор smoke');
+ const mapReply=page.waitForResponse(r=>r.url().endsWith('/api/v1/topology/map')&&r.request().method()==='PUT');await page.getByRole('button',{name:'Сохранить схему'}).click();
+ if((await mapReply).status()!==200)throw new Error('network map save failed');await expect(page.getByText('Схема сохранена')).toBeVisible();
+ await page.getByRole('button',{name:'✓ Готово'}).click();await page.getByRole('button',{name:'↻ Обновить'}).click();await expect(page.locator('.topo-node',{hasText:'Коммутатор smoke'})).toBeVisible();
+ await page.screenshot({path:'../.local/c22-network-map-web.png',fullPage:true});checks.push('C22.04 network map: manual switch added in edit mode, saved to the center, still on the map after reload');
  const storage=await page.evaluate(()=>({local:localStorage.length,session:sessionStorage.length}));if(storage.local||storage.session)throw new Error('credentials in browser storage');checks.push('no tokens or credentials in web storage');
  await page.getByRole('button',{name:/Реестр активов/}).click();await page.locator('.asset-link').first().click();await expect(page.getByRole('dialog')).toBeVisible();
  const revoked=await context.request.delete(config.origin+'/api/v1/auth/session',{headers:{Origin:config.origin,'X-CSRF-Token':authSession.csrf_token}});if(!revoked.ok())throw new Error('session revocation failed');

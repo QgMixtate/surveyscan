@@ -22,7 +22,8 @@
         "label": {"type": "string", "maxLength": 300},
         "detail": {"type": "string", "maxLength": 300},
         "asset_uid": {"type": "string", "format": "uuid"},
-        "router": {"type": "boolean"}
+        "router": {"type": "boolean"},
+        "device": {"enum": ["server", "workstation", "virtual_machine", "hypervisor", "router", "switch", "unknown"]}
       },
       "required": ["id", "kind", "label"],
       "additionalProperties": false

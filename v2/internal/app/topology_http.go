@@ -25,6 +25,7 @@ type TopologyNode struct {
 	Detail string `json:"detail,omitempty"`
 	Asset  string `json:"asset_uid,omitempty"`
 	Router bool   `json:"router,omitempty"`
+	Device string `json:"device,omitempty"` // C22.04: тип устройства по фактам (только для host)
 }
 
 type TopologyEvidence struct {
@@ -138,10 +139,24 @@ func (r *Registry) computeTopology(ctx context.Context, tenant string) (Topology
 	}
 	out.Truncated, out.Hosts = truncated, len(hosts)
 	graph := topology.BuildL3(l3Hosts(hosts))
+	assets := []string{}
+	for _, n := range graph.Nodes {
+		if n.Kind == "host" {
+			assets = append(assets, n.ID[len("host:"):])
+		}
+	}
+	hints, e := r.Inventory.DeviceHints(ctx, tx, tenant, assets)
+	if e != nil {
+		return out, e
+	}
 	for _, n := range graph.Nodes {
 		node := TopologyNode{ID: n.ID, Kind: n.Kind, Label: n.Label, Detail: n.Detail, Router: n.Router}
 		if n.Kind == "host" {
 			node.Asset = n.ID[len("host:"):]
+			node.Device = hints[node.Asset].Class
+			if node.Device == "network" { // узел без ОС, собранный по SNMP: маршрутизатор, если шлюз для других
+				node.Device = map[bool]string{true: "router", false: "switch"}[n.Router]
+			}
 		}
 		out.Nodes = append(out.Nodes, node)
 	}

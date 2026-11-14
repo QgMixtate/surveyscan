@@ -36,11 +36,11 @@ def fixture(old_root):
         env = s['server_environment']
         binary = str(CURRENT / '.dist/surveyscan-server')
         result = subprocess.run([binary, 'migrate'], env=env, capture_output=True, timeout=30)
-        assert result.returncode == 0 and b'applied_migrations=21' in result.stdout
+        assert result.returncode == 0 and b'applied_migrations=22' in result.stdout
         assert {table: fingerprint(table) for table in tables} == before
-        assert len(sql('SELECT id FROM platform.schema_migrations').splitlines()) == 52
+        assert len(sql('SELECT id FROM platform.schema_migrations').splitlines()) == 53
         assert set(ledger) <= set(sql('SELECT id||owner||sha256 FROM platform.schema_migrations ORDER BY id').splitlines())
-        checks.append('current binary appends exactly21 migrations; every previous data table and all31 applied hashes preserved')
+        checks.append('current binary appends exactly22 migrations; every previous data table and all31 applied hashes preserved')
         result = subprocess.run([binary, 'migrate'], env=env, capture_output=True, timeout=30)
         assert result.returncode == 0 and b'applied_migrations=0' in result.stdout
         checks.append('second current migrate is a verified no-op; no edited SQL or duplicate upgrade effects')
