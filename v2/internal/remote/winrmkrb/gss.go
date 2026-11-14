@@ -32,7 +32,7 @@ const (
 )
 
 var (
-	ErrUnsupportedEtype = errors.New("winrm kerberos: only AES session keys are supported (aes128/aes256-cts-hmac-sha1-96)")
+	ErrUnsupportedEtype = &CodedError{Code: "kerberos_etype", Msg: "winrm kerberos: only AES session keys are supported (aes128/aes256-cts-hmac-sha1-96)"}
 	ErrToken            = errors.New("winrm kerberos: malformed GSS token")
 )
 

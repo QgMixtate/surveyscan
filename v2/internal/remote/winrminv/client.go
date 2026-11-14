@@ -30,6 +30,9 @@ var (
 
 // classify сводит ошибку транспорта к безопасной категории без текста ответа цели.
 func classify(err error) error {
+	if winrmkrb.Code(err) != "" {
+		return err // фиксированный код Kerberos (без текста цели) — показывается в Web
+	}
 	out := classifyKind(err)
 	if os.Getenv("SURVEYSCAN_AGENT_DEBUG") == "1" { // отладка: очищенный и обрезанный текст транспортной ошибки (пароль в нём не передаётся)
 		text := strings.Join(strings.Fields(err.Error()), " ")
@@ -98,7 +101,17 @@ func (w *limitedBuf) Write(p []byte) (int, error) {
 	return w.b.Write(p)
 }
 
-type winrmRunner struct{ client *winrm.Client }
+type winrmRunner struct {
+	client *winrm.Client
+	close  func()
+}
+
+// Close освобождает соединения транспорта (Kerberos: пул соединений и билет).
+func (r winrmRunner) Close() {
+	if r.close != nil {
+		r.close()
+	}
+}
 
 func (r winrmRunner) RunPowerShell(ctx context.Context, script string, maxOut int) (string, error) {
 	out, errOut := &limitedBuf{left: maxOut}, &limitedBuf{left: 64 << 10}
@@ -191,7 +204,7 @@ func Connect(ctx context.Context, r SecretReader, t Target, p Policy) (Runner, e
 	if err != nil {
 		return nil, errors.New("winrm: client setup failed")
 	}
-	return winrmRunner{client}, nil
+	return winrmRunner{client: client}, nil
 }
 
 // CollectWith выполняет сценарий через Runner и приводит результат к 12 секциям. Таймаут/отмена/ошибка → ошибка без частичных данных.
@@ -266,5 +279,5 @@ func connectKerberos(r SecretReader, t Target) (Runner, error) {
 	if err != nil {
 		return nil, errors.New("winrm: client setup failed")
 	}
-	return winrmRunner{client}, nil
+	return winrmRunner{client: client, close: tr.Close}, nil
 }

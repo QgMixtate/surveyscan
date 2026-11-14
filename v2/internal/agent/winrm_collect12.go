@@ -8,6 +8,7 @@ import (
 
 	"github.com/QgMixtate/surveyscan/v2/internal/platform/privatefile"
 	"github.com/QgMixtate/surveyscan/v2/internal/remote/winrminv"
+	"github.com/QgMixtate/surveyscan/v2/internal/remote/winrmkrb"
 )
 
 // WinRMTarget — безагентная Windows-цель (только HTTPS, CA обязателен, NTLM). Файлы приватные.
@@ -20,6 +21,8 @@ type WinRMTarget struct {
 	ServerName   string `json:"tls_server_name,omitempty"`
 	// Kerberos: HTTP 5985 с Kerberos и шифрованием сообщений; ServerName — полное имя ПК (SPN), CA не нужен
 	Kerberos bool `json:"kerberos,omitempty"`
+	// Problem — код отказа подключения (например kerberos_refused) для показа в Web; не сериализуется
+	Problem func(code string) `json:"-"`
 	// C51.03: пароль и CA из памяти (collector получает их у центра); файлы тогда не используются. Не сериализуются.
 	Password func(context.Context) ([]byte, error) `json:"-"`
 	CAPEM    []byte                                `json:"-"`
@@ -81,12 +84,29 @@ func NewWinRMCollect12(t WinRMTarget) func(context.Context) (Snapshot, error) {
 		}
 		run, err := winrminv.Connect(ctx, secret, winrminv.Target{Host: t.Host, Port: t.Port, User: t.User, PasswordAlias: "file", CAPEM: ca, TLSServerName: t.ServerName, CertSHA256: t.CertSHA256, Kerberos: t.Kerberos}, winrminv.Policy{})
 		if err != nil {
+			t.problem(err)
 			return Snapshot{}, err
+		}
+		if c, ok := run.(interface{ Close() }); ok {
+			defer c.Close()
 		}
 		sections, cands, err := winrminv.CollectWith(ctx, run, winrminv.Policy{})
 		if err != nil {
+			t.problem(err)
 			return Snapshot{}, err
 		}
+		t.problem(nil)
 		return Snapshot{Candidates: cands, Sections: sections}, nil
 	}
+}
+
+func (t WinRMTarget) problem(err error) {
+	if t.Problem == nil {
+		return
+	}
+	code := ""
+	if err != nil {
+		code = winrmkrb.Code(err)
+	}
+	t.Problem(code)
 }

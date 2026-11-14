@@ -13,6 +13,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/jcmturner/gokrb5/v8/client"
@@ -88,13 +89,53 @@ func krbConfig(realm, kdc string) *config.Config {
 	return cfg
 }
 
-// Transport — транспорт masterzen/winrm: одно TCP-соединение, Kerberos-контекст и шифрование каждого сообщения.
+// CodedError — отказ с фиксированным кодом для Web (без текста цели, адресов и секретов).
+type CodedError struct{ Code, Msg string }
+
+func (e *CodedError) Error() string { return e.Msg }
+
+// Code — код отказа Kerberos/WinRM или "".
+func Code(err error) string {
+	var c *CodedError
+	if errors.As(err, &c) {
+		return c.Code
+	}
+	return ""
+}
+
+func coded(code, msg string) error { return &CodedError{Code: code, Msg: msg} }
+
+// Transport — транспорт masterzen/winrm. Контекст Kerberos в WinRM привязан к TCP-соединению, а библиотека шлёт
+// запросы параллельно (чтение вывода команды идёт в своей горутине, пока отправляется ввод), поэтому у каждого
+// запроса своё соединение со своим контекстом: соединение берётся из пула простаивающих или устанавливается заново
+// (билет службы кэшируется). Общего изменяемого соединения нет; пул защищён мьютексом.
 type Transport struct {
-	t    Target
-	conn net.Conn
+	t Target
+
+	mu     sync.Mutex
+	dialer func(ctx context.Context, fresh bool) (*conn, error) // для тестов; по умолчанию dial
+	idle   []*conn
+	ticket *serviceTicket
+	closed bool
+}
+
+type conn struct {
+	c    net.Conn
 	br   *bufio.Reader
 	sess *Session
 }
+
+type serviceTicket struct {
+	cl  *client.Client
+	tkt messages.Ticket
+	key types.EncryptionKey
+	at  time.Time
+}
+
+const (
+	maxIdle      = 4
+	ticketMaxAge = 8 * time.Hour // билеты домена по умолчанию живут 10 ч
+)
 
 func New(t Target) (*Transport, error) {
 	if _, _, err := Principal(t.User, t.Host); err != nil {
@@ -114,83 +155,151 @@ func New(t Target) (*Transport, error) {
 
 func (k *Transport) Transport(*winrm.Endpoint) error { return nil }
 
+// Close закрывает простаивающие соединения и забывает билет (соединения, занятые запросами, закроются после них).
 func (k *Transport) Close() {
-	if k.conn != nil {
-		k.conn.Close()
+	k.mu.Lock()
+	idle, t := k.idle, k.ticket
+	k.idle, k.ticket, k.closed = nil, nil, true
+	k.mu.Unlock()
+	for _, c := range idle {
+		c.c.Close()
 	}
-	k.conn, k.sess = nil, nil
+	if t != nil {
+		t.cl.Destroy()
+	}
 }
 
-func (k *Transport) authenticate(ctx context.Context) error {
+// serviceTicketFor — кэшированный билет HTTP/<имя ПК> или новый (вход в домен паролем учётки).
+func (k *Transport) serviceTicketFor(ctx context.Context, fresh bool) (*serviceTicket, error) {
+	k.mu.Lock()
+	if t := k.ticket; t != nil && !fresh && time.Since(t.at) < ticketMaxAge {
+		k.mu.Unlock()
+		return t, nil
+	}
+	k.mu.Unlock()
 	name, realm, _ := Principal(k.t.User, k.t.Host)
 	pw, err := k.t.Password(ctx)
 	if err != nil {
-		return errors.New("winrm kerberos: credential unavailable")
+		return nil, errors.New("winrm kerberos: credential unavailable")
 	}
 	cl := client.NewWithPassword(name, realm, string(pw), krbConfig(realm, k.t.KDC), client.DisablePAFXFAST(true))
 	for i := range pw {
 		pw[i] = 0
 	}
-	defer cl.Destroy()
 	if err = cl.Login(); err != nil {
-		return fmt.Errorf("winrm kerberos: domain login failed: %s", krbReason(err))
+		cl.Destroy()
+		return nil, coded("kerberos_login:"+krbReason(err), "winrm kerberos: domain login failed: "+krbReason(err))
 	}
 	spn := "HTTP/" + strings.ToLower(k.t.Host)
 	tkt, key, err := cl.GetServiceTicket(spn)
 	if err != nil {
-		return fmt.Errorf("winrm kerberos: no service ticket for %s: %s", spn, krbReason(err))
+		cl.Destroy()
+		return nil, coded("kerberos_ticket:"+krbReason(err), fmt.Sprintf("winrm kerberos: no service ticket for %s: %s", spn, krbReason(err)))
 	}
 	if err = aesOnly(key); err != nil {
-		return err
+		cl.Destroy()
+		return nil, err
 	}
-	auth, err := types.NewAuthenticator(cl.Credentials.Domain(), cl.Credentials.CName())
+	t := &serviceTicket{cl: cl, tkt: tkt, key: key, at: time.Now()}
+	k.mu.Lock()
+	old := k.ticket
+	k.ticket = t
+	k.mu.Unlock()
+	if old != nil && old != t {
+		old.cl.Destroy()
+	}
+	return t, nil
+}
+
+// dial устанавливает новое соединение с контекстом Kerberos (AP-REQ с взаимной проверкой AP-REP).
+func (k *Transport) dial(ctx context.Context, fresh bool) (*conn, error) {
+	st, err := k.serviceTicketFor(ctx, fresh)
 	if err != nil {
-		return err
+		return nil, err
+	}
+	auth, err := types.NewAuthenticator(st.cl.Credentials.Domain(), st.cl.Credentials.CName())
+	if err != nil {
+		return nil, err
 	}
 	chk := make([]byte, 24)
 	binary.LittleEndian.PutUint32(chk[:4], 16)
 	binary.LittleEndian.PutUint32(chk[20:], gssapi.ContextFlagMutual|gssapi.ContextFlagInteg|gssapi.ContextFlagConf|gssapi.ContextFlagSequence|gssapi.ContextFlagReplay)
 	auth.Cksum = types.Checksum{CksumType: chksumtype.GSSAPI, Checksum: chk}
-	if err = auth.GenerateSeqNumberAndSubKey(key.KeyType, len(key.KeyValue)); err != nil {
-		return err
+	if err = auth.GenerateSeqNumberAndSubKey(st.key.KeyType, len(st.key.KeyValue)); err != nil {
+		return nil, err
 	}
-	req, err := messages.NewAPReq(tkt, key, auth)
+	req, err := messages.NewAPReq(st.tkt, st.key, auth)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	types.SetFlag(&req.APOptions, flags.APOptionMutualRequired)
 	raw, err := req.Marshal()
 	if err != nil {
-		return err
+		return nil, err
 	}
-	conn, err := (&net.Dialer{Timeout: k.t.Timeout, KeepAlive: 30 * time.Second}).DialContext(ctx, "tcp", k.t.Addr)
+	nc, err := (&net.Dialer{Timeout: k.t.Timeout, KeepAlive: 30 * time.Second}).DialContext(ctx, "tcp", k.t.Addr)
 	if err != nil {
-		return err
+		return nil, coded("network", "winrm kerberos: cannot connect to the PC on port "+portOf(k.t.Addr))
 	}
-	k.conn, k.br = conn, bufio.NewReader(conn)
-	resp, body, err := k.roundTrip(ctx, nil, "Negotiate "+base64.StdEncoding.EncodeToString(gssFrame([]byte{0x01, 0x00}, raw)), "")
+	c := &conn{c: nc, br: bufio.NewReader(nc)}
+	resp, _, err := k.roundTrip(ctx, c, nil, "Negotiate "+base64.StdEncoding.EncodeToString(gssFrame([]byte{0x01, 0x00}, raw)), "")
 	if err != nil {
-		k.Close()
-		return err
+		nc.Close()
+		return nil, err
 	}
-	_ = body
 	if resp.StatusCode != 200 {
-		k.Close()
+		nc.Close()
 		if resp.StatusCode == 401 {
-			return errors.New("winrm kerberos: PC refused Kerberos (check the account rights, the PC name and the HTTP/<name> SPN)")
+			return nil, coded("kerberos_refused", "winrm kerberos: PC refused Kerberos (check the account rights, the PC name and the HTTP/<name> SPN)")
 		}
-		return fmt.Errorf("winrm kerberos: authentication answered HTTP %d", resp.StatusCode)
+		return nil, coded("kerberos_http_"+strconv.Itoa(resp.StatusCode), fmt.Sprintf("winrm kerberos: authentication answered HTTP %d", resp.StatusCode))
 	}
 	tok, err := serverToken(resp.Header.Values("WWW-Authenticate"))
+	if err == nil {
+		c.sess, err = AcceptAPRep(tok, st.key, auth)
+	}
 	if err != nil {
-		k.Close()
-		return err
+		nc.Close()
+		if Code(err) == "" {
+			err = coded("kerberos_mutual", err.Error())
+		}
+		return nil, err
 	}
-	if k.sess, err = AcceptAPRep(tok, key, auth); err != nil {
-		k.Close()
-		return err
+	return c, nil
+}
+
+// get — простаивающее соединение (reused=true) или новое.
+func (k *Transport) get(ctx context.Context, fresh bool) (*conn, bool, error) {
+	k.mu.Lock()
+	if k.closed {
+		k.mu.Unlock()
+		return nil, false, errors.New("winrm kerberos: transport closed")
 	}
-	return nil
+	if n := len(k.idle); n > 0 && !fresh {
+		c := k.idle[n-1]
+		k.idle = k.idle[:n-1]
+		k.mu.Unlock()
+		return c, true, nil
+	}
+	dial := k.dial
+	if k.dialer != nil {
+		dial = k.dialer
+	}
+	k.mu.Unlock()
+	c, err := dial(ctx, fresh)
+	return c, false, err
+}
+
+func (k *Transport) put(c *conn) {
+	k.mu.Lock()
+	if !k.closed && len(k.idle) < maxIdle {
+		k.idle = append(k.idle, c)
+		c = nil
+	}
+	k.mu.Unlock()
+	if c != nil {
+		c.c.Close()
+	}
 }
 
 // serverToken — маркер AP-REP из WWW-Authenticate (сырой Kerberos или SPNEGO NegTokenResp).
@@ -226,9 +335,8 @@ func krbReason(err error) string {
 	return "error"
 }
 
-func (k *Transport) roundTrip(ctx context.Context, body []byte, authorization, contentType string) (*http.Response, []byte, error) {
+func (k *Transport) roundTrip(ctx context.Context, c *conn, body []byte, authorization, contentType string) (*http.Response, []byte, error) {
 	req, _ := http.NewRequestWithContext(ctx, "POST", "http://"+k.t.Host+":"+portOf(k.t.Addr)+"/wsman", bytes.NewReader(body))
-	req.Header.Set("Host", k.t.Host)
 	req.Header.Set("User-Agent", "SurveyScan WinRM")
 	req.Header.Set("Connection", "Keep-Alive")
 	req.ContentLength = int64(len(body))
@@ -242,11 +350,11 @@ func (k *Transport) roundTrip(ctx context.Context, body []byte, authorization, c
 	if d, ok := ctx.Deadline(); ok && d.Before(deadline) {
 		deadline = d
 	}
-	_ = k.conn.SetDeadline(deadline)
-	if err := req.Write(k.conn); err != nil {
+	_ = c.c.SetDeadline(deadline)
+	if err := req.Write(c.c); err != nil {
 		return nil, nil, err
 	}
-	resp, err := http.ReadResponse(k.br, req)
+	resp, err := http.ReadResponse(c.br, req)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -265,25 +373,38 @@ func portOf(addr string) string {
 	return p
 }
 
-// Post — отправка SOAP-сообщения (интерфейс winrm.Transporter): контекст устанавливается при первом вызове и
-// заново после разрыва соединения.
-func (k *Transport) Post(_ *winrm.Client, request *soap.SoapMessage) (string, error) {
-	ctx := context.Background()
-	msg := []byte(request.String())
-	for attempt := 0; attempt < 2; attempt++ {
-		if k.sess == nil {
-			if err := k.authenticate(ctx); err != nil {
-				return "", err
-			}
+// Post — отправка SOAP-сообщения (интерфейс winrm.Transporter). Безопасна для параллельных вызовов: каждый вызов
+// работает на своём соединении. Простаивающее соединение могло быть закрыто ПК — тогда один повтор на новом;
+// отказ контекста (401) — новый билет. Паника внутри транспорта превращается в ошибку и не роняет collector.
+func (k *Transport) Post(_ *winrm.Client, request *soap.SoapMessage) (out string, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			out, err = "", errors.New("winrm kerberos: internal error")
 		}
-		body, err := k.seal(msg)
+	}()
+	return k.post([]byte(request.String()))
+}
+
+func (k *Transport) post(msg []byte) (string, error) {
+	ctx := context.Background()
+	fresh := false
+	for attempt := 0; attempt < 3; attempt++ {
+		c, reused, err := k.get(ctx, fresh)
 		if err != nil {
 			return "", err
 		}
-		resp, data, err := k.roundTrip(ctx, body, "", `multipart/encrypted;protocol="`+protocol+`";boundary="Encrypted Boundary"`)
+		body, err := c.sess.seal(msg)
+		if err != nil {
+			c.c.Close()
+			return "", err
+		}
+		resp, data, err := k.roundTrip(ctx, c, body, "", `multipart/encrypted;protocol="`+protocol+`";boundary="Encrypted Boundary"`)
 		if err != nil || resp.StatusCode == 401 {
-			k.Close() // соединение или контекст потеряны — один повтор с новым контекстом
-			if attempt == 0 {
+			c.c.Close()
+			if err == nil {
+				fresh = true // контекст отвергнут: новый билет и новое соединение
+			}
+			if attempt < 2 && (reused || fresh) {
 				continue
 			}
 			if err == nil {
@@ -291,10 +412,15 @@ func (k *Transport) Post(_ *winrm.Client, request *soap.SoapMessage) (string, er
 			}
 			return "", err
 		}
-		plain, err := k.open(resp.Header.Get("Content-Type"), data)
+		plain, err := c.sess.open(resp.Header.Get("Content-Type"), data)
 		if err != nil {
-			k.Close()
+			c.c.Close()
 			return "", err
+		}
+		if resp.Close {
+			c.c.Close()
+		} else {
+			k.put(c)
 		}
 		if resp.StatusCode != 200 {
 			return string(plain), fmt.Errorf("winrm: http error %d: %s", resp.StatusCode, string(plain))
@@ -304,8 +430,8 @@ func (k *Transport) Post(_ *winrm.Client, request *soap.SoapMessage) (string, er
 	return "", errors.New("winrm kerberos: no session")
 }
 
-func (k *Transport) seal(msg []byte) ([]byte, error) {
-	header, data, err := k.sess.Wrap(msg)
+func (s *Session) seal(msg []byte) ([]byte, error) {
+	header, data, err := s.Wrap(msg)
 	if err != nil {
 		return nil, err
 	}
@@ -319,12 +445,12 @@ func (k *Transport) seal(msg []byte) ([]byte, error) {
 }
 
 // open расшифровывает ответ; незашифрованный ответ не принимается (кроме пустого тела).
-func (k *Transport) open(contentType string, body []byte) ([]byte, error) {
+func (s *Session) open(contentType string, body []byte) ([]byte, error) {
 	if len(body) == 0 {
 		return nil, nil
 	}
 	if !strings.Contains(contentType, `protocol="`+protocol+`"`) {
-		return nil, errors.New("winrm kerberos: PC answered without encryption")
+		return nil, coded("kerberos_unencrypted", "winrm kerberos: PC answered without encryption")
 	}
 	parts := [][]byte{}
 	for _, p := range bytes.Split(body, []byte(boundary+"\r\n")) {
@@ -352,7 +478,7 @@ func (k *Transport) open(contentType string, body []byte) ([]byte, error) {
 		if n <= 0 || 4+n > len(payload) {
 			return nil, ErrToken
 		}
-		plain, err := k.sess.Unwrap(payload[4:4+n], payload[4+n:])
+		plain, err := s.Unwrap(payload[4:4+n], payload[4+n:])
 		if err != nil {
 			return nil, err
 		}

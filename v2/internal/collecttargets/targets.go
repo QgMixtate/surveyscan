@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/QgMixtate/surveyscan/v2/contracts"
@@ -195,6 +196,19 @@ func (c *Manager) enrollTarget(ctx context.Context, cfg agent.Config, t machineT
 }
 
 func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
+	// паника в сборе одной цели не должна останавливать collector (и доставку всех источников): ошибка цели видна
+	// в Web как internal_error, цель перезапускается через минуту
+	defer func() {
+		if r := recover(); r != nil {
+			telemetry.Log(os.Stderr, "collector", "target_"+t.ID[:8]+"_panic")
+			c.report(context.WithoutCancel(ctx), t.ID, false, "internal_error")
+			time.AfterFunc(time.Minute, func() {
+				if ctx.Err() == nil {
+					go c.runTarget(ctx, t)
+				}
+			})
+		}
+	}()
 	platform := contracts.InventoryPlatformLinux12
 	if t.Kind == "winrm" {
 		platform = contracts.InventoryPlatform12
@@ -208,6 +222,8 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 	}
 	cfg := agent.Config{Tenant: t.Tenant, Site: t.Site, Scope: t.Scope, CollectorURL: c.selfURL(), CollectorSource: c.CollectorSource, CA: c.CA,
 		State: state, InventorySeconds: max(t.Interval, 300), HeartbeatSeconds: 300, Jitter: 10, Limit: 16 << 20, InventoryPlatform: platform}
+	var winrmProblem atomic.Value // последний код отказа подключения WinRM (пишет сбор, читает отчёт)
+	winrmProblem.Store("")
 	pinned := "" // отпечаток сертификата WinRM, с которым запущен сбор (цель без PEM)
 	report := func(s string) {
 		if !strings.HasPrefix(s, "detail:") {
@@ -223,6 +239,10 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 					c.report(ctx, t.ID, false, "cert_changed")
 					return
 				}
+			}
+			if code, _ := winrmProblem.Load().(string); code != "" {
+				c.report(ctx, t.ID, false, "winrm:"+code) // причина отказа WinRM/Kerberos фиксированным кодом
+				return
 			}
 			c.report(ctx, t.ID, false, s)
 		}
@@ -272,7 +292,7 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 					s, err := c.secret(ctx, t.ID)
 					return []byte(s.Secret.Password), err
 				}
-				target := agent.WinRMTarget{Host: t.Address, Port: t.Port, User: t.Username, Password: fetch}
+				target := agent.WinRMTarget{Host: t.Address, Port: t.Port, User: t.Username, Password: fetch, Problem: func(code string) { winrmProblem.Store(code) }}
 				if t.CAPEM != nil {
 					target.CAPEM = []byte(*t.CAPEM)
 				}

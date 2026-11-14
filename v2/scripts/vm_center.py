@@ -12,6 +12,7 @@ import argparse
 import json
 import os
 import signal
+import socket
 import subprocess
 import sys
 import tempfile
@@ -106,7 +107,32 @@ def scenario(args, **s):
     warned = set()
     deadline = time.monotonic() + args.timeout
     last = 0.0
+    (out / 'collector-status.json').unlink(missing_ok=True)
+    restarts = 0
+    if args.selftest:  # проверка присмотра: collector «падает», обвязка его перезапускает, агент регистрируется через новый
+        s['collector_process'].kill()
+        s['collector_process'].wait()
     while not STOP and time.monotonic() < deadline:
+        # Присмотр (замечание стенда, задание №12): collector, упавший с паникой, раньше тихо останавливал доставку всех
+        # источников. Теперь выход collector виден в выводе и в collector-status.json, collector перезапускается с
+        # нарастающей паузой; выход центра завершает vm_center с ошибкой (перезапускает внешний супервизор).
+        collector = s['collector_process']
+        if collector.poll() is not None:
+            restarts += 1
+            status = {'collector_exit_code': collector.returncode, 'restarts': restarts, 'at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime())}
+            (out / 'collector-status.json').write_text(json.dumps(status))
+            print(f'COLLECTOR ВЫШЕЛ (код {collector.returncode}) — перезапуск №{restarts}; журнал collector.log в каталоге обвязки', flush=True)
+            time.sleep(min(60, 5 * restarts))
+            s['collector_process'] = s['start']('collector', [str(ROOT / '.dist/surveyscan-collector'), 'run', '--config', s['collector_config']])
+            for _ in range(60):  # ждём, пока перезапущенный collector начнёт принимать соединения
+                try:
+                    socket.create_connection(('127.0.0.1', s['collector_port']), timeout=1).close()
+                    break
+                except OSError:
+                    time.sleep(0.5)
+        if s['center_process'].poll() is not None:
+            print(f"ЦЕНТР ВЫШЕЛ (код {s['center_process'].returncode}) — vm_center завершается с ошибкой", flush=True)
+            raise SystemExit(1)
         for prepare_name, (platform, grant_name) in grant_requests(out, args.platform).items():
             if prepare_name in issued:
                 try:
@@ -181,6 +207,9 @@ def selftest_enroll_run(args, out, agent):
 
 
 def selftest_finish(args, c, agent, s):
+    status = json.loads((Path(args.out) / 'collector-status.json').read_text()) if (Path(args.out) / 'collector-status.json').exists() else {}
+    assert status.get('restarts') == 1 and s['collector_process'].poll() is None, 'collector supervision: killed collector was not restarted'
+    c['collector_restarted'] = True
     process = agent['process']
     assert process.poll() is None, 'selftest run12 daemon exited: ' + process.stderr.read().decode()[:300]
     process.send_signal(signal.SIGTERM)
