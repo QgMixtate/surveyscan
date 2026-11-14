@@ -154,6 +154,8 @@ jobs:
         run: .contract-tools/bin/python scripts/discovery_smoke.py
       - name: Collect target from Web (C51.03) - credential in the secret store, collector enrolls the target agent, SSH collection, no files on the host
         run: .contract-tools/bin/python scripts/collect_target_smoke.py
+      - name: Canary and version skew (C40.02) - N migrations under running N-1, N api beside N-1, collector upgrade and rollback
+        run: .contract-tools/bin/python scripts/canary_skew_smoke.py
       - name: Human CLI login, two tenants, pagination and remote logout
         run: .contract-tools/bin/python scripts/cli_smoke.py
       - name: Central profiles, signed source diagnostics and tenant policy
