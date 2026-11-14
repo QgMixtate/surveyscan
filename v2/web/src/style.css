@@ -24,5 +24,29 @@
 .org-form .inline-check{display:inline-flex;align-items:center;gap:6px;white-space:nowrap}.org-form .inline-check input{width:16px;height:16px;min-width:0;padding:0;flex:none}
 .directory-form{display:grid;gap:10px;margin-bottom:16px;padding:16px 24px;border:1px solid var(--line,#dde3e8);border-radius:12px;background:var(--panel,#fff)}.directory-form h3{margin:0 0 4px}.directory-form label{display:grid;gap:4px;font-size:13px;color:var(--muted,#637582)}.directory-form input,.directory-form select,.directory-form textarea{font:inherit;color:inherit}
 /* C51 — обследования сети */
-.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;align-items:end}.form-grid h3{grid-column:1/-1;margin:0}.form-grid fieldset{border:0;padding:0;margin:0;display:flex;gap:12px;flex-wrap:wrap}.form-grid label.inline{display:inline-flex;align-items:center;gap:6px}
-ul.plain{list-style:none;padding:0;margin:0;display:grid;gap:4px}
+.discovery .stack{display:grid;gap:22px}
+.seg-tabs{display:inline-flex;border:1px solid #d8e1db;border-radius:6px;overflow:hidden;margin-bottom:22px;background:#fff}
+.seg-tabs button{border:0;background:none;padding:9px 18px;font-size:12px;color:#5e7257}
+.seg-tabs button+button{border-left:1px solid #e3e9e2}
+.seg-tabs button.active{background:#214d3b;color:#fff}
+.seg-tabs button:hover:not(.active){background:#edf3ed}
+.discovery td small,.discovery td .error-text{display:block;font-size:10px;margin-top:5px;color:#9aa892;white-space:normal}
+.discovery td .error-text{color:#b42318}
+.discovery td.actions{text-align:right;white-space:nowrap}
+.discovery td.actions .text-link{margin-left:12px}
+.discovery tr.selected td{background:#f4f8f2}
+.panel-note{font-size:11px;color:#8a978c;margin:0;padding:14px 22px;border-top:1px solid #eef1eb;line-height:1.6}
+.drawer .panel-note{padding:0;border:0;margin-top:4px}
+.history{border-top:1px solid #eef1eb;padding:14px 22px}
+.history h3{font-size:12px;font-weight:600;margin:0 0 10px}
+.history ul{list-style:none;padding:0;margin:0;display:grid;gap:8px;font-size:11px;color:#6d7f68}
+.form-stack{display:grid;gap:16px;margin-top:22px}
+.field{display:grid;gap:6px;border:0;padding:0;margin:0;min-width:0}
+.field>span{font-size:11px;font-weight:600;color:#405847}
+.field>small{font-size:10px;color:#93a08f;line-height:1.5}
+.field input:not([type=checkbox]):not([type=radio]),.field select,.field textarea{width:100%;border:1px solid #d9e1da;border-radius:6px;background:#fff;padding:10px 12px;font-size:12px;color:#2f4636}
+.field textarea{resize:vertical;font-size:11px}
+.field .checks{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:#405847}
+.field .checks label{display:inline-flex;align-items:center;gap:6px}
+.form-stack .button.primary{margin-top:6px}
+

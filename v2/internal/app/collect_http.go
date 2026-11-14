@@ -171,16 +171,21 @@ func (r *Registry) targetHandlers() map[string]route51 {
 		})},
 		"PATCH /api/v1/discovery/targets/{target_id}": {"sources:admin", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			var body struct {
-				Revision string `json:"revision"`
-				Disabled bool   `json:"disabled"`
+				Revision     string `json:"revision"`
+				Disabled     bool   `json:"disabled"`
+				ResetHostKey bool   `json:"reset_host_key,omitempty"`
 			}
 			if !readOperationBody(w, req, &body) {
 				return
 			}
 			r.discoveryDo(w, req, http.StatusOK, "sources:admin", func(ctx context.Context, tx pgx.Tx, id accessport.Identity) (any, error) {
-				t, e := src51.SetTargetState(ctx, tx, id.TenantID, req.PathValue("target_id"), body.Revision, body.Disabled)
+				t, e := src51.SetTargetState(ctx, tx, id.TenantID, req.PathValue("target_id"), body.Revision, body.Disabled, body.ResetHostKey)
 				if e == nil {
-					e = r.Audit.Record(ctx, tx, id.TenantID, id.UserID, "discovery.target_changed", "remote_target", t.ID)
+					action := "discovery.target_changed"
+					if body.ResetHostKey {
+						action = "discovery.target_host_key_reset"
+					}
+					e = r.Audit.Record(ctx, tx, id.TenantID, id.UserID, action, "remote_target", t.ID)
 				}
 				return t, e
 			})
@@ -269,6 +274,34 @@ func (r *Registry) collectMachine(w http.ResponseWriter, req *http.Request) {
 			return
 		}
 		registryJSON(w, map[string]any{"kind": kind, "username": username, "secret": secret})
+	case strings.HasSuffix(req.URL.Path, "/hostkey"):
+		var body struct {
+			HostKey string `json:"host_key_sha256"`
+		}
+		if sources.Strict(raw, &body) != nil {
+			access.APIError(w, 400, "INVALID_JSON")
+			return
+		}
+		pinned, tenant, source, e := m.Sources.PinHostKey(ctx, fp, target, body.HostKey)
+		if e != nil {
+			m.fail(w, e)
+			return
+		}
+		if pinned {
+			tx, e := r.Pool.Begin(ctx)
+			if e == nil {
+				if e = r.Audit.Record(ctx, tx, tenant, "collector:"+source, "discovery.target_host_key_pinned", "remote_target", target); e == nil {
+					e = tx.Commit(ctx)
+				}
+				tx.Rollback(ctx)
+			}
+			if e != nil {
+				m.fail(w, e)
+				return
+			}
+		}
+		w.Header().Set("Cache-Control", "no-store")
+		w.WriteHeader(http.StatusNoContent)
 	case strings.HasSuffix(req.URL.Path, "/report"):
 		var body struct {
 			OK      bool   `json:"ok"`

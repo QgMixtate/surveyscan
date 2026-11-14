@@ -238,7 +238,6 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 	target51 := func(extra string) string {
 		return fmt.Sprintf(`{"collector_id":%q,"network_id":%q,"address":"10.51.0.10","kind":"ssh","credential_id":%q%s}`, collector, n.ID, cred.ID, extra)
 	}
-	call("admin", "POST", "/api/v1/discovery/targets", target51(""), 422)                                                                                // без отпечатка ключа хоста
 	call("admin", "POST", "/api/v1/discovery/targets", strings.Replace(target51(`,"host_key_sha256":"`+hostKey+`"`), "10.51.0.10", "10.99.0.1", 1), 422) // вне подсети
 	call("op51", "POST", "/api/v1/discovery/targets", target51(`,"host_key_sha256":"`+hostKey+`"`), 403)
 	var tg sources.RemoteTarget
@@ -292,6 +291,35 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM audit.audit_events WHERE tenant_id=$1 AND action='discovery.credential_issued' AND actor_ref=$2", tenant, "collector:"+collector).Scan(&issued)
 	if issued != 1 {
 		t.Fatal("credential issuance must be audited with the collector as actor", issued)
+	}
+	// SSH-цель без отпечатка: collector запоминает ключ при первом подключении; смена ключа — 409; сброс из Web
+	var tofu sources.RemoteTarget
+	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/targets", strings.Replace(target51(""), "10.51.0.10", "10.51.0.30", 1), 201), &tofu)
+	if tofu.HostKey != nil || tofu.HostKeyOrigin != nil {
+		t.Fatalf("target without fingerprint %+v", tofu)
+	}
+	firstKey, otherKey := "SHA256:"+strings.Repeat("B", 43), "SHA256:"+strings.Repeat("C", 43)
+	if code, _ = post("/api/v1/machine/collect-targets/"+tofu.ID+"/hostkey", []byte(`{"host_key_sha256":"`+firstKey+`"}`)); code != 204 {
+		t.Fatal("pin on first use", code)
+	}
+	if code, _ = post("/api/v1/machine/collect-targets/"+tofu.ID+"/hostkey", []byte(`{"host_key_sha256":"`+firstKey+`"}`)); code != 204 {
+		t.Fatal("same key again", code)
+	}
+	if code, _ = post("/api/v1/machine/collect-targets/"+tofu.ID+"/hostkey", []byte(`{"host_key_sha256":"`+otherKey+`"}`)); code != 409 {
+		t.Fatal("changed host key must be refused", code)
+	}
+	_ = json.Unmarshal(call("view51", "GET", "/api/v1/discovery/targets", "", 200), &tl)
+	for _, x := range tl.Items {
+		if x.ID == tofu.ID {
+			tofu = x
+		}
+	}
+	if tofu.HostKey == nil || *tofu.HostKey != firstKey || tofu.HostKeyOrigin == nil || *tofu.HostKeyOrigin != "first_use" || tofu.LastError == nil || *tofu.LastError != "host_key_changed" {
+		t.Fatalf("pinned target %+v", tofu)
+	}
+	_ = json.Unmarshal(call("admin", "PATCH", "/api/v1/discovery/targets/"+tofu.ID, `{"revision":"`+tofu.Revision+`","disabled":false,"reset_host_key":true}`, 200), &tofu)
+	if tofu.HostKey != nil || tofu.LastError != nil {
+		t.Fatalf("reset host key %+v", tofu)
 	}
 	// SNMPv3-цель сетевого устройства: без отпечатка/сертификата, источник регистрируется с платформой network/snmp
 	var scred sources.CollectCredential

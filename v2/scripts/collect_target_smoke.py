@@ -43,9 +43,9 @@ def scenario(**s):
         status, cred, _ = req('POST', '/api/v1/discovery/credentials', {'name': 'Linux RO', 'kind': 'ssh', 'username': 'scanprobe', 'secret': {'password': password}}, h)
         assert status == 201 and password not in json.dumps(cred), status
         collector = s['sql']("SELECT source_id::text FROM sources.sources WHERE source_kind='collector' AND state='active' LIMIT 1")
-        status, target, _ = req('POST', '/api/v1/discovery/targets', {'collector_id': collector, 'address': '127.0.0.1', 'port': port, 'kind': 'ssh', 'credential_id': cred['credential_id'], 'host_key_sha256': fingerprint, 'interval_seconds': 300}, h)
+        status, target, _ = req('POST', '/api/v1/discovery/targets', {'collector_id': collector, 'address': '127.0.0.1', 'port': port, 'kind': 'ssh', 'credential_id': cred['credential_id'], 'interval_seconds': 300}, h)  # без отпечатка: запоминается при первом подключении
         assert status == 201 and target['state'] == 'pending', (status, target)
-        checks.append('credential entered via Web API (secret only in the center secret store), target created with pinned SSH host key')
+        checks.append('credential entered via Web API (secret only in the center secret store), SSH target created without a fingerprint')
         started = time.time()
         while time.time() - started < 300:
             status, page, _ = req('GET', '/api/v1/discovery/targets', headers={'Cookie': h['Cookie']})
@@ -58,6 +58,8 @@ def scenario(**s):
             recs = s['sql'](f"SELECT count(*) FROM assets.source_records WHERE source_id='{t['agent_source_id']}'") if t['agent_source_id'] else 'n/a'
             raise AssertionError(json.dumps({'target': t, 'records': recs, 'logs': {k: v for k, v in logs.items() if 'collector' in k}}, ensure_ascii=False)[:4000])
         elapsed = time.time() - started
+        assert t['host_key_sha256'] == fingerprint and t['host_key_origin'] == 'first_use', t
+        checks.append('collector read the SSH host key on first connection and pinned it at the center (first_use, audited)')
         agent = t['agent_source_id']
         records = s['sql'](f"SELECT count(*) FROM assets.source_records WHERE source_id='{agent}'")
         platform = s['sql'](f"SELECT inventory_platform||'/'||acquisition FROM sources.agents WHERE source_id='{agent}'")

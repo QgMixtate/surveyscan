@@ -814,6 +814,20 @@
     },
     "revision": {
      "type": "string"
+    },
+    "host_key_origin": {
+     "oneOf": [
+      {
+       "enum": [
+        "admin",
+        "first_use"
+       ]
+      },
+      {
+       "type": "null"
+      }
+     ],
+     "description": "admin — отпечаток введён в Web; first_use — запомнен collector при первом подключении"
     }
    },
    "required": [
@@ -831,7 +845,8 @@
     "state",
     "last_collected_at",
     "last_error",
-    "revision"
+    "revision",
+    "host_key_origin"
    ],
    "additionalProperties": false
   },

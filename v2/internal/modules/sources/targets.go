@@ -27,6 +27,7 @@ type RemoteTarget struct {
 	Port          int        `json:"port"`
 	Credential    string     `json:"credential_id"`
 	HostKey       *string    `json:"host_key_sha256"`
+	HostKeyOrigin *string    `json:"host_key_origin"`
 	ServerName    *string    `json:"tls_server_name"`
 	Interval      int        `json:"interval_seconds"`
 	Source        *string    `json:"agent_source_id"`
@@ -83,8 +84,9 @@ func (Store) CreateTarget(ctx context.Context, tx pgx.Tx, tenant string, in Remo
 	}
 	switch in.Kind {
 	case "ssh":
-		if in.HostKey == nil || !hostKeyRe.MatchString(*in.HostKey) || in.CAPEM != nil || in.ServerName != nil {
-			return RemoteTarget{}, domain.Invalid // отпечаток ключа хоста обязателен: без TOFU
+		// отпечаток необязателен: пусто — collector запомнит ключ при первом подключении (замечание пользователя)
+		if (in.HostKey != nil && !hostKeyRe.MatchString(*in.HostKey)) || in.CAPEM != nil || in.ServerName != nil {
+			return RemoteTarget{}, domain.Invalid
 		}
 	case "winrm":
 		if in.HostKey != nil || in.CAPEM == nil || in.ServerName == nil || len(*in.CAPEM) > 16384 || len(*in.ServerName) == 0 || len(*in.ServerName) > 253 {
@@ -123,8 +125,13 @@ func (Store) CreateTarget(ctx context.Context, tx pgx.Tx, tenant string, in Remo
 		return RemoteTarget{}, domain.Invalid
 	}
 	id := identifier.New()
-	if _, e = tx.Exec(ctx, `INSERT INTO sources.remote_targets(tenant_id,target_id,collector_id,network_id,address,kind,port,credential_id,host_key_sha256,tls_ca_pem,tls_server_name,interval_seconds)
-VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`, tenant, id, in.Collector, in.Network, addr.String(), in.Kind, in.Port, in.Credential, in.HostKey, in.CAPEM, in.ServerName, in.Interval); e != nil {
+	var origin *string
+	if in.HostKey != nil {
+		admin := "admin"
+		origin = &admin
+	}
+	if _, e = tx.Exec(ctx, `INSERT INTO sources.remote_targets(tenant_id,target_id,collector_id,network_id,address,kind,port,credential_id,host_key_sha256,tls_ca_pem,tls_server_name,interval_seconds,host_key_origin)
+VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`, tenant, id, in.Collector, in.Network, addr.String(), in.Kind, in.Port, in.Credential, in.HostKey, in.CAPEM, in.ServerName, in.Interval, origin); e != nil {
 		return RemoteTarget{}, discoveryConflict(e)
 	}
 	return (Store{}).Target(ctx, tx, tenant, id)
@@ -135,8 +142,8 @@ func (Store) Target(ctx context.Context, tx pgx.Tx, tenant, id string) (RemoteTa
 	if !identifier.Valid(id) {
 		return t, domain.NotFound
 	}
-	e := tx.QueryRow(ctx, `SELECT target_id::text,collector_id::text,network_id::text,host(address),kind,port,credential_id::text,host_key_sha256,tls_server_name,interval_seconds,agent_source_id::text,state,last_collected_at,last_error,revision::text
-FROM sources.remote_targets WHERE tenant_id=$1 AND target_id=$2`, tenant, id).Scan(&t.ID, &t.Collector, &t.Network, &t.Address, &t.Kind, &t.Port, &t.Credential, &t.HostKey, &t.ServerName, &t.Interval, &t.Source, &t.State, &t.LastCollected, &t.LastError, &t.Revision)
+	e := tx.QueryRow(ctx, `SELECT target_id::text,collector_id::text,network_id::text,host(address),kind,port,credential_id::text,host_key_sha256,host_key_origin,tls_server_name,interval_seconds,agent_source_id::text,state,last_collected_at,last_error,revision::text
+FROM sources.remote_targets WHERE tenant_id=$1 AND target_id=$2`, tenant, id).Scan(&t.ID, &t.Collector, &t.Network, &t.Address, &t.Kind, &t.Port, &t.Credential, &t.HostKey, &t.HostKeyOrigin, &t.ServerName, &t.Interval, &t.Source, &t.State, &t.LastCollected, &t.LastError, &t.Revision)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return t, domain.NotFound
 	}
@@ -144,7 +151,7 @@ FROM sources.remote_targets WHERE tenant_id=$1 AND target_id=$2`, tenant, id).Sc
 }
 
 func (Store) Targets(ctx context.Context, tx pgx.Tx, tenant string) ([]RemoteTarget, error) {
-	rows, e := tx.Query(ctx, `SELECT target_id::text,collector_id::text,network_id::text,host(address),kind,port,credential_id::text,host_key_sha256,tls_server_name,interval_seconds,agent_source_id::text,state,last_collected_at,last_error,revision::text
+	rows, e := tx.Query(ctx, `SELECT target_id::text,collector_id::text,network_id::text,host(address),kind,port,credential_id::text,host_key_sha256,host_key_origin,tls_server_name,interval_seconds,agent_source_id::text,state,last_collected_at,last_error,revision::text
 FROM sources.remote_targets WHERE tenant_id=$1 ORDER BY address, kind`, tenant)
 	if e != nil {
 		return nil, e
@@ -153,7 +160,7 @@ FROM sources.remote_targets WHERE tenant_id=$1 ORDER BY address, kind`, tenant)
 	out := []RemoteTarget{}
 	for rows.Next() {
 		var t RemoteTarget
-		if e = rows.Scan(&t.ID, &t.Collector, &t.Network, &t.Address, &t.Kind, &t.Port, &t.Credential, &t.HostKey, &t.ServerName, &t.Interval, &t.Source, &t.State, &t.LastCollected, &t.LastError, &t.Revision); e != nil {
+		if e = rows.Scan(&t.ID, &t.Collector, &t.Network, &t.Address, &t.Kind, &t.Port, &t.Credential, &t.HostKey, &t.HostKeyOrigin, &t.ServerName, &t.Interval, &t.Source, &t.State, &t.LastCollected, &t.LastError, &t.Revision); e != nil {
 			return nil, e
 		}
 		out = append(out, t)
@@ -162,9 +169,13 @@ FROM sources.remote_targets WHERE tenant_id=$1 ORDER BY address, kind`, tenant)
 }
 
 // SetTargetState — включить/отключить цель (администратор).
-func (Store) SetTargetState(ctx context.Context, tx pgx.Tx, tenant, id, revision string, disabled bool) (RemoteTarget, error) {
-	tag, e := tx.Exec(ctx, `UPDATE sources.remote_targets SET state=CASE WHEN $4 THEN 'disabled' WHEN agent_source_id IS NULL THEN 'pending' ELSE 'active' END,revision=revision+1
-WHERE tenant_id=$1 AND target_id=$2 AND revision::text=$3`, tenant, id, revision, disabled)
+// resetHostKey — забыть запомненный/введённый отпечаток ключа SSH (после переустановки ОС): при следующем
+// подключении collector запомнит новый.
+func (Store) SetTargetState(ctx context.Context, tx pgx.Tx, tenant, id, revision string, disabled, resetHostKey bool) (RemoteTarget, error) {
+	tag, e := tx.Exec(ctx, `UPDATE sources.remote_targets SET state=CASE WHEN $4 THEN 'disabled' WHEN agent_source_id IS NULL THEN 'pending' ELSE 'active' END,
+host_key_sha256=CASE WHEN $5 AND kind='ssh' THEN NULL ELSE host_key_sha256 END,host_key_origin=CASE WHEN $5 AND kind='ssh' THEN NULL ELSE host_key_origin END,
+last_error=CASE WHEN $5 THEN NULL ELSE last_error END,revision=revision+1
+WHERE tenant_id=$1 AND target_id=$2 AND revision::text=$3`, tenant, id, revision, disabled, resetHostKey)
 	if e != nil {
 		return RemoteTarget{}, discoveryConflict(e)
 	}
@@ -331,4 +342,41 @@ func contractsCA(pemText string) (int, error) {
 		return 0, errors.New("no certificate")
 	}
 	return n, nil
+}
+
+// PinHostKey — collector сообщает отпечаток ключа SSH, прочитанный при первом подключении. Пустой отпечаток цели
+// запоминается (first_use, аудит делает вызывающий); совпадающий — подтверждается; другой — Conflict (ключ сменился).
+func (s *MachineService) PinHostKey(ctx context.Context, fp, target, fingerprint string) (pinned bool, tenant, collector string, err error) {
+	if !identifier.Valid(target) || !hostKeyRe.MatchString(fingerprint) {
+		return false, "", "", domain.Invalid
+	}
+	tx, e := s.Pool.Begin(ctx)
+	if e != nil {
+		return false, "", "", e
+	}
+	defer tx.Rollback(ctx)
+	actor, e := s.collectorActor(ctx, tx, fp)
+	if e != nil {
+		return false, "", "", e
+	}
+	var current *string
+	e = tx.QueryRow(ctx, "SELECT host_key_sha256 FROM sources.remote_targets WHERE tenant_id=$1 AND target_id=$2 AND collector_id=$3 AND kind='ssh' AND state<>'disabled' FOR UPDATE", actor.Tenant, target, actor.Source).Scan(&current)
+	if errors.Is(e, pgx.ErrNoRows) {
+		return false, "", "", domain.NotFound
+	}
+	if e != nil {
+		return false, "", "", e
+	}
+	if current != nil {
+		if *current != fingerprint {
+			_, _ = tx.Exec(ctx, "UPDATE sources.remote_targets SET last_error='host_key_changed' WHERE tenant_id=$1 AND target_id=$2", actor.Tenant, target)
+			_ = tx.Commit(ctx)
+			return false, actor.Tenant, actor.Source, domain.Conflict
+		}
+		return false, actor.Tenant, actor.Source, nil
+	}
+	if _, e = tx.Exec(ctx, "UPDATE sources.remote_targets SET host_key_sha256=$3,host_key_origin='first_use',revision=revision+1 WHERE tenant_id=$1 AND target_id=$2", actor.Tenant, target, fingerprint); e != nil {
+		return false, "", "", e
+	}
+	return true, actor.Tenant, actor.Source, tx.Commit(ctx)
 }

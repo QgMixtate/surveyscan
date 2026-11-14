@@ -233,6 +233,24 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 				target := agent.SSHTarget{Addr: addr, User: t.Username, Secret: fetch}
 				if t.HostKey != nil {
 					target.HostKeySHA256 = *t.HostKey
+				} else {
+					// отпечаток не задан: читаем ключ хоста без входа и закрепляем его на центре (как known_hosts);
+					// при смене ключа центр отвечает Conflict, сбор останавливается до сброса в Web
+					task, cancel := context.WithTimeout(ctx, 20*time.Second)
+					fp, err := sshlinux.FetchHostKey(task, addr, 15*time.Second)
+					if err == nil {
+						var code int
+						code, _, err = c.targetPost(task, "/api/v1/machine/collect-targets/"+t.ID+"/hostkey", map[string]string{"host_key_sha256": fp})
+						if err == nil && code != 204 {
+							err = errors.New("host key not accepted")
+						}
+					}
+					cancel()
+					if err != nil {
+						e = err
+						break
+					}
+					target.HostKeySHA256 = fp
 				}
 				e = agent.RunSSH12(ctx, cfg, target, report)
 			case "winrm":
