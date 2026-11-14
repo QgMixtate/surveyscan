@@ -169,6 +169,36 @@ func (r *Registry) targetHandlers() map[string]route51 {
 				return t, e
 			})
 		})},
+		// C51.03 шаг 2: сертификат CA домена для WinRM-целей с проверкой «CA домена» (один на организацию)
+		"GET /api/v1/discovery/winrm-ca": {"sources:admin", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			if req.URL.RawQuery != "" {
+				access.APIError(w, 400, "INVALID_QUERY")
+				return
+			}
+			r.discoveryDo(w, req, http.StatusOK, "sources:admin", func(ctx context.Context, tx pgx.Tx, id accessport.Identity) (any, error) {
+				return src51.WinRMTrust(ctx, tx, id.TenantID)
+			})
+		})},
+		"PUT /api/v1/discovery/winrm-ca": {"sources:admin", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+			var body struct {
+				Revision string  `json:"revision"`
+				CAPEM    *string `json:"ca_pem"`
+			}
+			if !readOperationBody(w, req, &body) {
+				return
+			}
+			r.discoveryDo(w, req, http.StatusOK, "sources:admin", func(ctx context.Context, tx pgx.Tx, id accessport.Identity) (any, error) {
+				t, e := src51.SetWinRMTrust(ctx, tx, id.TenantID, id.UserID, body.Revision, body.CAPEM)
+				if e == nil {
+					action := "discovery.winrm_ca_changed"
+					if body.CAPEM == nil {
+						action = "discovery.winrm_ca_removed"
+					}
+					e = r.Audit.Record(ctx, tx, id.TenantID, id.UserID, action, "winrm_trust", id.TenantID)
+				}
+				return t, e
+			})
+		})},
 		"PATCH /api/v1/discovery/targets/{target_id}": {"sources:admin", http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 			var body struct {
 				Revision     string `json:"revision"`

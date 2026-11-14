@@ -36,6 +36,7 @@ type machineTarget struct {
 	CAPEM      *string `json:"tls_ca_pem"`
 	ServerName *string `json:"tls_server_name"`
 	CertSHA256 *string `json:"tls_cert_sha256"`
+	CertOrigin *string `json:"tls_cert_origin"`
 	Interval   int     `json:"interval_seconds"`
 	Source     *string `json:"agent_source_id"`
 	State      string  `json:"state"`
@@ -51,7 +52,7 @@ func (t machineTarget) key() string {
 		}
 		return *p
 	}
-	return strings.Join([]string{t.Kind, t.Address, strconv.Itoa(t.Port), t.Username, s(t.HostKey), s(t.CAPEM), s(t.ServerName), s(t.CertSHA256)}, "\x00")
+	return strings.Join([]string{t.Kind, t.Address, strconv.Itoa(t.Port), t.Username, s(t.HostKey), s(t.CAPEM), s(t.ServerName), s(t.CertSHA256), s(t.CertOrigin)}, "\x00")
 }
 
 // Manager — цели одного collector. Post — запрос к центру по mTLS collector; Listen — слушатель collector для
@@ -276,6 +277,10 @@ func (c *Manager) runTarget(ctx context.Context, t machineTarget) {
 				}
 				if t.ServerName != nil {
 					target.ServerName = *t.ServerName
+				}
+				if t.CAPEM == nil && t.CertOrigin != nil && (*t.CertOrigin == "admin" || *t.CertOrigin == "domain_ca") {
+					e = errors.New("winrm CA certificate missing") // не подменять проверку по CA запоминанием
+					break
 				}
 				if t.CAPEM == nil {
 					// PEM не задан: сертификат сервера закрепляется в центре при первом подключении и сверяется при

@@ -846,6 +846,7 @@
       {
        "enum": [
         "admin",
+        "domain_ca",
         "first_use"
        ]
       },
@@ -853,7 +854,7 @@
        "type": "null"
       }
      ],
-     "description": "WinRM: admin — доверие по PEM администратора (с проверкой имени); first_use — сертификат запомнен при первом подключении; null — запомнится при первом подключении (или не WinRM)"
+     "description": "WinRM: admin — доверие по PEM администратора (с проверкой имени); domain_ca — по сертификату CA домена и имени ПК; first_use — сертификат запомнен при первом подключении; null — запомнится при первом подключении (или не WinRM)"
     }
    },
    "required": [
@@ -875,6 +876,74 @@
     "host_key_origin",
     "tls_cert_sha256",
     "tls_cert_origin"
+   ],
+   "additionalProperties": false
+  },
+  "WinRMTrust": {
+   "description": "Сертификат CA домена для WinRM-целей с проверкой «CA домена» (GET/PUT /api/v1/discovery/winrm-ca, администратор). PUT: {revision, ca_pem|null}; ревизия \"0\" — ещё не задан; удаление при наличии таких целей — 409.",
+   "type": "object",
+   "properties": {
+    "configured": {
+     "type": "boolean"
+    },
+    "revision": {
+     "type": "string",
+     "pattern": "^[0-9]{1,20}$"
+    },
+    "updated_at": {
+     "oneOf": [
+      {
+       "type": "string",
+       "format": "date-time"
+      },
+      {
+       "type": "null"
+      }
+     ]
+    },
+    "certificates": {
+     "type": "array",
+     "maxItems": 10,
+     "items": {
+      "type": "object",
+      "properties": {
+       "subject": {
+        "type": "string",
+        "maxLength": 2048
+       },
+       "issuer": {
+        "type": "string",
+        "maxLength": 2048
+       },
+       "not_after": {
+        "type": "string",
+        "format": "date-time"
+       },
+       "sha256": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{64}$"
+       }
+      },
+      "required": [
+       "subject",
+       "issuer",
+       "not_after",
+       "sha256"
+      ],
+      "additionalProperties": false
+     }
+    },
+    "targets": {
+     "type": "integer",
+     "minimum": 0
+    }
+   },
+   "required": [
+    "configured",
+    "revision",
+    "updated_at",
+    "certificates",
+    "targets"
    ],
    "additionalProperties": false
   },

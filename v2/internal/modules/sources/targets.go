@@ -50,6 +50,9 @@ type RemoteTargetInput struct {
 	CAPEM      *string `json:"tls_ca_pem,omitempty"`
 	ServerName *string `json:"tls_server_name,omitempty"`
 	Interval   int     `json:"interval_seconds,omitempty"`
+	// WinRM без PEM: "first_use" (по умолчанию) — запомнить сертификат при первом подключении; "domain_ca" — проверять
+	// по сертификату CA домена (задаётся один раз) и имени ПК
+	Trust *string `json:"tls_trust,omitempty"`
 }
 
 // MachineTarget — цель глазами collector (без секрета учётки).
@@ -63,6 +66,7 @@ type MachineTarget struct {
 	CAPEM      *string `json:"tls_ca_pem"`
 	ServerName *string `json:"tls_server_name"`
 	CertSHA256 *string `json:"tls_cert_sha256"`
+	CertOrigin *string `json:"tls_cert_origin"`
 	Interval   int     `json:"interval_seconds"`
 	Source     *string `json:"agent_source_id"`
 	State      string  `json:"state"`
@@ -88,14 +92,24 @@ func (Store) CreateTarget(ctx context.Context, tx pgx.Tx, tenant string, in Remo
 	switch in.Kind {
 	case "ssh":
 		// отпечаток необязателен: пусто — collector запомнит ключ при первом подключении (замечание пользователя)
-		if (in.HostKey != nil && !hostKeyRe.MatchString(*in.HostKey)) || in.CAPEM != nil || in.ServerName != nil {
+		if (in.HostKey != nil && !hostKeyRe.MatchString(*in.HostKey)) || in.CAPEM != nil || in.ServerName != nil || in.Trust != nil {
 			return RemoteTarget{}, domain.Invalid
 		}
 	case "winrm":
 		// PEM необязателен: пусто — collector запомнит сертификат сервера при первом подключении; с PEM имя ПК
 		// обязательно (проверка имени в сертификате)
-		if in.HostKey != nil || in.ServerName != nil && (len(*in.ServerName) == 0 || len(*in.ServerName) > 253) || in.CAPEM != nil && (in.ServerName == nil || len(*in.CAPEM) > 16384) {
+		if in.HostKey != nil || in.ServerName != nil && (len(*in.ServerName) == 0 || len(*in.ServerName) > 253) || in.CAPEM != nil && (in.ServerName == nil || len(*in.CAPEM) > 16384) ||
+			in.Trust != nil && (in.CAPEM != nil || *in.Trust != "first_use" && *in.Trust != "domain_ca" || *in.Trust == "domain_ca" && in.ServerName == nil) {
 			return RemoteTarget{}, domain.Invalid
+		}
+		if in.Trust != nil && *in.Trust == "domain_ca" {
+			var configured bool
+			if e = tx.QueryRow(ctx, "SELECT EXISTS(SELECT 1 FROM sources.winrm_trust WHERE tenant_id=$1)", tenant).Scan(&configured); e != nil {
+				return RemoteTarget{}, e
+			}
+			if !configured {
+				return RemoteTarget{}, domain.Invalid
+			}
 		}
 		if in.CAPEM != nil {
 			if _, err := contractsCA(*in.CAPEM); err != nil {
@@ -103,7 +117,7 @@ func (Store) CreateTarget(ctx context.Context, tx pgx.Tx, tenant string, in Remo
 			}
 		}
 	case "snmp": // SNMPv3 authPriv: подлинность и шифрование — ключами учётки, отпечатков и сертификатов нет
-		if in.HostKey != nil || in.CAPEM != nil || in.ServerName != nil {
+		if in.HostKey != nil || in.CAPEM != nil || in.ServerName != nil || in.Trust != nil {
 			return RemoteTarget{}, domain.Invalid
 		}
 	}
@@ -140,6 +154,9 @@ func (Store) CreateTarget(ctx context.Context, tx pgx.Tx, tenant string, in Remo
 	}
 	if in.CAPEM != nil {
 		certOrigin = &admin
+	}
+	if in.Trust != nil && *in.Trust == "domain_ca" {
+		certOrigin = in.Trust
 	}
 	if _, e = tx.Exec(ctx, `INSERT INTO sources.remote_targets(tenant_id,target_id,collector_id,network_id,address,kind,port,credential_id,host_key_sha256,tls_ca_pem,tls_server_name,interval_seconds,host_key_origin,tls_cert_origin)
 VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`, tenant, id, in.Collector, in.Network, addr.String(), in.Kind, in.Port, in.Credential, in.HostKey, in.CAPEM, in.ServerName, in.Interval, origin, certOrigin); e != nil {
@@ -201,7 +218,7 @@ WHERE tenant_id=$1 AND target_id=$2 AND revision::text=$3`, tenant, id, revision
 }
 
 func (Store) collectorTargets(ctx context.Context, tx pgx.Tx, tenant, collector string) ([]MachineTarget, error) {
-	rows, e := tx.Query(ctx, `SELECT t.target_id::text,t.kind,host(t.address),t.port,c.username,t.host_key_sha256,t.tls_ca_pem,t.tls_server_name,t.tls_cert_sha256,t.interval_seconds,t.agent_source_id::text,t.state,s.site_id::text,
+	rows, e := tx.Query(ctx, `SELECT t.target_id::text,t.kind,host(t.address),t.port,c.username,t.host_key_sha256,CASE WHEN t.tls_cert_origin='domain_ca' THEN (SELECT w.ca_pem FROM sources.winrm_trust w WHERE w.tenant_id=t.tenant_id) ELSE t.tls_ca_pem END,t.tls_server_name,t.tls_cert_sha256,t.tls_cert_origin,t.interval_seconds,t.agent_source_id::text,t.state,s.site_id::text,
 (SELECT n.scope_id::text FROM scope.network_scopes n WHERE n.tenant_id=s.tenant_id AND n.site_id=s.site_id ORDER BY n.scope_id LIMIT 1),t.tenant_id::text
 FROM sources.remote_targets t JOIN sources.collect_credentials c ON c.tenant_id=t.tenant_id AND c.credential_id=t.credential_id JOIN sources.sources s ON s.tenant_id=t.tenant_id AND s.source_id=t.collector_id
 WHERE t.tenant_id=$1 AND t.collector_id=$2 AND t.state<>'disabled' AND c.active ORDER BY t.target_id`, tenant, collector)
@@ -212,7 +229,7 @@ WHERE t.tenant_id=$1 AND t.collector_id=$2 AND t.state<>'disabled' AND c.active 
 	out := []MachineTarget{}
 	for rows.Next() {
 		var t MachineTarget
-		if e = rows.Scan(&t.ID, &t.Kind, &t.Address, &t.Port, &t.Username, &t.HostKey, &t.CAPEM, &t.ServerName, &t.CertSHA256, &t.Interval, &t.Source, &t.State, &t.Site, &t.Scope, &t.Tenant); e != nil {
+		if e = rows.Scan(&t.ID, &t.Kind, &t.Address, &t.Port, &t.Username, &t.HostKey, &t.CAPEM, &t.ServerName, &t.CertSHA256, &t.CertOrigin, &t.Interval, &t.Source, &t.State, &t.Site, &t.Scope, &t.Tenant); e != nil {
 			return nil, e
 		}
 		out = append(out, t)
@@ -409,7 +426,7 @@ func (s *MachineService) PinCert(ctx context.Context, fp, target, sha string) (p
 		return false, "", "", e
 	}
 	var current *string
-	e = tx.QueryRow(ctx, "SELECT tls_cert_sha256 FROM sources.remote_targets WHERE tenant_id=$1 AND target_id=$2 AND collector_id=$3 AND kind='winrm' AND tls_ca_pem IS NULL AND state<>'disabled' FOR UPDATE", actor.Tenant, target, actor.Source).Scan(&current)
+	e = tx.QueryRow(ctx, "SELECT tls_cert_sha256 FROM sources.remote_targets WHERE tenant_id=$1 AND target_id=$2 AND collector_id=$3 AND kind='winrm' AND tls_ca_pem IS NULL AND tls_cert_origin IS DISTINCT FROM 'domain_ca' AND state<>'disabled' FOR UPDATE", actor.Tenant, target, actor.Source).Scan(&current)
 	if errors.Is(e, pgx.ErrNoRows) {
 		return false, "", "", domain.NotFound
 	}

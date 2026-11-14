@@ -33,7 +33,7 @@ try{
  await drawer.getByLabel('Название').fill('Linux RO');await drawer.getByLabel('Логин').fill('scanprobe');await drawer.getByLabel('Пароль').fill('web-smoke-secret-51');
  const credReply=page.waitForResponse(r=>r.url().endsWith('/api/v1/discovery/credentials')&&r.request().method()==='POST');await drawer.getByRole('button',{name:/Сохранить учётку/}).click();
  const credBody=await (await credReply).text();if(credBody.includes('web-smoke-secret-51'))throw new Error('collect credential secret returned to the browser');
- await expect(page.getByRole('cell',{name:'Linux RO'})).toBeVisible();
+ await expect(page.getByRole('cell',{name:'Linux RO'})).toBeVisible();await expect(page.getByRole('heading',{name:/CA домена для WinRM/})).toBeVisible();await expect(page.getByRole('button',{name:'+ Загрузить сертификат CA'})).toBeVisible();
  await page.getByRole('tab',{name:'Подсети'}).click();await page.getByRole('row',{name:/127\.0\.0\.1/}).getByRole('button',{name:'Собирать…'}).click();
  drawer=page.getByRole('dialog',{name:'Собирать 127.0.0.1'});await expect(drawer.getByLabel(/Отпечаток ключа хоста/)).toBeVisible();
  await drawer.getByRole('button',{name:/Создать цель сбора/}).click();await expect(page.getByRole('cell',{name:'127.0.0.1:22'})).toBeVisible();await expect(page.getByRole('tab',{name:'Цели сбора'})).toHaveAttribute('aria-selected','true');await expect(page.getByRole('tab',{name:'Подсети'})).toHaveAttribute('aria-selected','false');await page.mouse.move(0,0);await page.waitForTimeout(300);

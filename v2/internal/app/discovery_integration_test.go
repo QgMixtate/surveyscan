@@ -5,7 +5,9 @@ package app_test
 import (
 	"bytes"
 	"context"
+	"crypto/ecdsa"
 	"crypto/ed25519"
+	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/sha256"
 	"crypto/tls"
@@ -354,6 +356,55 @@ func TestC51DiscoveryPolicyRightsJobAndSignedResult(t *testing.T) {
 	if wt.CertSHA256 != nil || wt.CertOrigin != nil || wt.LastError != nil {
 		t.Fatalf("reset certificate %+v", wt)
 	}
+	// «CA домена»: без заданного CA цель с этим режимом не создаётся; не-CA сертификат не принимается; collector
+	// получает CA домена в описании цели; закрепление сертификата для такой цели невозможно; пока цели есть — CA
+	// удалить нельзя (409)
+	var trust sources.WinRMTrust
+	_ = json.Unmarshal(call("admin", "GET", "/api/v1/discovery/winrm-ca", "", 200), &trust)
+	if trust.Configured || trust.Revision != "0" {
+		t.Fatalf("empty domain CA %+v", trust)
+	}
+	call("view51", "GET", "/api/v1/discovery/winrm-ca", "", 403)
+	domainTarget := fmt.Sprintf(`{"collector_id":%q,"address":"10.51.0.32","kind":"winrm","credential_id":%q,"tls_trust":"domain_ca","tls_server_name":"win-32.awm.local"}`, collector, wcred.ID)
+	call("admin", "POST", "/api/v1/discovery/targets", domainTarget, 422)
+	caKey, _ := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	caTemplate := &x509.Certificate{SerialNumber: big.NewInt(51), Subject: pkix.Name{CommonName: "AWM Root CA"}, NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(24 * time.Hour), IsCA: true, BasicConstraintsValid: true, KeyUsage: x509.KeyUsageCertSign}
+	caDER, _ := x509.CreateCertificate(rand.Reader, caTemplate, caTemplate, &caKey.PublicKey, caKey)
+	caPEM := string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: caDER}))
+	leafTemplate := &x509.Certificate{SerialNumber: big.NewInt(52), Subject: pkix.Name{CommonName: "leaf"}, NotBefore: time.Now().Add(-time.Hour), NotAfter: time.Now().Add(time.Hour)}
+	leafDER, _ := x509.CreateCertificate(rand.Reader, leafTemplate, caTemplate, &caKey.PublicKey, caKey)
+	leafJSON, _ := json.Marshal(map[string]any{"revision": "0", "ca_pem": string(pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: leafDER}))})
+	call("admin", "PUT", "/api/v1/discovery/winrm-ca", string(leafJSON), 422)
+	caJSON, _ := json.Marshal(map[string]any{"revision": "0", "ca_pem": caPEM})
+	_ = json.Unmarshal(call("admin", "PUT", "/api/v1/discovery/winrm-ca", string(caJSON), 200), &trust)
+	if !trust.Configured || trust.Revision != "1" || len(trust.Certificates) != 1 || !strings.Contains(trust.Certificates[0].Subject, "AWM Root CA") {
+		t.Fatalf("domain CA %+v", trust)
+	}
+	call("admin", "PUT", "/api/v1/discovery/winrm-ca", string(caJSON), 412)
+	call("admin", "POST", "/api/v1/discovery/targets", strings.Replace(domainTarget, `,"tls_server_name":"win-32.awm.local"`, "", 1), 422)
+	var dt sources.RemoteTarget
+	_ = json.Unmarshal(call("admin", "POST", "/api/v1/discovery/targets", domainTarget, 201), &dt)
+	if dt.CertOrigin == nil || *dt.CertOrigin != "domain_ca" || dt.CertSHA256 != nil {
+		t.Fatalf("domain CA target %+v", dt)
+	}
+	code, raw = post("/api/v1/machine/collect-targets", []byte("{}"))
+	var machineTargets struct {
+		Items []sources.MachineTarget `json:"items"`
+	}
+	_ = json.Unmarshal(raw, &machineTargets)
+	gotCA := false
+	for _, x := range machineTargets.Items {
+		if x.ID == dt.ID && x.CAPEM != nil && *x.CAPEM == caPEM && x.CertOrigin != nil && *x.CertOrigin == "domain_ca" {
+			gotCA = true
+		}
+	}
+	if code != 200 || !gotCA {
+		t.Fatalf("collector must receive the domain CA for the target: %d %s", code, raw)
+	}
+	if code, _ = post("/api/v1/machine/collect-targets/"+dt.ID+"/tlscert", []byte(`{"tls_cert_sha256":"`+firstCert+`"}`)); code != 404 {
+		t.Fatal("domain CA target must not be pinned", code)
+	}
+	call("admin", "PUT", "/api/v1/discovery/winrm-ca", `{"revision":"1","ca_pem":null}`, 409)
 	var pinAudit int
 	_ = f.pool.QueryRow(f.ctx, "SELECT count(*) FROM audit.audit_events WHERE tenant_id=$1 AND action IN ('discovery.target_tls_cert_pinned','discovery.target_tls_cert_reset')", tenant).Scan(&pinAudit)
 	if pinAudit != 2 {

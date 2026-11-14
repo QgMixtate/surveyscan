@@ -1,5 +1,5 @@
 import {useEffect,useRef,useState,type ReactNode} from 'react';
-import {api,ApiError,errorMessage,type CollectCredential,type CollectKind,type CollectSecret,type DiscoveryHost,type DiscoveryNetwork,type DiscoveryNetworkPage,type DiscoveryProbe,type DiscoveryRun,type RemoteTarget,type Source} from './api';
+import {api,ApiError,errorMessage,type CollectCredential,type CollectKind,type CollectSecret,type DiscoveryHost,type DiscoveryNetwork,type DiscoveryNetworkPage,type DiscoveryProbe,type DiscoveryRun,type RemoteTarget,type Source,type WinRMTrust} from './api';
 
 // C51 — «Обследования сети» (ADR D13): вкладки «Подсети», «Учётки сбора», «Цели сбора». Подсети и учётки заводит
 // администратор, обследование запускает оператор, результаты видят все. Формы — в боковой панели.
@@ -103,7 +103,25 @@ function CredentialsTab({csrf,onExpired}:{csrf:string;onExpired:()=>void}){
    <div className="table-scroll"><table><thead><tr><th>Название</th><th>Способ</th><th>Логин</th><th>Целей</th><th>Секрет сменён</th></tr></thead><tbody>{items.map(c=><tr key={c.credential_id} className={c.active?'':'muted'}><td><strong>{c.name}</strong></td><td>{kindName[c.kind]}</td><td className="mono">{c.username}</td><td>{c.targets}</td><td className="time">{time(c.secret_changed_at)}</td></tr>)}</tbody></table></div>}
    <p className="panel-note">Сборщик получает учётку у центра по защищённому каналу перед каждым сбором и держит её только в памяти.</p>
   </div>
+  <DomainCAPanel csrf={csrf} onExpired={onExpired}/>
   {creating?<Drawer eyebrow="Учётки сбора" title="Новая учётка" onClose={()=>setCreating(false)}><CredentialForm busy={busy} onSave={b=>{setBusy(true);setError(null);api.createCollectCredential(csrf,b).then(()=>{setCreating(false);load()}).catch(e=>{setError(e);expired(e,onExpired)}).finally(()=>setBusy(false))}}/>{error?<div className="error" role="alert">{errorMessage(error)}</div>:null}</Drawer>:null}
+ </div>;
+}
+
+// C51.03 шаг 2: корневой сертификат CA домена (AD CS) — один раз для всех WinRM-целей с проверкой «CA домена»
+function DomainCAPanel({csrf,onExpired}:{csrf:string;onExpired:()=>void}){
+ const [trust,setTrust]=useState<WinRMTrust|null>(null),[editing,setEditing]=useState(false),[pem,setPem]=useState(''),[busy,setBusy]=useState(false),[error,setError]=useState<unknown>(null);
+ const load=()=>{api.winrmTrust().then(setTrust).catch(e=>{setError(e);expired(e,onExpired)})};
+ useEffect(load,[]);
+ const save=(value:string|null)=>{if(!trust)return;setBusy(true);setError(null);api.setWinrmTrust(csrf,trust.revision,value).then(t=>{setTrust(t);setEditing(false);setPem('')}).catch(e=>{setError(e);expired(e,onExpired)}).finally(()=>setBusy(false))};
+ return <div className="table-panel"><div className="table-toolbar"><h2>CA домена для WinRM <span>{trust?.configured?'задан':'не задан'}</span></h2>{trust?<button className="button small" onClick={()=>setEditing(true)}>{trust.configured?'Заменить':'+ Загрузить сертификат CA'}</button>:null}</div>
+  {error?<div className="error" role="alert">{errorMessage(error)}</div>:null}
+  {trust?.configured?<div className="table-scroll"><table><thead><tr><th>Сертификат</th><th>Действует до</th><th>SHA-256</th></tr></thead><tbody>{trust.certificates.map(c=><tr key={c.sha256}><td><strong>{c.subject}</strong>{c.issuer!==c.subject?<small>выдан: {c.issuer}</small>:<small>корневой</small>}</td><td className="time">{time(c.not_after)}</td><td className="mono" title={c.sha256}>{c.sha256.slice(0,16)}…</td></tr>)}</tbody></table></div>:null}
+  <p className="panel-note">Корневой сертификат AD CS (открытый, без ключа) загружается один раз: WinRM-цели с проверкой «CA домена» проверяют сертификат ПК по нему и по имени ПК — PEM каждого ПК не нужен. Выгрузить на контроллере домена: <span className="mono">certutil -ca.cert C:\awm-root-ca.cer</span>, затем <span className="mono">certutil -encode C:\awm-root-ca.cer C:\awm-root-ca.pem</span>.{trust?.targets?` Используют целей: ${trust.targets}.`:''}</p>
+  {trust?.configured&&!trust.targets?<p className="panel-note"><button className="text-link" disabled={busy} onClick={()=>{if(confirm('Удалить сертификат CA домена?'))save(null)}}>Удалить сертификат CA</button></p>:null}
+  {editing?<Drawer eyebrow="Учётки сбора" title="Сертификат CA домена" onClose={()=>setEditing(false)}><form className="form-stack" onSubmit={e=>{e.preventDefault();save(pem)}}>
+   <Field label="Сертификат CA (PEM)" hint="Корневой и при необходимости промежуточные сертификаты, до 10. Только сертификаты CA."><textarea className="mono" rows={10} value={pem} onChange={e=>setPem(e.target.value)} required placeholder="-----BEGIN CERTIFICATE-----"/></Field>
+   <button className="button primary" disabled={busy||!pem.trim()}>Сохранить <span>→</span></button></form></Drawer>:null}
  </div>;
 }
 
@@ -133,19 +151,21 @@ function CredentialForm({busy,onSave}:{busy:boolean;onSave:(b:{name:string;kind:
 function CollectForm({host,network,busy,onCreate,onExpired}:{host:DiscoveryHost;network:DiscoveryNetwork;busy:boolean;onExpired:()=>void;onCreate:(b:Parameters<typeof api.createRemoteTarget>[1])=>void}){
  const guess:CollectKind=host.ports.includes(22)?'ssh':host.ports.includes(5986)||host.ports.includes(5985)||host.ports.includes(3389)?'winrm':'ssh';
  const [creds,setCreds]=useState<CollectCredential[]>([]),[kind,setKind]=useState<CollectKind>(guess),[cred,setCred]=useState('');
- const [hostKey,setHostKey]=useState(''),[ca,setCa]=useState(''),[serverName,setServerName]=useState(''),[interval,setInterval_]=useState('3600');
- useEffect(()=>{api.collectCredentials().then(p=>setCreds(p.items.filter(c=>c.active))).catch(e=>expired(e,onExpired))},[]);
+ const [hostKey,setHostKey]=useState(''),[ca,setCa]=useState(''),[trustMode,setTrustMode]=useState<'first_use'|'domain_ca'|'pem'>('first_use'),[domainCA,setDomainCA]=useState(false),[serverName,setServerName]=useState(''),[interval,setInterval_]=useState('3600');
+ useEffect(()=>{api.collectCredentials().then(p=>setCreds(p.items.filter(c=>c.active))).catch(e=>expired(e,onExpired));api.winrmTrust().then(t=>{setDomainCA(t.configured);if(t.configured)setTrustMode('domain_ca')}).catch(()=>setDomainCA(false))},[]);
  const usable=creds.filter(c=>c.kind===kind);
  useEffect(()=>{setCred(usable[0]?.credential_id??'')},[kind,creds.length]);
- return <form className="form-stack" onSubmit={e=>{e.preventDefault();onCreate({collector_id:network.collector_id,network_id:network.network_id,address:host.ip,kind,credential_id:cred,interval_seconds:Number(interval),...(kind==='ssh'?(hostKey.trim()?{host_key_sha256:hostKey.trim()}:{}):kind==='winrm'?{...(ca.trim()?{tls_ca_pem:ca}:{}),...(serverName.trim()?{tls_server_name:serverName.trim()}:{})}:{})})}}>
+ return <form className="form-stack" onSubmit={e=>{e.preventDefault();onCreate({collector_id:network.collector_id,network_id:network.network_id,address:host.ip,kind,credential_id:cred,interval_seconds:Number(interval),...(kind==='ssh'?(hostKey.trim()?{host_key_sha256:hostKey.trim()}:{}):kind==='winrm'?{...(trustMode==='pem'?{tls_ca_pem:ca}:{tls_trust:trustMode}),...(serverName.trim()?{tls_server_name:serverName.trim()}:{})}:{})})}}>
   <p className="muted">Открытые порты: {host.ports.length?host.ports.join(', '):'нет данных'}.</p>
   <Field label="Способ"><select value={kind} onChange={e=>setKind(e.target.value as CollectKind)}>{(['ssh','winrm','snmp'] as CollectKind[]).map(k=><option key={k} value={k}>{kindName[k]}</option>)}</select></Field>
   <Field label="Учётка" hint={usable.length===0?'Нет учёток этого способа — добавьте на вкладке «Учётки сбора».':undefined}><select value={cred} onChange={e=>setCred(e.target.value)} required>{usable.length===0?<option value="">—</option>:null}{usable.map(c=><option key={c.credential_id} value={c.credential_id}>{c.name} ({c.username})</option>)}</select></Field>
   {kind==='ssh'?<Field label="Отпечаток ключа хоста (необязательно)" hint="Если пусто — ключ запомнится при первом подключении. Если ключ потом сменится, сбор остановится до проверки.">
    <input className="mono" value={hostKey} onChange={e=>setHostKey(e.target.value)} placeholder="SHA256:…" pattern="SHA256:[A-Za-z0-9+/]{43}"/></Field>:null}
   {kind==='winrm'?<>
-   <Field label="Сертификат WinRM (необязательно)" hint="Если пусто — сертификат сервера запомнится при первом подключении; если он потом сменится, сбор остановится до проверки. Можно вставить PEM (C:\surveyscan-winrm-<ИМЯ>.pem) — тогда сертификат проверяется по нему вместе с именем ПК."><textarea className="mono" value={ca} onChange={e=>setCa(e.target.value)} rows={4} placeholder="-----BEGIN CERTIFICATE-----"/></Field>
-   <Field label={ca.trim()?'Имя ПК в сертификате':'Имя ПК (необязательно)'} hint={ca.trim()?'Обязательно вместе с PEM: имя проверяется в сертификате.':undefined}><input value={serverName} onChange={e=>setServerName(e.target.value)} placeholder="win-ar.awm.local" required={!!ca.trim()}/></Field></>:null}
+   <Field label="Проверка сертификата ПК" hint={trustMode==='first_use'?'Сертификат запомнится при первом подключении; если он потом сменится, сбор остановится до проверки.':trustMode==='domain_ca'?'Сертификат ПК проверяется по CA домена (вкладка «Учётки сбора») и по имени ПК.':'Сертификат проверяется по этому PEM (C:\\surveyscan-winrm-<ИМЯ>.pem) и по имени ПК.'}>
+    <select value={trustMode} onChange={e=>setTrustMode(e.target.value as typeof trustMode)}><option value="domain_ca" disabled={!domainCA}>CA домена{domainCA?'':' (не задан)'}</option><option value="first_use">Запомнить при первом подключении</option><option value="pem">PEM этого ПК</option></select></Field>
+   {trustMode==='pem'?<Field label="Сертификат WinRM (PEM)"><textarea className="mono" value={ca} onChange={e=>setCa(e.target.value)} rows={4} required placeholder="-----BEGIN CERTIFICATE-----"/></Field>:null}
+   <Field label={trustMode==='first_use'?'Имя ПК (необязательно)':'Имя ПК в сертификате'} hint={trustMode==='first_use'?undefined:'Полное имя, как в сертификате: оно проверяется.'}><input value={serverName} onChange={e=>setServerName(e.target.value)} placeholder="win-ar.awm.local" required={trustMode!=='first_use'}/></Field></>:null}
   {kind==='snmp'?<p className="panel-note">SNMPv3 authPriv: подлинность и шифрование обеспечивают ключи учётки. Передаются имя устройства, интерфейсы с адресами и таблица ARP.</p>:null}
   <Field label="Как часто собирать"><select value={interval} onChange={e=>setInterval_(e.target.value)}><option value="3600">раз в час</option><option value="21600">раз в 6 часов</option><option value="86400">раз в сутки</option></select></Field>
   <button className="button primary" disabled={busy||!cred}>Создать цель сбора <span>→</span></button>
@@ -166,7 +186,7 @@ function TargetsTab({csrf,isAdmin,version,onExpired}:{csrf:string;isAdmin:boolea
     <td className="mono">{t.address}:{t.port}</td><td>{kindName[t.kind]}</td>
     <td><span className={'badge '+cls}><i/>{label}</span>{t.last_error?<small className="error-text">{errName(t.last_error)}</small>:null}</td>
     <td className="time">{time(t.last_collected_at)}</td>
-    <td>{t.kind==='winrm'?(t.tls_cert_origin==='admin'?<small>сертификат задан администратором{t.tls_server_name?' · '+t.tls_server_name:''}</small>:t.tls_cert_sha256?<><span className="mono" title={'SHA-256 '+t.tls_cert_sha256}>{t.tls_cert_sha256.slice(0,16)}…</span><small>сертификат запомнен при первом подключении</small></>:<small>сертификат запомнится при первом подключении</small>):t.kind!=='ssh'?'—':t.host_key_sha256?<><span className="mono" title={t.host_key_sha256}>{t.host_key_sha256.slice(0,18)}…</span><small>{t.host_key_origin==='first_use'?'запомнен при первом подключении':'введён вручную'}</small></>:<small>запомнится при первом подключении</small>}</td>
+    <td>{t.kind==='winrm'?(t.tls_cert_origin==='admin'?<small>сертификат задан администратором{t.tls_server_name?' · '+t.tls_server_name:''}</small>:t.tls_cert_origin==='domain_ca'?<small>по CA домена · {t.tls_server_name}</small>:t.tls_cert_sha256?<><span className="mono" title={'SHA-256 '+t.tls_cert_sha256}>{t.tls_cert_sha256.slice(0,16)}…</span><small>сертификат запомнен при первом подключении</small></>:<small>сертификат запомнится при первом подключении</small>):t.kind!=='ssh'?'—':t.host_key_sha256?<><span className="mono" title={t.host_key_sha256}>{t.host_key_sha256.slice(0,18)}…</span><small>{t.host_key_origin==='first_use'?'запомнен при первом подключении':'введён вручную'}</small></>:<small>запомнится при первом подключении</small>}</td>
     {isAdmin?<td className="actions">{t.kind==='ssh'&&t.host_key_sha256?<button className="text-link" onClick={()=>{if(confirm('Сбросить запомненный ключ хоста '+t.address+'? Делайте это, только если ключ сменился законно (например, после переустановки ОС).'))act(t,{disabled:t.state==='disabled',reset_host_key:true})}}>Сбросить ключ</button>:null}
      {t.kind==='winrm'&&t.tls_cert_origin==='first_use'?<button className="text-link" onClick={()=>{if(confirm('Сбросить запомненный сертификат WinRM '+t.address+'? Делайте это, только если сертификат сменился законно (перевыпуск, переустановка ОС).'))act(t,{disabled:t.state==='disabled',reset_tls_cert:true})}}>Сбросить сертификат</button>:null}
      <button className="text-link" onClick={()=>act(t,{disabled:t.state!=='disabled'})}>{t.state==='disabled'?'Включить':'Отключить'}</button></td>:null}
